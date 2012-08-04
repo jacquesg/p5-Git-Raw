@@ -1,0 +1,24 @@
+Commit					T_GIT_REF
+Config					T_GIT_REF
+Index					T_GIT_REF
+Repository				T_GIT_REF
+Signature				T_GIT_REF
+Tree					T_GIT_REF
+
+OUTPUT
+T_GIT_REF
+	sv_setref_pv($arg, \"Git::Raw::${type}\", (void *) $var);
+T_GIT_INT
+	sv_setref_iv($arg, \"Git::Raw::${type}\", $var);
+
+INPUT
+T_GIT_REF
+	if (sv_isobject($arg) && sv_derived_from($arg, \"Git::Raw::${type}\"))
+		$var = INT2PTR($type, SvIV((SV *) SvRV($arg)));
+	else
+		Perl_croak(aTHX_ \"$var is not of type Git::Raw::${type}\");
+T_GIT_INT
+	if (sv_isobject($arg) && sv_derived_from($arg, \"Git::Raw::${type}\"))
+		$var = SvIV((SV *) SvRV($arg));
+	else
+		Perl_croak(aTHX_ \"$var is not of type Git::Raw::${type}\");

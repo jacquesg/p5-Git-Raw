@@ -1,0 +1,10 @@
+* status
+* reset
+* diff
+* tags manipulation
+* branches manipulation
+* blobs manipulation
+* revision walker
+* more config manipulation
+* raw data manipulation
+* ...
