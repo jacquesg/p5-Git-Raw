@@ -79,25 +79,7 @@ lookup(self, id)
 		rc = git_object_lookup_prefix(&o, self, &oid, len, GIT_OBJ_ANY);
 		git_check_error(rc);
 
-		switch (git_object_type(o)) {
-			case GIT_OBJ_COMMIT:
-				RETVAL = sv_setref_pv(
-					newSV(0), "Git::Raw::Commit", o
-				); break;
-			case GIT_OBJ_TREE:
-				RETVAL = sv_setref_pv(
-					newSV(0), "Git::Raw::Tree", o
-				); break;
-			case GIT_OBJ_BLOB:
-				RETVAL = sv_setref_pv(
-					newSV(0), "Git::Raw::Blob", o
-				); break;
-			case GIT_OBJ_TAG:
-				RETVAL = sv_setref_pv(
-					newSV(0), "Git::Raw::Tag", o
-				); break;
-			default: Perl_croak(aTHX_ "Invalid object type");
-		}
+		RETVAL = git_obj_to_sv(o);
 
 	OUTPUT: RETVAL
 
@@ -127,6 +109,38 @@ commit(self, msg, author, cmtter, parents, tree)
 		git_check_error(rc);
 
 		RETVAL = c;
+
+	OUTPUT: RETVAL
+
+Tag
+tag(self, name, msg, tagger, target)
+	Repository self
+	SV *name
+	SV *msg
+	Signature tagger
+	SV *target
+
+	CODE:
+		Tag t;
+		git_oid oid;
+		git_object *o;
+		STRLEN len1, len2;
+
+		o = git_sv_to_obj(target);
+
+		if (o == NULL)
+			Perl_croak(aTHX_ "target is not of a valid type");
+
+		int rc = git_tag_create(
+			&oid, self, SvPVbyte(name, len1),
+			o, tagger, SvPVbyte(msg, len2), 0
+		);
+		git_check_error(rc);
+
+		rc = git_tag_lookup(&t, self, &oid);
+		git_check_error(rc);
+
+		RETVAL = t;
 
 	OUTPUT: RETVAL
 
