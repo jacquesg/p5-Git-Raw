@@ -21,6 +21,10 @@ Retrieve the C<Git::Raw::Signature> representing the commit's author.
 
 Retrieve the C<Git::Raw::Signature> representing the commit's committer.
 
+=head2 id( )
+
+Retrieve the id of the commit, as string.
+
 =head2 message( )
 
 Retrieve the commit's message.

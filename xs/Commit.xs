@@ -21,6 +21,21 @@ committer(self)
 	OUTPUT: RETVAL
 
 SV *
+id(self)
+	Commit self
+
+	CODE:
+		char out[41];
+		const git_oid *oid = git_commit_id(self);
+
+		git_oid_fmt(out, oid);
+		out[40] = '\0';
+
+		RETVAL = newSVpv(out, 0);
+
+	OUTPUT: RETVAL
+
+SV *
 message(self)
 	Commit self
 
