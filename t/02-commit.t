@@ -29,7 +29,6 @@ my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit = $repo -> commit('initial commit', $me, $me, [], $tree);
 
-# my $commit = $repo -> lookup('063ed0e');
 my $author = $commit -> author;
 
 is($commit -> message, "initial commit\n");
