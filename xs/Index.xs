@@ -44,8 +44,7 @@ uniq(self)
 	Index self
 
 	CODE:
-		int rc = git_index_uniq(self);
-		git_check_error(rc);
+		git_index_uniq(self);
 
 void
 write(self)
