@@ -13,9 +13,26 @@ A C<Git::Raw::Tag> represents a Git tag.
 
 =head1 METHODS
 
-=head2 my_sub( $args )
+=head2 id( )
 
-Subroutine to do something
+Retrieve the id of the tag, as string.
+
+=head2 name( )
+
+Retrieve the tag's name.
+
+=head2 message( )
+
+Retrieve the tag's message.
+
+=head2 tagger( )
+
+Retrieve the C<Git::Raw::Signature> representing the tag's tagger.
+
+=head2 target( )
+
+Retrieve the target of the tag.  This function may return a L<Git::Raw::Blob>,
+a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
 
 =head1 AUTHOR
 

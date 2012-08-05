@@ -29,16 +29,28 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Retrieve the default L<Git::Raw::Index> of the repository.
 
+=head2 head( )
+
+Retrieve the HEAD of the repository. This function may return a L<Git::Raw::Blob>,
+a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
+
 =head2 lookup( $id )
 
-Retrieve the object corresponding to the given id. This function returns can
-return a L<Git::Raw::Commit> or a L<Git::Raw::Tree>.
+Retrieve the object corresponding to the given id. This function may return a
+L<Git::Raw::Blob>, a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a
+L<Git::Raw::Tree>.
 
 =head2 commit( $msg, $author, $committer, @parents, $tree )
 
-Create a new commit given a message, an author and committer
+Create a new L<Git::Raw::Commit> given a message, an author and committer
 (L<Git::Raw::Signature>), a list of parents (L<Git::Raw::Commit>) and a tree
 (L<Git::Raw::Tree>).
+
+=head2 tag( $name, $msg, $tagger, $target )
+
+Create a new L<Git::Raw::Tag> given a name, a message, a $tagger
+(L<Git::Raw::Signature>) and a $target. The target may be a L<Git::Raw::Blob>,
+a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
 
 =head2 path( )
 
