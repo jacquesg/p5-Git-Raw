@@ -17,7 +17,9 @@ $index -> add('test');
 $index -> write;
 
 my $tree_id = $index -> write_tree;
-my $tree    = $repo -> lookup_tree($tree_id);
+my $tree    = $repo -> lookup($tree_id);
+
+isa_ok($tree, "Git::Raw::Tree");
 
 my $config = $repo -> config;
 my $name   = $config -> get_str('user.name');
@@ -45,5 +47,24 @@ is($commit -> committer -> offset, $off);
 
 is($commit -> time, $time);
 is($commit -> offset, $off);
+
+my $commit2 = $repo -> lookup($commit -> id);
+
+isa_ok($commit2, "Git::Raw::Commit");
+
+is($commit2 -> message, "initial commit\n");
+
+is($commit2 -> author -> name, $name);
+is($commit2 -> author -> email, $email);
+is($commit2 -> author -> time, $time);
+is($commit2 -> author -> offset, $off);
+
+is($commit2 -> committer -> name, $name);
+is($commit2 -> committer -> email, $email);
+is($commit2 -> committer -> time, $time);
+is($commit2 -> committer -> offset, $off);
+
+is($commit2 -> time, $time);
+is($commit2 -> offset, $off);
 
 done_testing;

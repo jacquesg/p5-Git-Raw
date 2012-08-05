@@ -63,43 +63,41 @@ index(self)
 
 	OUTPUT: RETVAL
 
-Commit
-lookup_commit(self, commit)
+SV *
+lookup(self, id)
 	Repository self
-	SV *commit
+	SV *id
 
 	CODE:
-		Commit c;
 		STRLEN len;
 		git_oid oid;
+		git_object *o;
 
-		int rc = git_oid_fromstrn(&oid, SvPVbyte(commit, len), len);
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
 		git_check_error(rc);
 
-		rc = git_commit_lookup_prefix(&c, self, &oid, len);
+		rc = git_object_lookup_prefix(&o, self, &oid, len, GIT_OBJ_ANY);
 		git_check_error(rc);
 
-		RETVAL = c;
-
-	OUTPUT: RETVAL
-
-Tree
-lookup_tree(self, tree)
-	Repository self
-	SV *tree
-
-	CODE:
-		Tree t;
-		STRLEN len;
-		git_oid oid;
-
-		int rc = git_oid_fromstrn(&oid, SvPVbyte(tree, len), len);
-		git_check_error(rc);
-
-		rc = git_tree_lookup_prefix(&t, self, &oid, len);
-		git_check_error(rc);
-
-		RETVAL = t;
+		switch (git_object_type(o)) {
+			case GIT_OBJ_COMMIT:
+				RETVAL = sv_setref_pv(
+					newSV(0), "Git::Raw::Commit", o
+				); break;
+			case GIT_OBJ_TREE:
+				RETVAL = sv_setref_pv(
+					newSV(0), "Git::Raw::Tree", o
+				); break;
+			case GIT_OBJ_BLOB:
+				RETVAL = sv_setref_pv(
+					newSV(0), "Git::Raw::Blob", o
+				); break;
+			case GIT_OBJ_TAG:
+				RETVAL = sv_setref_pv(
+					newSV(0), "Git::Raw::Tag", o
+				); break;
+			default: Perl_croak(aTHX_ "Invalid object type");
+		}
 
 	OUTPUT: RETVAL
 
@@ -127,7 +125,7 @@ commit(self, msg, author, cmtter, parents, tree)
 
 		rc = git_commit_lookup(&c, self, &oid);
 		git_check_error(rc);
-		
+
 		RETVAL = c;
 
 	OUTPUT: RETVAL

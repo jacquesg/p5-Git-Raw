@@ -29,13 +29,10 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Retrieve the default L<Git::Raw::Index> of the repository.
 
-=head2 lookup_commit( $id )
+=head2 lookup( $id )
 
-Retrieve the L<Git::Raw::Commit> corresponding to the given ID..
-
-=head2 lookup_tree( $id )
-
-Retrieve the L<Git::Raw::Tree> corresponding to the given ID..
+Retrieve the object corresponding to the given id. This function returns can
+return a L<Git::Raw::Commit> or a L<Git::Raw::Tree>.
 
 =head2 commit( $msg, $author, $committer, @parents, $tree )
 
