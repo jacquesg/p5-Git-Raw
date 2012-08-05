@@ -64,6 +64,27 @@ index(self)
 	OUTPUT: RETVAL
 
 SV *
+head(self)
+	Repository self
+
+	CODE:
+		git_object *o;
+		git_reference *r;
+		const git_oid *oid;
+
+		int rc = git_repository_head(&r, self);
+		git_check_error(rc);
+
+		oid = git_reference_oid(r);
+
+		rc = git_object_lookup(&o, self, oid, GIT_OBJ_ANY);
+		git_check_error(rc);
+
+		RETVAL = git_obj_to_sv(o);
+
+	OUTPUT: RETVAL
+
+SV *
 lookup(self, id)
 	Repository self
 	SV *id

@@ -48,23 +48,23 @@ is($commit -> committer -> offset, $off);
 is($commit -> time, $time);
 is($commit -> offset, $off);
 
-my $commit2 = $repo -> lookup($commit -> id);
+my $head = $repo -> head;
 
-isa_ok($commit2, "Git::Raw::Commit");
+isa_ok($head, "Git::Raw::Commit");
 
-is($commit2 -> message, "initial commit\n");
+is($head -> message, "initial commit\n");
 
-is($commit2 -> author -> name, $name);
-is($commit2 -> author -> email, $email);
-is($commit2 -> author -> time, $time);
-is($commit2 -> author -> offset, $off);
+is($head -> author -> name, $name);
+is($head -> author -> email, $email);
+is($head -> author -> time, $time);
+is($head -> author -> offset, $off);
 
-is($commit2 -> committer -> name, $name);
-is($commit2 -> committer -> email, $email);
-is($commit2 -> committer -> time, $time);
-is($commit2 -> committer -> offset, $off);
+is($head -> committer -> name, $name);
+is($head -> committer -> email, $email);
+is($head -> committer -> time, $time);
+is($head -> committer -> offset, $off);
 
-is($commit2 -> time, $time);
-is($commit2 -> offset, $off);
+is($head -> time, $time);
+is($head -> offset, $off);
 
 done_testing;
