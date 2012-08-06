@@ -26,8 +26,8 @@ ok(eq_array($repo -> status('test'), [':index_new']));
 isa_ok($tree, "Git::Raw::Tree");
 
 my $config = $repo -> config;
-my $name   = $config -> get_str('user.name');
-my $email  = $config -> get_str('user.email');
+my $name   = $config -> string('user.name');
+my $email  = $config -> string('user.email');
 
 my $time = time();
 my $off  = 120;

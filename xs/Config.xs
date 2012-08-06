@@ -1,37 +1,38 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Config
 
 SV *
-get_str(self, name)
+string(self, name, ...)
 	Config self
 	SV *name
 
 	CODE:
+		int rc;
 		STRLEN len;
 		const char *value;
 		const char *var = SvPVbyte(name, len);
 
-		int rc = git_config_get_string(&value, self, var);
-		git_check_error(rc);
+		switch (items) {
+			case 2: {
+				rc = git_config_get_string(&value, self, var);
+				git_check_error(rc);
+
+				break;
+			}
+
+			case 3: {
+				STRLEN len2;
+				value = SvPVbyte(ST(2), len2);
+
+				rc = git_config_set_string(self, var, value);
+				git_check_error(rc);
+
+				break;
+			}
+
+			default: Perl_croak(aTHX_ "Too much arguments");
+		}
 
 		RETVAL = newSVpv(value, 0);
-
-	OUTPUT: RETVAL
-
-SV *
-set_str(self, name, value)
-	Config self
-	SV *name
-	SV *value
-
-	CODE:
-		STRLEN len1, len2;
-		const char *var = SvPVbyte(name, len1);
-		const char *val = SvPVbyte(value, len2);
-
-		int rc = git_config_set_string(self, var, val);
-		git_check_error(rc);
-
-		RETVAL = newSVpv(val, 0);
 
 	OUTPUT: RETVAL
 
