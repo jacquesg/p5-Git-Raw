@@ -70,6 +70,30 @@ offset(self)
 
 	OUTPUT: RETVAL
 
+AV *
+parents(self)
+	Commit self
+
+	CODE:
+		AV *parents = newAV();
+		int rc, i, count = git_commit_parentcount(self);
+
+		for (i = 0; i < count; i++) {
+			Commit curr;
+			rc = git_commit_parent(&curr, self, i);
+			git_check_error(rc);
+
+			SV *parent = sv_setref_pv(
+				newSV(0), "Git::Raw::Commit", (void *) curr
+			);
+
+			av_push(parents, parent);
+		}
+
+		RETVAL = parents;
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	Commit self

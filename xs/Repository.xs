@@ -114,15 +114,29 @@ commit(self, msg, author, cmtter, parents, tree)
 	Tree tree
 
 	CODE:
-		Commit c;
+		SV *iter;
+		int i = 0;
 		STRLEN len;
 		git_oid oid;
+		Commit c, *paren;
+
+		int count = av_len(parents) + 1;
+
+		if (count > 0) {
+			Newx(paren, count, git_commit *);
+
+			for (i = 0; i < count; i++) {
+				iter = av_shift(parents);
+
+				if (sv_isobject(iter) && sv_derived_from(iter, "Git::Raw::Commit"))
+					paren[i] = INT2PTR(git_commit *, SvIV((SV *) SvRV(iter)));
+				else Perl_croak(aTHX_ "parent is not of type Git::Raw::Commit");
+			}
+		}
 
 		int rc = git_commit_create(
-			&oid, self, "HEAD",
-			author, cmtter, NULL,
-			SvPVbyte(msg, len), tree,
-			0, NULL
+			&oid, self, "HEAD", author, cmtter, NULL,
+			SvPVbyte(msg, len), tree, count, paren
 		);
 		git_check_error(rc);
 

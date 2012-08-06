@@ -3,7 +3,6 @@
 use Test::More;
 
 use Git::Raw;
-use File::Slurp;
 use Cwd qw(abs_path);
 
 my $path = abs_path('t/test_repo');
@@ -36,7 +35,7 @@ is($tag -> tagger -> offset, $off);
 
 my $target = $tag -> target;
 
-is($target -> message, "initial commit\n");
+is($target -> message, "second commit\n");
 
 is($target -> author -> name, $name);
 is($target -> author -> email, $email);

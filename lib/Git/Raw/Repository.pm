@@ -40,7 +40,7 @@ Retrieve the object corresponding to the given id. This function may return a
 L<Git::Raw::Blob>, a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a
 L<Git::Raw::Tree>.
 
-=head2 commit( $msg, $author, $committer, @parents, $tree )
+=head2 commit( $msg, $author, $committer, [@parents], $tree )
 
 Create a new L<Git::Raw::Commit> given a message, an author and committer
 (L<Git::Raw::Signature>), a list of parents (L<Git::Raw::Commit>) and a tree
