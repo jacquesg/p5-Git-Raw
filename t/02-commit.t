@@ -12,12 +12,16 @@ my $repo = Git::Raw::Repository -> open($path);
 my $file  = $repo -> workdir . 'test';
 write_file($file, 'this is a test');
 
+ok(eq_array($repo -> status('test'), [':worktree_new']));
+
 my $index = $repo -> index;
 $index -> add('test');
 $index -> write;
 
 my $tree_id = $index -> write_tree;
 my $tree    = $repo -> lookup($tree_id);
+
+ok(eq_array($repo -> status('test'), [':index_new']));
 
 isa_ok($tree, "Git::Raw::Tree");
 
@@ -30,6 +34,8 @@ my $off  = 120;
 my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit = $repo -> commit('initial commit', $me, $me, [], $tree);
+
+ok(eq_array($repo -> status('test'), []));
 
 my $author = $commit -> author;
 

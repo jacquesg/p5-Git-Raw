@@ -46,6 +46,29 @@ Create a new L<Git::Raw::Commit> given a message, an author and committer
 (L<Git::Raw::Signature>), a list of parents (L<Git::Raw::Commit>) and a tree
 (L<Git::Raw::Tree>).
 
+=head2 status( $file )
+
+Retrieve the status of the given file in the working directory. This functions
+returns a list of status flags. Valid status flags are:
+
+=over 4
+
+=item C<":index_new">
+
+=item C<":index_modified">
+
+=item C<":index_deleted">
+
+=item C<":worktree_new">
+
+=item C<":worktree_modified">
+
+=item C<":worktree_deleted">
+
+=item C<":ignored">
+
+=back
+
 =head2 tag( $name, $msg, $tagger, $target )
 
 Create a new L<Git::Raw::Tag> given a name, a message, a $tagger
