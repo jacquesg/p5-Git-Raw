@@ -179,6 +179,20 @@ tag(self, name, msg, tagger, target)
 
 	OUTPUT: RETVAL
 
+Walker
+walker(self)
+	Repository self
+
+	CODE:
+		Walker w;
+
+		int rc = git_revwalk_new(&w, self);
+		git_check_error(rc);
+
+		RETVAL = w;
+
+	OUTPUT: RETVAL
+
 SV *
 path(self)
 	Repository self

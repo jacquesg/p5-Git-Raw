@@ -1,7 +1,6 @@
 * status
 * diff
 * blobs manipulation
-* revision walker
 * more config manipulation
 * raw data manipulation
 * branches manipulation (wait for libgit2 v0.17.0+1)
