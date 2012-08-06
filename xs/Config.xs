@@ -70,7 +70,7 @@ int(self, name, ...)
 	OUTPUT: RETVAL
 
 SV *
-string(self, name, ...)
+str(self, name, ...)
 	Config self
 	SV *name
 

@@ -25,7 +25,7 @@ Retrieve the value of the C<$name> configuration field of type integer. If
 C<$value> is passed, the value of the configration will be updated, and
 returned.
 
-=head2 string( $name [, $value ] )
+=head2 str( $name [, $value ] )
 
 Retrieve the value of the C<$name> configuration field of type string. If
 C<$value> is passed, the value of the configration will be updated, and

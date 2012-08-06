@@ -28,8 +28,8 @@ Git::Raw - Perl bindings to the Git linkable library (libgit2)
 
     # retrieve user's name and email from the Git configuration
     my $config = $repo -> config;
-    my $name   = $config -> string('user.name');
-    my $email  = $config -> string('user.email');
+    my $name   = $config -> str('user.name');
+    my $email  = $config -> str('user.email');
 
     # create a new Git signature
     my $me = Git::Raw::Signature -> now($name, $email);

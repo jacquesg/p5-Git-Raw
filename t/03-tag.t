@@ -9,8 +9,8 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $config = $repo -> config;
-my $name   = $config -> string('user.name');
-my $email  = $config -> string('user.email');
+my $name   = $config -> str('user.name');
+my $email  = $config -> str('user.email');
 
 my $time = time();
 my $off  = 120;
