@@ -14,10 +14,17 @@ my $tree = $head -> tree;
 my $entries = $tree -> entries;
 
 is($entries -> [0] -> name, 'test');
-isa_ok($entries -> [0] -> object($repo), 'Git::Raw::Blob');
-
 is($entries -> [1] -> name, 'test2');
-isa_ok($entries -> [1] -> object($repo), 'Git::Raw::Blob');
+
+my $obj0 = $entries -> [0] -> object($repo);
+
+isa_ok($obj0, 'Git::Raw::Blob');
+is($obj0 -> content, 'this is a test');
+
+my $obj1 = $entries -> [1] -> object($repo);
+
+isa_ok($obj1, 'Git::Raw::Blob');
+is($obj1 -> content, 'this is a second test');
 
 is($entries -> [2], undef);
 

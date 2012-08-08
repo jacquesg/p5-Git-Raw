@@ -6,6 +6,7 @@
 
 #include <git2.h>
 
+typedef git_blob * Blob;
 typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_index * Index;
@@ -55,6 +56,7 @@ git_object *git_sv_to_obj(SV *sv) {
 
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
+INCLUDE: xs/Blob.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Index.xs
