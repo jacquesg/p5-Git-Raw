@@ -17,6 +17,10 @@ A C<Git::Raw::Tree> represents a Git tree.
 
 Retrieve the id of the tree, as string.
 
+=head2 entries( )
+
+Retrieve a list of L<Git::Raw::TreeEntry> objects.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

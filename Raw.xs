@@ -13,6 +13,7 @@ typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
 typedef git_tree * Tree;
+typedef git_tree_entry * TreeEntry;
 typedef git_revwalk * Walker;
 
 void git_check_error(int err) {
@@ -61,4 +62,5 @@ INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Tree.xs
+INCLUDE: xs/TreeEntry.xs
 INCLUDE: xs/Walker.xs
