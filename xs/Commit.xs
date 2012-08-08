@@ -70,6 +70,20 @@ offset(self)
 
 	OUTPUT: RETVAL
 
+Tree
+tree(self)
+	Commit self
+
+	CODE:
+		Tree t;
+
+		int rc = git_commit_tree(&t, self);
+		git_check_error(rc);
+
+		RETVAL = t;
+
+	OUTPUT: RETVAL
+
 AV *
 parents(self)
 	Commit self

@@ -37,6 +37,10 @@ Retrieve the committer time of a commit.
 
 Retrieve the committer time offset (in minutes) of a commit.
 
+=head2 tree( )
+
+Retrieve the L<Git::Raw::Tree> a commit points to.
+
 =head2 parents( )
 
 Retrieve the list of a commit's parents. The parents are C<Git::Raw::Commit>
