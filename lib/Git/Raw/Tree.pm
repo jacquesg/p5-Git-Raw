@@ -11,6 +11,12 @@ Git::Raw::Tree - libgit2 tree class
 
 A C<Git::Raw::Tree> represents a Git tree.
 
+=head1 METHODS
+
+=head2 id( )
+
+Retrieve the id of the tree, as string.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
