@@ -13,6 +13,10 @@ Some description here...
 
 =head1 METHODS
 
+=head2 lookup( $name )
+
+Retrieve the reference with name C<$name>.
+
 =head2 name( )
 
 Retrieve the full name of the reference.

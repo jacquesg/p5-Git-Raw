@@ -1,5 +1,25 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Reference
 
+Reference
+lookup(class, name, repo)
+	SV *class
+	SV *name
+	Repository repo
+
+	CODE:
+		STRLEN len;
+		Reference r;
+
+		const char *name_str = SvPVbyte(name, len);
+		git_check_error(rc);
+
+		rc = git_reference_lookup(&r, repo, name_str)
+		git_check_error(rc);
+
+		RETVAL = r;
+
+	OUTPUT: RETVAL
+
 SV *
 name(self)
 	Reference self
