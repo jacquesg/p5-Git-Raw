@@ -46,8 +46,9 @@ type(self)
 	OUTPUT: RETVAL
 
 SV *
-target(self)
-	Tag self
+target(self, repo)
+	Reference self
+	Repository repo
 
 	CODE:
 		int rc;
@@ -55,16 +56,28 @@ target(self)
 
 		switch (git_reference_type(self)) {
 			case GIT_REF_OID: {
+				git_object *o;
 				const git_oid *oid = git_reference_oid(self);
 
-				result = git_oid_to_sv(oid);
+				rc = git_object_lookup(
+					&o, repo, &oid, GIT_OBJ_ANY
+				);
+				git_check_error(rc);
+
+				result = git_obj_to_sv(o);
 				break;
 			}
 
 			case GIT_REF_SYMBOLIC: {
+				Reference f;
 				const char *target = git_reference_target(self);
 
-				result = newSVpv(target, 0);
+				rc = git_reference_lookup(&f, repo, target);
+
+				result = sv_setref_pv(
+					newSV(0), "Git::Raw::Reference",
+					(void *) f
+				);
 				break;
 			}
 
