@@ -70,6 +70,7 @@ INCLUDE: xs/Blob.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Index.xs
+INCLUDE: xs/Reference.xs
 INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
 INCLUDE: xs/Tag.xs

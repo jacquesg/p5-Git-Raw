@@ -29,9 +29,8 @@ C<":symbolic">.
 =head2 target( )
 
 Retrieve the target of the reference. This function returns either an object
-(L<Git::Raw::Blob>, a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a
-L<Git::Raw::Tree>) for direct references, or another reference for symbolic
-references.
+(L<Git::Raw::Blob>, L<Git::Raw::Commit>, L<Git::Raw::Tag> or L<Git::Raw::Tree>)
+for direct references, or another reference for symbolic references.
 
 =head1 AUTHOR
 

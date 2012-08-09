@@ -11,9 +11,7 @@ lookup(class, name, repo)
 		Reference r;
 
 		const char *name_str = SvPVbyte(name, len);
-		git_check_error(rc);
-
-		rc = git_reference_lookup(&r, repo, name_str)
+		int rc = git_reference_lookup(&r, repo, name_str);
 		git_check_error(rc);
 
 		RETVAL = r;
@@ -37,9 +35,10 @@ type(self)
 	CODE:
 		SV *type;
 
-		case (git_reference_type(self)) {
+		switch (git_reference_type(self)) {
 			case GIT_REF_OID: type = newSVpv(":direct", 0); break;
 			case GIT_REF_SYMBOLIC: type = newSVpv(":symbolic", 0); break;
+		}
 
 		RETVAL = type;
 
@@ -60,7 +59,7 @@ target(self, repo)
 				const git_oid *oid = git_reference_oid(self);
 
 				rc = git_object_lookup(
-					&o, repo, &oid, GIT_OBJ_ANY
+					&o, repo, oid, GIT_OBJ_ANY
 				);
 				git_check_error(rc);
 
