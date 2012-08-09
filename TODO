@@ -1,6 +1,5 @@
 * diff
 * remote
-* merge
 * note
 * odb
 * branch (wait for libgit2 v0.18.0)
