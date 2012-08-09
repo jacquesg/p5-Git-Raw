@@ -10,6 +10,7 @@ typedef git_blob * Blob;
 typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_index * Index;
+typedef git_reference * Reference;
 typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
