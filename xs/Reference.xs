@@ -35,21 +35,16 @@ target(self)
 
 		switch (git_reference_type(self)) {
 			case GIT_REF_OID: {
-				char out[41];
 				const git_oid *oid = git_reference_oid(self);
 
-				git_oid_fmt(out, oid);
-				out[40] = '\0';
-
-				result = newSVpv(out, 0);
-
+				result = git_oid_to_sv(oid);
 				break;
 			}
 
 			case GIT_REF_SYMBOLIC: {
 				const char *target = git_reference_target(self);
-				result = newSVpv(target, 0);
 
+				result = newSVpv(target, 0);
 				break;
 			}
 

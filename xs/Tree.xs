@@ -5,13 +5,8 @@ id(self)
 	Tree self
 
 	CODE:
-		char out[41];
 		const git_oid *oid = git_tree_id(self);
-
-		git_oid_fmt(out, oid);
-		out[40] = '\0';
-
-		RETVAL = newSVpv(out, 0);
+		RETVAL = git_oid_to_sv(oid);
 
 	OUTPUT: RETVAL
 

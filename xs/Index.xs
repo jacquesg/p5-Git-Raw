@@ -61,15 +61,11 @@ write_tree(self)
 	CODE:
 		Tree tree;
 		git_oid oid;
-		char out[41];
 
 		int rc = git_tree_create_fromindex(&oid, self);
 		git_check_error(rc);
 
-		git_oid_fmt(out, &oid);
-		out[40] = '\0';
-
-		RETVAL = newSVpv(out, 0);
+		RETVAL = git_oid_to_sv(&oid);
 
 	OUTPUT: RETVAL
 
