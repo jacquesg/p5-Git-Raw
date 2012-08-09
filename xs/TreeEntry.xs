@@ -34,3 +34,10 @@ object(self, repo)
 		RETVAL = git_obj_to_sv(o);
 
 	OUTPUT: RETVAL
+
+void
+DESTROY(self)
+	TreeEntry self
+
+	CODE:
+		git_tree_entry_free(self);

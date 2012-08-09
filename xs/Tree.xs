@@ -22,7 +22,8 @@ entries(self)
 			TreeEntry curr = (TreeEntry) git_tree_entry_byindex(self, i);
 
 			SV *entry = sv_setref_pv(
-				newSV(0), "Git::Raw::TreeEntry", (void *) curr
+				newSV(0), "Git::Raw::TreeEntry",
+				(void *) git_tree_entry_dup(curr)
 			);
 
 			av_push(entries, entry);
