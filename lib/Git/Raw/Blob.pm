@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Blob - libgit2 blob class
+Git::Raw::Blob - Git blob class
 
 =head1 DESCRIPTION
 

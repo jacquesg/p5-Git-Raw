@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Walker - libgit2 revwalker class
+Git::Raw::Walker - Git revwalker class
 
 =head1 DESCRIPTION
 

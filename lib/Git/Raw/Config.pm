@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Config - libgit2 config class
+Git::Raw::Config - Git config class
 
 =head1 DESCRIPTION
 

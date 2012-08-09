@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Signature - libgit2 signature class
+Git::Raw::Signature - Git signature class
 
 =head1 DESCRIPTION
 

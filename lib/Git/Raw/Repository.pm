@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Repository - libgit2 repository class
+Git::Raw::Repository - Git repository class
 
 =head1 DESCRIPTION
 

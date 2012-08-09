@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Index - libgit2 index class
+Git::Raw::Index - Git index class
 
 =head1 DESCRIPTION
 

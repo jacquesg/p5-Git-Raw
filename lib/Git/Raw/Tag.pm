@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Tag - libgit2 tag class
+Git::Raw::Tag - Git tag class
 
 =head1 DESCRIPTION
 

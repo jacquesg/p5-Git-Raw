@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::Commit - libgit2 commit class
+Git::Raw::Commit - Git commit class
 
 =head1 DESCRIPTION
 

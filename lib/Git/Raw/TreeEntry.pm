@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::TreeEntry - libgit2 tree entry class
+Git::Raw::TreeEntry - Git tree entry class
 
 =head1 DESCRIPTION
 
