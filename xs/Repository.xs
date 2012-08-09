@@ -136,7 +136,8 @@ commit(self, msg, author, cmtter, parents, tree)
 
 		int rc = git_commit_create(
 			&oid, self, "HEAD", author, cmtter, NULL,
-			SvPVbyte(msg, len), tree, count, paren
+			SvPVbyte(msg, len), tree, count,
+			(const git_commit **) paren
 		);
 		git_check_error(rc);
 

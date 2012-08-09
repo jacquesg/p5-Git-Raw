@@ -5,7 +5,7 @@ author(self)
 	Commit self
 
 	CODE:
-		Signature a = git_commit_author(self);
+		Signature a = (Signature) git_commit_author(self);
 		RETVAL = git_signature_dup(a);
 
 	OUTPUT: RETVAL
@@ -15,7 +15,7 @@ committer(self)
 	Commit self
 
 	CODE:
-		Signature c = git_commit_committer(self);
+		Signature c = (Signature) git_commit_committer(self);
 		RETVAL = git_signature_dup(c);
 
 	OUTPUT: RETVAL
@@ -26,7 +26,7 @@ id(self)
 
 	CODE:
 		const git_oid *oid = git_commit_id(self);
-		RETVAL = git_oid_to_sv(oid);
+		RETVAL = git_oid_to_sv((git_oid *) oid);
 
 	OUTPUT: RETVAL
 

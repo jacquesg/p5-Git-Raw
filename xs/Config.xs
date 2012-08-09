@@ -8,7 +8,7 @@ bool(self, name, ...)
 	CODE:
 		int rc;
 		STRLEN len;
-		bool value;
+		int value;
 		const char *var = SvPVbyte(name, len);
 
 		switch (items) {
@@ -77,7 +77,7 @@ str(self, name, ...)
 	CODE:
 		int rc;
 		STRLEN len;
-		char *value;
+		const char *value;
 		const char *var = SvPVbyte(name, len);
 
 		switch (items) {

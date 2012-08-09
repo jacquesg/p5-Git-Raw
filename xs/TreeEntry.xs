@@ -6,7 +6,7 @@ id(self)
 
 	CODE:
 		const git_oid *oid = git_tree_entry_id(self);
-		RETVAL = git_oid_to_sv(oid);
+		RETVAL = git_oid_to_sv((git_oid *) oid);
 
 	OUTPUT: RETVAL
 
