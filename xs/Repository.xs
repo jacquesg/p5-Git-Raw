@@ -7,9 +7,8 @@ init(class, path, is_bare)
 	unsigned is_bare
 
 	CODE:
-		STRLEN len;
 		Repository r;
-		const char *path_str = SvPVbyte(path, len);
+		const char *path_str = SvPVbyte_nolen(path);
 
 		int rc = git_repository_init(&r, path_str, is_bare);
 		git_check_error(rc);
@@ -24,9 +23,8 @@ open(class, path)
 	SV *path
 
 	CODE:
-		STRLEN len;
 		Repository r;
-		const char *path_str = SvPVbyte(path, len);
+		const char *path_str = SvPVbyte_nolen(path);
 
 		int rc = git_repository_open(&r, path_str);
 		git_check_error(rc);
@@ -116,7 +114,6 @@ commit(self, msg, author, cmtter, parents, tree)
 	CODE:
 		SV *iter;
 		int i = 0;
-		STRLEN len;
 		git_oid oid;
 		Commit c, *paren;
 
@@ -136,7 +133,7 @@ commit(self, msg, author, cmtter, parents, tree)
 
 		int rc = git_commit_create(
 			&oid, self, "HEAD", author, cmtter, NULL,
-			SvPVbyte(msg, len), tree, count,
+			SvPVbyte_nolen(msg), tree, count,
 			(const git_commit **) paren
 		);
 		git_check_error(rc);
@@ -154,10 +151,9 @@ status(self, path)
 	SV *path
 
 	CODE:
-		STRLEN len;
 		unsigned iflags;
 		AV *flags = newAV();
-		const char *file = SvPVbyte(path, len);
+		const char *file = SvPVbyte_nolen(path);
 
 		int rc = git_status_file(&iflags, self, file);
 		git_check_error(rc);
@@ -199,7 +195,6 @@ tag(self, name, msg, tagger, target)
 		Tag t;
 		git_oid oid;
 		git_object *o;
-		STRLEN len1, len2;
 
 		o = git_sv_to_obj(target);
 
@@ -207,8 +202,8 @@ tag(self, name, msg, tagger, target)
 			Perl_croak(aTHX_ "target is not of a valid type");
 
 		int rc = git_tag_create(
-			&oid, self, SvPVbyte(name, len1),
-			o, tagger, SvPVbyte(msg, len2), 0
+			&oid, self, SvPVbyte_nolen(name),
+			o, tagger, SvPVbyte_nolen(msg), 0
 		);
 		git_check_error(rc);
 

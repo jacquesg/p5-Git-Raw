@@ -10,10 +10,9 @@ new(class, name, email, time, off)
 
 	CODE:
 		Signature sig;
-		STRLEN len1, len2, len3, len4;
-		const char *name_str = SvPVbyte(name, len1);
-		const char *email_str = SvPVbyte(email, len2);
-		const char *time_str = SvPVbyte(time, len3);
+		const char *name_str  = SvPVbyte_nolen(name);
+		const char *email_str = SvPVbyte_nolen(email);
+		const char *time_str  = SvPVbyte_nolen(time);
 
 		git_time_t t;
 		sscanf(time_str, "%" PRId64, &t);
@@ -33,9 +32,8 @@ now(class, name, email)
 
 	CODE:
 		Signature sig;
-		STRLEN len1, len2;
-		const char *name_str = SvPVbyte(name, len1);
-		const char *email_str = SvPVbyte(email, len2);
+		const char *name_str  = SvPVbyte_nolen(name);
+		const char *email_str = SvPVbyte_nolen(email);
 
 		int rc = git_signature_now(&sig, name_str, email_str);
 		git_check_error(rc);

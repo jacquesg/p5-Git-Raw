@@ -7,10 +7,9 @@ lookup(class, name, repo)
 	Repository repo
 
 	CODE:
-		STRLEN len;
 		Reference r;
 
-		const char *name_str = SvPVbyte(name, len);
+		const char *name_str = SvPVbyte_nolen(name);
 		int rc = git_reference_lookup(&r, repo, name_str);
 		git_check_error(rc);
 

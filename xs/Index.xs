@@ -6,8 +6,7 @@ add(self, path)
 	SV *path
 
 	CODE:
-		STRLEN len;
-		const char *path_str = SvPVbyte(path, len);
+		const char *path_str = SvPVbyte_nolen(path);
 
 		int rc = git_index_add(self, path_str, 0);
 		git_check_error(rc);
@@ -18,8 +17,7 @@ append(self, path)
 	SV *path
 
 	CODE:
-		STRLEN len;
-		const char *path_str = SvPVbyte(path, len);
+		const char *path_str = SvPVbyte_nolen(path);
 
 		int rc = git_index_append(self, path_str, 0);
 		git_check_error(rc);
