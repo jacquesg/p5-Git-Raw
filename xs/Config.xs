@@ -5,6 +5,7 @@ bool(self, name, ...)
 	Config self
 	SV *name
 
+	PROTOTYPE: $$;$
 	CODE:
 		int rc, value;
 		const char *var = SvPVbyte_nolen(name);
@@ -25,8 +26,6 @@ bool(self, name, ...)
 
 				break;
 			}
-
-			default: Perl_croak(aTHX_ "Too much arguments");
 		}
 
 		RETVAL = value;
@@ -38,6 +37,7 @@ int(self, name, ...)
 	Config self
 	SV *name
 
+	PROTOTYPE: $$;$
 	CODE:
 		int rc, value;
 		const char *var = SvPVbyte_nolen(name);
@@ -58,8 +58,6 @@ int(self, name, ...)
 
 				break;
 			}
-
-			default: Perl_croak(aTHX_ "Too much arguments");
 		}
 
 		RETVAL = value;
@@ -71,6 +69,7 @@ str(self, name, ...)
 	Config self
 	SV *name
 
+	PROTOTYPE: $$;$
 	CODE:
 		int rc;
 		const char *value, *var = SvPVbyte_nolen(name);
@@ -91,8 +90,6 @@ str(self, name, ...)
 
 				break;
 			}
-
-			default: Perl_croak(aTHX_ "Too much arguments");
 		}
 
 		RETVAL = newSVpv(value, 0);
