@@ -75,6 +75,10 @@ Create a new L<Git::Raw::Tag> given a name, a message, a $tagger
 (L<Git::Raw::Signature>) and a $target. The target may be a L<Git::Raw::Blob>,
 a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
 
+=head2 remotes( )
+
+Retrieve a list of L<Git::Raw::Remote> objects.
+
 =head2 walker( )
 
 Create a new L<Git::Raw::Walker> to iterate over repository's revisions.

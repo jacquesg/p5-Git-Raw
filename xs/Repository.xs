@@ -214,6 +214,36 @@ tag(self, name, msg, tagger, target)
 
 	OUTPUT: RETVAL
 
+AV *
+remotes(self)
+	Repository self
+
+	CODE:
+		int i;
+		AV *output = newAV();
+		git_strarray remotes;
+
+		int rc = git_remote_list(&remotes, self);
+		git_check_error(rc);
+
+		for (i = 0; i < remotes.count; i++) {
+			Remote r;
+			SV *remote;
+
+			rc = git_remote_load(&r, self, remotes.strings[i]);
+			git_check_error(rc);
+
+			remote = sv_setref_pv(newSV(0), "Git::Raw::Remote", r);
+
+			av_push(output, remote);
+		}
+
+		git_strarray_free(&remotes);
+
+		RETVAL = output;
+
+	OUTPUT: RETVAL
+
 Walker
 walker(self)
 	Repository self

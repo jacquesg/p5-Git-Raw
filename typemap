@@ -3,6 +3,7 @@ Commit					T_GIT_REF
 Config					T_GIT_REF
 Index					T_GIT_REF
 Reference				T_GIT_REF
+Remote					T_GIT_REF
 Repository				T_GIT_REF
 Signature				T_GIT_REF
 Tag					T_GIT_REF
