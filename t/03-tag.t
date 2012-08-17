@@ -40,4 +40,12 @@ is($target -> message, "second commit\n");
 is($target -> author -> name, $name);
 is($target -> author -> email, $email);
 
+my $tags = $repo -> tags;
+
+isa_ok($tags -> [0], 'Git::Raw::Tag');
+
+is($tags -> [0] -> name, $tag_name);
+is($tags -> [0] -> message, "$tag_msg\n");
+is($tags -> [1], undef);
+
 done_testing;

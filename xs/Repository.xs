@@ -215,6 +215,47 @@ tag(self, name, msg, tagger, target)
 	OUTPUT: RETVAL
 
 AV *
+tags(self)
+	Repository self
+
+	CODE:
+		int i;
+		AV *output = newAV();
+		git_strarray tags;
+
+		int rc = git_tag_list(&tags, self);
+		git_check_error(rc);
+
+		for (i = 0; i < tags.count; i++) {
+			SV *tag;
+			Reference r;
+			git_object *o;
+			const git_oid *oid;
+
+			int rc = git_reference_lookup(
+				&r, self, tags.strings[i]
+			);
+			git_check_error(rc);
+
+			oid = git_reference_oid(r);
+
+			rc = git_object_lookup(
+				&o, self, oid, GIT_OBJ_TAG
+			);
+			git_check_error(rc);
+
+			tag = git_obj_to_sv(o);
+
+			av_push(output, tag);
+		}
+
+		git_strarray_free(&tags);
+
+		RETVAL = output;
+
+	OUTPUT: RETVAL
+
+AV *
 remotes(self)
 	Repository self
 
