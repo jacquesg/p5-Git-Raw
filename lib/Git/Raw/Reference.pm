@@ -9,7 +9,7 @@ Git::Raw::Reference - Git reference class
 
 =head1 DESCRIPTION
 
-Some description here...
+A C<Git::Raw::Reference> represents a Git reference.
 
 =head1 METHODS
 

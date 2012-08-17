@@ -9,7 +9,7 @@ Git::Raw::Blob - Git blob class
 
 =head1 DESCRIPTION
 
-Some description here...
+A C<Git::Raw::Blob> represents a Git blob.
 
 =head1 METHODS
 
