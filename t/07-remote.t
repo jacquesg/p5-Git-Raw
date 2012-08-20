@@ -9,7 +9,7 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $name = 'github';
-my $url  = 'git://github.com/AlexBio/p5-Git-Raw.git';
+my $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
 
 my $github = Git::Raw::Remote -> add($repo, $name, $url);
 
