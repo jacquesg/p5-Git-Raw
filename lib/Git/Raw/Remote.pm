@@ -28,7 +28,7 @@ Retrieve the URL of the remote.
 
 =head2 connect( $direction )
 
-Connect to the remote. The direction can be either C<":fetch"> or C<":push">.
+Connect to the remote. The direction can be either C<"fetch"> or C<"push">.
 
 =head2 disconnect( )
 

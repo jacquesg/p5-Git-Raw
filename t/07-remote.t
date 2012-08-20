@@ -19,7 +19,7 @@ is($remotes -> [0] -> name, $name);
 is($remotes -> [0] -> url, $url);
 is($remotes -> [1], undef);
 
-$github -> connect(':fetch');
+$github -> connect('fetch');
 is($github -> is_connected, 1);
 
 unless ($ENV{NETWORK_TESTING}) {
@@ -32,10 +32,10 @@ $github -> download;
 $github -> update_tips;
 
 my $ref = Git::Raw::Reference -> lookup('refs/remotes/github/master', $repo);
-is($ref -> type, ':direct');
+is($ref -> type, 'direct');
 
 my $head = $ref -> target($repo);
-isa_ok($head, "Git::Raw::Commit");
+isa_ok($head, 'Git::Raw::Commit');
 
 is($head -> author -> name, 'Alessandro Ghedini');
 

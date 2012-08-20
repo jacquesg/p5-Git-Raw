@@ -48,9 +48,9 @@ connect(self, direction)
 		int dir_int;
 		const char *dir = SvPVbyte_nolen(direction);
 
-		if (strcmp(dir, ":fetch") == 0)
+		if (strcmp(dir, "fetch") == 0)
 			dir_int = GIT_DIR_FETCH;
-		else if (strcmp(dir, ":push") == 0)
+		else if (strcmp(dir, "push") == 0)
 			dir_int = GIT_DIR_PUSH;
 		else
 			Perl_croak(aTHX_ "Invalid direction");

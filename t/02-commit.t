@@ -12,7 +12,7 @@ my $repo = Git::Raw::Repository -> open($path);
 my $file  = $repo -> workdir . 'test';
 write_file($file, 'this is a test');
 
-ok(eq_array($repo -> status('test'), [':worktree_new']));
+ok(eq_array($repo -> status('test'), ['worktree_new']));
 
 my $index = $repo -> index;
 $index -> add('test');
@@ -21,9 +21,9 @@ $index -> write;
 my $tree_id = $index -> write_tree;
 my $tree    = $repo -> lookup($tree_id);
 
-ok(eq_array($repo -> status('test'), [':index_new']));
+ok(eq_array($repo -> status('test'), ['index_new']));
 
-isa_ok($tree, "Git::Raw::Tree");
+isa_ok($tree, 'Git::Raw::Tree');
 
 my $config = $repo -> config;
 my $name   = $config -> str('user.name');
@@ -69,7 +69,7 @@ my $commit2 = $repo -> commit(
 
 my $head = $repo -> head;
 
-isa_ok($head, "Git::Raw::Commit");
+isa_ok($head, 'Git::Raw::Commit');
 
 is($head -> message, "second commit\n");
 

@@ -53,19 +53,19 @@ returns a list of status flags. Valid status flags are:
 
 =over 4
 
-=item C<":index_new">
+=item C<"index_new">
 
-=item C<":index_modified">
+=item C<"index_modified">
 
-=item C<":index_deleted">
+=item C<"index_deleted">
 
-=item C<":worktree_new">
+=item C<"worktree_new">
 
-=item C<":worktree_modified">
+=item C<"worktree_modified">
 
-=item C<":worktree_deleted">
+=item C<"worktree_deleted">
 
-=item C<":ignored">
+=item C<"ignored">
 
 =back
 

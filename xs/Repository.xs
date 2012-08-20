@@ -159,25 +159,25 @@ status(self, path)
 		git_check_error(rc);
 
 		if (iflags & GIT_STATUS_INDEX_NEW)
-			av_push(flags, newSVpv(":index_new", 0));
+			av_push(flags, newSVpv("index_new", 0));
 
 		if (iflags & GIT_STATUS_INDEX_MODIFIED)
-			av_push(flags, newSVpv(":index_modified", 0));
+			av_push(flags, newSVpv("index_modified", 0));
 
 		if (iflags & GIT_STATUS_INDEX_DELETED)
-			av_push(flags, newSVpv(":index_deleted", 0));
+			av_push(flags, newSVpv("index_deleted", 0));
 
 		if (iflags & GIT_STATUS_WT_NEW)
-			av_push(flags, newSVpv(":worktree_new", 0));
+			av_push(flags, newSVpv("worktree_new", 0));
 
 		if (iflags & GIT_STATUS_WT_MODIFIED)
-			av_push(flags, newSVpv(":worktree_modified", 0));
+			av_push(flags, newSVpv("worktree_modified", 0));
 
 		if (iflags & GIT_STATUS_WT_DELETED)
-			av_push(flags, newSVpv(":worktree_deleted", 0));
+			av_push(flags, newSVpv("worktree_deleted", 0));
 
 		if (iflags & GIT_STATUS_IGNORED)
-			av_push(flags, newSVpv(":ignored", 0));
+			av_push(flags, newSVpv("ignored", 0));
 
 		RETVAL = flags;
 

@@ -23,8 +23,8 @@ Retrieve the full name of the reference.
 
 =head2 type( )
 
-Retrieve the type of the reference. It can be either C<":direct"> or
-C<":symbolic">.
+Retrieve the type of the reference. It can be either C<"direct"> or
+C<"symbolic">.
 
 =head2 target( )
 
