@@ -33,6 +33,28 @@ open(class, path)
 
 	OUTPUT: RETVAL
 
+Repository
+discover(class, path)
+	SV *class
+	SV *path
+
+	CODE:
+		Repository r;
+		char path_str[GIT_PATH_MAX];
+		const char *start = SvPVbyte_nolen(path);
+
+		int rc = git_repository_discover(
+			path_str, GIT_PATH_MAX, start, 1, NULL
+		);
+		git_check_error(rc);
+
+		rc = git_repository_open(&r, path_str);
+		git_check_error(rc);
+
+		RETVAL = r;
+
+	OUTPUT: RETVAL
+
 Config
 config(self)
 	Repository self

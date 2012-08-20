@@ -1,4 +1,4 @@
-#!perl -T
+#!perl
 
 use Test::More;
 
@@ -8,9 +8,17 @@ use Cwd qw(abs_path);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> init($path, 0);
 
+mkdir "$path/subdir" or die "Can't create subdir: $!";
+my $disc = Git::Raw::Repository -> discover("$path/subdir");
+
 is($repo -> path, "$path/.git/");
+is($disc -> path, "$path/.git/");
+
 is($repo -> workdir, "$path/");
+is($disc -> workdir, "$path/");
+
 is($repo -> is_empty, 1);
+is($disc -> is_empty, 1);
 
 my $config = $repo -> config;
 

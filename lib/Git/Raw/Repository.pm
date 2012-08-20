@@ -21,6 +21,10 @@ Initialize a new repository at C<$path>.
 
 Open the repository at C<$path>.
 
+=head2 discover( $path )
+
+Discover the path to the repository directory given a subdirectory.
+
 =head2 config( )
 
 Retrieve the default L<Git::Raw::Config> of the repository.
