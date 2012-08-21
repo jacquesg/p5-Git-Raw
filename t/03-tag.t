@@ -26,7 +26,7 @@ my $tag_msg  = 'Initial version';
 my $tag = $repo -> tag($tag_name, $tag_msg, $me, $commit);
 
 is($tag -> name, $tag_name);
-is($tag -> message, "$tag_msg\n");
+is($tag -> message, $tag_msg);
 
 is($tag -> tagger -> name, $name);
 is($tag -> tagger -> email, $email);
@@ -45,7 +45,7 @@ my $tags = $repo -> tags;
 isa_ok($tags -> [0], 'Git::Raw::Tag');
 
 is($tags -> [0] -> name, $tag_name);
-is($tags -> [0] -> message, "$tag_msg\n");
+is($tags -> [0] -> message, $tag_msg);
 is($tags -> [1], undef);
 
 done_testing;
