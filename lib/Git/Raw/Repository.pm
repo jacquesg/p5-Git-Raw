@@ -89,6 +89,11 @@ returns a list of status flags. Valid status flags are:
 
 =back
 
+=head2 branch( $name, $target )
+
+Create a new branch (aka a L<Git::Raw::Reference>) given a name and a target
+object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
+
 =head2 tag( $name, $msg, $tagger, $target )
 
 Create a new L<Git::Raw::Tag> given a name, a message, a $tagger
