@@ -8,7 +8,7 @@ perl:
 
 install:
  - sudo apt-get install libssl-dev
- - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
+ - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Devel::CheckLib
  - dzil listdeps --missing | cpanm
 
 before_script:
