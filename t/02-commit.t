@@ -33,7 +33,7 @@ my $time = time();
 my $off  = 120;
 my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
-my $commit = $repo -> commit('initial commit', $me, $me, [], $tree);
+my $commit = $repo -> commit("initial commit\n", $me, $me, [], $tree);
 
 ok(eq_array($repo -> status('test'), []));
 
@@ -64,7 +64,7 @@ $tree_id = $index -> write_tree;
 $tree    = $repo -> lookup($tree_id);
 
 my $commit2 = $repo -> commit(
-	'second commit', $me, $me, [$repo -> head], $tree
+	"second commit\n", $me, $me, [$repo -> head], $tree
 );
 
 my $head = $repo -> head;
