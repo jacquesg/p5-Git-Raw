@@ -8,6 +8,10 @@ override _build_MakeFile_PL_template => sub {
 	my ($self) = @_;
 
 	my $template  = <<'EOS';
+use File::Which;
+
+unless (which("cmake")) { print "Can't find cmake\n"; exit }
+
 chdir("xs");
 system(
 	"cmake",
