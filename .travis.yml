@@ -7,7 +7,7 @@ perl:
  - "5.16"
 
 install:
- - apt-get install libssl-dev
+ - sudo apt-get install libssl-dev
  - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
  - dzil listdeps --missing | cpanm
 
