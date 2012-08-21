@@ -1,0 +1,25 @@
+language: perl
+
+perl:
+ - "5.10"
+ - "5.12"
+ - "5.14"
+ - "5.16"
+
+install:
+ - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
+ - dzil listdeps --missing | cpanm
+
+before_script:
+ - git submodule init
+ - git submodule update
+
+script:
+ - dzil test --all
+
+notifications:
+  recipient:
+   - al3xbio@gmail.com
+  email:
+    on_success: change
+    on_failure: always
