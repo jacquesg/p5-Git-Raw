@@ -89,7 +89,7 @@ update_tips(self)
 	Remote self
 
 	CODE:
-		int rc = git_remote_update_tips(self, NULL);
+		int rc = git_remote_update_tips(self);
 		git_check_error(rc);
 
 bool
