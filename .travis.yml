@@ -10,10 +10,6 @@ install:
  - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
  - dzil listdeps --missing | cpanm
 
-before_script:
- - git submodule init
- - git submodule update
-
 script:
  - dzil test --all
 
