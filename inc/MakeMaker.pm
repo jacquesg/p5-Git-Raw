@@ -1,7 +1,6 @@
 package inc::MakeMaker;
 
 use Moose;
-use Devel::CheckLib;
 
 extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 
