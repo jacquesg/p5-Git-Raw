@@ -5,6 +5,3 @@ t/test_repo
 .*\.o
 .*\.a
 .*\.pc$
-.*\.make
-.*\.cmake
-xs/CMake.*
