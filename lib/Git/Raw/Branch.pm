@@ -1,26 +1,20 @@
-package Git::Raw::Blob;
+package Git::Raw::Branch;
 
 use strict;
 use warnings;
 
 =head1 NAME
 
-Git::Raw::Blob - Git blob class
+Git::Raw::Branch - Git branch class
 
-=head1 DESCRIPTION
-
-A C<Git::Raw::Blob> represents a Git blob.
+C<Git::Raw::Branch> is an helper class to lookup branches (which are just
+L<Git::Raw::Reference>) by name.
 
 =head1 METHODS
 
-=head2 lookup( $repo, $id )
+=head2 lookup( $repo, $name, $is_local )
 
-Retrieve the blob corresponding to the given id. This function is pretty much
-the same as C<$repo -> lookup($id)> except that it only returns blobs.
-
-=head2 content( )
-
-Retrieve the raw content of a blob.
+Retrieve the L<Git::Raw::Reference> corresponding to the given branch name.
 
 =head1 AUTHOR
 
@@ -38,4 +32,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Git::Raw::Blob
+1; # End of Git::Raw::Branch

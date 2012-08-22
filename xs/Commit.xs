@@ -1,6 +1,27 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
 SV *
+lookup(class, repo, id)
+	SV *class
+	Repository repo
+	SV *id
+
+	CODE:
+		STRLEN len;
+		git_oid oid;
+		git_object *o;
+
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
+		git_check_error(rc);
+
+		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_COMMIT);
+		git_check_error(rc);
+
+		RETVAL = git_obj_to_sv(o);
+
+	OUTPUT: RETVAL
+
+SV *
 id(self)
 	Commit self
 

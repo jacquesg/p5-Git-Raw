@@ -13,6 +13,11 @@ A C<Git::Raw::Tree> represents a Git tree.
 
 =head1 METHODS
 
+=head2 lookup( $repo, $id )
+
+Retrieve the tree corresponding to the given id. This function is pretty much
+the same as C<$repo -> lookup($id)> except that it only returns trees.
+
 =head2 id( )
 
 Retrieve the id of the tree, as string.

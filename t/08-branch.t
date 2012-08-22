@@ -33,4 +33,9 @@ isa_ok($head, 'Git::Raw::Commit');
 
 is($head -> message, "second commit\n");
 
+my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
+
+is($look -> type, 'direct');
+is($look -> name, 'refs/heads/some_branch');
+
 done_testing;

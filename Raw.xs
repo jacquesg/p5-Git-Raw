@@ -68,6 +68,7 @@ SV *git_oid_to_sv(git_oid *oid) {
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 INCLUDE: xs/Blob.xs
+INCLUDE: xs/Branch.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Index.xs
