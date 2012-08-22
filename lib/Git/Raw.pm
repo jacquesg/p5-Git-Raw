@@ -43,8 +43,6 @@ L<libgit2|http://libgit2.github.com> is a pure C implementation of the Git core 
 re-entrant linkable library designed to be fast and portable with a solid API.
 This module provides Perl bindings to the libgit2 API.
 
-B<Note>: libgit2 v0.17.0 is required to build this distribution.
-
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
