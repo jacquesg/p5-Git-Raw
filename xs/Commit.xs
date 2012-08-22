@@ -1,25 +1,5 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
-Signature
-author(self)
-	Commit self
-
-	CODE:
-		Signature a = (Signature) git_commit_author(self);
-		RETVAL = git_signature_dup(a);
-
-	OUTPUT: RETVAL
-
-Signature
-committer(self)
-	Commit self
-
-	CODE:
-		Signature c = (Signature) git_commit_committer(self);
-		RETVAL = git_signature_dup(c);
-
-	OUTPUT: RETVAL
-
 SV *
 id(self)
 	Commit self
@@ -37,6 +17,26 @@ message(self)
 	CODE:
 		const char *msg = git_commit_message(self);
 		RETVAL = newSVpv(msg, 0);
+
+	OUTPUT: RETVAL
+
+Signature
+author(self)
+	Commit self
+
+	CODE:
+		Signature a = (Signature) git_commit_author(self);
+		RETVAL = git_signature_dup(a);
+
+	OUTPUT: RETVAL
+
+Signature
+committer(self)
+	Commit self
+
+	CODE:
+		Signature c = (Signature) git_commit_committer(self);
+		RETVAL = git_signature_dup(c);
 
 	OUTPUT: RETVAL
 
