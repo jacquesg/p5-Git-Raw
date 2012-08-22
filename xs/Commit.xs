@@ -1,5 +1,53 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
+Commit
+create(class, repo, msg, author, cmtter, parents, tree)
+	SV *class
+	Repository repo
+	SV *msg
+	Signature author
+	Signature cmtter
+	AV *parents
+	Tree tree
+
+	CODE:
+		SV *iter;
+		int i = 0;
+		git_oid oid;
+		Commit c, *paren;
+
+		int count = av_len(parents) + 1;
+
+		if (count > 0) {
+			Newx(paren, count, git_commit *);
+
+			for (i = 0; i < count; i++) {
+				iter = av_shift(parents);
+
+				if (sv_isobject(iter) &&
+				    sv_derived_from(iter, "Git::Raw::Commit"))
+					paren[i] = INT2PTR(
+						git_commit *,
+						SvIV((SV *) SvRV(iter))
+					);
+				else Perl_croak(aTHX_ "parent is not of type Git::Raw::Commit");
+			}
+		}
+
+		int rc = git_commit_create(
+			&oid, repo, "HEAD", author, cmtter, NULL,
+			SvPVbyte_nolen(msg), tree, count,
+			(const git_commit **) paren
+		);
+		git_check_error(rc);
+
+		rc = git_commit_lookup(&c, repo, &oid);
+		git_check_error(rc);
+
+		RETVAL = c;
+
+	OUTPUT: RETVAL
+
 SV *
 lookup(class, repo, id)
 	SV *class

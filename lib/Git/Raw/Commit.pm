@@ -13,6 +13,12 @@ A C<Git::Raw::Commit> represents a Git commit.
 
 =head1 METHODS
 
+=head2 create( $repo, $msg, $author, $committer, [@parents], $tree )
+
+Create a new commit given a message, a L<Git::Raw::Signature> representing the
+commit author and one representing the committer, a list of parent commits and
+a L<Git::Raw::Tree>.
+
 =head2 lookup( $repo, $id )
 
 Retrieve the commit corresponding to the given id. This function is pretty much

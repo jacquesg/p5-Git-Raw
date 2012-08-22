@@ -44,12 +44,6 @@ Retrieve the object corresponding to the given id. This function may return a
 L<Git::Raw::Blob>, a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a
 L<Git::Raw::Tree>.
 
-=head2 commit( $msg, $author, $committer, [@parents], $tree )
-
-Create a new L<Git::Raw::Commit> given a message, an author and committer
-(L<Git::Raw::Signature>), a list of parents (L<Git::Raw::Commit>) and a tree
-(L<Git::Raw::Tree>).
-
 =head2 reset( $target, $type )
 
 Reset the current HEAD to the given commit. Valid reset types are:
@@ -98,6 +92,14 @@ C<$tree> is passed, the diff will be computed against the working directory.
 
 Create a new branch (aka a L<Git::Raw::Reference>) given a name and a target
 object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
+
+=head2 commit( $msg, $author, $committer, [@parents], $tree )
+
+Shortcut for C<Git::Raw::Commit -> create()>.
+
+=cut
+
+sub commit { return Git::Raw::Commit -> create(@_) }
 
 =head2 tag( $name, $msg, $tagger, $target )
 
