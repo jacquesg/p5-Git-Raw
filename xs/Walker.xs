@@ -1,5 +1,19 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Walker
 
+Walker
+create(class, repo)
+	Repository repo
+
+	CODE:
+		Walker w;
+
+		int rc = git_revwalk_new(&w, repo);
+		git_check_error(rc);
+
+		RETVAL = w;
+
+	OUTPUT: RETVAL
+
 void
 push(self, commit)
 	Walker self

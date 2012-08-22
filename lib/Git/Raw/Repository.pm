@@ -122,7 +122,12 @@ Retrieve a list of L<Git::Raw::Remote> objects.
 
 =head2 walker( )
 
-Create a new L<Git::Raw::Walker> to iterate over repository's revisions.
+Shortcut for C<Git::Raw::Walker -> create()>.
+
+=cut
+
+sub walker { return Git::Raw::Walker -> create(@_) }
+
 
 =head2 path( )
 

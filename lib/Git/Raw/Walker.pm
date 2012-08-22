@@ -14,6 +14,10 @@ repository's revisions (sort of like C<git log>).
 
 =head1 METHODS
 
+=head2 create( )
+
+Create a new walker to iterate over repository's revisions.
+
 =head2 push( $commit )
 
 Push a L<Git::Raw::Commit> to the list of commits to be used as roots when
