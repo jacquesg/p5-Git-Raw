@@ -90,7 +90,7 @@ C<$tree> is passed, the diff will be computed against the working directory.
 
 =head2 branch( $name, $target )
 
-Shortcut for C<Git::Raw::Branch -> create()>.
+Create a new L<Git::Raw::Branch>. Shortcut for C<Git::Raw::Branch -> create()>.
 
 =cut
 
@@ -98,7 +98,7 @@ sub branch { return Git::Raw::Branch -> create(@_) }
 
 =head2 commit( $msg, $author, $committer, [@parents], $tree )
 
-Shortcut for C<Git::Raw::Commit -> create()>.
+Create a new L<Git::Raw::Commit>. Shortcut for C<Git::Raw::Commit -> create()>.
 
 =cut
 
@@ -106,7 +106,7 @@ sub commit { return Git::Raw::Commit -> create(@_) }
 
 =head2 tag( $name, $msg, $tagger, $target )
 
-Shortcut for C<Git::Raw::Tag -> create()>.
+Create a new L<Git::Raw::Tag>. Shortcut for C<Git::Raw::Tag -> create()>.
 
 =cut
 
@@ -122,12 +122,11 @@ Retrieve a list of L<Git::Raw::Remote> objects.
 
 =head2 walker( )
 
-Shortcut for C<Git::Raw::Walker -> create()>.
+Create a new L<Git::Raw::Walker>. Shortcut for C<Git::Raw::Walker -> create()>.
 
 =cut
 
 sub walker { return Git::Raw::Walker -> create(@_) }
-
 
 =head2 path( )
 
