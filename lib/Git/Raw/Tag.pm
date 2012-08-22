@@ -18,6 +18,10 @@ A C<Git::Raw::Tag> represents a Git tag.
 Retrieve the tag corresponding to the given id. This function is pretty much
 the same as C<$repo -> lookup($id)> except that it only returns tags.
 
+=head2 delete( $repo, $name )
+
+Delete the tag with the given name.
+
 =head2 id( )
 
 Retrieve the id of the tag, as string.

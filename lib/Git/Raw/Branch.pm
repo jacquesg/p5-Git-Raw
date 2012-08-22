@@ -7,14 +7,18 @@ use warnings;
 
 Git::Raw::Branch - Git branch class
 
-C<Git::Raw::Branch> is an helper class to lookup branches (which are just
-L<Git::Raw::Reference>) by name.
+Helper class for branch manipulation. Note that a Git branch is  nothing more
+than a L<Git::Raw::Reference>.
 
 =head1 METHODS
 
 =head2 lookup( $repo, $name, $is_local )
 
 Retrieve the L<Git::Raw::Reference> corresponding to the given branch name.
+
+=head2 delete( $repo, $name, $is_local )
+
+Delete the branch with the given name.
 
 =head1 AUTHOR
 

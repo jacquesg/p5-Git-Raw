@@ -21,6 +21,16 @@ lookup(class, repo, id)
 
 	OUTPUT: RETVAL
 
+void
+delete(class, repo, name, is_local)
+	SV *class
+	Repository repo
+	SV *name
+
+	CODE:
+		int rc = git_tag_delete(repo, SvPVbyte_nolen(name));
+		git_check_error(rc);
+
 SV *
 id(self)
 	Tag self

@@ -17,14 +17,9 @@ A C<Git::Raw::Reference> represents a Git reference.
 
 Retrieve the reference with name C<$name>.
 
-=head2 name( )
+=head2 delete( )
 
-Retrieve the full name of the reference.
-
-=head2 type( )
-
-Retrieve the type of the reference. It can be either C<"direct"> or
-C<"symbolic">.
+Delete the given refere
 
 =head2 target( )
 

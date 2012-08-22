@@ -17,6 +17,14 @@ lookup(class, name, repo)
 
 	OUTPUT: RETVAL
 
+void
+delete(self)
+	Reference self
+
+	CODE:
+		int rc = git_reference_delete(self);
+		git_check_error(rc);
+
 SV *
 name(self)
 	Reference self
