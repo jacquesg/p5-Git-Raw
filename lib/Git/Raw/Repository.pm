@@ -106,9 +106,11 @@ sub commit { return Git::Raw::Commit -> create(@_) }
 
 =head2 tag( $name, $msg, $tagger, $target )
 
-Create a new L<Git::Raw::Tag> given a name, a message, a $tagger
-(L<Git::Raw::Signature>) and a $target. The target may be a L<Git::Raw::Blob>,
-a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
+Shortcut for C<Git::Raw::Tag -> create()>.
+
+=cut
+
+sub tag { return Git::Raw::Tag -> create(@_) }
 
 =head2 tags( )
 

@@ -228,37 +228,6 @@ diff(self, ...)
 
 	OUTPUT: RETVAL
 
-Tag
-tag(self, name, msg, tagger, target)
-	Repository self
-	SV *name
-	SV *msg
-	Signature tagger
-	SV *target
-
-	CODE:
-		Tag t;
-		git_oid oid;
-		git_object *o;
-
-		o = git_sv_to_obj(target);
-
-		if (o == NULL)
-			Perl_croak(aTHX_ "target is not of a valid type");
-
-		int rc = git_tag_create(
-			&oid, self, SvPVbyte_nolen(name),
-			o, tagger, SvPVbyte_nolen(msg), 0
-		);
-		git_check_error(rc);
-
-		rc = git_tag_lookup(&t, self, &oid);
-		git_check_error(rc);
-
-		RETVAL = t;
-
-	OUTPUT: RETVAL
-
 AV *
 tags(self)
 	Repository self

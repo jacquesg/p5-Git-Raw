@@ -1,5 +1,37 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Tag
 
+Tag
+create(class, repo, name, msg, tagger, target)
+	SV *class
+	Repository repo
+	SV *name
+	SV *msg
+	Signature tagger
+	SV *target
+
+	CODE:
+		Tag t;
+		git_oid oid;
+		git_object *o;
+
+		o = git_sv_to_obj(target);
+
+		if (o == NULL)
+			Perl_croak(aTHX_ "target is not of a valid type");
+
+		int rc = git_tag_create(
+			&oid, repo, SvPVbyte_nolen(name),
+			o, tagger, SvPVbyte_nolen(msg), 0
+		);
+		git_check_error(rc);
+
+		rc = git_tag_lookup(&t, repo, &oid);
+		git_check_error(rc);
+
+		RETVAL = t;
+
+	OUTPUT: RETVAL
+
 SV *
 lookup(class, repo, id)
 	SV *class

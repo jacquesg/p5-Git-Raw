@@ -13,6 +13,12 @@ A C<Git::Raw::Tag> represents a Git tag.
 
 =head1 METHODS
 
+=head2 create( $repo, $name, $msg, $tagger, $target )
+
+Create a new L<Git::Raw::Tag> given a name, a message, a L<Git::Raw::Signature>
+representing the tagger and a target. The target may be a L<Git::Raw::Blob>,
+a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
+
 =head2 lookup( $repo, $id )
 
 Retrieve the tag corresponding to the given id. This function is pretty much
