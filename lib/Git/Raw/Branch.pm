@@ -12,6 +12,11 @@ than a L<Git::Raw::Reference>.
 
 =head1 METHODS
 
+=head2 create( $repo, $name, $target )
+
+Create a new branch (aka a L<Git::Raw::Reference>) given a name and a target
+object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
+
 =head2 lookup( $repo, $name, $is_local )
 
 Retrieve the L<Git::Raw::Reference> corresponding to the given branch name.

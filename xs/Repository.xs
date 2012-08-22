@@ -228,25 +228,6 @@ diff(self, ...)
 
 	OUTPUT: RETVAL
 
-Reference
-branch(self, name, target)
-	Repository self
-	SV *name
-	SV *target
-
-	CODE:
-		Reference out;
-		const char *name_str = SvPVbyte_nolen(name);
-
-		git_object *obj = git_sv_to_obj(target);
-
-		int rc = git_branch_create(&out, self, name_str, obj, 0);
-		git_check_error(rc);
-
-		RETVAL = out;
-
-	OUTPUT: RETVAL
-
 Tag
 tag(self, name, msg, tagger, target)
 	Repository self

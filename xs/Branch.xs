@@ -1,6 +1,26 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Branch
 
 Reference
+create(class, repo, name, target)
+	SV *class
+	Repository repo
+	SV *name
+	SV *target
+
+	CODE:
+		Reference out;
+		const char *name_str = SvPVbyte_nolen(name);
+
+		git_object *obj = git_sv_to_obj(target);
+
+		int rc = git_branch_create(&out, repo, name_str, obj, 0);
+		git_check_error(rc);
+
+		RETVAL = out;
+
+	OUTPUT: RETVAL
+
+Reference
 lookup(class, repo, name, is_local)
 	SV *class
 	Repository repo

@@ -90,8 +90,11 @@ C<$tree> is passed, the diff will be computed against the working directory.
 
 =head2 branch( $name, $target )
 
-Create a new branch (aka a L<Git::Raw::Reference>) given a name and a target
-object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
+Shortcut for C<Git::Raw::Branch -> create()>.
+
+=cut
+
+sub branch { return Git::Raw::Branch -> create(@_) }
 
 =head2 commit( $msg, $author, $committer, [@parents], $tree )
 
