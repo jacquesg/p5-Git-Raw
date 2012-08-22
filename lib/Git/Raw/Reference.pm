@@ -21,6 +21,14 @@ Retrieve the reference with name C<$name>.
 
 Delete the given refere
 
+=head2 name( )
+
+Retrieve the name of the reference.
+
+=head2 type( )
+
+Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
+
 =head2 target( )
 
 Retrieve the target of the reference. This function returns either an object
