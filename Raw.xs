@@ -9,6 +9,7 @@
 typedef git_blob * Blob;
 typedef git_commit * Commit;
 typedef git_config * Config;
+typedef git_diff_list * Diff;
 typedef git_index * Index;
 typedef git_reference * Reference;
 typedef git_remote * Remote;
@@ -65,12 +66,58 @@ SV *git_oid_to_sv(git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
+int git_diff_wrapper(void *data, git_diff_delta *delta, git_diff_range *range,
+				char usage, const char *line, size_t line_len) {
+	dSP;
+
+	SV *coderef = data;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	switch (usage) {
+		case GIT_DIFF_LINE_CONTEXT:
+			XPUSHs(sv_2mortal(newSVpv("ctx", 0))); break;
+
+		case GIT_DIFF_LINE_ADDITION:
+		case GIT_DIFF_LINE_ADD_EOFNL:
+			XPUSHs(sv_2mortal(newSVpv("add", 0))); break;
+
+		case GIT_DIFF_LINE_DELETION:
+		case GIT_DIFF_LINE_DEL_EOFNL:
+			XPUSHs(sv_2mortal(newSVpv("del", 0))); break;
+
+		case GIT_DIFF_LINE_FILE_HDR:
+			XPUSHs(sv_2mortal(newSVpv("file", 0))); break;
+
+		case GIT_DIFF_LINE_HUNK_HDR:
+			XPUSHs(sv_2mortal(newSVpv("hunk", 0))); break;
+
+		case GIT_DIFF_LINE_BINARY:
+			XPUSHs(sv_2mortal(newSVpv("bin", 0))); break;
+
+		default: Perl_croak(aTHX_ "Unexpected diff usage");
+	}
+
+	XPUSHs(sv_2mortal(newSVpv(line, line_len)));
+	PUTBACK;
+
+	call_sv(coderef, G_DISCARD);
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 INCLUDE: xs/Blob.xs
 INCLUDE: xs/Branch.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
+INCLUDE: xs/Diff.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/Remote.xs

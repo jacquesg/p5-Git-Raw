@@ -26,6 +26,11 @@ Retrieve the id of the tree, as string.
 
 Retrieve a list of L<Git::Raw::TreeEntry> objects.
 
+=head2 diff( $repo [, $tree] )
+
+Retrieve the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed,
+the diff will be computed against the working directory.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

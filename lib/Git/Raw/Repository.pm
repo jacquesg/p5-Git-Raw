@@ -89,6 +89,11 @@ returns a list of status flags. Valid status flags are:
 
 =back
 
+=head2 diff( $repo [, $tree] )
+
+Compute the L<Git::Raw::Diff> between the repository index and a tree. If no
+C<$tree> is passed, the diff will be computed against the working directory.
+
 =head2 branch( $name, $target )
 
 Create a new branch (aka a L<Git::Raw::Reference>) given a name and a target

@@ -226,6 +226,51 @@ status(self, path)
 
 	OUTPUT: RETVAL
 
+Diff
+diff(self, ...)
+	Repository self
+
+	PROTOTYPE: $;$
+	CODE:
+		int rc;
+		Diff diff;
+
+		switch (items) {
+			case 1: {
+				rc = git_diff_workdir_to_index(
+					self, NULL, &diff
+				);
+				git_check_error(rc);
+
+				break;
+			}
+
+			case 2: {
+				SV *sv = ST(1);
+
+				if (sv_isobject(sv) &&
+				    sv_derived_from(sv, "Git::Raw::Tree")) {
+
+					Tree new =  INT2PTR(
+						Tree, SvIV((SV *) SvRV(sv))
+					);
+
+					rc = git_diff_index_to_tree(
+						self, NULL, new, &diff
+					);
+					git_check_error(rc);
+				} else Perl_croak(aTHX_ "Invalid diff target");
+
+				break;
+			}
+
+			default: Perl_croak(aTHX_ "Wrong number of arguments");
+		}
+
+		RETVAL = diff;
+
+	OUTPUT: RETVAL
+
 Reference
 branch(self, name, target)
 	Repository self

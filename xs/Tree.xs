@@ -54,6 +54,52 @@ entries(self)
 
 	OUTPUT: RETVAL
 
+Diff
+diff(self, repo, ...)
+	Tree self
+	Repository repo
+
+	PROTOTYPE: $$;$
+	CODE:
+		int rc;
+		Diff diff;
+
+		switch (items) {
+			case 2: {
+				rc = git_diff_workdir_to_tree(
+					repo, NULL, self, &diff
+				);
+				git_check_error(rc);
+
+				break;
+			}
+
+			case 3: {
+				SV *sv = ST(2);
+
+				if (sv_isobject(sv) &&
+				    sv_derived_from(sv, "Git::Raw::Tree")) {
+
+					Tree new =  INT2PTR(
+						Tree, SvIV((SV *) SvRV(sv))
+					);
+
+					rc = git_diff_tree_to_tree(
+						repo, NULL, self, new, &diff
+					);
+					git_check_error(rc);
+				} else Perl_croak(aTHX_ "Invalid diff target");
+
+				break;
+			}
+
+			default: Perl_croak(aTHX_ "Wrong number of arguments");
+		}
+
+		RETVAL = diff;
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	Tree self
