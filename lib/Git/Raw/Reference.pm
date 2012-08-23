@@ -19,7 +19,7 @@ Retrieve the reference with name C<$name>.
 
 =head2 delete( )
 
-Delete the given refere
+Delete the given reference.
 
 =head2 name( )
 
