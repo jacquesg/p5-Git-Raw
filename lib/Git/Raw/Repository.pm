@@ -35,14 +35,11 @@ Retrieve the default L<Git::Raw::Index> of the repository.
 
 =head2 head( )
 
-Retrieve the HEAD of the repository. This function may return a L<Git::Raw::Blob>,
-a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
+Retrieve the object pointed by the HEAD of the repository.
 
 =head2 lookup( $id )
 
-Retrieve the object corresponding to the given id. This function may return a
-L<Git::Raw::Blob>, a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a
-L<Git::Raw::Tree>.
+Retrieve the object corresponding to the given id.
 
 =head2 reset( $target, $type )
 

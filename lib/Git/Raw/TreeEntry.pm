@@ -23,9 +23,7 @@ Retrieve the filename of the tree entry.
 
 =head2 object( $repo )
 
-Retrieve the object pointed by the tree entry given a L<Git::Raw::Repository>
-where to lookup the pointed object. This function may return a L<Git::Raw::Blob>,
-a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
+Retrieve the object pointed by the tree entry.
 
 =head1 AUTHOR
 
