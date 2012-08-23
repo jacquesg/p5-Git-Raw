@@ -46,19 +46,9 @@ L<Git::Raw::Tree>.
 
 =head2 reset( $target, $type )
 
-Reset the current HEAD to the given commit. Valid reset types are:
-
-=over 4
-
-=item C<":soft">
-
-the head will be moved to the commit
-
-=item C<":mixed">
-
-trigger a Soft reset and replace the index with the content of the commit tree
-
-=back
+Reset the current HEAD to the given commit. Valid reset types are: C<"soft">
+(the head will be moved to the commit), C<"mixed"> (trigger a Soft reset and
+replace the index with the content of the commit tree).
 
 =head2 status( $file )
 

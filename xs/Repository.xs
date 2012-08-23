@@ -136,10 +136,10 @@ reset(self, target, type)
 		git_reset_type t;
 		const char *type_str = SvPVbyte(type, len);
 
-		if (strcmp(type_str, ":soft"))
+		if (strcmp(type_str, "soft"))
 			t = GIT_RESET_SOFT;
 
-		if (strcmp(type_str, ":mixed"))
+		if (strcmp(type_str, "mixed"))
 			t = GIT_RESET_MIXED;
 
 		rc = git_reset(self, git_sv_to_obj(target), t);
