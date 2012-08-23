@@ -9,7 +9,7 @@ Git::Raw::Diff - Git diff class
 
 =head1 DESCRIPTION
 
-A L<Git::Raw::Diff> represents the diff between two entities.
+A C<Git::Raw::Diff> represents the diff between two entities.
 
 =head1 METHODS
 
