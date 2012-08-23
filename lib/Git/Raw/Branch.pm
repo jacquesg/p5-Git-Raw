@@ -7,6 +7,8 @@ use warnings;
 
 Git::Raw::Branch - Git branch class
 
+=head1 DESCRIPTION
+
 Helper class for branch manipulation. Note that a Git branch is  nothing more
 than a L<Git::Raw::Reference>.
 
