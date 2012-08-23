@@ -14,7 +14,7 @@ repository's revisions (sort of like C<git log>).
 
 =head1 METHODS
 
-=head2 create( )
+=head2 create( $repo )
 
 Create a new walker to iterate over repository's revisions.
 
