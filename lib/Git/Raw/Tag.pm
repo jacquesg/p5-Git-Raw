@@ -22,7 +22,7 @@ a L<Git::Raw::Commit>, a L<Git::Raw::Tag> or a L<Git::Raw::Tree>.
 =head2 lookup( $repo, $id )
 
 Retrieve the tag corresponding to the given id. This function is pretty much
-the same as C<$repo -> lookup($id)> except that it only returns tags.
+the same as C<$repo-E<gt>lookup($id)> except that it only returns tags.
 
 =head2 delete( $repo, $name )
 

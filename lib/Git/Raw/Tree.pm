@@ -16,7 +16,7 @@ A C<Git::Raw::Tree> represents a Git tree.
 =head2 lookup( $repo, $id )
 
 Retrieve the tree corresponding to the given id. This function is pretty much
-the same as C<$repo -> lookup($id)> except that it only returns trees.
+the same as C<$repo-E<gt>lookup($id)> except that it only returns trees.
 
 =head2 id( )
 
