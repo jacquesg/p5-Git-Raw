@@ -36,17 +36,17 @@ hunk => @@ -0,0 +1 @@
 add => +diff me, biatch
 EOS
 
-my $output = capture_stdout { $diff -> patch($printer); };
+my $output = capture_stdout { $diff -> patch($printer) };
 
-is($output, $expected);
+is $output, $expected;
 
 $expected = <<'EOS';
 file => A	diff
 EOS
 
-$output = capture_stdout { $diff -> compact($printer); };
+$output = capture_stdout { $diff -> compact($printer) };
 
-is($output, $expected);
+is $output, $expected;
 
 my $tree2 = $repo -> head -> tree;
 my $tree1 = $repo -> head -> parents -> [0] -> tree;
@@ -64,16 +64,16 @@ add => +this is a second testdel =>
 \ No newline at end of file
 EOS
 
-$output = capture_stdout { $diff -> patch($printer); };
+$output = capture_stdout { $diff -> patch($printer) };
 
-is($output, $expected);
+is $output, $expected;
 
 $expected = <<'EOS';
 file => A	test2
 EOS
 
-$output = capture_stdout { $diff -> compact($printer); };
+$output = capture_stdout { $diff -> compact($printer) };
 
-is($output, $expected);
+is $output, $expected;
 
 done_testing;

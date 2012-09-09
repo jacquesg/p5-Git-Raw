@@ -13,11 +13,11 @@ my $walk = $repo -> walker;
 $walk -> push($repo -> head);
 
 my $snd = $walk -> next;
-is($snd -> message, "second commit\n");
+is $snd -> message, "second commit\n";
 
 my $fst = $walk -> next;
-is($fst -> message, "initial commit\n");
+is $fst -> message, "initial commit\n";
 
-is($walk -> next, undef);
+is $walk -> next, undef;
 
 done_testing;

@@ -10,13 +10,13 @@ my $repo = Git::Raw::Repository -> open($path);
 
 my $ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
 
-is($ref -> type, 'direct');
-is($ref -> name, 'refs/heads/master');
+is $ref -> type, 'direct';
+is $ref -> name, 'refs/heads/master';
 
 my $head = $ref -> target($repo);
 
-isa_ok($head, 'Git::Raw::Commit');
+isa_ok $head, 'Git::Raw::Commit';
 
-is($head -> message, "second commit\n");
+is $head -> message, "second commit\n";
 
 done_testing;

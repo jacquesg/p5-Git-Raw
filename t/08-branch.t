@@ -18,24 +18,24 @@ my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit = $repo -> head;
 
-isa_ok($commit, 'Git::Raw::Commit');
+isa_ok $commit, 'Git::Raw::Commit';
 
 my $branch_name = 'some_branch';
 
 my $branch = $repo -> branch($branch_name, $commit);
 
-is($branch -> type, 'direct');
-is($branch -> name, 'refs/heads/some_branch');
+is $branch -> type, 'direct';
+is $branch -> name, 'refs/heads/some_branch';
 
 my $head = $branch -> target($repo);
 
-isa_ok($head, 'Git::Raw::Commit');
+isa_ok $head, 'Git::Raw::Commit';
 
-is($head -> message, "second commit\n");
+is $head -> message, "second commit\n";
 
 my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 
-is($look -> type, 'direct');
-is($look -> name, 'refs/heads/some_branch');
+is $look -> type, 'direct';
+is $look -> name, 'refs/heads/some_branch';
 
 done_testing;
