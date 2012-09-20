@@ -7,11 +7,12 @@ extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 override _build_MakeFile_PL_template => sub {
 	my ($self) = @_;
 
-	my $template  = <<'EOS';
-chdir("xs/libgit2");
-system("make", "-f", "Makefile.embed");
-chdir("../..");
-EOS
+	my $template  = <<'TEMPLATE';
+chdir('xs/libgit2');
+system('make', '-f', 'Makefile.embed');
+chdir('../..');
+
+TEMPLATE
 
 	return $template.super();
 };
