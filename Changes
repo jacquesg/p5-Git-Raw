@@ -4,7 +4,9 @@ Revision history for Git-Raw
 
  - Fix typo in Reference.pm
  - Add a proper Changes file
- - Implement clone() for G::R::Repository
+ - Update libgit2:
+    + Remove delete() method for G::R::Branch (incompatible change)
+    + Implement clone() method for G::R::Repository
 
 0.11      2012-08-23 09:41:38 Europe/Rome
 
