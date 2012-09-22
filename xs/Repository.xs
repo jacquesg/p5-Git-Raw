@@ -18,6 +18,25 @@ init(class, path, is_bare)
 	OUTPUT: RETVAL
 
 Repository
+clone(class, url, path, is_bare)
+	SV *class
+	SV *url
+	SV *path
+	unsigned is_bare
+
+	CODE:
+		Repository r;
+		const char *url_str = SvPVbyte_nolen(url);
+		const char *path_str = SvPVbyte_nolen(path);
+
+		int rc = git_clone(&r, url_str, path_str, NULL, NULL, NULL);
+		git_check_error(rc);
+
+		RETVAL = r;
+
+	OUTPUT: RETVAL
+
+Repository
 open(class, path)
 	SV *class
 	SV *path

@@ -17,6 +17,10 @@ A C<Git::Raw::Repository> represents a Git repository.
 
 Initialize a new repository at C<$path>.
 
+=head2 clone( $url, $path, $is_bare )
+
+Clone the repository at C<$url> to C<$path>.
+
 =head2 open( $path )
 
 Open the repository at C<$path>.
