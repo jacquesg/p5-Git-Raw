@@ -1,7 +1,7 @@
 #!perl
 
 BEGIN {
-  unless ($ENV{NETWORK_TESTING}) {
+  unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
     require Test::More;
     Test::More::plan(skip_all => 'remote clone require network');
   }

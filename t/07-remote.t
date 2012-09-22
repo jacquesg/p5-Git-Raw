@@ -22,7 +22,7 @@ is $remotes -> [1], undef;
 $github -> connect('fetch');
 is $github -> is_connected, 1;
 
-unless ($ENV{NETWORK_TESTING}) {
+unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	diag('remote fetch tests require network');
 	done_testing;
 	exit;
