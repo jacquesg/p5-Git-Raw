@@ -1,0 +1,65 @@
+Revision history for Git-Raw
+
+{{$NEXT}}
+
+ - Fix typo in Reference.pm
+ - Add a proper Changes file
+
+0.11      2012-08-23 09:41:38 Europe/Rome
+
+ - Various documentation fixes (no functional changes)
+
+0.10      2012-08-22 18:53:04 Europe/Rome
+
+ - Implement lookup() method for all the objects that support it
+ - Move tag(), branch() and walker() functionality to the respective object
+   constructors
+
+0.09      2012-08-22 17:56:59 Europe/Rome
+
+ - Implement lookup() method for all the objects that support it
+ - Implement G::R::Diff
+
+0.08      2012-08-21 15:15:17 Europe/Rome
+
+ - Implement reset() method for G::R::Repository
+ - Implement branch support
+ - Embed libgit2 sources to ease building
+
+0.07      2012-08-20 19:02:44 Europe/Rome
+
+ - Implement discover() method for G::R::Repository
+
+0.06      2012-08-17 14:13:05 Europe/Rome
+
+ - Implement G::R::Remote
+ - Implement tags() method for G::R::Repository
+
+0.05      2012-08-09 15:56:21 Europe/Rome
+
+ - Implement G::R::Reference
+
+0.04      2012-08-08 21:42:46 Europe/Rome
+
+ - Implement G::R::Blob
+ - Implement G::R::TreeEntry and id() method for G::R::Tree
+ - Implement tree() method for G::R::Commit
+ - Rename string() method to str()
+
+0.03      2012-08-06 16:45:57 Europe/Rome
+
+ - Add proper support for commit parents
+ - Implement revision walking
+ - Implement status() method for G::R::Repository
+ - Implement more G::R::Config methods
+
+0.02      2012-08-05 20:18:56 Europe/Rome
+
+ - Improve exception messages
+ - Implement id() method for G::R::Commit
+ - Implement generic lookup() and head() methods for G::R::Repository
+ - Implement G::R::Tag
+
+0.01      2012-08-05 11:43:13 Europe/Rome
+
+ - Initial version
