@@ -23,10 +23,6 @@ object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
 
 Retrieve the L<Git::Raw::Reference> corresponding to the given branch name.
 
-=head2 delete( $repo, $name, $is_local )
-
-Delete the branch with the given name.
-
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
