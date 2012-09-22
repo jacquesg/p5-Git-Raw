@@ -41,7 +41,7 @@ next(self)
 				break;
 			}
 
-			case GIT_REVWALKOVER: XSRETURN_UNDEF;
+			case GIT_ITEROVER: XSRETURN_UNDEF;
 
 			default: git_check_error(rc);
 		}
