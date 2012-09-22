@@ -29,7 +29,12 @@ clone(class, url, path, is_bare)
 		const char *url_str = SvPVbyte_nolen(url);
 		const char *path_str = SvPVbyte_nolen(path);
 
-		int rc = git_clone(&r, url_str, path_str, NULL, NULL, NULL);
+		git_checkout_opts opts;
+
+		memset(&opts, 0, sizeof(opts));
+		opts.checkout_strategy = GIT_CHECKOUT_CREATE_MISSING;
+
+		int rc = git_clone(&r, url_str, path_str, NULL, NULL, &opts);
 		git_check_error(rc);
 
 		RETVAL = r;
