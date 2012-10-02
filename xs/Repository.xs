@@ -141,11 +141,13 @@ lookup(self, id)
 	SV *id
 
 	CODE:
-		STRLEN len;
 		git_oid oid;
 		git_object *o;
 
-		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
+		STRLEN len;
+		const char *id_str = SvPVbyte(id, len);
+
+		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
 		rc = git_object_lookup_prefix(&o, self, &oid, len, GIT_OBJ_ANY);
