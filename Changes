@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fix test failures
+
 0.12      2012-09-22 19:24:45 Europe/Rome
 
  - Fix typo in Reference.pm
