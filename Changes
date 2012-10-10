@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Test fixes (GH#2) (thanks, @vlet)
+
 0.13      2012-10-02 18:27:05 Europe/Rome
 
  - Fix test failures
