@@ -5,7 +5,7 @@ use Test::More;
 use Git::Raw;
 use Cwd qw(abs_path);
 
-my $path = abs_path('t/test_repo');
+my $path = abs_path('t').'/test_repo';
 my $repo = Git::Raw::Repository -> init($path, 0);
 
 mkdir "$path/subdir" or die "Can't create subdir: $!";
