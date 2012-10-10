@@ -19,14 +19,14 @@ is $remotes -> [0] -> name, $name;
 is $remotes -> [0] -> url, $url;
 is $remotes -> [1], undef;
 
-$github -> connect('fetch');
-is $github -> is_connected, 1;
-
 unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	diag('remote fetch tests require network');
 	done_testing;
 	exit;
 }
+
+$github -> connect('fetch');
+is $github -> is_connected, 1;
 
 $github -> download;
 $github -> update_tips;
