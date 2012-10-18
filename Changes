@@ -3,6 +3,7 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Test fixes (GH#2) (thanks, @vlet)
+ - Update libgit2
 
 0.13      2012-10-02 18:27:05 Europe/Rome
 
