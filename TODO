@@ -1,3 +1,8 @@
+* checkout
+* submodule
+* reflog
+* ignore
 * note
 * odb
+* treebuilder
 * ...
