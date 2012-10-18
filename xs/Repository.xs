@@ -266,11 +266,11 @@ tags(self)
 	Repository self
 
 	CODE:
-		int i;
+		int i, rc;
 		AV *output = newAV();
 		git_strarray tags;
 
-		int rc = git_tag_list(&tags, self);
+		rc = git_tag_list(&tags, self);
 		git_check_error(rc);
 
 		for (i = 0; i < tags.count; i++) {
@@ -279,16 +279,16 @@ tags(self)
 			git_object *o;
 			const git_oid *oid;
 
-			int rc = git_reference_lookup(
-				&r, self, tags.strings[i]
-			);
+			char *name = malloc(strlen(tags.strings[i]) + 11);
+			sprintf(name, "refs/tags/%s", tags.strings[i]);
+
+			rc = git_reference_lookup(&r, self, name);
 			git_check_error(rc);
+			free(name);
 
 			oid = git_reference_oid(r);
 
-			rc = git_object_lookup(
-				&o, self, oid, GIT_OBJ_TAG
-			);
+			rc = git_object_lookup(&o, self, oid, GIT_OBJ_TAG);
 			git_check_error(rc);
 
 			tag = git_obj_to_sv(o);
