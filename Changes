@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - The $is_bare check in G::R::Repository->clone() was inverted.
+
 0.14      2012-10-19 12:26:40 Europe/Rome
 
  - Test fixes (GH#2) (thanks, @vlet)
