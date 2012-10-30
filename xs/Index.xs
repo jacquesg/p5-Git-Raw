@@ -8,18 +8,7 @@ add(self, path)
 	CODE:
 		const char *path_str = SvPVbyte_nolen(path);
 
-		int rc = git_index_add(self, path_str, 0);
-		git_check_error(rc);
-
-void
-append(self, path)
-	Index self
-	SV *path
-
-	CODE:
-		const char *path_str = SvPVbyte_nolen(path);
-
-		int rc = git_index_append(self, path_str, 0);
+		int rc = git_index_add_from_workdir(self, path_str);
 		git_check_error(rc);
 
 void
@@ -36,13 +25,6 @@ read(self)
 	CODE:
 		int rc = git_index_read(self);
 		git_check_error(rc);
-
-void
-uniq(self)
-	Index self
-
-	CODE:
-		git_index_uniq(self);
 
 void
 write(self)

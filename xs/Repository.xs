@@ -36,7 +36,7 @@ clone(class, url, path, is_bare)
 		opts.checkout_strategy = GIT_CHECKOUT_CREATE_MISSING;
 
 		if (is_bare)
-			rc = git_clone_bare(&r, url_str, path_str, NULL);
+			rc = git_clone_bare(&r, url_str, path_str, NULL, NULL);
 		else
 			rc = git_clone(
 				&r, url_str, path_str, NULL, NULL, &opts

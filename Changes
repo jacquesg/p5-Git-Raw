@@ -4,6 +4,7 @@ Revision history for Git-Raw
 
  - The $is_bare check in G::R::Repository->clone() was inverted.
  - Update libgit2 to 6c21358a8
+    + Remove uniq() and append() from G::R::Index
 
 0.14      2012-10-19 12:26:40 Europe/Rome
 

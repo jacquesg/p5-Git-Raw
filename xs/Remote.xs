@@ -70,10 +70,7 @@ download(self)
 	Remote self
 
 	CODE:
-		git_off_t bytes = 0;
-		git_indexer_stats stats;
-
-		int rc = git_remote_download(self, &bytes, &stats);
+		int rc = git_remote_download(self, NULL, NULL);
 		git_check_error(rc);
 
 void
