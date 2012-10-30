@@ -3,11 +3,12 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - The $is_bare check in G::R::Repository->clone() was inverted.
+ - Update libgit2 to 6c21358a8
 
 0.14      2012-10-19 12:26:40 Europe/Rome
 
  - Test fixes (GH#2) (thanks, @vlet)
- - Update libgit2
+ - Update libgit2 to b2b571ce0
 
 0.13      2012-10-02 18:27:05 Europe/Rome
 
