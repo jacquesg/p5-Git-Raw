@@ -17,10 +17,6 @@ A C<Git::Raw::Index> represents an index in a Git repository.
 
 Add the given file to the index.
 
-=head2 append( $file )
-
-Append the given file to the index even if duplicate.
-
 =head2 clear( )
 
 Clear completely the index.
@@ -28,10 +24,6 @@ Clear completely the index.
 =head2 read( )
 
 Update the index reading it from disk.
-
-=head2 uniq( )
-
-Remove all duplicate entries (i.e. with the same path) except the last.
 
 =head2 write( )
 
