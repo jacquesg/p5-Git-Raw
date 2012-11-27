@@ -112,6 +112,44 @@ int git_diff_wrapper(void *data, git_diff_delta *delta, git_diff_range *range,
 	return 0;
 }
 
+typedef struct {
+    Repository repo;
+    SV* cb;
+} git_branch_foreach_payload;
+
+static int git_branch_foreach_cb( const char *name, git_branch_t type, void *payload )
+{
+    dSP;
+    int rv;
+    Branch branch;
+    SV* cb_arg;
+
+    int rc = git_branch_lookup(&branch, ((git_branch_foreach_payload*)payload)->repo, name, type);
+    git_check_error(rc);
+
+    ENTER;
+    SAVETMPS;
+
+    cb_arg = sv_newmortal();
+    sv_setref_pv(cb_arg, "Git::Raw::Branch", (void *) branch);
+
+    PUSHMARK(SP);
+    PUSHs(cb_arg);
+    PUTBACK;
+
+    call_sv(((git_branch_foreach_payload*)payload)->cb, G_SCALAR);
+
+    SPAGAIN;
+
+    rv = POPi;
+
+    FREETMPS;
+    LEAVE;
+
+    return rv;
+}
+
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 INCLUDE: xs/Blob.xs

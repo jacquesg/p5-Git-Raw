@@ -24,6 +24,11 @@ object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
 
 Retrieve the L<Git::Raw::Branch> corresponding to the given branch name.
 
+=head2 foreach( $repo, $callback )
+
+Run callback for every branch in the repo. Callback recieves L<Git::Raw::Branch>
+object. Not zero return value stops the loop.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

@@ -45,3 +45,17 @@ lookup(class, repo, name, is_local)
 		RETVAL = b;
 
 	OUTPUT: RETVAL
+
+void
+foreach(class, repo, cb)
+	SV *class
+	Repository repo
+        SV *cb
+	CODE:
+                git_branch_foreach_payload payload;
+                payload.repo = repo;
+                payload.cb = cb;
+
+		int rc = git_branch_foreach(repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE, git_branch_foreach_cb, &payload);
+                if (rc && rc != GIT_EUSER)
+                    git_check_error(rc);

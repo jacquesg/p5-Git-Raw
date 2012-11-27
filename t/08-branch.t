@@ -38,4 +38,13 @@ my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 is $look -> type, 'direct';
 is $look -> name, 'refs/heads/some_branch';
 
+{
+    my @branches;
+    Git::Raw::Branch->foreach($repo, sub { push @branches, shift->name; 0 } );
+    is_deeply(
+        [sort @branches],
+        [map "refs/heads/$_", qw(master some_branch)],
+    );
+}
+
 done_testing;
