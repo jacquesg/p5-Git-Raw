@@ -2,6 +2,7 @@ package Git::Raw::Walker;
 
 use strict;
 use warnings;
+use Git::Raw;
 
 =head1 NAME
 
