@@ -38,22 +38,17 @@ my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 is $look -> type, 'direct';
 is $look -> name, 'refs/heads/some_branch';
 
-my (@branches, @expected);
+my $branches = [ sort { $a -> name cmp $b -> name } @{$repo -> branches} ];
+
+is $branches -> [0] -> type, 'direct';
+is $branches -> [0] -> name, 'refs/heads/master';
+
+is $branches -> [1] -> type, 'direct';
+is $branches -> [1] -> name, 'refs/heads/some_branch';
 
 if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
-	@expected = [
-		'refs/heads/master',
-		'refs/heads/some_branch',
-		'refs/remotes/github/master'
-	];
-} else {
-	@expected = [
-		'refs/heads/master',
-		'refs/heads/some_branch'
-	];
+	is $branches -> [2] -> type, 'direct';
+	is $branches -> [2] -> name, 'refs/remotes/github/master';
 }
-
-Git::Raw::Branch -> foreach($repo, sub { push @branches, shift -> name; 0 } );
-is_deeply [sort @branches], @expected;
 
 done_testing;

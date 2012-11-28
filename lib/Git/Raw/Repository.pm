@@ -73,6 +73,23 @@ Create a new L<Git::Raw::Branch>. Shortcut for C<Git::Raw::Branch-E<gt>create()>
 
 sub branch { return Git::Raw::Branch -> create(@_) }
 
+=head2 branches( )
+
+Retrieve a list of L<Git::Raw::Branch> objects.
+
+=cut
+
+sub branches {
+	my $self = shift;
+	my $branches;
+
+	Git::Raw::Branch -> foreach($self, sub {
+		push @$branches, shift; 0
+	});
+
+	return $branches;
+}
+
 =head2 commit( $msg, $author, $committer, [@parents], $tree )
 
 Create a new L<Git::Raw::Commit>. Shortcut for C<Git::Raw::Commit-E<gt>create()>.
