@@ -7,12 +7,12 @@
 #include <git2.h>
 
 typedef git_blob * Blob;
+typedef git_reference * Branch;
 typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_diff_list * Diff;
 typedef git_index * Index;
 typedef git_reference * Reference;
-typedef git_reference * Branch;
 typedef git_remote * Remote;
 typedef git_repository * Repository;
 typedef git_signature * Signature;

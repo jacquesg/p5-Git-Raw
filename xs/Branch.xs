@@ -2,8 +2,8 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Branch
 
 BOOT:
 {
-    AV *isa = perl_get_av("Git::Raw::Branch::ISA",1);
-    av_push(isa, newSVpv("Git::Raw::Reference", 0));
+	AV *isa = perl_get_av("Git::Raw::Branch::ISA",1);
+	av_push(isa, newSVpv("Git::Raw::Reference", 0));
 }
 
 Branch
@@ -50,12 +50,18 @@ void
 foreach(class, repo, cb)
 	SV *class
 	Repository repo
-        SV *cb
-	CODE:
-                git_branch_foreach_payload payload;
-                payload.repo = repo;
-                payload.cb = cb;
+	SV *cb
 
-		int rc = git_branch_foreach(repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE, git_branch_foreach_cb, &payload);
-                if (rc && rc != GIT_EUSER)
-                    git_check_error(rc);
+	CODE:
+			git_branch_foreach_payload payload = {
+				.repo = repo,
+				.cb = cb
+			};
+
+			int rc = git_branch_foreach(
+				repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
+				git_branch_foreach_cb, &payload
+			);
+
+			if (rc != GIT_EUSER)
+				git_check_error(rc);

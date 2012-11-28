@@ -2,6 +2,7 @@ package Git::Raw::Branch;
 
 use strict;
 use warnings;
+
 use Git::Raw;
 
 =head1 NAME
@@ -26,8 +27,8 @@ Retrieve the L<Git::Raw::Branch> corresponding to the given branch name.
 
 =head2 foreach( $repo, $callback )
 
-Run callback for every branch in the repo. Callback recieves L<Git::Raw::Branch>
-object. Not zero return value stops the loop.
+Run C<$callback> for every branch in the repo. The callback receives a
+L<Git::Raw::Branch> object. Non-zero return value stops the loop.
 
 =head1 AUTHOR
 
