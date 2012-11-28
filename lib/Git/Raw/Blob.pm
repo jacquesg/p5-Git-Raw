@@ -15,6 +15,10 @@ A C<Git::Raw::Blob> represents a Git blob.
 
 =head1 METHODS
 
+=head2 create( $repo, $buffer )
+
+Create a new blob from the given buffer.
+
 =head2 lookup( $repo, $id )
 
 Retrieve the blob corresponding to the given id. This function is pretty much

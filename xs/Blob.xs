@@ -1,5 +1,27 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Blob
 
+Blob
+create(class, repo, buffer)
+	SV *class
+	Repository repo
+	SV *buffer
+
+	CODE:
+		Blob blob;
+		STRLEN len;
+		git_oid oid;
+		const char *buf = SvPVbyte(buffer, len);
+
+		int rc = git_blob_create_frombuffer(&oid, repo, buf, len);
+		git_check_error(rc);
+
+		rc = git_blob_lookup(&blob, repo, &oid);
+		git_check_error(rc);
+
+		RETVAL = blob;
+
+	OUTPUT: RETVAL
+
 SV *
 lookup(class, repo, id)
 	SV *class

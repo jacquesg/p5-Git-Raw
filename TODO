@@ -9,7 +9,6 @@
 * treebuilder
 
 # Methods (other)
-* Blob -> create($buf) (+ $repo -> blob(...))
 * Branch -> move($name)
 * Branch -> is_head
 * Config -> foreach(...)
