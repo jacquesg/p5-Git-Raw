@@ -1,8 +1,32 @@
-* checkout
-* submodule
-* reflog
-* ignore
+# Classes:
+* attr
 * note
 * odb
+* packbuilder
+* reflog
+* refspec
+* submodule
+* transport
 * treebuilder
-* ...
+
+# Methods (other)
+* Blob -> size
+* Blob -> create($buf) (+ $repo -> blob(...))
+* Branch -> move($name)
+* Branch -> is_head
+* Config -> foreach(...)
+* Config -> refresh
+* Index -> remove(...)
+* Reference -> foreach(...) (replaces Branch -> foreach?)
+* Reference -> is_{branch,packed,remote}
+* Remote -> {fetch,push}spec([$spec])
+* Remote -> rename($name)
+* Remote -> foreach(...) (+ update $repo -> remotes)
+* Repository -> state
+* Repository -> checkout(...)
+* Repository -> ignore($file)
+* Repository -> merge(...)
+* Stash -> save(...) (+ $repo -> stash)
+* Stash -> foreach($repo, $callback)
+* Stash -> drop($repo, $index)
+* Tag -> foreach (+ update $repo -> tags)
