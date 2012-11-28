@@ -39,7 +39,13 @@ is $look -> type, 'direct';
 is $look -> name, 'refs/heads/some_branch';
 
 my @branches;
+my @expected_branches = [
+	'refs/heads/master',
+	'refs/heads/some_branch',
+	'refs/remotes/github/master'
+];
+
 Git::Raw::Branch -> foreach($repo, sub { push @branches, shift -> name; 0 } );
-is_deeply [sort @branches], [map "refs/heads/$_", qw(master some_branch)];
+is_deeply [sort @branches], @expected_branches;
 
 done_testing;
