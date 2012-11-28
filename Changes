@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Load Git::Raw from other modules too (thanks, @ruz!)
+ - Make G::R::Branch ISA G::R::Reference (thanks, @ruz!)
+ - Implement G::R::Branch -> foreach() method (thanks, @ruz!)
+
 0.15      2012-10-30 22:39:50 Europe/Rome
 
  - The $is_bare check in G::R::Repository->clone() was inverted.
