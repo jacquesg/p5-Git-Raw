@@ -24,7 +24,6 @@
 * Remote -> foreach(...) (+ update $repo -> remotes)
 * Repository -> state
 * Repository -> checkout(...)
-* Repository -> ignore($file)
 * Repository -> merge(...)
 * Stash -> save(...) (+ $repo -> stash)
 * Stash -> foreach($repo, $callback)

@@ -216,6 +216,17 @@ status(self, path)
 
 	OUTPUT: RETVAL
 
+void
+ignore(self, rules)
+	Repository self
+	SV *rules
+
+	CODE:
+		const char *rules_str = SvPVbyte_nolen(rules);
+
+		int rc = git_ignore_add_rule(self, rules_str);
+		git_check_error(rc);
+
 Diff
 diff(self, ...)
 	Repository self

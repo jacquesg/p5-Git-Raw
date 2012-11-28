@@ -3,6 +3,7 @@
 use Test::More;
 
 use Git::Raw;
+use File::Slurp;
 use Cwd qw(abs_path);
 
 my $path = abs_path('t').'/test_repo';
@@ -19,6 +20,12 @@ is $disc -> workdir, "$path/";
 
 is $repo -> is_empty, 1;
 is $disc -> is_empty, 1;
+
+my $file  = $repo -> workdir . 'ignore';
+write_file($file, 'this file should be ignored');
+
+$repo -> ignore("ignore\n");
+ok eq_array($repo -> status('ignore'), ['ignored']);
 
 my $config = $repo -> config;
 

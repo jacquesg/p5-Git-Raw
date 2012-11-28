@@ -60,6 +60,13 @@ returns a list of status flags. Valid status flags are: C<"index_new">,
 C<"index_modified">, C<"index_deleted">, C<"worktree_new">,
 C<"worktree_modified">, C<"worktree_deleted"> and C<"ignored">.
 
+=head2 ignore( $rules )
+
+Add ignore rules to the repository. The format of the rules is the same one of
+the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
+
+    $repo -> ignore("*.o\n");
+
 =head2 diff( $repo [, $tree] )
 
 Compute the L<Git::Raw::Diff> between the repository index and a tree. If no
