@@ -20,11 +20,13 @@ my $obj0 = $entries -> [0] -> object($repo);
 
 isa_ok $obj0, 'Git::Raw::Blob';
 is $obj0 -> content, 'this is a test';
+is $obj0 -> size, '14';
 
 my $obj1 = $entries -> [1] -> object($repo);
 
 isa_ok $obj1, 'Git::Raw::Blob';
 is $obj1 -> content, 'this is a second test';
+is $obj1 -> size, '21';
 
 is $entries -> [2], undef;
 

@@ -33,6 +33,16 @@ content(self)
 
 	OUTPUT: RETVAL
 
+size_t
+size(self)
+	Blob self
+
+	CODE:
+		size_t len = git_blob_rawsize(self);
+		RETVAL = len;
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	Blob self

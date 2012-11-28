@@ -24,6 +24,10 @@ the same as C<$repo-E<gt>lookup($id)> except that it only returns blobs.
 
 Retrieve the raw content of a blob.
 
+=head2 size( )
+
+Retrieve the size of the raw content of a blob.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
