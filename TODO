@@ -25,7 +25,4 @@
 * Repository -> state
 * Repository -> checkout(...)
 * Repository -> merge(...)
-* Stash -> save(...) (+ $repo -> stash)
-* Stash -> foreach($repo, $callback)
-* Stash -> drop($repo, $index)
 * Tag -> foreach (+ update $repo -> tags)

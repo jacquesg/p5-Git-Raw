@@ -115,16 +115,16 @@ int git_diff_wrapper(void *data, git_diff_delta *delta, git_diff_range *range,
 typedef struct {
 	Repository repo;
 	SV* cb;
-} git_branch_foreach_payload;
+} git_foreach_payload;
 
 int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	dSP;
 	int rv;
 	Branch branch;
-	SV* cb_arg;
+	SV *cb_arg;
 
 	int rc = git_branch_lookup(
-		&branch, ((git_branch_foreach_payload*)payload)->repo,
+		&branch, ((git_foreach_payload *) payload) -> repo,
 		name, type
 	);
 	git_check_error(rc);
@@ -139,7 +139,32 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	PUSHs(cb_arg);
 	PUTBACK;
 
-	call_sv(((git_branch_foreach_payload*)payload)->cb, G_SCALAR);
+	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+
+	SPAGAIN;
+
+	rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
+int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
+	dSP;
+	int rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVuv(i));
+	PUSHs(newSVpv(msg, 0));
+	PUSHs(git_oid_to_sv(oid));
+	PUTBACK;
+
+	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
 
 	SPAGAIN;
 
@@ -163,6 +188,7 @@ INCLUDE: xs/Reference.xs
 INCLUDE: xs/Remote.xs
 INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
+INCLUDE: xs/Stash.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Tree.xs
 INCLUDE: xs/TreeEntry.xs

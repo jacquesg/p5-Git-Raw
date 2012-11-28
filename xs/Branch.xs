@@ -53,7 +53,7 @@ foreach(class, repo, cb)
 	SV *cb
 
 	CODE:
-		git_branch_foreach_payload payload = {
+		git_foreach_payload payload = {
 			.repo = repo,
 			.cb = cb
 		};

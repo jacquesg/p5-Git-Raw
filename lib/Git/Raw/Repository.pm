@@ -117,6 +117,14 @@ sub tag { return Git::Raw::Tag -> create(@_) }
 
 Retrieve a list of L<Git::Raw::Tag> objects.
 
+=head2 stash( $stasher, $msg )
+
+Save the local modifications to a new stash. Shortcut for C<Git::Raw::Stash-E<gt>save()>.
+
+=cut
+
+sub stash { return Git::Raw::Stash -> save(@_) }
+
 =head2 remotes( )
 
 Retrieve a list of L<Git::Raw::Remote> objects.
