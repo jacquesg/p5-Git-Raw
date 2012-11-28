@@ -10,7 +10,7 @@ my $repo = Git::Raw::Repository -> open($path);
 
 my $buffer = 'hello, world!';
 
-my $blob = Git::Blob -> create($repo, $buffer);
+my $blob = $repo -> blob($buffer);
 
 is $blob -> content, $buffer;
 is $blob -> size, length $buffer;

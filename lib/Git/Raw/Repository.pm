@@ -72,6 +72,14 @@ the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
 Compute the L<Git::Raw::Diff> between the repository index and a tree. If no
 C<$tree> is passed, the diff will be computed against the working directory.
 
+=head2 blob( $buffer )
+
+Create a new L<Git::Raw::Blob>. Shortcut for C<Git::Raw::Blob-E<gt>create()>.
+
+=cut
+
+sub blob { return Git::Raw::Blob -> create(@_) }
+
 =head2 branch( $name, $target )
 
 Create a new L<Git::Raw::Branch>. Shortcut for C<Git::Raw::Branch-E<gt>create()>.
