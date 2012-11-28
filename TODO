@@ -4,7 +4,6 @@
 * odb
 * packbuilder
 * reflog
-* refspec
 * submodule
 * transport
 * treebuilder
@@ -19,7 +18,6 @@
 * Index -> remove(...)
 * Reference -> foreach(...) (replaces Branch -> foreach?)
 * Reference -> is_{branch,packed,remote}
-* Remote -> {fetch,push}spec( [ $spec ] )
 * Remote -> foreach(...) (+ update $repo -> remotes)
 * Repository -> state
 * Repository -> checkout(...)

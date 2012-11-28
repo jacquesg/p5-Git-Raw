@@ -20,6 +20,13 @@ my $remotes = $repo -> remotes;
 
 is $remotes -> [0] -> name, $name;
 is $remotes -> [0] -> url, $url;
+
+is $remotes -> [0] -> fetchspec -> dst, 'refs/remotes/some_remote/*';
+is $remotes -> [0] -> fetchspec -> src, 'refs/heads/*';
+
+is $remotes -> [0] -> pushspec -> dst, undef;
+is $remotes -> [0] -> pushspec -> src, undef;
+
 is $remotes -> [1], undef;
 
 $name = 'github';
@@ -27,6 +34,12 @@ $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
 
 is $github -> name($name), $name;
 is $github -> url($url), $url;
+
+is $github -> fetchspec -> dst, 'refs/remotes/github/*';
+is $github -> fetchspec -> src, 'refs/heads/*';
+
+is $github -> pushspec -> dst, undef;
+is $github -> pushspec -> src, undef;
 
 unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	diag('remote fetch tests require network');

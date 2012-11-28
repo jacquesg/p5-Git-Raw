@@ -30,6 +30,16 @@ be updated, and returned.
 Retrieve the URL of the remote. If C<$url> is passed, the remote's URL will be
 updated, and returned.
 
+=head2 fetchspec( [ $spec ] )
+
+Retrieve the fetchspec of the remote. If C<$spec> is passed, the remote's
+fetchspec will be updated, and returned.
+
+=head2 pushspec( [ $spec ] )
+
+Retrieve the pushspec of the remote. If C<$spec> is passed, the remote's
+pushspec will be updated, and returned.
+
 =head2 connect( $direction )
 
 Connect to the remote. The direction can be either C<"fetch"> or C<"push">.

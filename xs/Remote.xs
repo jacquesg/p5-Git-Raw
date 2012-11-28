@@ -61,6 +61,60 @@ url(self, ...)
 
 	OUTPUT: RETVAL
 
+RefSpec
+fetchspec(self, ...)
+	Remote self
+
+	PROTOTYPE: $;$
+	CODE:
+		RefSpec spec;
+
+		if (items == 2) {
+			RefSpec new;
+
+			if (sv_isobject(ST(1)) &&
+			    sv_derived_from(ST(1), "Git::Raw::RefSpec"))
+				new = INT2PTR(RefSpec, SvIV((SV *) SvRV(ST(1))));
+			else
+				Perl_croak(aTHX_ "the argument is not of type Git::Raw::RefSpec");
+
+			int rc = git_remote_set_fetchspec(self, new);
+			git_check_error(rc);
+		}
+
+		spec = git_remote_fetchspec(self);
+
+		RETVAL = spec;
+
+	OUTPUT: RETVAL
+
+RefSpec
+pushspec(self, ...)
+	Remote self
+
+	PROTOTYPE: $;$
+	CODE:
+		RefSpec spec;
+
+		if (items == 2) {
+			RefSpec new;
+
+			if (sv_isobject(ST(1)) &&
+			    sv_derived_from(ST(1), "Git::Raw::RefSpec"))
+				new = INT2PTR(RefSpec, SvIV((SV *) SvRV(ST(1))));
+			else
+				Perl_croak(aTHX_ "the argument is not of type Git::Raw::RefSpec");
+
+			int rc = git_remote_set_pushspec(self, new);
+			git_check_error(rc);
+		}
+
+		spec = git_remote_pushspec(self);
+
+		RETVAL = spec;
+
+	OUTPUT: RETVAL
+
 void
 connect(self, direction)
 	Remote self
