@@ -26,6 +26,8 @@ my $branch = $repo -> branch($branch_name, $commit);
 
 is $branch -> type, 'direct';
 is $branch -> name, 'refs/heads/some_branch';
+ok $branch -> is_branch;
+ok !$branch -> is_remote;
 
 my $head = $branch -> target($repo);
 
@@ -49,6 +51,7 @@ is $branches -> [1] -> name, 'refs/heads/some_branch';
 if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	is $branches -> [2] -> type, 'direct';
 	is $branches -> [2] -> name, 'refs/remotes/github/master';
+	ok $branches -> [2] -> is_remote;
 }
 
 done_testing;

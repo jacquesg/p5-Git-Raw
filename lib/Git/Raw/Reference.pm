@@ -31,6 +31,18 @@ Retrieve the name of the reference.
 
 Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
 
+=head2 is_branch( )
+
+Returns true if the reference is a branch or false otherwise.
+
+=head2 is_packed( )
+
+Returns true if the reference is packed or false otherwise.
+
+=head2 is_remote( )
+
+Returns true if the reference is remote or false otherwise.
+
 =head2 target( )
 
 Retrieve the target of the reference. This function returns either an object

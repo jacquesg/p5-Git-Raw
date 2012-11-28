@@ -12,6 +12,8 @@ my $ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
 
 is $ref -> type, 'direct';
 is $ref -> name, 'refs/heads/master';
+ok $ref -> is_branch;
+ok !$ref -> is_remote;
 
 my $head = $ref -> target($repo);
 
