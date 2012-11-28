@@ -13,6 +13,7 @@ typedef git_config * Config;
 typedef git_diff_list * Diff;
 typedef git_index * Index;
 typedef git_reference * Reference;
+typedef git_refspec * RefSpec;
 typedef git_remote * Remote;
 typedef git_repository * Repository;
 typedef git_signature * Signature;
@@ -185,6 +186,7 @@ INCLUDE: xs/Config.xs
 INCLUDE: xs/Diff.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Reference.xs
+INCLUDE: xs/RefSpec.xs
 INCLUDE: xs/Remote.xs
 INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs

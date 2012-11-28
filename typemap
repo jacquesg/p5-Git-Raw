@@ -1,10 +1,11 @@
 Blob					T_GIT_REF
+Branch					T_GIT_REF
 Commit					T_GIT_REF
 Config					T_GIT_REF
 Diff					T_GIT_REF
 Index					T_GIT_REF
+RefSpec					T_GIT_REF
 Reference				T_GIT_REF
-Branch					T_GIT_REF
 Remote					T_GIT_REF
 Repository				T_GIT_REF
 Signature				T_GIT_REF
