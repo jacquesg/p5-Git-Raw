@@ -20,21 +20,43 @@ add(class, repo, name, url)
 	OUTPUT: RETVAL
 
 SV *
-name(self)
+name(self, ...)
 	Remote self
 
+	PROTOTYPE: $;$
 	CODE:
-		const char *name = git_remote_name(self);
+		const char *name;
+
+		if (items == 2) {
+			const char *new = SvPVbyte_nolen(ST(1));
+
+			int rc = git_remote_rename(self, new, NULL, NULL);
+			git_check_error(rc);
+		}
+
+		name = git_remote_name(self);
+
 		RETVAL = newSVpv(name, 0);
 
 	OUTPUT: RETVAL
 
 SV *
-url(self)
+url(self, ...)
 	Remote self
 
+	PROTOTYPE: $;$
 	CODE:
-		const char *url = git_remote_url(self);
+		const char *url;
+
+		if (items == 2) {
+			const char *new = SvPVbyte_nolen(ST(1));
+
+			int rc = git_remote_set_url(self, new);
+			git_check_error(rc);
+		}
+
+		url = git_remote_url(self);
+
 		RETVAL = newSVpv(url, 0);
 
 	OUTPUT: RETVAL
