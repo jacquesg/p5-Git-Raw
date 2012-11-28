@@ -53,15 +53,15 @@ foreach(class, repo, cb)
 	SV *cb
 
 	CODE:
-			git_branch_foreach_payload payload = {
-				.repo = repo,
-				.cb = cb
-			};
+		git_branch_foreach_payload payload = {
+			.repo = repo,
+			.cb = cb
+		};
 
-			int rc = git_branch_foreach(
-				repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
-				git_branch_foreach_cb, &payload
-			);
+		int rc = git_branch_foreach(
+			repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
+			git_branch_foreach_cb, &payload
+		);
 
-			if (rc != GIT_EUSER)
-				git_check_error(rc);
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
