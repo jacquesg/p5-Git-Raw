@@ -5,6 +5,11 @@ Revision history for Git-Raw
  - Load Git::Raw from other modules too (thanks, @ruz!)
  - Make G::R::Branch ISA G::R::Reference (thanks, @ruz!)
  - Implement G::R::Branch -> foreach() method (thanks, @ruz!)
+    + Add branches() method to G::R::Repository
+ - Add ignore() method to G::R::Repository
+ - Implement Git stashes support
+ - The name() and url() methods of G::R::Remote now take an optional argument
+   that is used to change the name/url of a remote.
 
 0.15      2012-10-30 22:39:50 Europe/Rome
 
