@@ -70,13 +70,7 @@ fetchspec(self, ...)
 		RefSpec spec;
 
 		if (items == 2) {
-			RefSpec new;
-
-			if (sv_isobject(ST(1)) &&
-			    sv_derived_from(ST(1), "Git::Raw::RefSpec"))
-				new = INT2PTR(RefSpec, SvIV((SV *) SvRV(ST(1))));
-			else
-				Perl_croak(aTHX_ "the argument is not of type Git::Raw::RefSpec");
+			const char *new = SvPVbyte_nolen(ST(1));
 
 			int rc = git_remote_set_fetchspec(self, new);
 			git_check_error(rc);
@@ -97,13 +91,7 @@ pushspec(self, ...)
 		RefSpec spec;
 
 		if (items == 2) {
-			RefSpec new;
-
-			if (sv_isobject(ST(1)) &&
-			    sv_derived_from(ST(1), "Git::Raw::RefSpec"))
-				new = INT2PTR(RefSpec, SvIV((SV *) SvRV(ST(1))));
-			else
-				Perl_croak(aTHX_ "the argument is not of type Git::Raw::RefSpec");
+			const char *new = SvPVbyte_nolen(ST(1));
 
 			int rc = git_remote_set_pushspec(self, new);
 			git_check_error(rc);
