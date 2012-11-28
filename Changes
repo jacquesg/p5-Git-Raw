@@ -15,6 +15,7 @@ Revision history for Git-Raw
  - Implement G::R::Blob -> size() method
  - Implement G::R::Blob -> create() method
     + Implement G::R::Repository -> blob() method
+ - Implement G::R::Reference -> is_{branch,packed,remote} methods (thanks, @ruz!)
 
 0.15      2012-10-30 22:39:50 Europe/Rome
 
