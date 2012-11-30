@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.16      2012-11-30 12:43:50 Europe/Rome
+
  - Load Git::Raw from other modules too (thanks, @ruz!)
  - Make G::R::Branch ISA G::R::Reference (thanks, @ruz!)
  - Implement G::R::Branch -> foreach() method (thanks, @ruz!)
