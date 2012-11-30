@@ -20,14 +20,19 @@ my $commit = $repo -> head;
 
 isa_ok $commit, 'Git::Raw::Commit';
 
-my $branch_name = 'some_branch';
+my $branch_name = 'new_branch';
 
 my $branch = $repo -> branch($branch_name, $commit);
 
 is $branch -> type, 'direct';
-is $branch -> name, 'refs/heads/some_branch';
+is $branch -> name, "refs/heads/$branch_name";
 ok $branch -> is_branch;
 ok !$branch -> is_remote;
+
+$branch_name = 'some_branch';
+
+$branch -> move($branch_name, 0);
+is $branch -> name, "refs/heads/$branch_name";
 
 my $head = $branch -> target($repo);
 

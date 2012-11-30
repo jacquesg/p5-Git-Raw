@@ -47,6 +47,18 @@ lookup(class, repo, name, is_local)
 	OUTPUT: RETVAL
 
 void
+move(self, name, force)
+	Branch self
+	SV *name
+	bool force
+
+	CODE:
+		const char *new = SvPVbyte_nolen(name);
+
+		int rc = git_branch_move(self, new, force);
+		git_check_error(rc);
+
+void
 foreach(class, repo, cb)
 	SV *class
 	Repository repo

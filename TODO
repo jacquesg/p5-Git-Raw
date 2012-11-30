@@ -9,7 +9,6 @@
 * treebuilder
 
 # Methods (other)
-* Branch -> move($name)
 * Branch -> is_head
 * Config -> foreach(...)
 * Config -> refresh

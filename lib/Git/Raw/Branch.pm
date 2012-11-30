@@ -25,6 +25,10 @@ object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
 
 Retrieve the L<Git::Raw::Branch> corresponding to the given branch name.
 
+=head2 move( $name, $force )
+
+Rename the branch to C<$name>.
+
 =head2 foreach( $repo, $callback )
 
 Run C<$callback> for every branch in the repo. The callback receives a
