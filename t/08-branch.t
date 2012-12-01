@@ -26,6 +26,8 @@ my $branch = $repo -> branch($branch_name, $commit);
 
 is $branch -> type, 'direct';
 is $branch -> name, "refs/heads/$branch_name";
+
+ok !$branch -> is_head;
 ok $branch -> is_branch;
 ok !$branch -> is_remote;
 

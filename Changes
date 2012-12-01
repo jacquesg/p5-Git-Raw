@@ -5,6 +5,7 @@ Revision history for Git-Raw
  - Update libgit2 to da82043
     + Add Tag -> foreach() method
  - Documentation fixes (no functional changes)
+ - Add Branch -> is_head() method
 
 0.16      2012-11-30 12:43:50 Europe/Rome
 
