@@ -6,6 +6,8 @@ Revision history for Git-Raw
     + Add Tag -> foreach() method
  - Documentation fixes (no functional changes)
  - Add Branch -> is_head() method
+ - Add Config -> new(), add_file(), refresh() and foreach() methods
+ - Add Index -> read_tree() and remove() methods
 
 0.16      2012-11-30 12:43:50 Europe/Rome
 
