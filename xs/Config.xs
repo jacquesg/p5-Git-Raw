@@ -1,5 +1,31 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Config
 
+Config
+new(class)
+	SV *class
+
+	CODE:
+		Config out;
+
+		int rc = git_config_new(&out);
+		git_check_error(rc);
+
+		RETVAL = out;
+
+	OUTPUT: RETVAL
+
+void
+add_file(self, path, level)
+	Config self
+	SV *path
+	int level
+
+	CODE:
+		const char *file = SvPVbyte_nolen(path);
+
+		int rc = git_config_add_file_ondisk(self, file, level, 0);
+		git_check_error(rc);
+
 bool
 bool(self, name, ...)
 	Config self
@@ -64,6 +90,24 @@ int(self, name, ...)
 
 	OUTPUT: RETVAL
 
+void
+foreach(self, cb)
+	Config self
+	SV *cb
+
+	CODE:
+		git_foreach_payload payload = {
+			.repo = NULL,
+			.cb = cb
+		};
+
+		int rc = git_config_foreach(
+			self, git_config_foreach_cbb, &payload
+		);
+
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
+
 SV *
 str(self, name, ...)
 	Config self
@@ -95,6 +139,25 @@ str(self, name, ...)
 		RETVAL = newSVpv(value, 0);
 
 	OUTPUT: RETVAL
+
+void
+refresh(self)
+	Config self
+
+	CODE:
+		int rc = git_config_refresh(self);
+		git_check_error(rc);
+
+void
+delete(self, name)
+	Config self
+	SV *name
+
+	CODE:
+		const char *var = SvPVbyte_nolen(name);
+
+		int rc = git_config_delete_entry(self, name);
+		git_check_error(rc);
 
 void
 DESTROY(self)

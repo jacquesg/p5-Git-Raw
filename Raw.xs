@@ -152,6 +152,31 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	return rv;
 }
 
+int git_config_foreach_cbb(git_config_entry *entry, void *payload) {
+	dSP;
+	int rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVpv(entry -> name, 0));
+	PUSHs(newSVpv(entry -> value, 0));
+	PUSHs(newSVuv(entry -> level));
+	PUTBACK;
+
+	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+
+	SPAGAIN;
+
+	rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
 int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
 	dSP;
 	int rv;

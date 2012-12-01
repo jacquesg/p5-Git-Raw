@@ -15,6 +15,14 @@ A C<Git::Raw::Config> represents a Git configuration file.
 
 =head1 METHODS
 
+=head2 new( )
+
+Create a new config object.
+
+=head2 add_file( $path, $level )
+
+Add C<$path> to the config object with priority level C<$level>.
+
 =head2 bool( $name [, $value ] )
 
 Retrieve the value of the C<$name> configuration field of type boolean. If
@@ -32,6 +40,20 @@ returned.
 Retrieve the value of the C<$name> configuration field of type string. If
 C<$value> is passed, the value of the configration will be updated and
 returned.
+
+=head2 foreach( $callback )
+
+Run C<$callback> for every config entry. The callback receives the name of the
+config entry, its value and its priority level. A non-zero return value stops
+the loop.
+
+=head2 refresh( )
+
+Reload the config files from disk.
+
+=head2 delete( $name )
+
+Delete the variable C<$name> from the config object.
 
 =head1 AUTHOR
 

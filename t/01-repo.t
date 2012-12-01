@@ -38,10 +38,23 @@ ok $config -> bool('some.bool');
 is $config -> int('some.int', 42), 42;
 is $config -> int('some.int'), 42;
 
+is $config -> str('some.str', 'hello'), 'hello';
+is $config -> str('some.str'), 'hello';
+
 is $config -> str('user.name', $name), $name;
 is $config -> str('user.email', $email), $email;
 
 is $config -> str('user.name'), $name;
 is $config -> str('user.email'), $email;
+
+$config -> foreach(sub {
+	my ($entry_name, $entry_value, $entry_level) = @_;
+
+	ok $entry_value          if $entry_name eq 'some.bool';
+	is $entry_value, 42      if $entry_name eq 'some.int';
+	is $entry_value, 'hello' if $entry_name eq 'some.str';
+
+	0
+});
 
 done_testing;

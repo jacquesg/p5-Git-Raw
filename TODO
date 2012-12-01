@@ -10,8 +10,6 @@
 * treebuilder
 
 # Methods
-* Config -> foreach(...)
-* Config -> refresh
 * Index -> remove(...)
 * Reference -> foreach(...) (replaces Branch -> foreach?)
 * Repository -> state
