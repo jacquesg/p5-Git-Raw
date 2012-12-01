@@ -51,33 +51,6 @@ type(self)
 
 	OUTPUT: RETVAL
 
-bool
-is_branch(self)
-	Reference self
-
-	CODE:
-		RETVAL = !!git_reference_is_branch(self);
-
-	OUTPUT: RETVAL
-
-bool
-is_packed(self)
-	Reference self
-
-	CODE:
-		RETVAL = !!git_reference_is_packed(self);
-
-	OUTPUT: RETVAL
-
-bool
-is_remote(self)
-	Reference self
-
-	CODE:
-		RETVAL = !!git_reference_is_remote(self);
-
-	OUTPUT: RETVAL
-
 SV *
 target(self, repo)
 	Reference self
@@ -123,6 +96,33 @@ target(self, repo)
 		}
 
 		RETVAL = result;
+
+	OUTPUT: RETVAL
+
+bool
+is_branch(self)
+	Reference self
+
+	CODE:
+		RETVAL = git_reference_is_branch(self);
+
+	OUTPUT: RETVAL
+
+bool
+is_packed(self)
+	Reference self
+
+	CODE:
+		RETVAL = git_reference_is_packed(self);
+
+	OUTPUT: RETVAL
+
+bool
+is_remote(self)
+	Reference self
+
+	CODE:
+		RETVAL = git_reference_is_remote(self);
 
 	OUTPUT: RETVAL
 

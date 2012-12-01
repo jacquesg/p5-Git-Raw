@@ -31,6 +31,12 @@ Retrieve the name of the reference.
 
 Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
 
+=head2 target( )
+
+Retrieve the target of the reference. This function returns either an object
+(L<Git::Raw::Blob>, L<Git::Raw::Commit>, L<Git::Raw::Tag> or L<Git::Raw::Tree>)
+for direct references, or another reference for symbolic references.
+
 =head2 is_branch( )
 
 Check if the reference is a branch.
@@ -42,12 +48,6 @@ Check if the reference is packed.
 =head2 is_remote( )
 
 Check if the reference is remote.
-
-=head2 target( )
-
-Retrieve the target of the reference. This function returns either an object
-(L<Git::Raw::Blob>, L<Git::Raw::Commit>, L<Git::Raw::Tag> or L<Git::Raw::Tree>)
-for direct references, or another reference for symbolic references.
 
 =head1 AUTHOR
 
