@@ -19,9 +19,10 @@ A C<Git::Raw::Repository> represents a Git repository.
 
 Initialize a new repository at C<$path>.
 
-=head2 clone( $url, $path, $is_bare )
+=head2 clone( $url, $path, \%strategy, $is_bare )
 
-Clone the repository at C<$url> to C<$path>.
+Clone the repository at C<$url> to C<$path>. See the C<checkout()> description
+for more information about C<%strategy>.
 
 =head2 open( $path )
 
@@ -47,10 +48,37 @@ Retrieve the object pointed by the HEAD of the repository.
 
 Retrieve the object corresponding to C<$id>.
 
-=head2 checkout( $object )
+=head2 checkout( $object, \%strategy )
 
 Updates the files in the index and working tree to match the content of
-C<$object>.
+C<$object>. The C<%strategy> paramenter can have set the following values:
+
+=over 4
+
+=item * "update_unmodified"
+
+=item * "update_missing"
+
+=item * "update_modified"
+
+=item * "update_untracked"
+
+=item * "allow_conflicts"
+
+=item * "skip_unmerged"
+
+=item * "update_only"
+
+=item * "remove_untracked"
+
+=back
+
+Example:
+
+    $repo -> checkout($repo -> head, {
+      'update_missing'  => 1,
+      'update_modified' => 1
+    });
 
 =head2 reset( $target, $type )
 
@@ -110,7 +138,7 @@ sub branches {
 	return $branches;
 }
 
-=head2 commit( $msg, $author, $committer, [@parents], $tree )
+=head2 commit( $msg, $author, $committer, \@parents, $tree )
 
 Create a new L<Git::Raw::Commit>. Shortcut for C<Git::Raw::Commit-E<gt>create()>.
 

@@ -18,11 +18,12 @@ init(class, path, is_bare)
 	OUTPUT: RETVAL
 
 Repository
-clone(class, url, path, is_bare)
+clone(class, url, path, strategy, is_bare)
 	SV *class
 	SV *url
 	SV *path
-	unsigned is_bare
+	HV *strategy
+	bool is_bare
 
 	CODE:
 		int rc;
@@ -32,11 +33,13 @@ clone(class, url, path, is_bare)
 
 		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
 
+		opts.checkout_strategy = git_hv_to_checkout_strategy(strategy);
+
 		if (is_bare)
 			rc = git_clone_bare(&r, url_str, path_str, NULL, NULL);
 		else
 			rc = git_clone(
-				&r, url_str, path_str, NULL, NULL, &opts
+				&r, url_str, path_str, &opts, NULL, NULL
 			);
 
 		git_check_error(rc);
@@ -155,14 +158,19 @@ lookup(self, id)
 	OUTPUT: RETVAL
 
 void
-checkout(self, target)
+checkout(self, target, strategy)
 	Repository self
 	SV *target
+	HV *strategy
 
 	CODE:
+		int rc;
+		SV **opt;
 		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
 
-		int rc = git_checkout_tree(self, git_sv_to_obj(target), &opts);
+		opts.checkout_strategy = git_hv_to_checkout_strategy(strategy);
+
+		rc = git_checkout_tree(self, git_sv_to_obj(target), &opts);
 		git_check_error(rc);
 
 void

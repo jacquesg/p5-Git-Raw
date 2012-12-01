@@ -11,6 +11,5 @@
 
 # Methods
 * Reference -> foreach(...) (replaces Branch -> foreach?)
-* User-defined checkout strategies for Repository -> clone() and checkout()
 * Repository -> state
 * Repository -> merge(...)

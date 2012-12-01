@@ -14,14 +14,15 @@ use Cwd qw(abs_path);
 
 my $url  = 'git://github.com/ghedo/p5-Algorithm-URL-Shorten.git';
 my $path = abs_path('t/test_repo_clone');
-my $repo = Git::Raw::Repository -> clone($url, $path, 0);
 
-TODO: {
-	local $TODO = 'fail';
+my $repo = Git::Raw::Repository -> clone(
+	$url, $path, { "update_missing" => 1 }, 0
+);
 
-	is $repo -> is_bare, 0;
-	is $repo -> is_empty, 0;
-}
+ok !$repo -> is_bare;
+ok !$repo -> is_empty;
+
+is_deeply $repo -> status('Changes'), [];
 
 my $remotes = $repo -> remotes;
 

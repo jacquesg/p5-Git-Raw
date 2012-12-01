@@ -68,6 +68,48 @@ SV *git_oid_to_sv(git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
+#define GIT_CHECKOUT_OPT(HV, NAME, MASK) ({				\
+	SV **opt;							\
+									\
+	if ((opt = hv_fetchs(HV, NAME, 0)) && (SvIV(*opt) != 0)) {	\
+		out |= MASK;						\
+	}								\
+})
+
+unsigned git_hv_to_checkout_strategy(HV *strategy) {
+	unsigned out = 0;
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_unmodifed", GIT_CHECKOUT_UPDATE_UNMODIFIED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_missing",   GIT_CHECKOUT_UPDATE_MISSING
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_modified",  GIT_CHECKOUT_UPDATE_MODIFIED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_untracked", GIT_CHECKOUT_UPDATE_UNTRACKED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "allow_conflicts",  GIT_CHECKOUT_ALLOW_CONFLICTS
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "skip_unmerged",    GIT_CHECKOUT_SKIP_UNMERGED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_only",      GIT_CHECKOUT_UPDATE_ONLY
+	);
+
+	return out;
+}
+
 int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
 		char usage, const char *line, size_t line_len, void *data) {
 	dSP;
