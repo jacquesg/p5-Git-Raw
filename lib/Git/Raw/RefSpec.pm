@@ -15,11 +15,11 @@ A C<Git::Raw::RefSpec> represents a Git refspec.
 
 =head2 dst( )
 
-Retrieve the destination specifier.
+Retrieve the destination specifier of the refspec.
 
 =head2 src( )
 
-Retrieve the source specifier.
+Retrieve the source specifier of the refspec.
 
 =head1 AUTHOR
 

@@ -45,32 +45,32 @@ Retrieve the object pointed by the HEAD of the repository.
 
 =head2 lookup( $id )
 
-Retrieve the object corresponding to the given id.
+Retrieve the object corresponding to C<$id>.
 
 =head2 reset( $target, $type )
 
 Reset the current HEAD to the given commit. Valid reset types are: C<"soft">
-(the head will be moved to the commit), C<"mixed"> (trigger a soft reset and
+(the head will be moved to the commit) or C<"mixed"> (trigger a soft reset and
 replace the index with the content of the commit tree).
 
 =head2 status( $file )
 
-Retrieve the status of the given file in the working directory. This functions
-returns a list of status flags. Valid status flags are: C<"index_new">,
+Retrieve the status of <$file> in the working directory. This functions returns
+a list of status flags. Possible status flags are: C<"index_new">,
 C<"index_modified">, C<"index_deleted">, C<"worktree_new">,
 C<"worktree_modified">, C<"worktree_deleted"> and C<"ignored">.
 
 =head2 ignore( $rules )
 
-Add ignore rules to the repository. The format of the rules is the same one of
-the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
+Add an ignore rules to the repository. The format of the rules is the same one
+of the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
 
     $repo -> ignore("*.o\n");
 
 =head2 diff( $repo [, $tree] )
 
-Compute the L<Git::Raw::Diff> between the repository index and a tree. If no
-C<$tree> is passed, the diff will be computed against the working directory.
+Compute the L<Git::Raw::Diff> between the repository default index and a tree.
+If no C<$tree> is passed, the diff will be computed against the working directory.
 
 =head2 blob( $buffer )
 
@@ -168,11 +168,11 @@ Retrieve the working directory of the repository.
 
 =head2 is_empty( )
 
-Tell whether the repository is empty or not.
+Check if the repository is empty.
 
 =head2 is_bare( )
 
-Tell whether the repository is bare or not.
+Check if the repository is bare.
 
 =head1 AUTHOR
 

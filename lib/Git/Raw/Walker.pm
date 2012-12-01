@@ -18,7 +18,7 @@ repository's revisions (sort of like C<git log>).
 
 =head2 create( $repo )
 
-Create a new walker to iterate over repository's revisions.
+Create a new revision walker.
 
 =head2 push( $commit )
 

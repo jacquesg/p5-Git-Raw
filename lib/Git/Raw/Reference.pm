@@ -21,7 +21,7 @@ Retrieve the reference with name C<$name>.
 
 =head2 delete( )
 
-Delete the given reference.
+Delete the reference.
 
 =head2 name( )
 
@@ -33,15 +33,15 @@ Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
 
 =head2 is_branch( )
 
-Returns true if the reference is a branch or false otherwise.
+Check if the reference is a branch.
 
 =head2 is_packed( )
 
-Returns true if the reference is packed or false otherwise.
+Check if the reference is packed.
 
 =head2 is_remote( )
 
-Returns true if the reference is remote or false otherwise.
+Check if the reference is remote.
 
 =head2 target( )
 

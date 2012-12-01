@@ -21,8 +21,8 @@ Create a new blob from the given buffer.
 
 =head2 lookup( $repo, $id )
 
-Retrieve the blob corresponding to the given id. This function is pretty much
-the same as C<$repo-E<gt>lookup($id)> except that it only returns blobs.
+Retrieve the blob corresponding to C<$id>. This function is pretty much the
+same as C<$repo-E<gt>lookup($id)> except that it only returns blobs.
 
 =head2 content( )
 

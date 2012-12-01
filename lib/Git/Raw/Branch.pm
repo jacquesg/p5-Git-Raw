@@ -18,12 +18,12 @@ than a L<Git::Raw::Reference>, so this class inherits all methods from it.
 
 =head2 create( $repo, $name, $target )
 
-Create a new branch (aka a L<Git::Raw::Branch>) given a name and a target
-object (either a L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
+Create a new branch given a name and a target object (either a
+L<Git::Raw::Commit> or a L<Git::Raw::Tag>).
 
 =head2 lookup( $repo, $name, $is_local )
 
-Retrieve the L<Git::Raw::Branch> corresponding to the given branch name.
+Retrieve the branch corresponding to the given branch name.
 
 =head2 move( $name, $force )
 
@@ -32,7 +32,7 @@ Rename the branch to C<$name>.
 =head2 foreach( $repo, $callback )
 
 Run C<$callback> for every branch in the repo. The callback receives a
-L<Git::Raw::Branch> object. Non-zero return value stops the loop.
+branch object. A non-zero return value stops the loop.
 
 =head1 AUTHOR
 

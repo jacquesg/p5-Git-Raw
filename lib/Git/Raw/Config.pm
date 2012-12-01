@@ -18,19 +18,19 @@ A C<Git::Raw::Config> represents a Git configuration file.
 =head2 bool( $name [, $value ] )
 
 Retrieve the value of the C<$name> configuration field of type boolean. If
-C<$value> is passed, the value of the configration will be updated, and
+C<$value> is passed, the value of the configration will be updated and
 returned.
 
 =head2 int( $name [, $value ] )
 
 Retrieve the value of the C<$name> configuration field of type integer. If
-C<$value> is passed, the value of the configration will be updated, and
+C<$value> is passed, the value of the configration will be updated and
 returned.
 
 =head2 str( $name [, $value ] )
 
 Retrieve the value of the C<$name> configuration field of type string. If
-C<$value> is passed, the value of the configration will be updated, and
+C<$value> is passed, the value of the configration will be updated and
 returned.
 
 =head1 AUTHOR

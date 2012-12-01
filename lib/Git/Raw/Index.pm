@@ -17,11 +17,11 @@ A C<Git::Raw::Index> represents an index in a Git repository.
 
 =head2 add( $file )
 
-Add the given file to the index.
+Add C<$file> to the index.
 
 =head2 clear( )
 
-Clear completely the index.
+Clear the index.
 
 =head2 read( )
 
