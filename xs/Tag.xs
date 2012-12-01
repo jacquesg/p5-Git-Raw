@@ -56,6 +56,23 @@ lookup(class, repo, id)
 	OUTPUT: RETVAL
 
 void
+foreach(class, repo, cb)
+	SV *class
+	Repository repo
+	SV *cb
+
+	CODE:
+		git_foreach_payload payload = {
+			.repo = repo,
+			.cb = cb
+		};
+
+		int rc = git_tag_foreach(repo, git_tag_foreach_cbb, &payload);
+
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
+
+void
 delete(class, repo, name, is_local)
 	SV *class
 	Repository repo

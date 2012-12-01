@@ -22,7 +22,8 @@ Save the local modifications to a new stash.
 =head2 foreach( $repo, $callback )
 
 Run C<$callback> for every stash in the repo. The callback receives three
-arguments: the stash index, the stash message and the stash object id.
+arguments: the stash index, the stash message and the stash object id. Non-zero
+return value stops the loop.
 
 =head2 drop( $repo, $index )
 

@@ -17,7 +17,7 @@ create(class, repo, name, target)
 		Reference out;
 		const char *name_str = SvPVbyte_nolen(name);
 
-		git_object *obj = git_sv_to_obj(target);
+		Commit obj = (Commit) git_sv_to_obj(target);
 
 		int rc = git_branch_create(&out, repo, name_str, obj, 0);
 		git_check_error(rc);

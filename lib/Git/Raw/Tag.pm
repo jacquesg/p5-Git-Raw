@@ -25,6 +25,11 @@ representing the tagger and a target object.
 Retrieve the tag corresponding to the given id. This function is pretty much
 the same as C<$repo-E<gt>lookup($id)> except that it only returns tags.
 
+=head2 foreach( $repo, $callback )
+
+Run C<$callback> for every tag in the repo. The callback receives a
+L<Git::Raw::Tag> object. Non-zero return value stops the loop.
+
 =head2 delete( $repo, $name )
 
 Delete the tag with the given name.

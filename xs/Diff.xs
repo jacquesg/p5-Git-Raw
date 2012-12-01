@@ -15,7 +15,7 @@ patch(self, callback)
 	SV *callback
 
 	CODE:
-		int rc = git_diff_print_patch(self, callback, git_diff_wrapper);
+		int rc = git_diff_print_patch(self, git_diff_cb, callback);
 
 void
 compact(self, callback)
@@ -23,7 +23,7 @@ compact(self, callback)
 	SV *callback
 
 	CODE:
-		int rc = git_diff_print_compact(self, callback, git_diff_wrapper);
+		int rc = git_diff_print_compact(self, git_diff_cb, callback);
 
 void
 DESTROY(self)

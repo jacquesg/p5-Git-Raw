@@ -42,7 +42,7 @@ write_tree(self)
 		Tree tree;
 		git_oid oid;
 
-		int rc = git_tree_create_fromindex(&oid, self);
+		int rc = git_index_write_tree(&oid, self);
 		git_check_error(rc);
 
 		RETVAL = git_oid_to_sv(&oid);

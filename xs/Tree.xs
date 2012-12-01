@@ -69,7 +69,7 @@ diff(self, repo, ...)
 		switch (items) {
 			case 2: {
 				rc = git_diff_workdir_to_tree(
-					repo, NULL, self, &diff
+					&diff, repo, self, NULL
 				);
 				git_check_error(rc);
 
@@ -87,7 +87,7 @@ diff(self, repo, ...)
 					);
 
 					rc = git_diff_tree_to_tree(
-						repo, NULL, self, new, &diff
+						&diff, repo, self, new, NULL
 					);
 					git_check_error(rc);
 				} else Perl_croak(aTHX_ "Invalid diff target");

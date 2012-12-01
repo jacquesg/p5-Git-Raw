@@ -125,6 +125,19 @@ sub tag { return Git::Raw::Tag -> create(@_) }
 
 Retrieve a list of L<Git::Raw::Tag> objects.
 
+=cut
+
+sub tags {
+	my $self = shift;
+	my $tags;
+
+	Git::Raw::Tag -> foreach($self, sub {
+		push @$tags, shift; 0
+	});
+
+	return $tags;
+}
+
 =head2 stash( $stasher, $msg )
 
 Save the local modifications to a new stash. Shortcut for C<Git::Raw::Stash-E<gt>save()>.

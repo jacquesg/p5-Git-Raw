@@ -76,7 +76,7 @@ fetchspec(self, ...)
 			git_check_error(rc);
 		}
 
-		spec = git_remote_fetchspec(self);
+		spec = (RefSpec) git_remote_fetchspec(self);
 
 		RETVAL = spec;
 
@@ -97,7 +97,7 @@ pushspec(self, ...)
 			git_check_error(rc);
 		}
 
-		spec = git_remote_pushspec(self);
+		spec = (RefSpec) git_remote_pushspec(self);
 
 		RETVAL = spec;
 
@@ -109,17 +109,17 @@ connect(self, direction)
 	SV *direction
 
 	CODE:
-		int dir_int;
+		git_direction direct;
 		const char *dir = SvPVbyte_nolen(direction);
 
 		if (strcmp(dir, "fetch") == 0)
-			dir_int = GIT_DIR_FETCH;
+			direct = GIT_DIRECTION_FETCH;
 		else if (strcmp(dir, "push") == 0)
-			dir_int = GIT_DIR_PUSH;
+			direct = GIT_DIRECTION_PUSH;
 		else
 			Perl_croak(aTHX_ "Invalid direction");
 
-		int rc = git_remote_connect(self, dir_int);
+		int rc = git_remote_connect(self, direct);
 		git_check_error(rc);
 
 void

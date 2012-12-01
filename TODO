@@ -18,4 +18,3 @@
 * Repository -> state
 * Repository -> checkout(...)
 * Repository -> merge(...)
-* Tag -> foreach (+ update $repo -> tags)
