@@ -47,6 +47,11 @@ Retrieve the object pointed by the HEAD of the repository.
 
 Retrieve the object corresponding to C<$id>.
 
+=head2 checkout( $object )
+
+Updates the files in the index and working tree to match the content of
+C<$object>.
+
 =head2 reset( $target, $type )
 
 Reset the current HEAD to the given commit. Valid reset types are: C<"soft">

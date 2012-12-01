@@ -30,10 +30,7 @@ clone(class, url, path, is_bare)
 		const char *url_str = SvPVbyte_nolen(url);
 		const char *path_str = SvPVbyte_nolen(path);
 
-		git_checkout_opts opts;
-
-		memset(&opts, 0, sizeof(opts));
-		opts.checkout_strategy = GIT_CHECKOUT_UPDATE_MISSING;
+		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
 
 		if (is_bare)
 			rc = git_clone_bare(&r, url_str, path_str, NULL, NULL);
@@ -156,6 +153,17 @@ lookup(self, id)
 		RETVAL = git_obj_to_sv(o);
 
 	OUTPUT: RETVAL
+
+void
+checkout(self, target)
+	Repository self
+	SV *target
+
+	CODE:
+		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+
+		int rc = git_checkout_tree(self, git_sv_to_obj(target), &opts);
+		git_check_error(rc);
 
 void
 reset(self, target, type)
