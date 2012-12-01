@@ -31,9 +31,17 @@ Update the index reading it from disk.
 
 Write the index to disk.
 
+=head2 read_tree( $tree )
+
+Replace the index contente with C<$tree>.
+
 =head2 write_tree( )
 
 Create a new tree from the index and write it to disk.
+
+=head2 remove( $path )
+
+Remove C<$path> from the index.
 
 =head1 AUTHOR
 
