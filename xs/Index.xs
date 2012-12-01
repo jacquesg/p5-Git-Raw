@@ -66,7 +66,7 @@ remove(self, path)
 	CODE:
 		const char *path_str = SvPVbyte_nolen(path);
 
-		int rc = git_index_remove(self, path, 0);
+		int rc = git_index_remove(self, path_str, 0);
 		git_check_error(rc);
 
 void

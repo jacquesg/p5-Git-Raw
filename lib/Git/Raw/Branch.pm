@@ -34,7 +34,7 @@ Rename the branch to C<$name>.
 Run C<$callback> for every branch in the repo. The callback receives a
 branch object. A non-zero return value stops the loop.
 
-=head is_head( )
+=head2 is_head( )
 
 Check if the current local branch is pointed at by HEAD.
 

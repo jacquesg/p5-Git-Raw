@@ -156,7 +156,7 @@ delete(self, name)
 	CODE:
 		const char *var = SvPVbyte_nolen(name);
 
-		int rc = git_config_delete_entry(self, name);
+		int rc = git_config_delete_entry(self, var);
 		git_check_error(rc);
 
 void
