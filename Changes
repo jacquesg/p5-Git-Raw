@@ -8,6 +8,12 @@ Revision history for Git-Raw
  - Add Branch -> is_head() method
  - Add Config -> new(), add_file(), refresh() and foreach() methods
  - Add Index -> read_tree() and remove() methods
+ - Add Repository -> checkout() method
+ - Support custom checkout strategies in Repository -> clone() and checkout()
+   methods
+    + This adds an additional parameter to Repository -> clone()
+      (incompatible change)
+ - SSL support is now enabled if OpenSSL is present at build time
 
 0.16      2012-11-30 12:43:50 Europe/Rome
 
