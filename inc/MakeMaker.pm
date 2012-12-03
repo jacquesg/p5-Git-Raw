@@ -7,7 +7,7 @@ extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 override _build_MakeFile_PL_template => sub {
 	my ($self) = @_;
 
-	my $template  = <<'TEMPLATE';
+	my $template = <<'TEMPLATE';
 use Devel::CheckLib;
 
 my $defines   = '';
