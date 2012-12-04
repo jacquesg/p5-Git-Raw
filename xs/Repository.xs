@@ -165,7 +165,6 @@ checkout(self, target, strategy)
 
 	CODE:
 		int rc;
-		SV **opt;
 		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
 
 		opts.checkout_strategy = git_hv_to_checkout_strategy(strategy);
