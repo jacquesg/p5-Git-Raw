@@ -194,7 +194,7 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	return rv;
 }
 
-int git_config_foreach_cbb(git_config_entry *entry, void *payload) {
+int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
 	dSP;
 	int rv;
 
@@ -244,7 +244,7 @@ int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *pa
 	return rv;
 }
 
-int git_tag_foreach_cbb(const char *name, const git_oid *oid, void *payload) {
+int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	dSP;
 	int rv;
 	Tag tag;
