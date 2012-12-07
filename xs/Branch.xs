@@ -6,7 +6,7 @@ BOOT:
 	av_push(isa, newSVpv("Git::Raw::Reference", 0));
 }
 
-Branch
+SV *
 create(class, repo, name, target)
 	SV *class
 	Repository repo
@@ -22,11 +22,11 @@ create(class, repo, name, target)
 		int rc = git_branch_create(&out, repo, name_str, obj, 0);
 		git_check_error(rc);
 
-		RETVAL = out;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), out);
 
 	OUTPUT: RETVAL
 
-Branch
+SV *
 lookup(class, repo, name, is_local)
 	SV *class
 	Repository repo
@@ -42,7 +42,7 @@ lookup(class, repo, name, is_local)
 		int rc = git_branch_lookup(&b, repo, SvPVbyte_nolen(name), t);
 		git_check_error(rc);
 
-		RETVAL = b;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), b);
 
 	OUTPUT: RETVAL
 
