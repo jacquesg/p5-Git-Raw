@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Config
 
-Config
+SV *
 new(class)
 	SV *class
 
@@ -10,7 +10,7 @@ new(class)
 		int rc = git_config_new(&out);
 		git_check_error(rc);
 
-		RETVAL = out;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), out);
 
 	OUTPUT: RETVAL
 
