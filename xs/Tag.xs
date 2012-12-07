@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Tag
 
-Tag
+SV *
 create(class, repo, name, msg, tagger, target)
 	SV *class
 	Repository repo
@@ -28,7 +28,7 @@ create(class, repo, name, msg, tagger, target)
 		rc = git_tag_lookup(&t, repo, &oid);
 		git_check_error(rc);
 
-		RETVAL = t;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), t);
 
 	OUTPUT: RETVAL
 
@@ -51,7 +51,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_TAG);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
 
 	OUTPUT: RETVAL
 
