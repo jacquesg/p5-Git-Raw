@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Repository
 
-Repository
+SV *
 init(class, path, is_bare)
 	SV *class
 	SV *path
@@ -13,11 +13,11 @@ init(class, path, is_bare)
 		int rc = git_repository_init(&r, path_str, is_bare);
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
 
 	OUTPUT: RETVAL
 
-Repository
+SV *
 clone(class, url, path, strategy, is_bare)
 	SV *class
 	SV *url
@@ -44,11 +44,11 @@ clone(class, url, path, strategy, is_bare)
 
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
 
 	OUTPUT: RETVAL
 
-Repository
+SV *
 open(class, path)
 	SV *class
 	SV *path
@@ -60,11 +60,11 @@ open(class, path)
 		int rc = git_repository_open(&r, path_str);
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
 
 	OUTPUT: RETVAL
 
-Repository
+SV *
 discover(class, path)
 	SV *class
 	SV *path
@@ -82,7 +82,7 @@ discover(class, path)
 		rc = git_repository_open(&r, path_str);
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
 
 	OUTPUT: RETVAL
 
