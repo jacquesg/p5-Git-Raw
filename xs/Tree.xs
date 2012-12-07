@@ -19,7 +19,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_TREE);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
 
 	OUTPUT: RETVAL
 
