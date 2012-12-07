@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Blob
 
-Blob
+SV *
 create(class, repo, buffer)
 	SV *class
 	Repository repo
@@ -18,7 +18,7 @@ create(class, repo, buffer)
 		rc = git_blob_lookup(&blob, repo, &oid);
 		git_check_error(rc);
 
-		RETVAL = blob;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), blob);
 
 	OUTPUT: RETVAL
 
@@ -41,7 +41,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_BLOB);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
 
 	OUTPUT: RETVAL
 
