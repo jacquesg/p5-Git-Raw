@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Reference
 
-Reference
+SV *
 lookup(class, name, repo)
 	SV *class
 	SV *name
@@ -10,10 +10,11 @@ lookup(class, name, repo)
 		Reference r;
 
 		const char *name_str = SvPVbyte_nolen(name);
+
 		int rc = git_reference_lookup(&r, repo, name_str);
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
 
 	OUTPUT: RETVAL
 
