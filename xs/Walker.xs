@@ -1,7 +1,8 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Walker
 
-Walker
+SV *
 create(class, repo)
+	SV *class
 	Repository repo
 
 	CODE:
@@ -10,7 +11,7 @@ create(class, repo)
 		int rc = git_revwalk_new(&w, repo);
 		git_check_error(rc);
 
-		RETVAL = w;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), w);
 
 	OUTPUT: RETVAL
 
