@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
-Commit
+SV *
 create(class, repo, msg, author, cmtter, parents, tree)
 	SV *class
 	Repository repo
@@ -44,7 +44,7 @@ create(class, repo, msg, author, cmtter, parents, tree)
 		rc = git_commit_lookup(&c, repo, &oid);
 		git_check_error(rc);
 
-		RETVAL = c;
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), c);
 
 	OUTPUT: RETVAL
 
@@ -67,7 +67,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_COMMIT);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
 
 	OUTPUT: RETVAL
 
