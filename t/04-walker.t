@@ -20,4 +20,27 @@ is $fst -> message, "initial commit\n";
 
 is $walk -> next, undef;
 
+# next after reset returns undef
+is $walk -> next, undef;
+
+$walk -> push($repo -> head);
+$walk -> hide($repo -> head -> parents -> [0]);
+is $walk -> next -> message, "second commit\n";
+is $walk -> next, undef;
+
+$walk -> push_glob('heads/*');
+is $walk -> next -> message, "second commit\n";
+is $walk -> next -> message, "initial commit\n";
+is $walk -> next, undef;
+
+$walk -> push_head;
+is $walk -> next -> message, "second commit\n";
+is $walk -> next -> message, "initial commit\n";
+is $walk -> next, undef;
+
+$walk -> push_ref('refs/heads/master');
+is $walk -> next -> message, "second commit\n";
+is $walk -> next -> message, "initial commit\n";
+is $walk -> next, undef;
+
 done_testing;

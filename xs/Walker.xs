@@ -23,6 +23,67 @@ push(self, commit)
 		int rc = git_revwalk_push(self, git_commit_id(commit));
 		git_check_error(rc);
 
+void
+push_glob(self, glob)
+	Walker self
+	char* glob
+
+	CODE:
+		int rc = git_revwalk_push_glob(self, glob);
+		git_check_error(rc);
+
+void
+push_ref(self, ref)
+	Walker self
+	char* ref
+
+	CODE:
+		int rc = git_revwalk_push_ref(self, ref);
+		git_check_error(rc);
+
+void
+push_head(self)
+	Walker self
+
+	CODE:
+		int rc = git_revwalk_push_head(self);
+		git_check_error(rc);
+
+void
+hide(self, commit)
+	Walker self
+	Commit commit
+
+	CODE:
+		int rc = git_revwalk_hide(self, git_commit_id(commit));
+		git_check_error(rc);
+
+void
+hide_glob(self, glob)
+	Walker self
+	char* glob
+
+	CODE:
+		int rc = git_revwalk_hide_glob(self, glob);
+		git_check_error(rc);
+
+void
+hide_ref(self, ref)
+	Walker self
+	char* ref
+
+	CODE:
+		int rc = git_revwalk_hide_ref(self, ref);
+		git_check_error(rc);
+
+void
+hide_head(self)
+	Walker self
+
+	CODE:
+		int rc = git_revwalk_hide_head(self);
+		git_check_error(rc);
+
 Commit
 next(self)
 	Walker self
