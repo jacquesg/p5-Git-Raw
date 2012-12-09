@@ -153,6 +153,16 @@ update_tips(self)
 		int rc = git_remote_update_tips(self);
 		git_check_error(rc);
 
+void
+cred_acquire(self, cb)
+	Remote self
+	SV *cb
+
+	CODE:
+		SvREFCNT_inc(cb);
+
+		git_remote_set_cred_acquire_cb(self, git_cred_acquire_cbb, cb);
+
 bool
 is_connected(self)
 	Remote self

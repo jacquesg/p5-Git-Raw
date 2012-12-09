@@ -10,6 +10,7 @@ typedef git_blob * Blob;
 typedef git_reference * Branch;
 typedef git_commit * Commit;
 typedef git_config * Config;
+typedef git_cred * Cred;
 typedef git_diff_list * Diff;
 typedef git_index * Index;
 typedef git_push * Push;
@@ -278,12 +279,42 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	return rv;
 }
 
+int git_cred_acquire_cbb(git_cred **cred, const char *url,
+						unsigned int allow, void *cb) {
+	dSP;
+	SV *creds;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVpv(url, 0));
+	PUTBACK;
+
+	call_sv(cb, G_SCALAR);
+
+	SPAGAIN;
+
+	creds = POPs;
+
+	if (sv_isobject(creds) && sv_derived_from(creds, "Git::Raw::Cred"))
+		*cred = INT2PTR(Cred, SvIV((SV *) SvRV(creds)));
+	else
+		Perl_croak(aTHX_ "Return value is not of type Git::Raw::Cred");
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 INCLUDE: xs/Blob.xs
 INCLUDE: xs/Branch.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
+INCLUDE: xs/Cred.xs
 INCLUDE: xs/Diff.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Push.xs
