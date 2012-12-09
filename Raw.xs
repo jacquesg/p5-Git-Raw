@@ -12,6 +12,7 @@ typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_diff_list * Diff;
 typedef git_index * Index;
+typedef git_push * Push;
 typedef git_reference * Reference;
 typedef git_refspec * RefSpec;
 typedef git_remote * Remote;
@@ -285,6 +286,7 @@ INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Diff.xs
 INCLUDE: xs/Index.xs
+INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/RefSpec.xs
 INCLUDE: xs/Remote.xs
