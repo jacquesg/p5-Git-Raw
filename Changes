@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Add Walker -> push_*() and hide_*() methods (thanks, @ruz!)
+ - Add Push and Cred classes
+    + Now pushing to remote HTTP(S) repositories is supported
+
 0.17      2012-12-04 13:49:35 Europe/Rome
 
  - Update libgit2 to da82043
