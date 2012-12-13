@@ -21,4 +21,10 @@ isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> message, "second commit\n";
 
+$repo -> branch('foobar06', $head);
+$ref = Git::Raw::Reference -> lookup('refs/heads/foobar06', $repo);
+$ref -> delete;
+
+is $ref, undef;
+
 done_testing;

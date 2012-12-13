@@ -20,11 +20,21 @@ lookup(class, name, repo)
 
 void
 delete(self)
-	Reference self
+	SV *self
 
 	CODE:
-		int rc = git_reference_delete(self);
+		int rc;
+		Reference ref;
+
+		if (sv_isobject(self) && sv_derived_from(self, "Git::Raw::Reference"))
+			ref = INT2PTR(Reference, SvIV((SV *) SvRV(self)));
+		else
+			Perl_croak(aTHX_ "self is not of type Git::Raw::Reference");
+
+		rc = git_reference_delete(ref);
 		git_check_error(rc);
+
+		SvROK_off(self);
 
 SV *
 name(self)
@@ -130,7 +140,15 @@ is_remote(self)
 
 void
 DESTROY(self)
-	Reference self
+	SV *self
 
 	CODE:
-		git_reference_free(self);
+		Reference ref;
+
+		if (sv_isobject(self) && sv_derived_from(self, "Git::Raw::Reference"))
+			ref = INT2PTR(Reference, SvIV((SV *) SvRV(self)));
+		else
+			Perl_croak(aTHX_ "self is not of type Git::Raw::Reference");
+
+		if (SvROK(self))
+			git_reference_free(ref);
