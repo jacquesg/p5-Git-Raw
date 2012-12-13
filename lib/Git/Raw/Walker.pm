@@ -9,6 +9,24 @@ use Git::Raw;
 
 Git::Raw::Walker - Git revwalker class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    # open the Git repository at $path
+    my $repo = Git::Raw::Repository -> open($path);
+
+    # create a new walker
+    my $log  = $repo -> walker;
+
+    # push the head of the repository
+    $log -> push($repo -> head);
+
+    # print all commit messages
+    while (my $commit = $log -> next) {
+      say $commit -> message;
+    }
+
 =head1 DESCRIPTION
 
 A C<Git::Raw::Walker> represents a graph walker used to walk through the

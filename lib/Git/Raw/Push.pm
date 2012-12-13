@@ -7,6 +7,39 @@ use warnings;
 
 Git::Raw::Push - Git push class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    # open the Git repository at $path
+    my $repo = Git::Raw::Repository -> open($path);
+
+    # add a new remote
+    my $remote = Git::Raw::Remote -> add($repo, 'origin', $url);
+
+    # set the acquire credentials callback
+    $remote -> acquire_cred(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
+
+    # connect the remote
+    $remote -> connect('push');
+
+    # create a push object
+    my $push = Git::Raw::Push -> new($remote);
+
+    # add a refspec
+    my $spec = "refs/heads/master:refs/heads/master";
+    $push -> add_refspec($spec);
+
+    # actually push and disconnect the remote
+    $push -> finish;
+    $remote -> disconnect;
+
+    # now fetch from the remote
+    $remote -> connect('fetch');
+    $remote -> download;
+    $remote -> update_tips;
+    $remote -> disconnect;
+
 =head1 DESCRIPTION
 
 Helper class for pushing.

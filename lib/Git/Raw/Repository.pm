@@ -9,6 +9,22 @@ use Git::Raw;
 
 Git::Raw::Repository - Git repository class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    my $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
+
+    # clone a Git repository
+    my $repo = Git::Raw::Repository -> clone(
+      $url, 'p5-Git-Raw', { 'update_missing' => 1}, 0
+    );
+
+    # print all the tags of the repository
+    foreach my $tag (@{ $repo -> tags }) {
+      say $tag -> name;
+    }
+
 =head1 DESCRIPTION
 
 A C<Git::Raw::Repository> represents a Git repository.

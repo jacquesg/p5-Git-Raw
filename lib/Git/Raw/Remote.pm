@@ -9,6 +9,29 @@ use Git::Raw;
 
 Git::Raw::Remote - Git remote class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    # open the Git repository at $path
+    my $repo = Git::Raw::Repository -> open($path);
+
+    # add a new remote
+    my $remote = Git::Raw::Remote -> add($repo, 'origin', $url);
+
+    # set the acquire credentials callback
+    $remote -> acquire_cred(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
+
+    # connect the remote
+    $remote -> connect('fetch');
+
+    # fetch from the remote and update the local tips
+    $remote -> download;
+    $remote -> update_tips;
+
+    # disconnect
+    $remote -> disconnect;
+
 =head1 DESCRIPTION
 
 A C<Git::Raw::Remote> represents a Git remote.

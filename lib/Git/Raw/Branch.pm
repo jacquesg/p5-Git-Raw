@@ -9,6 +9,16 @@ use Git::Raw;
 
 Git::Raw::Branch - Git branch class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    # open the Git repository at $path
+    my $repo = Git::Raw::Repository -> open($path);
+
+    # create a new branch named 'some_branch'
+    $repo -> branch('some_branch', $repo -> head);
+
 =head1 DESCRIPTION
 
 Helper class for branch manipulation. Note that a Git branch is nothing more

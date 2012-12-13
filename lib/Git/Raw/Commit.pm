@@ -9,6 +9,36 @@ use Git::Raw;
 
 Git::Raw::Commit - Git commit class
 
+=head1 SYNOPSIS
+
+    use Git::Raw;
+
+    # open the Git repository at $path
+    my $repo = Git::Raw::Repository -> open($path);
+
+    # add a file to the repository default index
+    my $index = $repo -> index;
+    $index -> add('test');
+    $index -> write;
+
+    # create a new tree out of the repository index
+    my $tree_id = $index -> write_tree;
+    my $tree    = $repo -> lookup($tree_id);
+
+    # retrieve user's name and email from the Git configuration
+    my $config = $repo -> config;
+    my $name   = $config -> str('user.name');
+    my $email  = $config -> str('user.email');
+
+    # create a new Git signature
+    my $me = Git::Raw::Signature -> now($name, $email);
+
+    # create a new commit out of the above tree, with the repository HEAD as
+    # parent
+    my $commit = $repo -> commit(
+      'some commit', $me, $me, [ $repo -> head ], $tree
+    );
+
 =head1 DESCRIPTION
 
 A C<Git::Raw::Commit> represents a Git commit.
