@@ -20,7 +20,7 @@ Git::Raw::Remote - Git remote class
     my $remote = Git::Raw::Remote -> add($repo, 'origin', $url);
 
     # set the acquire credentials callback
-    $remote -> acquire_cred(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
+    $remote -> cred_acquire(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
 
     # connect the remote
     $remote -> connect('fetch');
@@ -62,6 +62,12 @@ fetchspec will be updated and returned.
 
 Retrieve the pushspec of the remote. If C<$spec> is passed, the remote's
 pushspec will be updated and returned.
+
+=head2 cred_acquire( $callback )
+
+Run $callback any time authentication is required to connect to the remote
+repository. The callback receives a string containing the URL of the remote, and
+it must return a L<Git::Raw::Cred> object.
 
 =head2 connect( $direction )
 
