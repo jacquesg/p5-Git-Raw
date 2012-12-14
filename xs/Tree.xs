@@ -77,20 +77,12 @@ diff(self, repo, ...)
 			}
 
 			case 3: {
-				SV *sv = ST(2);
+				Tree new = GIT_SV_TO_STRUCT(Tree, ST(2));
 
-				if (sv_isobject(sv) &&
-				    sv_derived_from(sv, "Git::Raw::Tree")) {
-
-					Tree new =  INT2PTR(
-						Tree, SvIV((SV *) SvRV(sv))
-					);
-
-					rc = git_diff_tree_to_tree(
-						&diff, repo, self, new, NULL
-					);
-					git_check_error(rc);
-				} else Perl_croak(aTHX_ "Invalid diff target");
+				rc = git_diff_tree_to_tree(
+					&diff, repo, self, new, NULL
+				);
+				git_check_error(rc);
 
 				break;
 			}

@@ -16,12 +16,14 @@ ok $ref -> is_branch;
 ok !$ref -> is_remote;
 
 my $head = $ref -> target($repo);
-
 isa_ok $head, 'Git::Raw::Commit';
-
 is $head -> message, "second commit\n";
 
 $ref = $repo -> branch('foobar06', $head);
 $ref -> delete;
+
+my $repo2 = $ref -> owner;
+isa_ok $repo2, 'Git::Raw::Repository';
+is $repo2 -> path, "$path/.git/";
 
 done_testing;

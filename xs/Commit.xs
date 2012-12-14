@@ -24,13 +24,7 @@ create(class, repo, msg, author, cmtter, parents, tree)
 			for (i = 0; i < count; i++) {
 				iter = av_shift(parents);
 
-				if (sv_isobject(iter) &&
-				    sv_derived_from(iter, "Git::Raw::Commit"))
-					paren[i] = INT2PTR(
-						git_commit *,
-						SvIV((SV *) SvRV(iter))
-					);
-				else Perl_croak(aTHX_ "parent is not of type Git::Raw::Commit");
+				paren[i] = GIT_SV_TO_STRUCT(Commit, iter);
 			}
 		}
 

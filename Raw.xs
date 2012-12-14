@@ -308,6 +308,67 @@ int git_cred_acquire_cbb(git_cred **cred, const char *url,
 	return 0;
 }
 
+STATIC MGVTBL null_mg_vtbl = {
+	NULL, /* get */
+	NULL, /* set */
+	NULL, /* len */
+	NULL, /* clear */
+	NULL, /* free */
+#if MGf_COPY
+	NULL, /* copy */
+#endif /* MGf_COPY */
+#if MGf_DUP
+	NULL, /* dup */
+#endif /* MGf_DUP */
+#if MGf_LOCAL
+	NULL, /* local */
+#endif /* MGf_LOCAL */
+};
+
+void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr) {
+	sv_magicext(sv, NULL, PERL_MAGIC_ext, &null_mg_vtbl, ptr, 0);
+}
+
+STATIC MAGIC *xs_object_magic_get_mg(pTHX_ SV *sv) {
+	MAGIC *mg;
+
+	if (SvTYPE(sv) >= SVt_PVMG) {
+		for (mg = SvMAGIC(sv); mg; mg = mg->mg_moremagic) {
+			if ((mg->mg_type == PERL_MAGIC_ext) &&
+			    (mg->mg_virtual == &null_mg_vtbl))
+				return mg;
+		}
+	}
+
+	return NULL;
+}
+
+void *xs_object_magic_get_struct(pTHX_ SV *sv) {
+	MAGIC *mg = xs_object_magic_get_mg(aTHX_ sv);
+
+	return (mg) ? mg -> mg_ptr : NULL;
+}
+
+void *git_sv_to_struct(pTHX_ SV *sv, const char *class) {
+	if (sv_isobject(sv) && sv_derived_from(sv, class))
+		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
+	else
+		Perl_croak(aTHX_ "Argument is not of type %s");
+}
+
+#define GIT_SV_TO_STRUCT(type, var) ({				\
+	git_sv_to_struct(aTHX_ var, "Git::Raw::" #type);	\
+})
+
+#define GIT_NEW_OBJ_DOUBLE(rv, class, primary, secondary)	\
+	STMT_START {						\
+		(rv) = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), primary); \
+		xs_object_magic_attach_struct(			\
+			aTHX_ SvRV(rv),				\
+			SvREFCNT_inc_NN(SvRV(secondary))	\
+		);						\
+	} STMT_END
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 INCLUDE: xs/Blob.xs

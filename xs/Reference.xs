@@ -4,17 +4,19 @@ SV *
 lookup(class, name, repo)
 	SV *class
 	SV *name
-	Repository repo
+	SV *repo
 
 	CODE:
 		Reference r;
 
 		const char *name_str = SvPVbyte_nolen(name);
 
-		int rc = git_reference_lookup(&r, repo, name_str);
+		int rc = git_reference_lookup(
+			&r, GIT_SV_TO_STRUCT(Repository, repo), name_str
+		);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, r, repo);
 
 	OUTPUT: RETVAL
 
@@ -24,12 +26,7 @@ delete(self)
 
 	CODE:
 		int rc;
-		Reference ref;
-
-		if (sv_isobject(self) && sv_derived_from(self, "Git::Raw::Reference"))
-			ref = INT2PTR(Reference, SvIV((SV *) SvRV(self)));
-		else
-			Perl_croak(aTHX_ "self is not of type Git::Raw::Reference");
+		Reference ref = GIT_SV_TO_STRUCT(Reference, self);
 
 		rc = git_reference_delete(ref);
 		git_check_error(rc);
@@ -60,6 +57,20 @@ type(self)
 		}
 
 		RETVAL = type;
+
+	OUTPUT: RETVAL
+
+SV *
+owner(self)
+	SV *self
+
+	CODE:
+		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
+
+		SV *r = xs_object_magic_get_struct(aTHX_ SvRV(self));
+		if (!r) Perl_croak(aTHX_ "Invalid object");
+
+		RETVAL = newRV_inc(r);
 
 	OUTPUT: RETVAL
 
@@ -140,7 +151,8 @@ is_remote(self)
 
 void
 DESTROY(self)
-	Reference self
+	SV *self
 
 	CODE:
-		git_reference_free(self);
+		git_reference_free(GIT_SV_TO_STRUCT(Reference, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));

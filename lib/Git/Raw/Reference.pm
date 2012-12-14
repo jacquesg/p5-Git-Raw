@@ -37,6 +37,10 @@ Retrieve the target of the reference. This function returns either an object
 (L<Git::Raw::Blob>, L<Git::Raw::Commit>, L<Git::Raw::Tag> or L<Git::Raw::Tree>)
 for direct references, or another reference for symbolic references.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the reference.
+
 =head2 is_branch( )
 
 Check if the reference is a branch.
