@@ -18,7 +18,7 @@ Git::Raw::Push - Git push class
     my $remote = Git::Raw::Remote -> add($repo, 'origin', $url);
 
     # set the acquire credentials callback
-    $remote -> acquire_cred(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
+    $remote -> cred_acquire(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
 
     # connect the remote
     $remote -> connect('push');
