@@ -20,7 +20,7 @@ create(class, repo, name, target)
 		Commit obj = (Commit) git_sv_to_obj(target);
 
 		int rc = git_branch_create(
-			&out, GIT_SV_TO_STRUCT(Repository, repo), name_str, obj, 0
+			&out, GIT_SV_TO_PTR(Repository, repo), name_str, obj, 0
 		);
 		git_check_error(rc);
 
@@ -42,7 +42,8 @@ lookup(class, repo, name, is_local)
 			GIT_BRANCH_REMOTE    ;
 
 		int rc = git_branch_lookup(
-			&b, GIT_SV_TO_STRUCT(Repository, repo), SvPVbyte_nolen(name), t
+			&b, GIT_SV_TO_PTR(Repository, repo),
+			SvPVbyte_nolen(name), t
 		);
 		git_check_error(rc);
 

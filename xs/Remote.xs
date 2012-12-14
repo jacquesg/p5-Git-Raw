@@ -13,7 +13,7 @@ new(class, repo, name, url, fetch)
 		Repository r = NULL;
 
 		if (repo != &PL_sv_undef)
-			r = GIT_SV_TO_STRUCT(Repository, repo);
+			r = GIT_SV_TO_PTR(Repository, repo);
 
 		int rc = git_remote_new(
 			&remote, r,

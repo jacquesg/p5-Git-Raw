@@ -265,7 +265,7 @@ diff(self, ...)
 			}
 
 			case 2: {
-				Tree tree = GIT_SV_TO_STRUCT(Tree, ST(1));
+				Tree tree = GIT_SV_TO_PTR(Tree, ST(1));
 
 				rc = git_diff_index_to_tree(
 					&diff, self, tree, index, NULL

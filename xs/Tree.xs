@@ -77,7 +77,7 @@ diff(self, repo, ...)
 			}
 
 			case 3: {
-				Tree new = GIT_SV_TO_STRUCT(Tree, ST(2));
+				Tree new = GIT_SV_TO_PTR(Tree, ST(2));
 
 				rc = git_diff_tree_to_tree(
 					&diff, repo, self, new, NULL

@@ -12,7 +12,7 @@ lookup(class, name, repo)
 		const char *name_str = SvPVbyte_nolen(name);
 
 		int rc = git_reference_lookup(
-			&r, GIT_SV_TO_STRUCT(Repository, repo), name_str
+			&r, GIT_SV_TO_PTR(Repository, repo), name_str
 		);
 		git_check_error(rc);
 
@@ -26,7 +26,7 @@ delete(self)
 
 	CODE:
 		int rc;
-		Reference ref = GIT_SV_TO_STRUCT(Reference, self);
+		Reference ref = GIT_SV_TO_PTR(Reference, self);
 
 		rc = git_reference_delete(ref);
 		git_check_error(rc);
@@ -154,5 +154,5 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_reference_free(GIT_SV_TO_STRUCT(Reference, self));
+		git_reference_free(GIT_SV_TO_PTR(Reference, self));
 		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));

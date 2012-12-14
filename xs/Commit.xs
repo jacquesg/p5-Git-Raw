@@ -24,7 +24,7 @@ create(class, repo, msg, author, cmtter, parents, tree)
 			for (i = 0; i < count; i++) {
 				iter = av_shift(parents);
 
-				paren[i] = GIT_SV_TO_STRUCT(Commit, iter);
+				paren[i] = GIT_SV_TO_PTR(Commit, iter);
 			}
 		}
 
