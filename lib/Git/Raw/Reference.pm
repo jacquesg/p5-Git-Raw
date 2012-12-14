@@ -21,7 +21,7 @@ Retrieve the reference with name C<$name>.
 
 =head2 delete( )
 
-Delete the reference. Note that the reference object will then be C<undef>.
+Delete the reference.
 
 =head2 name( )
 

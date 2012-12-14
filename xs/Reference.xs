@@ -34,7 +34,7 @@ delete(self)
 		rc = git_reference_delete(ref);
 		git_check_error(rc);
 
-		SvROK_off(self);
+		sv_setiv(SvRV(self), 0);
 
 SV *
 name(self)
@@ -140,15 +140,7 @@ is_remote(self)
 
 void
 DESTROY(self)
-	SV *self
+	Reference self
 
 	CODE:
-		Reference ref;
-
-		if (sv_isobject(self) && sv_derived_from(self, "Git::Raw::Reference"))
-			ref = INT2PTR(Reference, SvIV((SV *) SvRV(self)));
-		else
-			Perl_croak(aTHX_ "self is not of type Git::Raw::Reference");
-
-		if (SvROK(self))
-			git_reference_free(ref);
+		git_reference_free(self);
