@@ -1,6 +1,33 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Remote
 
 Remote
+new(class, repo, name, url, fetch)
+	SV *class
+	SV *repo
+	SV *name
+	SV *url
+	SV *fetch
+
+	CODE:
+		Remote remote;
+		Repository r = NULL;
+
+		if (repo != &PL_sv_undef)
+			r = GIT_SV_TO_STRUCT(Repository, repo);
+
+		int rc = git_remote_new(
+			&remote, r,
+			SvPVbyte_nolen(name),
+			SvPVbyte_nolen(url),
+			SvPVbyte_nolen(fetch)
+		);
+		git_check_error(rc);
+
+		RETVAL = remote;
+
+	OUTPUT: RETVAL
+
+Remote
 add(class, repo, name, url)
 	SV *class
 	Repository repo
@@ -8,14 +35,14 @@ add(class, repo, name, url)
 	SV *url
 
 	CODE:
-		Remote r;
+		Remote remote;
 
 		int rc = git_remote_add(
-			&r, repo, SvPVbyte_nolen(name), SvPVbyte_nolen(url)
+			&remote, repo, SvPVbyte_nolen(name), SvPVbyte_nolen(url)
 		);
 		git_check_error(rc);
 
-		RETVAL = r;
+		RETVAL = remote;
 
 	OUTPUT: RETVAL
 

@@ -18,9 +18,9 @@ init(class, path, is_bare)
 	OUTPUT: RETVAL
 
 SV *
-clone(class, url, path, strategy, is_bare)
+clone(class, remote, path, strategy, is_bare)
 	SV *class
-	SV *url
+	Remote remote
 	SV *path
 	HV *strategy
 	bool is_bare
@@ -28,7 +28,6 @@ clone(class, url, path, strategy, is_bare)
 	CODE:
 		int rc;
 		Repository r;
-		const char *url_str = SvPVbyte_nolen(url);
 		const char *path_str = SvPVbyte_nolen(path);
 
 		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
@@ -36,10 +35,10 @@ clone(class, url, path, strategy, is_bare)
 		opts.checkout_strategy = git_hv_to_checkout_strategy(strategy);
 
 		if (is_bare)
-			rc = git_clone_bare(&r, url_str, path_str, NULL, NULL);
+			rc = git_clone_bare(&r, remote, path_str, NULL, NULL);
 		else
 			rc = git_clone(
-				&r, url_str, path_str, &opts, NULL, NULL
+				&r, remote, path_str, &opts, NULL, NULL
 			);
 
 		git_check_error(rc);

@@ -38,10 +38,13 @@ A C<Git::Raw::Remote> represents a Git remote.
 
 =head1 METHODS
 
+=head2 new( $repo, $name, $url, $fetch )
+
+Create a new remote. The C<$repo> argument may be C<undef>.
+
 =head2 add( $repo, $name, $url )
 
-Add a new remote to the given L<Git::Raw::Repository> with name C<$name> and
-URL C<$url>.
+Add a remote with the default fetch refspec to the repository's configuration.
 
 =head2 name( [ $name ] )
 

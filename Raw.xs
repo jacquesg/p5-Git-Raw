@@ -61,6 +61,17 @@ git_object *git_sv_to_obj(SV *sv) {
 	return NULL;
 }
 
+void *git_sv_to_struct(pTHX_ SV *sv, const char *class) {
+	if (sv_isobject(sv) && sv_derived_from(sv, class))
+		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
+	else
+		Perl_croak(aTHX_ "Argument is not of type %s");
+}
+
+#define GIT_SV_TO_STRUCT(type, var) ({				\
+	git_sv_to_struct(aTHX_ var, "Git::Raw::" #type);	\
+})
+
 SV *git_oid_to_sv(git_oid *oid) {
 	char out[41];
 
@@ -297,10 +308,7 @@ int git_cred_acquire_cbb(git_cred **cred, const char *url,
 
 	creds = POPs;
 
-	if (sv_isobject(creds) && sv_derived_from(creds, "Git::Raw::Cred"))
-		*cred = INT2PTR(Cred, SvIV((SV *) SvRV(creds)));
-	else
-		Perl_croak(aTHX_ "Return value is not of type Git::Raw::Cred");
+	*cred = GIT_SV_TO_STRUCT(Cred, creds);
 
 	FREETMPS;
 	LEAVE;
@@ -348,17 +356,6 @@ void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 
 	return (mg) ? mg -> mg_ptr : NULL;
 }
-
-void *git_sv_to_struct(pTHX_ SV *sv, const char *class) {
-	if (sv_isobject(sv) && sv_derived_from(sv, class))
-		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
-	else
-		Perl_croak(aTHX_ "Argument is not of type %s");
-}
-
-#define GIT_SV_TO_STRUCT(type, var) ({				\
-	git_sv_to_struct(aTHX_ var, "Git::Raw::" #type);	\
-})
 
 #define GIT_NEW_OBJ_DOUBLE(rv, class, primary, secondary)	\
 	STMT_START {						\
