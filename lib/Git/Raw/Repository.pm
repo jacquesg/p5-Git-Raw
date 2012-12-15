@@ -15,11 +15,11 @@ Git::Raw::Repository - Git repository class
 
     # create a new dangling remote
     my $url    = 'git://github.com/ghedo/p5-Git-Raw.git';
-    my $origin = Git::Raw::Remote -> new(undef, 'origin', $url);
+    my $origin = Git::Raw::Remote -> new(undef, 'origin', $url, "");
 
     # clone the Git repository
     my $repo = Git::Raw::Repository -> clone(
-      $origin, 'p5-Git-Raw', { 'update_missing' => 1}, 0
+      $origin, 'p5-Git-Raw', { 'update_missing' => 1 }, 0
     );
 
     # print all the tags of the repository
