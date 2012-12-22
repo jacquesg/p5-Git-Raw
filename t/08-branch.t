@@ -36,7 +36,7 @@ $branch_name = 'some_branch';
 $branch -> move($branch_name, 0);
 is $branch -> name, "refs/heads/$branch_name";
 
-my $head = $branch -> target($repo);
+my $head = $branch -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
 

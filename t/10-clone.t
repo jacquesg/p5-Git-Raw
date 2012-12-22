@@ -35,7 +35,7 @@ is $remotes -> [1], undef;
 my $ref = Git::Raw::Branch -> lookup($repo, 'master', 1);
 is $ref -> type, 'direct';
 
-my $head = $ref -> target($repo);
+my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';

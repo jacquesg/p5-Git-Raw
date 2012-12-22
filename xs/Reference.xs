@@ -75,13 +75,16 @@ owner(self)
 	OUTPUT: RETVAL
 
 SV *
-target(self, repo)
+target(self, ...)
 	Reference self
-	Repository repo
 
+	PROTOTYPE: $;$
 	CODE:
 		int rc;
 		SV *result;
+
+		if (items > 1)
+			warn("Second argument (former repo) is ignored. In future versions this will be fatal error");
 
 		switch (git_reference_type(self)) {
 			case GIT_REF_OID: {
@@ -91,7 +94,7 @@ target(self, repo)
 				oid = git_reference_target(self);
 
 				rc = git_object_lookup(
-					&o, repo, oid, GIT_OBJ_ANY
+					&o, git_reference_owner(self), oid, GIT_OBJ_ANY
 				);
 				git_check_error(rc);
 
@@ -105,7 +108,7 @@ target(self, repo)
 
 				target = git_reference_symbolic_target(self);
 
-				rc = git_reference_lookup(&f, repo, target);
+				rc = git_reference_lookup(&f, git_reference_owner(self), target);
 				git_check_error(rc);
 
 				result = sv_setref_pv(

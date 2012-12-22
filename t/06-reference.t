@@ -15,7 +15,7 @@ is $ref -> name, 'refs/heads/master';
 ok $ref -> is_branch;
 ok !$ref -> is_remote;
 
-my $head = $ref -> target($repo);
+my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 is $head -> message, "second commit\n";
 

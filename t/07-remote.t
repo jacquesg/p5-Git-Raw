@@ -56,7 +56,7 @@ $github -> update_tips;
 my $ref = Git::Raw::Reference -> lookup('refs/remotes/github/master', $repo);
 is $ref -> type, 'direct';
 
-my $head = $ref -> target($repo);
+my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';
