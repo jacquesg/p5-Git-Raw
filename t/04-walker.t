@@ -10,7 +10,7 @@ my $repo = Git::Raw::Repository -> open($path);
 
 my $walk = $repo -> walker;
 
-$walk -> push($repo -> head);
+$walk -> push($repo -> head -> target);
 
 my $snd = $walk -> next;
 is $snd -> message, "second commit\n";
@@ -23,8 +23,8 @@ is $walk -> next, undef;
 # next after reset returns undef
 is $walk -> next, undef;
 
-$walk -> push($repo -> head);
-$walk -> hide($repo -> head -> parents -> [0]);
+$walk -> push($repo -> head -> target);
+$walk -> hide($repo -> head -> target -> parents -> [0]);
 is $walk -> next -> message, "second commit\n";
 is $walk -> next, undef;
 

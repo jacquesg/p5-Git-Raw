@@ -8,7 +8,7 @@ use Cwd qw(abs_path);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
-my $head = $repo -> head;
+my $head = $repo -> head -> target;
 my $tree = $head -> tree;
 
 my $entries = $tree -> entries;

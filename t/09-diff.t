@@ -14,7 +14,7 @@ my $file  = $repo -> workdir . 'diff';
 write_file($file, "diff me, biatch\n");
 
 my $index = $repo -> index;
-my $tree  = $repo -> head -> tree;
+my $tree  = $repo -> head -> target -> tree;
 
 $index -> add('diff');
 
@@ -48,8 +48,8 @@ $output = capture_stdout { $diff -> compact($printer) };
 
 is $output, $expected;
 
-my $tree2 = $repo -> head -> tree;
-my $tree1 = $repo -> head -> parents -> [0] -> tree;
+my $tree2 = $repo -> head -> target -> tree;
+my $tree1 = $repo -> head -> target -> parents -> [0] -> tree;
 
 $diff = $tree1 -> diff($repo, $tree2);
 

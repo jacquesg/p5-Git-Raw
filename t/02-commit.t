@@ -64,10 +64,10 @@ $tree_id = $index -> write_tree;
 $tree    = $repo -> lookup($tree_id);
 
 my $commit2 = $repo -> commit(
-	"second commit\n", $me, $me, [$repo -> head], $tree
+	"second commit\n", $me, $me, [$repo -> head -> target], $tree
 );
 
-my $head = $repo -> head;
+my $head = $repo -> head -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
 

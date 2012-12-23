@@ -16,7 +16,7 @@ my $time = time();
 my $off  = 120;
 my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
-my $commit = $repo -> head;
+my $commit = $repo -> head -> target;
 
 isa_ok $commit, 'Git::Raw::Commit';
 

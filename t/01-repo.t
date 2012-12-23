@@ -21,6 +21,9 @@ is $disc -> workdir, "$path/";
 is $repo -> is_empty, 1;
 is $disc -> is_empty, 1;
 
+my $head = eval { $repo -> head };
+is $head, undef;
+
 my $file  = $repo -> workdir . 'ignore';
 write_file($file, 'this file should be ignored');
 

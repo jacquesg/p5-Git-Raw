@@ -115,22 +115,19 @@ index(self)
 
 SV *
 head(self)
-	Repository self
+	SV *self
 
 	CODE:
-		git_object *o;
-		git_reference *r;
-		const git_oid *oid;
+		Reference r;
 
-		int rc = git_repository_head(&r, self);
+		int rc = git_repository_head(&r, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
-		oid = git_reference_target(r);
-
-		rc = git_object_lookup(&o, self, oid, GIT_OBJ_ANY);
-		git_check_error(rc);
-
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Reference", r); \
+		xs_object_magic_attach_struct(
+			aTHX_ SvRV(RETVAL),
+			SvREFCNT_inc_NN(SvRV(self))
+		);
 
 	OUTPUT: RETVAL
 
