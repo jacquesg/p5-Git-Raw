@@ -2,6 +2,12 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fix errors in the Push and Repository examples (no functional changes)
+ - Reference -> target() does not need a Repository argument anymore (its
+   documentation was also incorrect) (thanks, @ruz!)
+ - Repository -> head() now returns a Reference like the underlying libgit2 API
+   instead of a Commit (incompatible change) (thanks, @ruz!)
+
 0.18      2012-12-14 18:39:16 Europe/Rome
 
  - Add Walker -> push_*() and hide_*() methods (thanks, @ruz!)
