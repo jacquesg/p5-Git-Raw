@@ -20,7 +20,7 @@ Git::Raw::Walker - Git revwalker class
     my $log  = $repo -> walker;
 
     # push the head of the repository
-    $log -> push($repo -> head);
+    $log -> push_head;
 
     # print all commit messages
     while (my $commit = $log -> next) {

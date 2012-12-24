@@ -36,7 +36,7 @@ Git::Raw::Commit - Git commit class
     # create a new commit out of the above tree, with the repository HEAD as
     # parent
     my $commit = $repo -> commit(
-      'some commit', $me, $me, [ $repo -> head ], $tree
+      'some commit', $me, $me, [ $repo -> head -> target ], $tree
     );
 
 =head1 DESCRIPTION

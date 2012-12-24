@@ -25,7 +25,9 @@ Git::Raw::Tag - Git tag class
     my $me = Git::Raw::Signature -> now($name, $email);
 
     # create a new tag
-    my $tag = $repo -> tag('v0.1', 'Initial version', $me, $repo -> head);
+    my $tag = $repo -> tag(
+      'v0.1', 'Initial version', $me, $repo -> head -> target
+    );
 
 =head1 DESCRIPTION
 
