@@ -64,17 +64,18 @@ move(self, name, force)
 void
 foreach(class, repo, cb)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *cb
 
 	CODE:
 		git_foreach_payload payload = {
-			.repo = repo,
-			.cb = cb
+			.repo     = repo,
+			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
+			.cb       = cb
 		};
 
 		int rc = git_branch_foreach(
-			repo, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
+			payload.repo_ptr, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
 			git_branch_foreach_cb, &payload
 		);
 

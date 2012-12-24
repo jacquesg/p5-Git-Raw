@@ -3,7 +3,7 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Blob
 SV *
 create(class, repo, buffer)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *buffer
 
 	CODE:
@@ -12,26 +12,28 @@ create(class, repo, buffer)
 
 		STRLEN len;
 		const char *buffer_str = SvPVbyte(buffer, len);
+		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
-		int rc = git_blob_create_frombuffer(&oid, repo, buffer_str, len);
+		int rc = git_blob_create_frombuffer(&oid, repo_ptr, buffer_str, len);
 		git_check_error(rc);
 
-		rc = git_blob_lookup(&blob, repo, &oid);
+		rc = git_blob_lookup(&blob, repo_ptr, &oid);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), blob);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, blob, repo);
 
 	OUTPUT: RETVAL
 
 SV *
 lookup(class, repo, id)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *id
 
 	CODE:
 		git_oid oid;
 		git_object *obj;
+		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		STRLEN len;
 		const char *id_str = SvPVbyte(id, len);
@@ -39,10 +41,10 @@ lookup(class, repo, id)
 		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_BLOB);
+		rc = git_object_lookup_prefix(&obj, repo_ptr, &oid, len, GIT_OBJ_BLOB);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), obj);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, obj, repo);
 
 	OUTPUT: RETVAL
 
@@ -68,7 +70,8 @@ size(self)
 
 void
 DESTROY(self)
-	Blob self
+	SV *self
 
 	CODE:
-		git_blob_free(self);
+		git_blob_free(GIT_SV_TO_PTR(Blob, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));

@@ -67,7 +67,8 @@ remove(self, path)
 
 void
 DESTROY(self)
-	Index self
+	SV* self
 
 	CODE:
-		git_index_free(self);
+		git_index_free(GIT_SV_TO_PTR(Index, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));

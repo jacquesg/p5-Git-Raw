@@ -24,6 +24,9 @@ typedef git_tree * Tree;
 typedef git_tree_entry * TreeEntry;
 typedef git_revwalk * Walker;
 
+void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr);
+void *xs_object_magic_get_struct(pTHX_ SV *sv);
+
 void git_check_error(int err) {
 	const git_error *error;
 
@@ -35,18 +38,35 @@ void git_check_error(int err) {
 	Perl_croak(aTHX_ "%s", error -> message);
 }
 
-SV *git_obj_to_sv(git_object *o) {
+SV *git_obj_to_sv(git_object *o, SV *repo_src) {
+	SV *res;
+	SV *repo;
 	switch (git_object_type(o)) {
 		case GIT_OBJ_BLOB:
-			return sv_setref_pv(newSV(0), "Git::Raw::Blob", o);
+			res = sv_setref_pv(newSV(0), "Git::Raw::Blob", o); break;
 		case GIT_OBJ_COMMIT:
-			return sv_setref_pv(newSV(0), "Git::Raw::Commit", o);
+			res = sv_setref_pv(newSV(0), "Git::Raw::Commit", o); break;
 		case GIT_OBJ_TAG:
-			return sv_setref_pv(newSV(0), "Git::Raw::Tag", o);
+			res = sv_setref_pv(newSV(0), "Git::Raw::Tag", o); break;
 		case GIT_OBJ_TREE:
-			return sv_setref_pv(newSV(0), "Git::Raw::Tree", o);
+			res = sv_setref_pv(newSV(0), "Git::Raw::Tree", o); break;
 		default: Perl_croak(aTHX_ "Invalid object type");
 	}
+
+	if (sv_isobject(repo_src) && sv_derived_from(repo_src, "Git::Raw::Repository")) {
+		repo = SvRV(repo_src);
+	}
+	else if ( sv_isobject(repo_src) ) {
+		repo = xs_object_magic_get_struct(aTHX_ SvRV(repo_src));
+	}
+	else
+		Perl_croak("Invalid repository source");
+
+	if (!repo)
+		Perl_croak("Invalid repository source");
+
+	xs_object_magic_attach_struct( aTHX_ SvRV(res), SvREFCNT_inc_NN(repo));
+	return res;
 }
 
 git_object *git_sv_to_obj(SV *sv) {
@@ -185,7 +205,8 @@ int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
 }
 
 typedef struct {
-	Repository repo;
+	Repository repo_ptr;
+	SV* repo;
 	SV* cb;
 } git_foreach_payload;
 
@@ -196,7 +217,7 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	Branch branch;
 
 	int rc = git_branch_lookup(
-		&branch, ((git_foreach_payload *) payload) -> repo,
+		&branch, ((git_foreach_payload *) payload) -> repo_ptr,
 		name, type
 	);
 	git_check_error(rc);
@@ -206,6 +227,9 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 
 	cb_arg = sv_newmortal();
 	sv_setref_pv(cb_arg, "Git::Raw::Branch", (void *) branch);
+	xs_object_magic_attach_struct( aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(SvRV(
+		((git_foreach_payload *) payload) -> repo
+	)));
 
 	PUSHMARK(SP);
 	PUSHs(cb_arg);
@@ -280,7 +304,7 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	SV *cb_arg;
 
 	int rc = git_tag_lookup(
-		&tag, ((git_foreach_payload *) payload) -> repo, oid
+		&tag, ((git_foreach_payload *) payload) -> repo_ptr, oid
 	);
 	git_check_error(rc);
 
@@ -295,6 +319,9 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	PUTBACK;
 
 	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+	xs_object_magic_attach_struct( aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(SvRV(
+		((git_foreach_payload *) payload) -> repo
+	)));
 
 	SPAGAIN;
 

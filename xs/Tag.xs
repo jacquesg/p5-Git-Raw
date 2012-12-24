@@ -3,7 +3,7 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Tag
 SV *
 create(class, repo, name, msg, tagger, target)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *name
 	SV *msg
 	Signature tagger
@@ -14,6 +14,7 @@ create(class, repo, name, msg, tagger, target)
 
 		git_oid oid;
 		git_object *obj;
+		Repository r = GIT_SV_TO_PTR(Repository, repo);
 
 		obj = git_sv_to_obj(target);
 
@@ -21,22 +22,22 @@ create(class, repo, name, msg, tagger, target)
 			Perl_croak(aTHX_ "target is not of a valid type");
 
 		int rc = git_tag_create(
-			&oid, repo, SvPVbyte_nolen(name),
+			&oid, r, SvPVbyte_nolen(name),
 			obj, tagger, SvPVbyte_nolen(msg), 0
 		);
 		git_check_error(rc);
 
-		rc = git_tag_lookup(&tag, repo, &oid);
+		rc = git_tag_lookup(&tag, r, &oid);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), tag);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, tag, repo);
 
 	OUTPUT: RETVAL
 
 SV *
 lookup(class, repo, id)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *id
 
 	CODE:
@@ -59,16 +60,17 @@ lookup(class, repo, id)
 void
 foreach(class, repo, cb)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *cb
 
 	CODE:
 		git_foreach_payload payload = {
-			.repo = repo,
-			.cb = cb
+			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
+			.repo     = repo,
+			.cb       = cb
 		};
 
-		int rc = git_tag_foreach(repo, git_tag_foreach_cbb, &payload);
+		int rc = git_tag_foreach(payload.repo_ptr, git_tag_foreach_cbb, &payload);
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
@@ -125,21 +127,22 @@ tagger(self)
 
 SV *
 target(self)
-	Tag self
+	SV *self
 
 	CODE:
 		git_object *obj;
 
-		int rc = git_tag_target(&obj, self);
+		int rc = git_tag_target(&obj, GIT_SV_TO_PTR(Tag, self));
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(obj);
+		RETVAL = git_obj_to_sv(obj, self);
 
 	OUTPUT: RETVAL
 
 void
 DESTROY(self)
-	Tag self
+	SV *self
 
 	CODE:
-		git_tag_free(self);
+		git_tag_free(GIT_SV_TO_PTR(Tag, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
