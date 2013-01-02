@@ -68,7 +68,7 @@ diff(self, repo, ...)
 
 		switch (items) {
 			case 2: {
-				rc = git_diff_workdir_to_tree(
+				rc = git_diff_tree_to_workdir(
 					&diff, repo, self, NULL
 				);
 				git_check_error(rc);

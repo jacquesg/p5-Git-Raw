@@ -121,8 +121,9 @@ of the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
 
 =head2 diff( $repo [, $tree] )
 
-Compute the L<Git::Raw::Diff> between the repository default index and a tree.
-If no C<$tree> is passed, the diff will be computed against the working directory.
+Compute the L<Git::Raw::Diff> between the given L<Git::Raw::Tree> and the repo
+default index. If no C<$tree> is passed, the diff will be computed between the
+repo index and the working directory.
 
 =head2 blob( $buffer )
 

@@ -253,7 +253,7 @@ diff(self, ...)
 
 		switch (items) {
 			case 1: {
-				rc = git_diff_workdir_to_index(
+				rc = git_diff_index_to_workdir(
 					&diff, self, index, NULL
 				);
 				git_check_error(rc);
@@ -264,7 +264,7 @@ diff(self, ...)
 			case 2: {
 				Tree tree = GIT_SV_TO_PTR(Tree, ST(1));
 
-				rc = git_diff_index_to_tree(
+				rc = git_diff_tree_to_index(
 					&diff, self, tree, index, NULL
 				);
 				git_check_error(rc);
