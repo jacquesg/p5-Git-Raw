@@ -17,7 +17,7 @@ Git::Raw::Remote - Git remote class
     my $repo = Git::Raw::Repository -> open($path);
 
     # add a new remote
-    my $remote = Git::Raw::Remote -> add($repo, 'origin', $url);
+    my $remote = Git::Raw::Remote -> create($repo, 'origin', $url);
 
     # set the acquire credentials callback
     $remote -> cred_acquire(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
@@ -38,13 +38,10 @@ A C<Git::Raw::Remote> represents a Git remote.
 
 =head1 METHODS
 
-=head2 new( $repo, $name, $url, $fetch )
+=head2 create( $repo, $name, $url )
 
-Create a new remote. The C<$repo> argument may be C<undef>.
-
-=head2 add( $repo, $name, $url )
-
-Add a remote with the default fetch refspec to the repository's configuration.
+Create a remote with the default fetch refspec and add it to the repository's
+configuration.
 
 =head2 name( [ $name ] )
 
