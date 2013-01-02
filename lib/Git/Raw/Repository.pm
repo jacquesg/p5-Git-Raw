@@ -13,14 +13,9 @@ Git::Raw::Repository - Git repository class
 
     use Git::Raw;
 
-    # create a new dangling remote
-    my $url    = 'git://github.com/ghedo/p5-Git-Raw.git';
-    my $origin = Git::Raw::Remote -> new(undef, 'origin', $url, "");
-
-    # clone the Git repository
-    my $repo = Git::Raw::Repository -> clone(
-      $origin, 'p5-Git-Raw', { 'update_missing' => 1 }, 0
-    );
+    # clone a Git repository
+    my $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
+    my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', { });
 
     # print all the tags of the repository
     foreach my $tag (@{ $repo -> tags }) {
@@ -37,11 +32,16 @@ A C<Git::Raw::Repository> represents a Git repository.
 
 Initialize a new repository at C<$path>.
 
-=head2 clone( $remote, $path, \%strategy, $is_bare )
+=head2 clone( $url, $path, \%opts )
 
-Clone the repository at C<$remote> to C<$path>. See the C<checkout()> description
-for more information about C<%strategy>. The C<$remote> object must be created
-passing an C<undef> repository.
+Clone the repository at C<$url> to C<$path>. Valid fields for the C<%opts> hash
+are:
+
+=over 4
+
+=item * "bare" If true (default is false) create a bare repository.
+
+=back
 
 =head2 open( $path )
 

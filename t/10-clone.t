@@ -12,14 +12,17 @@ use Test::More;
 use Git::Raw;
 use Cwd qw(abs_path);
 
-my $url  = 'git://github.com/ghedo/p5-Algorithm-URL-Shorten.git';
-my $path = abs_path('t/test_repo_clone');
+my $path;
+my $url = 'git://github.com/ghedo/p5-Algorithm-URL-Shorten.git';
 
-my $origin = Git::Raw::Remote -> new(undef, 'origin', $url, '');
+$path = abs_path('t/test_repo_clone_bare');
+my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
 
-my $repo = Git::Raw::Repository -> clone(
-	$origin, $path, { "update_missing" => 1 }, 0
-);
+ok $bare -> is_bare;
+ok !$bare -> is_empty;
+
+$path = abs_path('t/test_repo_clone');
+my $repo = Git::Raw::Repository -> clone($url, $path, { });
 
 ok !$repo -> is_bare;
 ok !$repo -> is_empty;
