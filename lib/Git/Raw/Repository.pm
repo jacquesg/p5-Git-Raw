@@ -39,7 +39,9 @@ are:
 
 =over 4
 
-=item * "bare" If true (default is false) create a bare repository.
+=item * "bare"
+
+If true (default is false) create a bare repository.
 
 =back
 
@@ -67,12 +69,18 @@ Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository.
 
 Retrieve the object corresponding to C<$id>.
 
-=head2 checkout( $object, \%strategy )
+=head2 checkout( $object, \%opts )
 
 Updates the files in the index and working tree to match the content of
-C<$object>. The C<%strategy> paramenter can have set the following values:
+C<$object>. Valid fields for the C<%opts> hash are:
 
 =over 4
+
+=item * "checkout_strategy"
+
+Hash representing the desired checkout strategy. Valid fields are:
+
+=over 8
 
 =item * "update_unmodified"
 
@@ -92,11 +100,12 @@ C<$object>. The C<%strategy> paramenter can have set the following values:
 
 =back
 
+=back
+
 Example:
 
-    $repo -> checkout($repo -> head, {
-      'update_missing'  => 1,
-      'update_modified' => 1
+    $repo -> checkout($repo -> head -> target, {
+      'checkout_strategy' => { 'update_missing'  => 1, 'update_modified' => 1 }
     });
 
 =head2 reset( $target, $type )

@@ -155,18 +155,24 @@ lookup(self, id)
 	OUTPUT: RETVAL
 
 void
-checkout(self, target, strategy)
+checkout(self, target, opts)
 	Repository self
 	SV *target
-	HV *strategy
+	HV *opts
 
 	CODE:
 		int rc;
-		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
+		SV *strategy;
 
-		opts.checkout_strategy = git_hv_to_checkout_strategy(strategy);
+		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
-		rc = git_checkout_tree(self, git_sv_to_obj(target), &opts);
+		strategy = *hv_fetchs(opts, "checkout_strategy", 0);
+		checkout_opts.checkout_strategy =
+			git_hv_to_checkout_strategy(SvRV(strategy));
+
+		rc = git_checkout_tree(
+			self, git_sv_to_obj(target), &checkout_opts
+		);
 		git_check_error(rc);
 
 void
