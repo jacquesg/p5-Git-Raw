@@ -31,11 +31,21 @@ clone(class, url, path, opts)
 
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
-		/* Bare repository check */
+		/* Bare repository */
 		if ((opt = hv_fetchs(opts, "bare", 0)) && (SvIV(*opt) != 0))
 			clone_opts.bare = 1;
 		else
 			clone_opts.bare = 0;
+
+		/* Cred acquire */
+		if ((opt = hv_fetchs(opts, "cred_acquire", 0))) {
+			SV *cb = *opt;
+
+			SvREFCNT_inc(cb);
+
+			clone_opts.cred_acquire_cb = git_cred_acquire_cbb;
+			clone_opts.cred_acquire_payload = cb;
+		}
 
 		rc = git_clone(
 			&repo, SvPVbyte_nolen(url), SvPVbyte_nolen(path),

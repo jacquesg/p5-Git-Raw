@@ -43,6 +43,12 @@ are:
 
 If true (default is false) create a bare repository.
 
+=item * "cred_acquire"
+
+The callback to be called any time authentication is required to connect to the
+remote repository. The callback receives a string containing the URL of the
+remote, and it must return a L<Git::Raw::Cred> object.
+
 =back
 
 =head2 open( $path )
