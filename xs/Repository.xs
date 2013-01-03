@@ -153,8 +153,9 @@ lookup(self, id)
 		git_object *obj;
 
 		STRLEN len;
+		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
+		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
 		rc = git_object_lookup_prefix(&obj, self, &oid, len, GIT_OBJ_ANY);
@@ -202,6 +203,8 @@ reset(self, target, type)
 			reset = GIT_RESET_SOFT;
 		else if (strcmp(type_str, "mixed"))
 			reset = GIT_RESET_MIXED;
+		else
+			Perl_croak(aTHX_ "Invalid type");
 
 		rc = git_reset(self, git_sv_to_obj(target), reset);
 		git_check_error(rc);

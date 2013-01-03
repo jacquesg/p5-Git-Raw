@@ -11,8 +11,9 @@ lookup(class, repo, id)
 		git_object *obj;
 
 		STRLEN len;
+		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
+		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
 		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_TREE);
