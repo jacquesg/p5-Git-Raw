@@ -17,7 +17,7 @@ Git::Raw::Branch - Git branch class
     my $repo = Git::Raw::Repository -> open($path);
 
     # create a new branch named 'some_branch'
-    $repo -> branch('some_branch', $repo -> head);
+    $repo -> branch('some_branch', $repo -> head -> target);
 
 =head1 DESCRIPTION
 
