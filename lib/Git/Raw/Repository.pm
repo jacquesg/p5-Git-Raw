@@ -84,19 +84,41 @@ Hash representing the desired checkout strategy. Valid fields are:
 
 =item * "update_unmodified"
 
+Update any file where the working directory content matches the HEAD.
+
 =item * "update_missing"
+
+Create a missing file that exists in the index and does not exist in the
+working directory.
 
 =item * "update_modified"
 
+Update files where the working directory does not match the HEAD so long as the
+file actually exists in the HEAD.
+
 =item * "update_untracked"
+
+Update files even if there is a working directory version that does not exist
+in the HEAD.
 
 =item * "allow_conflicts"
 
+It is okay to update the files that are allowed by the strategy even if there
+are conflicts.
+
 =item * "skip_unmerged"
+
+Proceed even if there are unmerged entries in the index, and just skip them.
 
 =item * "update_only"
 
+Update is not allowed to create new files or delete old ones, only update
+existing content.
+
 =item * "remove_untracked"
+
+Files in the working directory that are untracked (and not ignored) will be
+removed altogether.
 
 =back
 
