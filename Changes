@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.19      2013-01-03 19:24:50 Europe/Rome
+
  - Fix errors in the Push and Repository examples (no functional changes)
  - Reference -> target() does not need a Repository argument anymore (its
    documentation was also incorrect) (thanks, @ruz!)
