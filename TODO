@@ -12,3 +12,5 @@
 * Reference -> foreach(...) (replaces Branch -> foreach?)
 * Repository -> state
 * Repository -> merge(...)
+* Repository -> checkout(...) (support for all the checkout_opts)
+* Repsoitory -> clone(...) ( support for all the clone_opts)
