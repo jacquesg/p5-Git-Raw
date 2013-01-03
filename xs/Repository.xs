@@ -168,7 +168,7 @@ checkout(self, target, opts)
 
 		strategy = *hv_fetchs(opts, "checkout_strategy", 0);
 		checkout_opts.checkout_strategy =
-			git_hv_to_checkout_strategy(SvRV(strategy));
+			git_hv_to_checkout_strategy((HV *) SvRV(strategy));
 
 		rc = git_checkout_tree(
 			self, git_sv_to_obj(target), &checkout_opts
