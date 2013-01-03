@@ -7,13 +7,14 @@ init(class, path, is_bare)
 	unsigned is_bare
 
 	CODE:
-		Repository r;
-		const char *path_str = SvPVbyte_nolen(path);
+		Repository repo;
 
-		int rc = git_repository_init(&r, path_str, is_bare);
+		int rc = git_repository_init(
+			&repo, SvPVbyte_nolen(path), is_bare
+		);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -64,13 +65,12 @@ open(class, path)
 	SV *path
 
 	CODE:
-		Repository r;
-		const char *path_str = SvPVbyte_nolen(path);
+		Repository repo;
 
-		int rc = git_repository_open(&r, path_str);
+		int rc = git_repository_open(&repo, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -80,19 +80,18 @@ discover(class, path)
 	SV *path
 
 	CODE:
-		Repository r;
-		char path_str[GIT_PATH_MAX];
-		const char *start = SvPVbyte_nolen(path);
+		Repository repo;
+		char found[GIT_PATH_MAX];
 
 		int rc = git_repository_discover(
-			path_str, GIT_PATH_MAX, start, 1, NULL
+			found, GIT_PATH_MAX, SvPVbyte_nolen(path), 1, NULL
 		);
 		git_check_error(rc);
 
-		rc = git_repository_open(&r, path_str);
+		rc = git_repository_open(&repo, found);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), r);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -115,12 +114,12 @@ index(self)
 	Repository self
 
 	CODE:
-		Index out;
+		Index index;
 
-		int rc = git_repository_index(&out, self);
+		int rc = git_repository_index(&index, self);
 		git_check_error(rc);
 
-		RETVAL = out;
+		RETVAL = index;
 
 	OUTPUT: RETVAL
 
@@ -129,15 +128,17 @@ head(self)
 	SV *self
 
 	CODE:
-		Reference r;
+		Reference ref;
 
-		int rc = git_repository_head(&r, GIT_SV_TO_PTR(Repository, self));
+		int rc = git_repository_head(
+			&ref, GIT_SV_TO_PTR(Repository, self)
+		);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Reference", r); \
+		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Reference", ref);
+
 		xs_object_magic_attach_struct(
-			aTHX_ SvRV(RETVAL),
-			SvREFCNT_inc_NN(SvRV(self))
+			aTHX_ SvRV(RETVAL), SvREFCNT_inc_NN(SvRV(self))
 		);
 
 	OUTPUT: RETVAL
@@ -149,18 +150,17 @@ lookup(self, id)
 
 	CODE:
 		git_oid oid;
-		git_object *o;
+		git_object *obj;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&o, self, &oid, len, GIT_OBJ_ANY);
+		rc = git_object_lookup_prefix(&obj, self, &oid, len, GIT_OBJ_ANY);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = git_obj_to_sv(obj);
 
 	OUTPUT: RETVAL
 
@@ -193,17 +193,17 @@ reset(self, target, type)
 
 	CODE:
 		int rc;
+		git_reset_t reset;
+
 		STRLEN len;
-		git_reset_t t;
 		const char *type_str = SvPVbyte(type, len);
 
 		if (strcmp(type_str, "soft"))
-			t = GIT_RESET_SOFT;
+			reset = GIT_RESET_SOFT;
+		else if (strcmp(type_str, "mixed"))
+			reset = GIT_RESET_MIXED;
 
-		if (strcmp(type_str, "mixed"))
-			t = GIT_RESET_MIXED;
-
-		rc = git_reset(self, git_sv_to_obj(target), t);
+		rc = git_reset(self, git_sv_to_obj(target), reset);
 		git_check_error(rc);
 
 AV *
@@ -213,10 +213,10 @@ status(self, path)
 
 	CODE:
 		unsigned iflags;
-		AV *flags = newAV();
-		const char *file = SvPVbyte_nolen(path);
 
-		int rc = git_status_file(&iflags, self, file);
+		AV *flags = newAV();
+
+		int rc = git_status_file(&iflags, self, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 		if (iflags & GIT_STATUS_INDEX_NEW)
@@ -250,9 +250,7 @@ ignore(self, rules)
 	SV *rules
 
 	CODE:
-		const char *rules_str = SvPVbyte_nolen(rules);
-
-		int rc = git_ignore_add_rule(self, rules_str);
+		int rc = git_ignore_add_rule(self, SvPVbyte_nolen(rules));
 		git_check_error(rc);
 
 Diff
@@ -262,6 +260,7 @@ diff(self, ...)
 	PROTOTYPE: $;$
 	CODE:
 		int rc;
+
 		Diff diff;
 		Index index;
 
@@ -302,6 +301,7 @@ remotes(self)
 
 	CODE:
 		int i;
+
 		AV *output = newAV();
 		git_strarray remotes;
 
@@ -309,15 +309,14 @@ remotes(self)
 		git_check_error(rc);
 
 		for (i = 0; i < remotes.count; i++) {
-			Remote r;
-			SV *remote;
+			SV *sv;
+			Remote remote;
 
-			rc = git_remote_load(&r, self, remotes.strings[i]);
+			rc = git_remote_load(&remote, self, remotes.strings[i]);
 			git_check_error(rc);
 
-			remote = sv_setref_pv(newSV(0), "Git::Raw::Remote", r);
-
-			av_push(output, remote);
+			sv = sv_setref_pv(newSV(0), "Git::Raw::Remote", remote);
+			av_push(output, sv);
 		}
 
 		git_strarray_free(&remotes);

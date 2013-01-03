@@ -14,17 +14,16 @@ create(class, repo, name, target)
 	SV *target
 
 	CODE:
-		Reference out;
-		const char *name_str = SvPVbyte_nolen(name);
-
+		Reference ref;
 		Commit obj = (Commit) git_sv_to_obj(target);
 
 		int rc = git_branch_create(
-			&out, GIT_SV_TO_PTR(Repository, repo), name_str, obj, 0
+			&ref, GIT_SV_TO_PTR(Repository, repo),
+			SvPVbyte_nolen(name), obj, 0
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, out, repo);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, ref, repo);
 
 	OUTPUT: RETVAL
 
@@ -36,18 +35,19 @@ lookup(class, repo, name, is_local)
 	bool is_local
 
 	CODE:
-		Reference b;
-		git_branch_t t = is_local ?
+		Reference branch;
+
+		git_branch_t type = is_local ?
 			GIT_BRANCH_LOCAL     :
 			GIT_BRANCH_REMOTE    ;
 
 		int rc = git_branch_lookup(
-			&b, GIT_SV_TO_PTR(Repository, repo),
-			SvPVbyte_nolen(name), t
+			&branch, GIT_SV_TO_PTR(Repository, repo),
+			SvPVbyte_nolen(name), type
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, b, repo);
+		GIT_NEW_OBJ_DOUBLE(RETVAL, class, branch, repo);
 
 	OUTPUT: RETVAL
 
@@ -58,9 +58,7 @@ move(self, name, force)
 	bool force
 
 	CODE:
-		const char *new = SvPVbyte_nolen(name);
-
-		int rc = git_branch_move(self, new, force);
+		int rc = git_branch_move(self, SvPVbyte_nolen(name), force);
 		git_check_error(rc);
 
 void

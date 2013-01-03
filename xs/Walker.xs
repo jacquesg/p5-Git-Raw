@@ -6,12 +6,12 @@ create(class, repo)
 	Repository repo
 
 	CODE:
-		Walker w;
+		Walker walk;
 
-		int rc = git_revwalk_new(&w, repo);
+		int rc = git_revwalk_new(&walk, repo);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), w);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), walk);
 
 	OUTPUT: RETVAL
 
@@ -90,14 +90,15 @@ next(self)
 	Walker self
 
 	CODE:
-		Commit c;
 		git_oid oid;
+		Commit commit;
 		int rc = git_revwalk_next(&oid, self);
 
 		switch (rc) {
 			case 0: {
-				Repository r = git_revwalk_repository(self);
-				rc = git_commit_lookup(&c, r, &oid);
+				Repository repo = git_revwalk_repository(self);
+
+				rc = git_commit_lookup(&commit, repo, &oid);
 				git_check_error(rc);
 
 				break;
@@ -108,7 +109,7 @@ next(self)
 			default: git_check_error(rc);
 		}
 
-		RETVAL = c;
+		RETVAL = commit;
 
 	OUTPUT: RETVAL
 

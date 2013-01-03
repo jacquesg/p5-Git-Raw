@@ -10,14 +10,14 @@ new(class, name, email, time, off)
 
 	CODE:
 		Signature sig;
-		const char *name_str  = SvPVbyte_nolen(name);
-		const char *email_str = SvPVbyte_nolen(email);
-		const char *time_str  = SvPVbyte_nolen(time);
 
-		git_time_t t;
-		sscanf(time_str, "%" PRId64, &t);
+		git_time_t git_time;
+		sscanf(SvPVbyte_nolen(time), "%" PRId64, &git_time);
 
-		int rc = git_signature_new(&sig, name_str, email_str, t, off);
+		int rc = git_signature_new(
+			&sig, SvPVbyte_nolen(name),
+			SvPVbyte_nolen(email), git_time, off
+		);
 		git_check_error(rc);
 
 		RETVAL = sig;
@@ -32,10 +32,10 @@ now(class, name, email)
 
 	CODE:
 		Signature sig;
-		const char *name_str  = SvPVbyte_nolen(name);
-		const char *email_str = SvPVbyte_nolen(email);
 
-		int rc = git_signature_now(&sig, name_str, email_str);
+		int rc = git_signature_now(
+			&sig, SvPVbyte_nolen(name), SvPVbyte_nolen(email)
+		);
 		git_check_error(rc);
 
 		RETVAL = sig;
@@ -68,9 +68,9 @@ time(self)
 		git_time_t time = self -> when.time;
 
 		const int n = snprintf(NULL, 0, "%" PRId64, time);
-		char buf[n+1];
+		char buf[n + 1];
 
-		snprintf(buf, n+1, "%" PRId64, time);
+		snprintf(buf, n + 1, "%" PRId64, time);
 
 		RETVAL = newSVpv(buf, 0);
 

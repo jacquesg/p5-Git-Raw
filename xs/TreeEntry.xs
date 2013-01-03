@@ -26,12 +26,12 @@ object(self, repo)
 	Repository repo
 
 	CODE:
-		git_object *o;
+		git_object *obj;
 
-		int rc = git_tree_entry_to_object(&o, repo, self);
+		int rc = git_tree_entry_to_object(&obj, repo, self);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = git_obj_to_sv(obj);
 
 	OUTPUT: RETVAL
 

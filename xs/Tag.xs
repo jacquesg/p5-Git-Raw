@@ -10,25 +10,26 @@ create(class, repo, name, msg, tagger, target)
 	SV *target
 
 	CODE:
-		Tag t;
+		Tag tag;
+
 		git_oid oid;
-		git_object *o;
+		git_object *obj;
 
-		o = git_sv_to_obj(target);
+		obj = git_sv_to_obj(target);
 
-		if (o == NULL)
+		if (obj == NULL)
 			Perl_croak(aTHX_ "target is not of a valid type");
 
 		int rc = git_tag_create(
 			&oid, repo, SvPVbyte_nolen(name),
-			o, tagger, SvPVbyte_nolen(msg), 0
+			obj, tagger, SvPVbyte_nolen(msg), 0
 		);
 		git_check_error(rc);
 
-		rc = git_tag_lookup(&t, repo, &oid);
+		rc = git_tag_lookup(&tag, repo, &oid);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), t);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), tag);
 
 	OUTPUT: RETVAL
 
@@ -40,18 +41,17 @@ lookup(class, repo, id)
 
 	CODE:
 		git_oid oid;
-		git_object *o;
+		git_object *obj;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_TAG);
+		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_TAG);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), obj);
 
 	OUTPUT: RETVAL
 
@@ -127,12 +127,12 @@ target(self)
 	Tag self
 
 	CODE:
-		git_object *o;
+		git_object *obj;
 
-		int rc = git_tag_target(&o, self);
+		int rc = git_tag_target(&obj, self);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(o);
+		RETVAL = git_obj_to_sv(obj);
 
 	OUTPUT: RETVAL
 

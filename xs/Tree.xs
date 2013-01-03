@@ -8,18 +8,17 @@ lookup(class, repo, id)
 
 	CODE:
 		git_oid oid;
-		git_object *o;
+		git_object *obj;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_TREE);
+		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_TREE);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), obj);
 
 	OUTPUT: RETVAL
 
@@ -42,14 +41,14 @@ entries(self)
 		int rc, i, count = git_tree_entrycount(self);
 
 		for (i = 0; i < count; i++) {
-			TreeEntry curr = (TreeEntry) git_tree_entry_byindex(self, i);
+			TreeEntry entry = (TreeEntry) git_tree_entry_byindex(self, i);
 
-			SV *entry = sv_setref_pv(
+			SV *sv = sv_setref_pv(
 				newSV(0), "Git::Raw::TreeEntry",
-				(void *) git_tree_entry_dup(curr)
+				git_tree_entry_dup(entry)
 			);
 
-			av_push(entries, entry);
+			av_push(entries, sv);
 		}
 
 		RETVAL = entries;

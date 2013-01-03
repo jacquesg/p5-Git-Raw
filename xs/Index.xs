@@ -6,9 +6,7 @@ add(self, path)
 	SV *path
 
 	CODE:
-		const char *path_str = SvPVbyte_nolen(path);
-
-		int rc = git_index_add_from_workdir(self, path_str);
+		int rc = git_index_add_from_workdir(self, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 void
@@ -64,9 +62,7 @@ remove(self, path)
 	SV *path
 
 	CODE:
-		const char *path_str = SvPVbyte_nolen(path);
-
-		int rc = git_index_remove(self, path_str, 0);
+		int rc = git_index_remove(self, SvPVbyte_nolen(path), 0);
 		git_check_error(rc);
 
 void

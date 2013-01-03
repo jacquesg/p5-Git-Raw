@@ -5,12 +5,12 @@ new(class)
 	SV *class
 
 	CODE:
-		Config out;
+		Config cfg;
 
-		int rc = git_config_new(&out);
+		int rc = git_config_new(&cfg);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), out);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), cfg);
 
 	OUTPUT: RETVAL
 
@@ -21,9 +21,9 @@ add_file(self, path, level)
 	int level
 
 	CODE:
-		const char *file = SvPVbyte_nolen(path);
-
-		int rc = git_config_add_file_ondisk(self, file, level, 0);
+		int rc = git_config_add_file_ondisk(
+			self, SvPVbyte_nolen(path), level, 0
+		);
 		git_check_error(rc);
 
 bool
@@ -154,9 +154,7 @@ delete(self, name)
 	SV *name
 
 	CODE:
-		const char *var = SvPVbyte_nolen(name);
-
-		int rc = git_config_delete_entry(self, var);
+		int rc = git_config_delete_entry(self, SvPVbyte_nolen(name));
 		git_check_error(rc);
 
 void

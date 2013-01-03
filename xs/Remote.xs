@@ -28,9 +28,9 @@ name(self, ...)
 		const char *name;
 
 		if (items == 2) {
-			const char *new = SvPVbyte_nolen(ST(1));
-
-			int rc = git_remote_rename(self, new, NULL, NULL);
+			int rc = git_remote_rename(
+				self, SvPVbyte_nolen(ST(1)), NULL, NULL
+			);
 			git_check_error(rc);
 		}
 
@@ -49,9 +49,7 @@ url(self, ...)
 		const char *url;
 
 		if (items == 2) {
-			const char *new = SvPVbyte_nolen(ST(1));
-
-			int rc = git_remote_set_url(self, new);
+			int rc = git_remote_set_url(self, SvPVbyte_nolen(ST(1)));
 			git_check_error(rc);
 		}
 
@@ -70,9 +68,9 @@ fetchspec(self, ...)
 		RefSpec spec;
 
 		if (items == 2) {
-			const char *new = SvPVbyte_nolen(ST(1));
-
-			int rc = git_remote_set_fetchspec(self, new);
+			int rc = git_remote_set_fetchspec(
+				self, SvPVbyte_nolen(ST(1))
+			);
 			git_check_error(rc);
 		}
 
@@ -91,9 +89,9 @@ pushspec(self, ...)
 		RefSpec spec;
 
 		if (items == 2) {
-			const char *new = SvPVbyte_nolen(ST(1));
-
-			int rc = git_remote_set_pushspec(self, new);
+			int rc = git_remote_set_pushspec(
+				self, SvPVbyte_nolen(ST(1))
+			);
 			git_check_error(rc);
 		}
 
@@ -160,7 +158,6 @@ cred_acquire(self, cb)
 
 	CODE:
 		SvREFCNT_inc(cb);
-
 		git_remote_set_cred_acquire_cb(self, git_cred_acquire_cbb, cb);
 
 bool

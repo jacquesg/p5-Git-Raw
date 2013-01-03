@@ -1,44 +1,44 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
 SV *
-create(class, repo, msg, author, cmtter, parents, tree)
+create(class, repo, msg, author, committer, parents, tree)
 	SV *class
 	Repository repo
 	SV *msg
 	Signature author
-	Signature cmtter
+	Signature committer
 	AV *parents
 	Tree tree
 
 	CODE:
-		SV *iter;
-		int i = 0;
 		git_oid oid;
-		Commit c, *paren;
+		Commit commit, *commit_parents;
 
 		int count = av_len(parents) + 1;
 
 		if (count > 0) {
-			Newx(paren, count, git_commit *);
+			int i; SV *iter;
+
+			Newx(commit_parents, count, git_commit *);
 
 			for (i = 0; i < count; i++) {
 				iter = av_shift(parents);
 
-				paren[i] = GIT_SV_TO_PTR(Commit, iter);
+				commit_parents[i] = GIT_SV_TO_PTR(Commit, iter);
 			}
 		}
 
 		int rc = git_commit_create(
-			&oid, repo, "HEAD", author, cmtter, NULL,
+			&oid, repo, "HEAD", author, committer, NULL,
 			SvPVbyte_nolen(msg), tree, count,
-			(const git_commit **) paren
+			(const git_commit **) commit_parents
 		);
 		git_check_error(rc);
 
-		rc = git_commit_lookup(&c, repo, &oid);
+		rc = git_commit_lookup(&commit, repo, &oid);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), c);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), commit);
 
 	OUTPUT: RETVAL
 
@@ -50,18 +50,17 @@ lookup(class, repo, id)
 
 	CODE:
 		git_oid oid;
-		git_object *o;
+		git_object *obj;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+		int rc = git_oid_fromstrn(&oid, SvPVbyte(id, len), len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&o, repo, &oid, len, GIT_OBJ_COMMIT);
+		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_COMMIT);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), o);
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), obj);
 
 	OUTPUT: RETVAL
 
@@ -135,12 +134,12 @@ tree(self)
 	Commit self
 
 	CODE:
-		Tree t;
+		Tree tree;
 
-		int rc = git_commit_tree(&t, self);
+		int rc = git_commit_tree(&tree, self);
 		git_check_error(rc);
 
-		RETVAL = t;
+		RETVAL = tree;
 
 	OUTPUT: RETVAL
 
@@ -153,15 +152,16 @@ parents(self)
 		int rc, i, count = git_commit_parentcount(self);
 
 		for (i = 0; i < count; i++) {
-			Commit curr;
-			rc = git_commit_parent(&curr, self, i);
+			Commit parent;
+
+			rc = git_commit_parent(&parent, self, i);
 			git_check_error(rc);
 
-			SV *parent = sv_setref_pv(
-				newSV(0), "Git::Raw::Commit", (void *) curr
+			SV *sv = sv_setref_pv(
+				newSV(0), "Git::Raw::Commit", parent
 			);
 
-			av_push(parents, parent);
+			av_push(parents, sv);
 		}
 
 		RETVAL = parents;

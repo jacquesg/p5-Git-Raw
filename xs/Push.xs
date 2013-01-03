@@ -6,12 +6,12 @@ new(class, remote)
 	Remote remote
 
 	CODE:
-		Push out;
+		Push push;
 
-		int rc = git_push_new(&out, remote);
+		int rc = git_push_new(&push, remote);
 		git_check_error(rc);
 
-		RETVAL = out;
+		RETVAL = push;
 
 	OUTPUT: RETVAL
 
@@ -21,9 +21,7 @@ add_refspec(self, refspec)
 	SV *refspec
 
 	CODE:
-		const char *spec = SvPVbyte_nolen(refspec);
-
-		int rc = git_push_add_refspec(self, spec);
+		int rc = git_push_add_refspec(self, SvPVbyte_nolen(refspec));
 		git_check_error(rc);
 
 void

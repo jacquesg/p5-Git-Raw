@@ -8,6 +8,7 @@ plaintext(class, user, pass)
 
 	CODE:
 		Cred out;
+
 		const char *usr = SvPVbyte_nolen(user);
 		const char *pwd = SvPVbyte_nolen(pass);
 
