@@ -7,6 +7,13 @@ Revision history for Git-Raw
    documentation was also incorrect) (thanks, @ruz!)
  - Repository -> head() now returns a Reference like the underlying libgit2 API
    instead of a Commit (incompatible change) (thanks, @ruz!)
+ - Update libgit2 to 922dd97
+ - Rename Remote -> add() method to Remote -> create() and remove
+   Remote -> new() (incompatible changes)
+ - Update Repository -> clone() to take an URL again (instead of a remote) and
+   a generic %opts parameter (incompatible changes)
+ - Update Repository -> checkout() to take a generic %opts parameter and improve
+   its documentation (incompatible change)
 
 0.18      2012-12-14 18:39:16 Europe/Rome
 
