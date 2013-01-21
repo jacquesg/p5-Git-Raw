@@ -114,30 +114,29 @@ entry_bypath(self, path)
 	OUTPUT: RETVAL
 
 Diff
-diff(self, repo, ...)
+diff(self, ...)
 	Tree self
-	Repository repo
 
-	PROTOTYPE: $$;$
+	PROTOTYPE: $;$
 	CODE:
 		int rc;
 		Diff diff;
 
 		switch (items) {
-			case 2: {
+			case 1: {
 				rc = git_diff_tree_to_workdir(
-					&diff, repo, self, NULL
+					&diff, git_tree_owner(self), self, NULL
 				);
 				git_check_error(rc);
 
 				break;
 			}
 
-			case 3: {
-				Tree new = GIT_SV_TO_PTR(Tree, ST(2));
+			case 2: {
+				Tree new = GIT_SV_TO_PTR(Tree, ST(1));
 
 				rc = git_diff_tree_to_tree(
-					&diff, repo, self, new, NULL
+					&diff, git_tree_owner(self), self, new, NULL
 				);
 				git_check_error(rc);
 

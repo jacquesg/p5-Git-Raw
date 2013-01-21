@@ -39,7 +39,7 @@ Retrieve a L<Git::Raw::TreeEntry> object by name.
 
 Retrieve a L<Git::Raw::TreeEntry> object by path.
 
-=head2 diff( $repo [, $tree] )
+=head2 diff( [$tree] )
 
 Compute the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed, the
 diff will be computed against the working directory.

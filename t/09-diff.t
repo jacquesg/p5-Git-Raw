@@ -51,7 +51,7 @@ is $output, $expected;
 my $tree2 = $repo -> head -> target -> tree;
 my $tree1 = $repo -> head -> target -> parents -> [0] -> tree;
 
-$diff = $tree1 -> diff($repo, $tree2);
+$diff = $tree1 -> diff($tree2);
 
 $expected = <<'EOS';
 file => diff --git a/test3/under/the/tree/test3 b/test3/under/the/tree/test3
