@@ -15,9 +15,9 @@ A C<Git::Raw::Reference> represents a Git reference.
 
 =head1 METHODS
 
-=head2 lookup( $name )
+=head2 lookup( $name, $repository )
 
-Retrieve the reference with name C<$name>.
+Retrieve the reference with name C<$name> in C<$repository>.
 
 =head2 delete( )
 
