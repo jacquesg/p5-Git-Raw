@@ -6,7 +6,7 @@ add(self, path)
 	SV *path
 
 	CODE:
-		int rc = git_index_add_from_workdir(self, SvPVbyte_nolen(path));
+		int rc = git_index_add_bypath(self, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 void
