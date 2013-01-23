@@ -2,6 +2,15 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Documentation fixes (GH#6) (thanks, @daknok!)
+ - Add note in the documentation about the API being unstable
+ - Update libgit2 to 586f71e
+    + Update checkout strategies' names: "update_unmodified", "update_missing",
+      "update_modified" and "update_untracked" have been removed (incompatible
+      change)
+ - Repository -> head() now takes an additional optional parameter $new_head
+   used to change the repository's HEAD.
+
 0.19      2013-01-03 19:24:50 Europe/Rome
 
  - Fix errors in the Push and Repository examples (no functional changes)
