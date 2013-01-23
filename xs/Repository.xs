@@ -349,10 +349,19 @@ path(self)
 	OUTPUT: RETVAL
 
 SV *
-workdir(self)
+workdir(self, ...)
 	Repository self
 
-	CODE:
+        PROTOTYPE: $;$
+        CODE:
+
+                if (items == 2) {
+                        const char *new_path = SvPVbyte_nolen( ST(1) );
+                        const int update_gitlink = 1; // Also sets core.worktree
+                        int rc = git_repository_set_workdir(self, new_path, update_gitlink);
+			git_check_error(rc);
+		}
+
 		const char *path = git_repository_workdir(self);
 		RETVAL = newSVpv(path, 0);
 
