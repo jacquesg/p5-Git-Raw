@@ -67,9 +67,11 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Retrieve the default L<Git::Raw::Index> of the repository.
 
-=head2 head( )
+=head2 head( [$new_head] )
 
-Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository.
+Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository. If
+the L<Git::Raw::Reference> C<$new_head> is passed, the HEAD of the repository
+will be changed to point to it.
 
 =head2 lookup( $id )
 
