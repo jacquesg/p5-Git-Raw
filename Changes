@@ -9,7 +9,7 @@ Revision history for Git-Raw
       "update_modified" and "update_untracked" have been removed (incompatible
       change)
  - Repository -> head() now takes an additional optional parameter $new_head
-   used to change the repository's HEAD.
+   used to change the repository's HEAD (GH#7)
 
 0.19      2013-01-03 19:24:50 Europe/Rome
 
