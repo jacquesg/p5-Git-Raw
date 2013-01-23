@@ -93,31 +93,47 @@ unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 
 	GIT_CHECKOUT_OPT(
-		strategy, "update_unmodifed", GIT_CHECKOUT_UPDATE_UNMODIFIED
+		strategy, "none", GIT_CHECKOUT_NONE
 	);
 
 	GIT_CHECKOUT_OPT(
-		strategy, "update_missing",   GIT_CHECKOUT_UPDATE_MISSING
+		strategy, "force", GIT_CHECKOUT_FORCE
 	);
 
 	GIT_CHECKOUT_OPT(
-		strategy, "update_modified",  GIT_CHECKOUT_UPDATE_MODIFIED
+		strategy, "safe", GIT_CHECKOUT_SAFE
 	);
 
 	GIT_CHECKOUT_OPT(
-		strategy, "update_untracked", GIT_CHECKOUT_UPDATE_UNTRACKED
+		strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE
 	);
 
 	GIT_CHECKOUT_OPT(
-		strategy, "allow_conflicts",  GIT_CHECKOUT_ALLOW_CONFLICTS
+		strategy, "allow_conflicts", GIT_CHECKOUT_ALLOW_CONFLICTS
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "remove_untracked", GIT_CHECKOUT_REMOVE_UNTRACKED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "remove_ignored", GIT_CHECKOUT_REMOVE_IGNORED
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "dont_update_index", GIT_CHECKOUT_DONT_UPDATE_INDEX
+	);
+
+	GIT_CHECKOUT_OPT(
+		strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH
 	);
 
 	GIT_CHECKOUT_OPT(
 		strategy, "skip_unmerged",    GIT_CHECKOUT_SKIP_UNMERGED
-	);
-
-	GIT_CHECKOUT_OPT(
-		strategy, "update_only",      GIT_CHECKOUT_UPDATE_ONLY
 	);
 
 	return out;

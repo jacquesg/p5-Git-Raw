@@ -12,11 +12,7 @@ my $fst = $repo -> head -> target -> parents -> [0];
 is $fst -> message, "initial commit\n";
 
 $repo -> checkout($fst, {
-	'checkout_strategy' => { 
-		'update_missing'   => 1,
-		'update_modified'  => 1,
-		'remove_untracked' => 1
-	}
+	'checkout_strategy' => { 'safe'  => 1, 'remove_untracked' => 1 }
 });
 
 is_deeply $repo -> status('test2'), ['index_deleted'];
