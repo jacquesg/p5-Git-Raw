@@ -15,7 +15,7 @@ script:
 
 notifications:
   recipient:
-   - al3xbio@gmail.com
+   - alessandro@ghedini.me
   email:
     on_success: change
     on_failure: always
