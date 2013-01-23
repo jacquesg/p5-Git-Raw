@@ -265,9 +265,10 @@ sub walker { return Git::Raw::Walker -> create(@_) }
 
 Retrieve the complete path of the repository.
 
-=head2 workdir( )
+=head2 workdir( [$new_dir] )
 
-Retrieve the working directory of the repository.
+Retrieve the working directory of the repository. If C<$new_dir> is passed, the
+working directory of the repository will be set to the directory.
 
 =head2 is_empty( )
 
