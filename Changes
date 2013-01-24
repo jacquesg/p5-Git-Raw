@@ -10,6 +10,9 @@ Revision history for Git-Raw
       change)
  - Repository -> head() now takes an additional optional parameter $new_head
    used to change the repository's HEAD (GH#7)
+ - Repository -> workdir() now takes an additional optional parameter $new_dir
+   used to change the repository's working directory
+   (GH#8, #9) (thanks, @thaljef)
 
 0.19      2013-01-03 19:24:50 Europe/Rome
 
