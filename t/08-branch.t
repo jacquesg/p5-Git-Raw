@@ -40,7 +40,7 @@ my $head = $branch -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
 
-is $head -> message, "second commit\n";
+is $head -> message, "third commit\n";
 
 my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 

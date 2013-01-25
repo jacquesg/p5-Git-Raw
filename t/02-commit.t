@@ -3,6 +3,7 @@
 use Test::More;
 
 use Git::Raw;
+use File::Path qw(make_path);
 use File::Slurp;
 use Cwd qw(abs_path);
 
@@ -89,5 +90,38 @@ is $head -> offset, $off;
 my $parents = $head -> parents;
 
 is $parents -> [0] -> message, "initial commit\n";
+
+make_path($repo -> workdir . 'test3/under/the/tree');
+$file  = $repo -> workdir . 'test3/under/the/tree/test3';
+write_file($file, 'this is a third test');
+
+$index -> add('test3/under/the/tree/test3');
+$index -> write;
+
+$tree_id = $index -> write_tree;
+$tree    = $repo -> lookup($tree_id);
+
+my $commit3 = $repo -> commit(
+	"third commit\n", $me, $me, [$repo -> head -> target], $tree
+);
+
+$head = $repo -> head -> target;
+
+isa_ok $head, 'Git::Raw::Commit';
+
+is $head -> message, "third commit\n";
+
+is $head -> author -> name, $name;
+is $head -> author -> email, $email;
+is $head -> author -> time, $time;
+is $head -> author -> offset, $off;
+
+is $head -> committer -> name, $name;
+is $head -> committer -> email, $email;
+is $head -> committer -> time, $time;
+is $head -> committer -> offset, $off;
+
+is $head -> time, $time;
+is $head -> offset, $off;
 
 done_testing;

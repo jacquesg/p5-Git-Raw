@@ -23,7 +23,7 @@ ok !$ref -> is_remote;
 
 $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
-is $head -> message, "second commit\n";
+is $head -> message, "third commit\n";
 
 $ref = $repo -> branch('foobar06', $head);
 $ref -> delete;
