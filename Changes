@@ -13,6 +13,7 @@ Revision history for Git-Raw
  - Repository -> workdir() now takes an additional optional parameter $new_dir
    used to change the repository's working directory
    (GH#8, #9) (thanks, @thaljef)
+ - Add Tree -> entry_by{name,path}() methods (GH#10) (thanks, @keedi!)
 
 0.19      2013-01-03 19:24:50 Europe/Rome
 
