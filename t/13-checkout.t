@@ -9,12 +9,12 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $fst = $repo -> head -> target -> parents -> [0];
-is $fst -> message, "initial commit\n";
+is $fst -> message, "second commit\n";
 
 $repo -> checkout($fst, {
-	'checkout_strategy' => { 'safe'  => 1, 'remove_untracked' => 1 }
+	'checkout_strategy' => { 'safe' => 1, 'remove_untracked' => 1 }
 });
 
-is_deeply $repo -> status('test2'), ['index_deleted'];
+is_deeply $repo -> status('test3/under/the/tree/test3'), ['index_deleted'];
 
 done_testing;
