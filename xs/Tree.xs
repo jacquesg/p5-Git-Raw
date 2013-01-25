@@ -56,6 +56,50 @@ entries(self)
 
 	OUTPUT: RETVAL
 
+SV *
+entry_byname(self, name)
+	Tree self
+	SV *name
+
+	CODE:
+		STRLEN len;
+		const char *name_str = SvPVbyte(name, len);
+
+		TreeEntry entry = (TreeEntry) git_tree_entry_byname(self, name_str);
+		if (!entry) Perl_croak(aTHX_ "Invalid name");
+
+		SV *sv = sv_setref_pv(
+			newSV(0), "Git::Raw::TreeEntry",
+			git_tree_entry_dup(entry)
+		);
+
+		RETVAL = sv;
+
+	OUTPUT: RETVAL
+
+SV *
+entry_bypath(self, path)
+	Tree self
+	SV *path
+
+	CODE:
+		int rc;
+		STRLEN len;
+		const char *path_str = SvPVbyte(path, len);
+		TreeEntry entry;
+
+		rc = git_tree_entry_bypath(&entry, self, path_str);
+		git_check_error(rc);
+
+		SV *sv = sv_setref_pv(
+			newSV(0), "Git::Raw::TreeEntry",
+			git_tree_entry_dup(entry)
+		);
+
+		RETVAL = sv;
+
+	OUTPUT: RETVAL
+
 Diff
 diff(self, repo, ...)
 	Tree self

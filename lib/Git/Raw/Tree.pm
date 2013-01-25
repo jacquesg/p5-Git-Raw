@@ -28,6 +28,14 @@ Retrieve the id of the tree, as string.
 
 Retrieve a list of L<Git::Raw::TreeEntry> objects.
 
+=head2 entry_byname( name )
+
+Retrieve a L<Git::Raw::TreeEntry> object by name.
+
+=head2 entry_bypath( path )
+
+Retrieve a L<Git::Raw::TreeEntry> object by path.
+
 =head2 diff( $repo [, $tree] )
 
 Compute the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed, the

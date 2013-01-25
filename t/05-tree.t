@@ -28,6 +28,28 @@ isa_ok $obj1, 'Git::Raw::Blob';
 is $obj1 -> content, 'this is a second test';
 is $obj1 -> size, '21';
 
-is $entries -> [2], undef;
+my $obj2 = $entries -> [2] -> object($repo);
+
+isa_ok $obj2, 'Git::Raw::Tree';
+
+is $entries -> [3], undef;
+
+my $entry = $tree -> entry_byname('test3');
+
+isa_ok $entry, 'Git::Raw::TreeEntry';
+
+my $obj3 = $entry -> object($repo);
+
+isa_ok $obj3, 'Git::Raw::Tree';
+
+$entry = $tree -> entry_bypath('test3/under/the/tree/test3');
+
+isa_ok $entry, 'Git::Raw::TreeEntry';
+
+my $obj4 = $entry -> object($repo);
+
+isa_ok $obj4, 'Git::Raw::Blob';
+is $obj4 -> content, 'this is a third test';
+is $obj4 -> size, '20';
 
 done_testing;

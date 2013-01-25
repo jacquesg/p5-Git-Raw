@@ -54,13 +54,13 @@ my $tree1 = $repo -> head -> target -> parents -> [0] -> tree;
 $diff = $tree1 -> diff($repo, $tree2);
 
 $expected = <<'EOS';
-file => diff --git a/test2 b/test2
+file => diff --git a/test3/under/the/tree/test3 b/test3/under/the/tree/test3
 new file mode 100644
-index 0000000..7b79d2f
+index 0000000..c7eaef2
 --- /dev/null
-+++ b/test2
++++ b/test3/under/the/tree/test3
 hunk => @@ -0,0 +1 @@
-add => +this is a second testdel => 
+add => +this is a third testdel => 
 \ No newline at end of file
 EOS
 
@@ -69,7 +69,7 @@ $output = capture_stdout { $diff -> patch($printer) };
 is $output, $expected;
 
 $expected = <<'EOS';
-file => A	test2
+file => A	test3/under/the/tree/test3
 EOS
 
 $output = capture_stdout { $diff -> compact($printer) };
