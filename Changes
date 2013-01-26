@@ -4,7 +4,7 @@ Revision history for Git-Raw
 
  - Documentation fixes (GH#6) (thanks, @daknok!)
  - Add note in the documentation about the API being unstable
- - Update libgit2 to 586f71e
+ - Update libgit2 to f42beff
     + Update checkout strategies' names: "update_unmodified", "update_missing",
       "update_modified" and "update_untracked" have been removed (incompatible
       change)
