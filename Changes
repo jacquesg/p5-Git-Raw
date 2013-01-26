@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.20      2013-01-26 13:46:00 Europe/Rome
+
  - Documentation fixes (GH#6) (thanks, @daknok!)
  - Add note in the documentation about the API being unstable
  - Update libgit2 to f42beff
