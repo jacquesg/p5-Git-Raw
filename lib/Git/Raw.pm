@@ -19,7 +19,8 @@ methods provided as a re-entrant linkable library designed to be fast and
 portable with a solid API.  This module provides Perl bindings to the libgit2
 API.
 
-B<WARNING>: The API of this module is unstable and may change without warning.
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
 
 =head1 AUTHOR
 

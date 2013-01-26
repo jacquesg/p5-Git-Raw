@@ -36,6 +36,9 @@ Git::Raw::Remote - Git remote class
 
 A C<Git::Raw::Remote> represents a Git remote.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 create( $repo, $name, $url )

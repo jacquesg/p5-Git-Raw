@@ -13,6 +13,9 @@ Git::Raw::Blob - Git blob class
 
 A C<Git::Raw::Blob> represents a Git blob.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 create( $repo, $buffer )

@@ -13,6 +13,9 @@ Git::Raw::Diff - Git diff class
 
 A C<Git::Raw::Diff> represents the diff between two entities.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 merge( $from )

@@ -33,6 +33,9 @@ Git::Raw::Tag - Git tag class
 
 A C<Git::Raw::Tag> represents a Git tag.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 create( $repo, $name, $msg, $tagger, $target )

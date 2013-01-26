@@ -43,6 +43,9 @@ Git::Raw::Commit - Git commit class
 
 A C<Git::Raw::Commit> represents a Git commit.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 create( $repo, $msg, $author, $committer, [@parents], $tree )

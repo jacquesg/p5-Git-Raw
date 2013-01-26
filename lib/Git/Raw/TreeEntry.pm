@@ -13,6 +13,9 @@ Git::Raw::TreeEntry - Git tree entry class
 
 A C<Git::Raw::TreeEntry> represents an entry in a L<Git::Raw::Tree>.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 id( )

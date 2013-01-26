@@ -26,6 +26,9 @@ Git::Raw::Repository - Git repository class
 
 A C<Git::Raw::Repository> represents a Git repository.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 init( $path, $is_bare )

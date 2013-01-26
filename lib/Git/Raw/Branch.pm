@@ -24,6 +24,9 @@ Git::Raw::Branch - Git branch class
 Helper class for branch manipulation. Note that a Git branch is nothing more
 than a L<Git::Raw::Reference>, so this class inherits all methods from it.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 create( $repo, $name, $target )

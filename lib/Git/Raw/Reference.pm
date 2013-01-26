@@ -13,6 +13,9 @@ Git::Raw::Reference - Git reference class
 
 A C<Git::Raw::Reference> represents a Git reference.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 lookup( $name, $repo )

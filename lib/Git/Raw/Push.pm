@@ -44,6 +44,9 @@ Git::Raw::Push - Git push class
 
 Helper class for pushing.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 new( $remote )

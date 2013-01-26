@@ -13,6 +13,9 @@ Git::Raw::Signature - Git signature class
 
 A C<Git::Raw::Signature> represents the signature of an action.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 new( $name, $email, $time, $offset )

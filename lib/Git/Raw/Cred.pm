@@ -11,6 +11,9 @@ Git::Raw::Cred - Git credentials class
 
 A C<Git::Raw::Cred> object is used to store credentials.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 plaintext( $user, $pass )

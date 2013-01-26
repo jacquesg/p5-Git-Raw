@@ -13,6 +13,9 @@ Git::Raw::Stash - Git stash class
 
 Helper class to manage stashes.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 save( $repo, $stasher, $msg )

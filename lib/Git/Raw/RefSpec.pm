@@ -11,6 +11,9 @@ Git::Raw::RefSpec - Git refspec class
 
 A C<Git::Raw::RefSpec> represents a Git refspec.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 dst( )

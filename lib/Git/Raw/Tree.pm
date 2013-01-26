@@ -13,6 +13,9 @@ Git::Raw::Tree - Git tree class
 
 A C<Git::Raw::Tree> represents a Git tree.
 
+B<WARNING>: The API of this module is unstable and may change without warning
+(any change will be appropriately documented in the changelog).
+
 =head1 METHODS
 
 =head2 lookup( $repo, $id )
