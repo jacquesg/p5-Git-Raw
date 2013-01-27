@@ -31,11 +31,11 @@ Retrieve the id of the tree, as string.
 
 Retrieve a list of L<Git::Raw::TreeEntry> objects.
 
-=head2 entry_byname( name )
+=head2 entry_byname( $name )
 
 Retrieve a L<Git::Raw::TreeEntry> object by name.
 
-=head2 entry_bypath( path )
+=head2 entry_bypath( $path )
 
 Retrieve a L<Git::Raw::TreeEntry> object by path.
 
