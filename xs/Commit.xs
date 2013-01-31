@@ -59,7 +59,7 @@ lookup(class, repo, id)
 		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_commit_lookup_prefix(&commit, GIT_SV_TO_PTR(Repository, repo), &oid, len);
+		rc = git_commit_lookup_prefix(&commit, repo_ptr, &oid, len);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
