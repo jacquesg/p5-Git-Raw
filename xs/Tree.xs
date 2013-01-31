@@ -103,10 +103,7 @@ entry_bypath(self, path)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(
-			RETVAL, "Git::Raw::TreeEntry",
-			git_tree_entry_dup(entry), repo
-		);
+		GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", entry, repo);
 
 	OUTPUT: RETVAL
 
