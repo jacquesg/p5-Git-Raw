@@ -74,16 +74,13 @@ owner(self)
 	OUTPUT: RETVAL
 
 SV *
-target(self, ...)
+target(self)
 	SV *self
 
-	PROTOTYPE: $;$
+	PROTOTYPE: $
 	CODE:
 		int rc;
 		Reference ref = GIT_SV_TO_PTR(Reference, self);
-
-		if (items > 1)
-			warn("Second argument (former repo) is ignored. In future versions this will be fatal error");
 
 		switch (git_reference_type(ref)) {
 			case GIT_REF_OID: {
