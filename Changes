@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Reference -> target(), Tree -> diff() and TreeEntry -> object() methods do
+   not accept a Repository argument anymore (incompatible change)
+ - Fix memory leak in Tree -> entry_bypath() (GH#11)
+
 0.20      2013-01-26 13:46:00 Europe/Rome
 
  - Documentation fixes (GH#6) (thanks, @daknok!)
