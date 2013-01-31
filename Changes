@@ -5,6 +5,8 @@ Revision history for Git-Raw
  - Reference -> target(), Tree -> diff() and TreeEntry -> object() methods do
    not accept a Repository argument anymore (incompatible change)
  - Fix memory leak in Tree -> entry_bypath() (GH#11)
+ - Tag -> delete() is now an object method just like other delete() methods
+   (incompatible change)
 
 0.20      2013-01-26 13:46:00 Europe/Rome
 
