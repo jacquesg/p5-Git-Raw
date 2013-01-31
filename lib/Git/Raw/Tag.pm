@@ -55,7 +55,7 @@ A non-zero return value stops the loop.
 
 =head2 delete( )
 
-Delete the tag.
+Delete the tag. The L<Git::Raw::Tag> object must not be accessed afterwards.
 
 =head2 id( )
 

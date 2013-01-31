@@ -24,7 +24,8 @@ Retrieve the reference with name C<$name> in C<$repo>.
 
 =head2 delete( )
 
-Delete the reference.
+Delete the reference. The L<Git::Raw::Reference> object must not be accessed
+afterwards.
 
 =head2 name( )
 
