@@ -37,23 +37,24 @@ create(class, repo, name, msg, tagger, target)
 SV *
 lookup(class, repo, id)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *id
 
 	CODE:
+		Tag tag;
 		git_oid oid;
-		git_object *obj;
 
 		STRLEN len;
 		const char *id_str = SvPVbyte(id, len);
+		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&obj, repo, &oid, len, GIT_OBJ_TAG);
+		rc = git_tag_lookup_prefix(&tag, repo_ptr, &oid, len);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), obj);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
 
 	OUTPUT: RETVAL
 

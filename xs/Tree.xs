@@ -7,19 +7,20 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+		Tree tree;
 		git_oid oid;
-		git_object *obj;
 
 		STRLEN len;
 		const char *id_str = SvPVbyte(id, len);
+		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&obj, GIT_SV_TO_PTR(Repository, repo), &oid, len, GIT_OBJ_TREE);
+		rc = git_tree_lookup_prefix(&tree, repo_ptr, &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), obj, SvRV(repo));
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo));
 
 	OUTPUT: RETVAL
 

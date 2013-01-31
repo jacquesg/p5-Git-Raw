@@ -51,6 +51,7 @@ lookup(class, repo, id)
 	CODE:
 		git_oid oid;
 		Commit commit;
+		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		STRLEN len;
 		const char *id_str = SvPVbyte(id, len);

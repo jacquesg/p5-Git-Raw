@@ -31,8 +31,8 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+		Blob blob;
 		git_oid oid;
-		git_object *obj;
 		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		STRLEN len;
@@ -41,10 +41,10 @@ lookup(class, repo, id)
 		int rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_object_lookup_prefix(&obj, repo_ptr, &oid, len, GIT_OBJ_BLOB);
+		rc = git_blob_lookup_prefix(&blob, repo_ptr, &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), obj, SvRV(repo));
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo));
 
 	OUTPUT: RETVAL
 
