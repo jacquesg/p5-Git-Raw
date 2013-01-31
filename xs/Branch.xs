@@ -23,7 +23,7 @@ create(class, repo, name, target)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, ref, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -47,7 +47,7 @@ lookup(class, repo, name, is_local)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, branch, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo));
 
 	OUTPUT: RETVAL
 

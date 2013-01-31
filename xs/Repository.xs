@@ -109,7 +109,7 @@ config(self)
 
 	OUTPUT: RETVAL
 
-SV*
+SV *
 index(self)
 	SV *self
 
@@ -119,10 +119,7 @@ index(self)
 		int rc = git_repository_index(&index, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Index", index);
-		xs_object_magic_attach_struct(
-			aTHX_ SvRV(RETVAL), SvREFCNT_inc_NN(SvRV(self))
-		);
+		GIT_NEW_OBJ(RETVAL, "Git::Raw::Index", index, SvRV(self));
 
 	OUTPUT: RETVAL
 

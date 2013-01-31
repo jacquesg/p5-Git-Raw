@@ -30,14 +30,14 @@ create(class, repo, name, msg, tagger, target)
 		rc = git_tag_lookup(&tag, r, &oid);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, tag, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
 
 	OUTPUT: RETVAL
 
 SV *
 lookup(class, repo, id)
 	SV *class
-	SV *repo
+	Repository repo
 	SV *id
 
 	CODE:

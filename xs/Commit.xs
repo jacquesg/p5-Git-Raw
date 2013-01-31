@@ -38,7 +38,7 @@ create(class, repo, msg, author, committer, parents, tree)
 		rc = git_commit_lookup(&commit, GIT_SV_TO_PTR(Repository, repo), &oid);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, commit, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -61,7 +61,7 @@ lookup(class, repo, id)
 		rc = git_commit_lookup_prefix(&commit, GIT_SV_TO_PTR(Repository, repo), &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, commit, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -136,15 +136,12 @@ tree(self)
 
 	CODE:
 		Tree tree;
+		SV *repo = GIT_SV_TO_REPO(self);
 
 		int rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Tree", tree);
-		xs_object_magic_attach_struct(
-			aTHX_ SvRV(RETVAL),
-			SvREFCNT_inc_NN(xs_object_magic_get_struct(aTHX_ SvRV(self)))
-		);
+		GIT_NEW_OBJ(RETVAL, "Git::Raw::Tree", tree, repo);
 
 	OUTPUT: RETVAL
 
@@ -153,25 +150,21 @@ parents(self)
 	SV *self
 
 	CODE:
+		SV *repo = GIT_SV_TO_REPO(self);
+
 		AV *parents = newAV();
 		Commit child = GIT_SV_TO_PTR(Commit, self);
-		SV *repo = (SV*)xs_object_magic_get_struct(aTHX_ SvRV(self));
 		int rc, i, count = git_commit_parentcount(child);
 
 		for (i = 0; i < count; i++) {
+			SV *tmp;
 			Commit parent;
+
 			rc = git_commit_parent(&parent, child, i);
 			git_check_error(rc);
 
-			SV *sv = sv_setref_pv(
-				newSV(0), "Git::Raw::Commit", parent
-			);
-			xs_object_magic_attach_struct(
-				aTHX_ SvRV(sv),
-				SvREFCNT_inc_NN(repo)
-			);
-
-			av_push(parents, sv);
+			GIT_NEW_OBJ(tmp, "Git::Raw::Commit", parent, repo);
+			av_push(parents, tmp);
 		}
 
 		RETVAL = parents;

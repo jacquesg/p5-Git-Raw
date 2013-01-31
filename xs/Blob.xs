@@ -20,7 +20,7 @@ create(class, repo, buffer)
 		rc = git_blob_lookup(&blob, repo_ptr, &oid);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, blob, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -44,7 +44,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&obj, repo_ptr, &oid, len, GIT_OBJ_BLOB);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, obj, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), obj, SvRV(repo));
 
 	OUTPUT: RETVAL
 

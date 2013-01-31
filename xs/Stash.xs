@@ -17,17 +17,18 @@ save(class, repo, stasher, msg)
 void
 foreach(class, repo, cb)
 	SV *class
-	Repository repo
+	SV *repo
 	SV *cb
 
 	CODE:
 		git_foreach_payload payload = {
-			.repo = repo,
-			.cb = cb
+			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
+			.repo     = repo,
+			.cb       = cb
 		};
 
 		int rc = git_stash_foreach(
-			repo, git_stash_foreach_cb, &payload
+			payload.repo_ptr, git_stash_foreach_cb, &payload
 		);
 
 		git_check_error(rc);

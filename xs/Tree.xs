@@ -19,7 +19,7 @@ lookup(class, repo, id)
 		rc = git_object_lookup_prefix(&obj, GIT_SV_TO_PTR(Repository, repo), &oid, len, GIT_OBJ_TREE);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, obj, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), obj, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -38,23 +38,22 @@ entries(self)
 	SV *self
 
 	CODE:
+		SV *repo = GIT_SV_TO_REPO(self);
+
 		AV *entries = newAV();
 		Tree self_ptr = GIT_SV_TO_PTR(Tree, self);
 		int rc, i, count = git_tree_entrycount(self_ptr);
 
 		for (i = 0; i < count; i++) {
+			SV *tmp;
 			TreeEntry entry = (TreeEntry) git_tree_entry_byindex(self_ptr, i);
 
-			SV *sv = sv_setref_pv(
-				newSV(0), "Git::Raw::TreeEntry",
-				git_tree_entry_dup(entry)
-			);
-			xs_object_magic_attach_struct(
-				aTHX_ SvRV(sv),
-				SvREFCNT_inc_NN(xs_object_magic_get_struct(aTHX_ SvRV(self)))
+			GIT_NEW_OBJ(
+				tmp, "Git::Raw::TreeEntry",
+				git_tree_entry_dup(entry), repo
 			);
 
-			av_push(entries, sv);
+			av_push(entries, tmp);
 		}
 
 		RETVAL = entries;
@@ -67,22 +66,21 @@ entry_byname(self, name)
 	SV *name
 
 	CODE:
+		SV *repo = GIT_SV_TO_REPO(self);
+
 		STRLEN len;
 		const char *name_str = SvPVbyte(name, len);
 
-		TreeEntry entry = (TreeEntry) git_tree_entry_byname(GIT_SV_TO_PTR(Tree, self), name_str);
+		TreeEntry entry = (TreeEntry) git_tree_entry_byname(
+			GIT_SV_TO_PTR(Tree, self), name_str
+		);
+
 		if (!entry) Perl_croak(aTHX_ "Invalid name");
 
-		SV *sv = sv_setref_pv(
-			newSV(0), "Git::Raw::TreeEntry",
-			git_tree_entry_dup(entry)
+		GIT_NEW_OBJ(
+			RETVAL, "Git::Raw::TreeEntry",
+			git_tree_entry_dup(entry), repo
 		);
-		xs_object_magic_attach_struct(
-			aTHX_ SvRV(sv),
-			SvREFCNT_inc_NN(xs_object_magic_get_struct(aTHX_ SvRV(self)))
-		);
-
-		RETVAL = sv;
 
 	OUTPUT: RETVAL
 
@@ -92,24 +90,23 @@ entry_bypath(self, path)
 	SV *path
 
 	CODE:
+		SV *repo = GIT_SV_TO_REPO(self);
+
 		int rc;
 		STRLEN len;
 		const char *path_str = SvPVbyte(path, len);
+
 		TreeEntry entry;
 
-		rc = git_tree_entry_bypath(&entry, GIT_SV_TO_PTR(Tree, self), path_str);
+		rc = git_tree_entry_bypath(
+			&entry, GIT_SV_TO_PTR(Tree, self), path_str
+		);
 		git_check_error(rc);
 
-		SV *sv = sv_setref_pv(
-			newSV(0), "Git::Raw::TreeEntry",
-			git_tree_entry_dup(entry)
+		GIT_NEW_OBJ(
+			RETVAL, "Git::Raw::TreeEntry",
+			git_tree_entry_dup(entry), repo
 		);
-		xs_object_magic_attach_struct(
-			aTHX_ SvRV(sv),
-			SvREFCNT_inc_NN(xs_object_magic_get_struct(aTHX_ SvRV(self)))
-		);
-
-		RETVAL = sv;
 
 	OUTPUT: RETVAL
 

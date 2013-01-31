@@ -15,7 +15,7 @@ lookup(class, name, repo)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ_DOUBLE(RETVAL, class, ref, repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -93,7 +93,8 @@ target(self, ...)
 				oid = git_reference_target(ref);
 
 				rc = git_object_lookup(
-					&obj, git_reference_owner(ref), oid, GIT_OBJ_ANY
+					&obj, git_reference_owner(ref),
+					oid, GIT_OBJ_ANY
 				);
 				git_check_error(rc);
 
@@ -104,18 +105,15 @@ target(self, ...)
 			case GIT_REF_SYMBOLIC: {
 				Reference ref;
 				const char *target;
+				SV *repo = GIT_SV_TO_REPO(self);
 
 				target = git_reference_symbolic_target(ref);
 
 				rc = git_reference_lookup(&ref, git_reference_owner(ref), target);
 				git_check_error(rc);
 
-				RETVAL = sv_setref_pv(
-					newSV(0), "Git::Raw::Reference", ref
-				);
-				xs_object_magic_attach_struct(
-					aTHX_ SvRV(RETVAL),
-					SvREFCNT_inc_NN(xs_object_magic_get_struct(aTHX_ SvRV(self)))
+				GIT_NEW_OBJ(
+					RETVAL, "Git::Raw::Reference", ref, repo
 				);
 				break;
 			}
