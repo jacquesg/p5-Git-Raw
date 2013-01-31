@@ -81,13 +81,17 @@ delete(self)
 	SV *self
 
 	CODE:
-		SV *repo = GIT_SV_TO_REPO(self);
 		Tag tag_ptr = GIT_SV_TO_PTR(Tag, self);
 
-		int rc = git_tag_delete(
-			GIT_SV_TO_REPO(repo), git_tag_name(tag_ptr)
+		Repository repo = INT2PTR(
+			Repository, SvIV((SV *) GIT_SV_TO_REPO(self))
 		);
+
+		int rc = git_tag_delete(repo, git_tag_name(tag_ptr));
 		git_check_error(rc);
+
+		git_tag_free(tag_ptr);
+		sv_setiv(SvRV(self), 0);
 
 SV *
 id(self)

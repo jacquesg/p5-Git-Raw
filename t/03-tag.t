@@ -48,4 +48,7 @@ is $tags -> [0] -> name, $tag_name;
 is $tags -> [0] -> message, $tag_msg;
 is $tags -> [1], undef;
 
+$tags -> [0] -> delete;
+is $repo -> tags, undef;
+
 done_testing;
