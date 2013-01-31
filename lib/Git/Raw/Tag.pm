@@ -53,9 +53,9 @@ as C<$repo-E<gt>lookup($id)> except that it only returns tags.
 Run C<$callback> for every tag in the repo. The callback receives a tag object.
 A non-zero return value stops the loop.
 
-=head2 delete( $repo, $name )
+=head2 delete( )
 
-Delete the tag with name C<$name>
+Delete the tag.
 
 =head2 id( )
 

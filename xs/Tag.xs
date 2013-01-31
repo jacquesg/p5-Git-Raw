@@ -76,13 +76,16 @@ foreach(class, repo, cb)
 			git_check_error(rc);
 
 void
-delete(class, repo, name, is_local)
-	SV *class
-	Repository repo
-	SV *name
+delete(self)
+	SV *self
 
 	CODE:
-		int rc = git_tag_delete(repo, SvPVbyte_nolen(name));
+		SV *repo = GIT_SV_TO_REPO(self);
+		Tag tag_ptr = GIT_SV_TO_PTR(Tag, self);
+
+		int rc = git_tag_delete(
+			GIT_SV_TO_REPO(repo), git_tag_name(tag_ptr)
+		);
 		git_check_error(rc);
 
 SV *
