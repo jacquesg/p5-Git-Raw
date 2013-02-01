@@ -3,9 +3,9 @@
 use Test::More;
 
 use Git::Raw;
-use File::Path qw(make_path);
 use File::Slurp;
 use Cwd qw(abs_path);
+use File::Path 2.07 qw(make_path);
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
