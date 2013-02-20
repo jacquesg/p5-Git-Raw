@@ -7,6 +7,8 @@ Revision history for Git-Raw
  - Fix memory leak in Tree -> entry_bypath() (GH#11)
  - Tag -> delete() is now an object method just like other delete() methods
    (incompatible change)
+ - Do not use Makefile.embed to build libgit2 to avoid FTBFS on *BSD
+ - Update libgit2 to fd69c7b
 
 0.20      2013-01-26 13:46:00 Europe/Rome
 
