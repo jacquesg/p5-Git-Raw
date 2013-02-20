@@ -336,7 +336,7 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 }
 
 int git_cred_acquire_cbb(git_cred **cred, const char *url,
-						unsigned int allow, void *cb) {
+		const char *usr_from_url, unsigned int allow, void *cb) {
 	dSP;
 	SV *creds;
 
