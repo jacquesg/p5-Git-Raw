@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.22      2013-02-23 15:19:30 Europe/Rome
+
  - Remove test_repo after tests, to allow "make test" to run multiple times
    (should fix OpenBSD CPAN Testers)
  - Update libgit2 to 5eeb357
