@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Remove test_repo after tests, to allow "make test" to run multiple times
+   (should fix OpenBSD CPAN Testers)
+ - Update libgit2 to 5eeb357
+
 0.21      2013-02-20 17:41:56 Europe/Rome
 
  - Reference -> target(), Tree -> diff() and TreeEntry -> object() methods do
