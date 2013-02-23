@@ -12,7 +12,7 @@ create(class, repo, msg, author, committer, parents, tree)
 
 	CODE:
 		git_oid oid;
-		Commit commit, *commit_parents;
+		Commit commit, *commit_parents = NULL;
 
 		int count = av_len(parents) + 1;
 

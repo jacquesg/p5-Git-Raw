@@ -43,7 +43,7 @@ entries(self)
 
 		AV *entries = newAV();
 		Tree self_ptr = GIT_SV_TO_PTR(Tree, self);
-		int rc, i, count = git_tree_entrycount(self_ptr);
+		int i, count = git_tree_entrycount(self_ptr);
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;

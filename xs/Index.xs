@@ -46,7 +46,6 @@ write_tree(self)
 	Index self
 
 	CODE:
-		Tree tree;
 		git_oid oid;
 
 		int rc = git_index_write_tree(&oid, self);

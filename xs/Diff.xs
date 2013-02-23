@@ -16,6 +16,7 @@ patch(self, callback)
 
 	CODE:
 		int rc = git_diff_print_patch(self, git_diff_cb, callback);
+		git_check_error(rc);
 
 void
 compact(self, callback)
@@ -24,6 +25,7 @@ compact(self, callback)
 
 	CODE:
 		int rc = git_diff_print_compact(self, git_diff_cb, callback);
+		git_check_error(rc);
 
 void
 DESTROY(self)

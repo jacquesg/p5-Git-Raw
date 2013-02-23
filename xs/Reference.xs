@@ -52,7 +52,7 @@ type(self)
 		switch (git_reference_type(self)) {
 			case GIT_REF_OID: type = newSVpv("direct", 0); break;
 			case GIT_REF_SYMBOLIC: type = newSVpv("symbolic", 0); break;
-			default: break;
+			default: Perl_croak(aTHX_ "Invalid reference type");
 		}
 
 		RETVAL = type;
