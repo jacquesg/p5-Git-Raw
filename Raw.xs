@@ -207,20 +207,19 @@ int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
 
 typedef struct {
 	Repository repo_ptr;
-	SV* repo;
-	SV* cb;
+	SV *repo;
+	SV *cb;
+	const char *class;
 } git_foreach_payload;
 
 int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 	dSP;
 	int rv;
-	SV *repo, *cb_arg;
 	Branch branch;
+	SV *repo, *cb_arg;
+	git_foreach_payload *pl = payload;
 
-	int rc = git_branch_lookup(
-		&branch, ((git_foreach_payload *) payload) -> repo_ptr,
-		name, type
-	);
+	int rc = git_branch_lookup(&branch, pl -> repo_ptr, name, type);
 	git_check_error(rc);
 
 	ENTER;
@@ -230,14 +229,14 @@ int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
 
 	cb_arg = sv_newmortal();
 
-	sv_setref_pv(cb_arg, "Git::Raw::Branch", (void *) branch);
+	sv_setref_pv(cb_arg, pl -> class, (void *) branch);
 	xs_object_magic_attach_struct(aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(repo));
 
 	PUSHMARK(SP);
 	PUSHs(cb_arg);
 	PUTBACK;
 
-	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+	call_sv(pl -> cb, G_SCALAR);
 
 	SPAGAIN;
 
@@ -304,26 +303,25 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	int rv;
 	Tag tag;
 	SV *repo, *cb_arg;
+	git_foreach_payload *pl = payload;
 
-	int rc = git_tag_lookup(
-		&tag, ((git_foreach_payload *) payload) -> repo_ptr, oid
-	);
+	int rc = git_tag_lookup(&tag, pl -> repo_ptr, oid);
 	git_check_error(rc);
 
 	ENTER;
 	SAVETMPS;
 
-	repo = SvRV(((git_foreach_payload *) payload) -> repo);
+	repo = SvRV(pl -> repo);
 
 	cb_arg = sv_newmortal();
-	sv_setref_pv(cb_arg, "Git::Raw::Tag", (void *) tag);
+	sv_setref_pv(cb_arg, pl -> class, (void *) tag);
 	xs_object_magic_attach_struct(aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(repo));
 
 	PUSHMARK(SP);
 	PUSHs(cb_arg);
 	PUTBACK;
 
-	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+	call_sv(pl -> cb, G_SCALAR);
 
 	SPAGAIN;
 

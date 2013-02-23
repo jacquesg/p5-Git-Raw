@@ -71,11 +71,12 @@ foreach(class, repo, cb)
 		git_foreach_payload payload = {
 			.repo     = repo,
 			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
-			.cb       = cb
+			.cb       = cb,
+			.class    = SvPVbyte_nolen(class)
 		};
 
 		int rc = git_branch_foreach(
-			payload.repo_ptr, GIT_BRANCH_LOCAL|GIT_BRANCH_REMOTE,
+			payload.repo_ptr, GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE,
 			git_branch_foreach_cb, &payload
 		);
 
