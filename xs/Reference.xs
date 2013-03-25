@@ -130,15 +130,6 @@ is_branch(self)
 	OUTPUT: RETVAL
 
 bool
-is_packed(self)
-	Reference self
-
-	CODE:
-		RETVAL = git_reference_is_packed(self);
-
-	OUTPUT: RETVAL
-
-bool
 is_remote(self)
 	Reference self
 

@@ -49,10 +49,6 @@ Retrieve the L<Git::Raw::Repository> owning the reference.
 
 Check if the reference is a branch.
 
-=head2 is_packed( )
-
-Check if the reference is packed.
-
 =head2 is_remote( )
 
 Check if the reference is remote.
