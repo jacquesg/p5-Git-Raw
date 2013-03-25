@@ -53,15 +53,16 @@ lookup(class, repo, name, is_local)
 
 void
 move(self, name, force)
-	Branch self
+	SV *self
 	SV *name
 	bool force
 
 	CODE:
-		Branch branch;
+		Branch old_branch = GIT_SV_TO_PTR(Branch, self),
+		       new_branch;
 
 		int rc = git_branch_move(
-			&branch, self, SvPVbyte_nolen(name), force
+			&new_branch, old_branch, SvPVbyte_nolen(name), force
 		);
 		git_check_error(rc);
 

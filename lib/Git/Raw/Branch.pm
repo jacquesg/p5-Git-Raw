@@ -40,7 +40,8 @@ Retrieve the branch corresponding to the given branch name.
 
 =head2 move( $name, $force )
 
-Rename the branch to C<$name>.
+Rename the branch to C<$name>. Note that in order to get the updated branch
+object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 
 =head2 foreach( $repo, $callback )
 

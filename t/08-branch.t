@@ -34,6 +34,7 @@ ok !$branch -> is_remote;
 $branch_name = 'some_branch';
 
 $branch -> move($branch_name, 0);
+$branch = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 is $branch -> name, "refs/heads/$branch_name";
 
 my $head = $branch -> target;
