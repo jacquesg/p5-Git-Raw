@@ -13,7 +13,7 @@ use Git::Raw;
 use Cwd qw(abs_path);
 
 my $path;
-my $url = 'git://github.com/ghedo/p5-Algorithm-URL-Shorten.git';
+my $url = 'git://github.com/ghedo/p5-Git-Raw.git';
 
 $path = abs_path('t/test_repo_clone_bare');
 my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
