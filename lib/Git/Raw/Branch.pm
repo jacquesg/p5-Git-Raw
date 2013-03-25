@@ -48,6 +48,11 @@ object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 Run C<$callback> for every branch in the repo. The callback receives a
 branch object. A non-zero return value stops the loop.
 
+=head2 tracking( )
+
+Retrieve the reference supporting the remote tracking branch, given the local
+branch.
+
 =head2 is_head( )
 
 Check if the current local branch is pointed at by HEAD.

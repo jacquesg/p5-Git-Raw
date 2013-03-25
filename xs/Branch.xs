@@ -88,6 +88,20 @@ foreach(class, repo, cb)
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
 
+Reference
+tracking(self)
+	Branch self
+
+	CODE:
+		Reference ref;
+
+		int rc = git_branch_tracking(&ref, self);
+		git_check_error(rc);
+
+		RETVAL = ref;
+
+	OUTPUT: RETVAL
+
 bool
 is_head(self)
 	Branch self
