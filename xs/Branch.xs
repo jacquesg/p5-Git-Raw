@@ -58,7 +58,11 @@ move(self, name, force)
 	bool force
 
 	CODE:
-		int rc = git_branch_move(self, SvPVbyte_nolen(name), force);
+		Branch branch;
+
+		int rc = git_branch_move(
+			&branch, self, SvPVbyte_nolen(name), force
+		);
 		git_check_error(rc);
 
 void
@@ -77,7 +81,7 @@ foreach(class, repo, cb)
 
 		int rc = git_branch_foreach(
 			payload.repo_ptr, GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE,
-			git_branch_foreach_cb, &payload
+			git_branch_foreach_cbb, &payload
 		);
 
 		if (rc != GIT_EUSER)

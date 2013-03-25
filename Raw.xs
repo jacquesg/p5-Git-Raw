@@ -212,7 +212,7 @@ typedef struct {
 	const char *class;
 } git_foreach_payload;
 
-int git_branch_foreach_cb(const char *name, git_branch_t type, void *payload) {
+int git_branch_foreach_cbb(const char *name, git_branch_t type, void *payload) {
 	dSP;
 	int rv;
 	Branch branch;
