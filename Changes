@@ -8,6 +8,7 @@ Revision history for Git-Raw
    + The Branch -> move() method does not modify the Branch object anymore, as
      per the new underlying libgit2 implementation. An additional lookup is
      needed in order to get the new object (incompatible change)
+   + Remove Reference -> is_packed() method since it disappeared from libgit2
  - Add Branch -> tracking() method
 
 0.22      2013-02-23 15:19:30 Europe/Rome
