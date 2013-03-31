@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.24      2013-03-31 13:06:30 Europe/Rome
+
  - Update libgit2 to d2a4a54
  - Config -> bool()/int()/str() now return undef when a configuration variable
    is not found, instead of segfaulting (GH#13)
