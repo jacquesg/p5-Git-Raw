@@ -26,7 +26,7 @@ add_file(self, path, level)
 		);
 		git_check_error(rc);
 
-bool
+SV *
 bool(self, name, ...)
 	Config self
 	SV *name
@@ -39,7 +39,9 @@ bool(self, name, ...)
 		switch (items) {
 			case 2: {
 				rc = git_config_get_bool(&value, self, var);
-				git_check_error(rc);
+
+				if (rc != GIT_ENOTFOUND)
+					git_check_error(rc);
 
 				break;
 			}
@@ -54,11 +56,11 @@ bool(self, name, ...)
 			}
 		}
 
-		RETVAL = value;
+		RETVAL = (rc != GIT_ENOTFOUND) ? boolSV(value) : &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
-int
+SV *
 int(self, name, ...)
 	Config self
 	SV *name
@@ -71,7 +73,9 @@ int(self, name, ...)
 		switch (items) {
 			case 2: {
 				rc = git_config_get_int32(&value, self, var);
-				git_check_error(rc);
+
+				if (rc != GIT_ENOTFOUND)
+					git_check_error(rc);
 
 				break;
 			}
@@ -86,7 +90,41 @@ int(self, name, ...)
 			}
 		}
 
-		RETVAL = value;
+		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
+
+	OUTPUT: RETVAL
+
+SV *
+str(self, name, ...)
+	Config self
+	SV *name
+
+	PROTOTYPE: $$;$
+	CODE:
+		int rc;
+		const char *value, *var = SvPVbyte_nolen(name);
+
+		switch (items) {
+			case 2: {
+				rc = git_config_get_string(&value, self, var);
+
+				if (rc != GIT_ENOTFOUND)
+					git_check_error(rc);
+
+				break;
+			}
+
+			case 3: {
+				value = SvPVbyte_nolen(ST(2));
+
+				rc = git_config_set_string(self, var, value);
+				git_check_error(rc);
+
+				break;
+			}
+		}
+
+		RETVAL = (rc != GIT_ENOTFOUND) ? newSVpv(value, 0) : &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
@@ -107,38 +145,6 @@ foreach(self, cb)
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
-
-SV *
-str(self, name, ...)
-	Config self
-	SV *name
-
-	PROTOTYPE: $$;$
-	CODE:
-		int rc;
-		const char *value, *var = SvPVbyte_nolen(name);
-
-		switch (items) {
-			case 2: {
-				rc = git_config_get_string(&value, self, var);
-				git_check_error(rc);
-
-				break;
-			}
-
-			case 3: {
-				value = SvPVbyte_nolen(ST(2));
-
-				rc = git_config_set_string(self, var, value);
-				git_check_error(rc);
-
-				break;
-			}
-		}
-
-		RETVAL = newSVpv(value, 0);
-
-	OUTPUT: RETVAL
 
 void
 refresh(self)

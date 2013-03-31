@@ -35,12 +35,15 @@ my $config = $repo -> config;
 my $name  = 'Git::Raw author';
 my $email = 'git-xs@example.com';
 
+is $config -> bool('some.bool'), undef;
 ok $config -> bool('some.bool', 1);
 ok $config -> bool('some.bool');
 
+is $config -> int('some.int'), undef;
 is $config -> int('some.int', 42), 42;
 is $config -> int('some.int'), 42;
 
+is $config -> str('some.str'), undef;
 is $config -> str('some.str', 'hello'), 'hello';
 is $config -> str('some.str'), 'hello';
 
