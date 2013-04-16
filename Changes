@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update to libgit2 5d7c940
+   + Rename Branch -> tracking() to upstream() (incompatible change)
+
 0.24      2013-03-31 13:06:30 Europe/Rome
 
  - Update libgit2 to d2a4a54
