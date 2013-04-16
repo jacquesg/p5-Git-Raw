@@ -89,13 +89,13 @@ foreach(class, repo, cb)
 			git_check_error(rc);
 
 Reference
-tracking(self)
+upstream(self)
 	Branch self
 
 	CODE:
 		Reference ref;
 
-		int rc = git_branch_tracking(&ref, self);
+		int rc = git_branch_upstream(&ref, self);
 		git_check_error(rc);
 
 		RETVAL = ref;
