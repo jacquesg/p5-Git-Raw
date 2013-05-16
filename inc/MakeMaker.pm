@@ -20,6 +20,13 @@ if (check_lib(lib => 'ssl')) {
 	print "SSL support enabled\n";
 }
 
+if (check_lib(lib => 'ssh2')) {
+	$def .= ' -DGIT_SSH';
+	$lib .= ' -lssh2';
+
+	print "SSH support enabled\n";
+}
+
 sub MY::c_o {
 	return <<'EOS'
 .c$(OBJ_EXT):
