@@ -56,15 +56,13 @@ be updated and returned.
 Retrieve the URL of the remote. If C<$url> is passed, the remote's URL will be
 updated and returned.
 
-=head2 fetchspec( [ $spec ] )
+=head2 add_fetch( $spec )
 
-Retrieve the fetchspec of the remote. If C<$spec> is passed, the remote's
-fetchspec will be updated and returned.
+Add a fetch spec to the remote.
 
-=head2 pushspec( [ $spec ] )
+=head2 add_push( $spec )
 
-Retrieve the pushspec of the remote. If C<$spec> is passed, the remote's
-pushspec will be updated and returned.
+Add a push spec to the remote.
 
 =head2 cred_acquire( $callback )
 

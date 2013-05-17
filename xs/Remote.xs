@@ -59,47 +59,23 @@ url(self, ...)
 
 	OUTPUT: RETVAL
 
-RefSpec
-fetchspec(self, ...)
+void
+add_fetch(self, spec)
 	Remote self
+	RefSpec spec
 
-	PROTOTYPE: $;$
 	CODE:
-		RefSpec spec;
+		int rc = git_remote_add_fetch(self, SvPVbyte_nolen(ST(1)));
+		git_check_error(rc);
 
-		if (items == 2) {
-			int rc = git_remote_set_fetchspec(
-				self, SvPVbyte_nolen(ST(1))
-			);
-			git_check_error(rc);
-		}
-
-		spec = (RefSpec) git_remote_fetchspec(self);
-
-		RETVAL = spec;
-
-	OUTPUT: RETVAL
-
-RefSpec
-pushspec(self, ...)
+void
+add_push(self, ...)
 	Remote self
+	RefSpec spec
 
-	PROTOTYPE: $;$
 	CODE:
-		RefSpec spec;
-
-		if (items == 2) {
-			int rc = git_remote_set_pushspec(
-				self, SvPVbyte_nolen(ST(1))
-			);
-			git_check_error(rc);
-		}
-
-		spec = (RefSpec) git_remote_pushspec(self);
-
-		RETVAL = spec;
-
-	OUTPUT: RETVAL
+		int rc = git_remote_add_push(self, SvPVbyte_nolen(ST(1)));
+		git_check_error(rc);
 
 void
 connect(self, direction)
