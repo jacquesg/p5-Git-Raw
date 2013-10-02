@@ -20,8 +20,9 @@ plaintext(class, user, pass)
 	OUTPUT: RETVAL
 
 Cred
-keyfile(class, public, private, pass)
+keyfile(class, user, public, private, pass)
 	SV *class
+	SV *user
 	SV *public
 	SV *private
 	SV *pass
@@ -30,12 +31,13 @@ keyfile(class, public, private, pass)
 #ifdef GIT_SSH
 		Cred out;
 
+		const char *username   = SvPVbyte_nolen(user);
 		const char *publickey  = SvPVbyte_nolen(public);
 		const char *privatekey = SvPVbyte_nolen(private);
 		const char *passphrase = SvPVbyte_nolen(pass);
 
 		int rc = git_cred_ssh_keyfile_passphrase_new(
-			&out, publickey, privatekey, passphrase
+			&out, username, publickey, privatekey, passphrase
 		);
 		git_check_error(rc);
 

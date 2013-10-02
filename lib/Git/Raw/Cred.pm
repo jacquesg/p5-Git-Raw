@@ -20,7 +20,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Create a new credential object with the given username and password.
 
-=head2 keyfile( $public, $private, $pass )
+=head2 keyfile( $user, $public, $private, $pass )
 
 Create a new credential object given a SSH public and private key files, and
 the password of the private key. If the SSH support has not been enabled at
