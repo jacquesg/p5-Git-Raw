@@ -51,6 +51,9 @@ url(self, ...)
 		if (items == 2) {
 			int rc = git_remote_set_url(self, SvPVbyte_nolen(ST(1)));
 			git_check_error(rc);
+
+			rc = git_remote_save(self);
+			git_check_error(rc);
 		}
 
 		url = git_remote_url(self);
