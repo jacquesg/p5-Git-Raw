@@ -28,9 +28,9 @@ name(self, ...)
 		const char *name;
 
 		if (items == 2) {
-			int rc = git_remote_rename(
-				self, SvPVbyte_nolen(ST(1)), NULL, NULL
-			);
+			name = SvPVbyte_nolen(ST(1));
+
+			int rc = git_remote_rename(self, name, NULL, NULL);
 			git_check_error(rc);
 		}
 
@@ -49,7 +49,9 @@ url(self, ...)
 		const char *url;
 
 		if (items == 2) {
-			int rc = git_remote_set_url(self, SvPVbyte_nolen(ST(1)));
+			url = SvPVbyte_nolen(ST(1));
+
+			int rc = git_remote_set_url(self, url);
 			git_check_error(rc);
 
 			rc = git_remote_save(self);
