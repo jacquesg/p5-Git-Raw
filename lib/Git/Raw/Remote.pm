@@ -20,7 +20,9 @@ Git::Raw::Remote - Git remote class
     my $remote = Git::Raw::Remote -> create($repo, 'origin', $url);
 
     # set the acquire credentials callback
-    $remote -> cred_acquire(sub { Git::Raw::Cred -> plaintext($usr, $pwd) });
+    $remote -> callbacks({
+      credentials => sub { Git::Raw::Cred -> plaintext($usr, $pwd) }
+    });
 
     # connect the remote
     $remote -> connect('fetch');
@@ -64,11 +66,34 @@ Add a fetch spec to the remote.
 
 Add a push spec to the remote.
 
+=head2 callbacks( \%callbacks )
+
+=over 4
+
+=item * "credentials"
+
+The callback to be called any time authentication is required to connect to the
+remote repository. The callback receives a string containing the URL of the
+remote, and it must return a L<Git::Raw::Cred> object.
+
+=back
+
 =head2 cred_acquire( $callback )
 
 Run $callback any time authentication is required to connect to the remote
 repository. The callback receives a string containing the URL of the remote, and
 it must return a L<Git::Raw::Cred> object.
+
+Note that this method is deprecated in favor of C<callbacks()>
+
+=cut
+
+sub cred_acquire {
+	my ($self, $cb) = @_;
+
+	my %callbacks = { 'credentials' => $cb };
+	$self -> callbacks(\%callbacks);
+}
 
 =head2 connect( $direction )
 

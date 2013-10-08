@@ -133,19 +133,25 @@ update_tips(self)
 		git_check_error(rc);
 
 void
-cred_acquire(self, cb)
+callbacks(self, callbacks)
 	Remote self
-	SV *cb
+	HV *callbacks
 
 	CODE:
-		git_remote_callbacks callbacks;
+		SV **opt;
+		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
-		SvREFCNT_inc(cb);
+		/* TODO: support all callbacks */
+		if ((opt = hv_fetchs(callbacks, "credentials", 0))) {
+			SV *cb = *opt;
 
-		callbacks.credentials = git_cred_acquire_cbb;
-		callbacks.payload     = cb;
+			SvREFCNT_inc(cb);
 
-		git_remote_set_callbacks(self, &callbacks);
+			rcallbacks.credentials = git_cred_acquire_cbb;
+			rcallbacks.payload     = cb;
+		}
+
+		git_remote_set_callbacks(self, &rcallbacks);
 
 bool
 is_connected(self)
