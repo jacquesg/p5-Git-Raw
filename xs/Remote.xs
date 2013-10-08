@@ -113,7 +113,7 @@ download(self)
 	Remote self
 
 	CODE:
-		int rc = git_remote_download(self, NULL, NULL);
+		int rc = git_remote_download(self);
 		git_check_error(rc);
 
 void
@@ -138,8 +138,14 @@ cred_acquire(self, cb)
 	SV *cb
 
 	CODE:
+		git_remote_callbacks callbacks;
+
 		SvREFCNT_inc(cb);
-		git_remote_set_cred_acquire_cb(self, git_cred_acquire_cbb, cb);
+
+		callbacks.credentials = git_cred_acquire_cbb;
+		callbacks.payload     = cb;
+
+		git_remote_set_callbacks(self, &callbacks);
 
 bool
 is_connected(self)

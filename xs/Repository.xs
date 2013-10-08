@@ -44,8 +44,9 @@ clone(class, url, path, opts)
 
 			SvREFCNT_inc(cb);
 
-			clone_opts.cred_acquire_cb = git_cred_acquire_cbb;
-			clone_opts.cred_acquire_payload = cb;
+			clone_opts.remote_callbacks.credentials =
+							git_cred_acquire_cbb;
+			clone_opts.remote_callbacks.payload = cb;
 		}
 
 		rc = git_clone(
