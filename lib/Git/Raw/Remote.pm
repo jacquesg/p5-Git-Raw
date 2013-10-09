@@ -48,6 +48,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 Create a remote with the default fetch refspec and add it to the repository's
 configuration.
 
+=head2 load( $repo, $name )
+
+Load an existing remote.
+
 =head2 name( [ $name ] )
 
 Retrieve the name of the remote. If C<$name> is passed, the remote's name will

@@ -19,6 +19,22 @@ create(class, repo, name, url)
 
 	OUTPUT: RETVAL
 
+Remote
+load(class, repo, name)
+	SV *class
+	Repository repo
+	SV *name
+
+	CODE:
+		Remote remote;
+
+		int rc = git_remote_load(&remote, repo, SvPVbyte_nolen(name));
+		git_check_error(rc);
+
+		RETVAL = remote;
+
+	OUTPUT: RETVAL
+
 SV *
 name(self, ...)
 	Remote self
