@@ -2,12 +2,14 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update to libgit2 e3107e0
+ - Update to libgit2 711333e
    + Rename Branch -> tracking() to upstream() (incompatible change)
    + Rename Remote -> fetchspec() to add_fetch and pushspec to add_push()
      They will not return the remote spec anymore (incompatible change)
  - Enable support for libssh2 at build-time
  - Add support for SSH key credentials via Cred -> keyfile()
+ - Add Remote -> callbacks() method
+ - Add Remote -> load() method
 
 0.24      2013-03-31 13:06:30 Europe/Rome
 
