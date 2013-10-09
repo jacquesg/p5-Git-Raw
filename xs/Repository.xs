@@ -32,6 +32,7 @@ clone(class, url, path, opts)
 
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
+		/* TODO: support all clone_opts */
 		/* Bare repository */
 		if ((opt = hv_fetchs(opts, "bare", 0)) && (SvIV(*opt) != 0))
 			clone_opts.bare = 1;
@@ -190,6 +191,7 @@ checkout(self, target, opts)
 
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
+		/* TODO: support all checkout_opts */
 		strategy = *hv_fetchs(opts, "checkout_strategy", 0);
 		checkout_opts.checkout_strategy =
 			git_hv_to_checkout_strategy((HV *) SvRV(strategy));

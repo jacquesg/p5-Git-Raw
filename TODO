@@ -3,6 +3,7 @@
 * filter
 * graph
 * note
+* merge (as Repository -> merge(...) + Repository -> state()
 * odb
 * packbuilder
 * reflog
@@ -10,10 +11,3 @@
 * stash
 * transport
 * treebuilder
-
-# Methods
-* Reference -> foreach(...) (replaces Branch -> foreach?)
-* Repository -> state
-* Repository -> merge(...)
-* Repository -> checkout(...) (support for all the checkout_opts)
-* Repsoitory -> clone(...) ( support for all the clone_opts)
