@@ -28,7 +28,6 @@ keyfile(class, user, public, private, pass)
 	SV *pass
 
 	CODE:
-#ifdef GIT_SSH
 		Cred out;
 
 		const char *username   = SvPVbyte_nolen(user);
@@ -42,8 +41,5 @@ keyfile(class, user, public, private, pass)
 		git_check_error(rc);
 
 		RETVAL = out;
-#else
-		RETVAL = &PL_sv_undef;
-#endif
 
 	OUTPUT: RETVAL

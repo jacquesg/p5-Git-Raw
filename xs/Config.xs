@@ -54,6 +54,10 @@ bool(self, name, ...)
 
 				break;
 			}
+
+			default:
+				rc = GIT_ENOTFOUND;
+				break;
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? boolSV(value) : &PL_sv_undef;
@@ -88,6 +92,10 @@ int(self, name, ...)
 
 				break;
 			}
+
+			default:
+				rc = GIT_ENOTFOUND;
+				break;
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
@@ -122,6 +130,10 @@ str(self, name, ...)
 
 				break;
 			}
+
+			default:
+				rc = GIT_ENOTFOUND;
+				break;
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? newSVpv(value, 0) : &PL_sv_undef;

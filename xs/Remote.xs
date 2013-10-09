@@ -25,7 +25,7 @@ name(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
-		const char *name;
+		char *name;
 
 		if (items == 2) {
 			name = SvPVbyte_nolen(ST(1));
@@ -34,7 +34,7 @@ name(self, ...)
 			git_check_error(rc);
 		}
 
-		name = git_remote_name(self);
+		name = (char *) git_remote_name(self);
 
 		RETVAL = newSVpv(name, 0);
 
@@ -67,19 +67,19 @@ url(self, ...)
 void
 add_fetch(self, spec)
 	Remote self
-	RefSpec spec
+	SV *spec
 
 	CODE:
-		int rc = git_remote_add_fetch(self, SvPVbyte_nolen(ST(1)));
+		int rc = git_remote_add_fetch(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
 
 void
-add_push(self, ...)
+add_push(self, spec)
 	Remote self
-	RefSpec spec
+	SV *spec
 
 	CODE:
-		int rc = git_remote_add_push(self, SvPVbyte_nolen(ST(1)));
+		int rc = git_remote_add_push(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
 
 void
