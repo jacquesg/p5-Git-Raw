@@ -85,6 +85,7 @@ override _build_WriteMakefile_args => sub {
 	return +{
 		%{ super() },
 		INC	=> "-I. $inc",
+		LIBS	=> "-lrt",
 		DEFINE	=> $def,
 		CCFLAGS	=> '-Wall -Wno-unused-variable',
 		OBJECT	=> "$libgit2_objs \$(O_FILES)",
