@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.25      2013-10-09 15:17:56 Europe/Rome
+
  - Update to libgit2 711333e
    + Rename Branch -> tracking() to upstream() (incompatible change)
    + Rename Remote -> fetchspec() to add_fetch and pushspec to add_push()
