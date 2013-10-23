@@ -2,6 +2,13 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update to libgit2 1c74686
+ - Add Diff -> print() which replaces Diff -> patch() and Diff -> compact()
+ - Remove deprecated methods (incompatible change):
+   + Remote -> cred_acquire()
+   + Diff -> patch()
+   + Diff -> compact()
+
 0.26      2013-10-09 16:11:42 Europe/Rome
 
  - Fix build with glibc < 2.17
