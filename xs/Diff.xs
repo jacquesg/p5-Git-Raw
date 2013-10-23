@@ -10,21 +10,31 @@ merge(self, from)
 		git_check_error(rc);
 
 void
-patch(self, callback)
+print(self, format, callback)
 	Diff self
+	SV *format
 	SV *callback
 
 	CODE:
-		int rc = git_diff_print_patch(self, git_diff_cb, callback);
-		git_check_error(rc);
+		int rc;
+		git_diff_format_t fmt;
 
-void
-compact(self, callback)
-	Diff self
-	SV *callback
+		const char *fmt_str = SvPVbyte_nolen(format);
 
-	CODE:
-		int rc = git_diff_print_compact(self, git_diff_cb, callback);
+		if (!strcmp(fmt_str, "patch"))
+			fmt = GIT_DIFF_FORMAT_PATCH;
+		else if (!strcmp(fmt_str, "patch_header"))
+			fmt = GIT_DIFF_FORMAT_PATCH_HEADER;
+		else if (!strcmp(fmt_str, "raw"))
+			fmt = GIT_DIFF_FORMAT_RAW;
+		else if (!strcmp(fmt_str, "name_only"))
+			fmt = GIT_DIFF_FORMAT_NAME_ONLY;
+		else if (!strcmp(fmt_str, "name_status"))
+			fmt = GIT_DIFF_FORMAT_NAME_STATUS;
+		else
+			Perl_croak(aTHX_ "Invalid format");
+
+		rc = git_diff_print(self, fmt, git_diff_cb, callback);
 		git_check_error(rc);
 
 void
@@ -32,4 +42,4 @@ DESTROY(self)
 	Diff self
 
 	CODE:
-		git_diff_list_free(self);
+		git_diff_free(self);

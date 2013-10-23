@@ -11,7 +11,7 @@ typedef git_reference * Branch;
 typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_cred * Cred;
-typedef git_diff_list * Diff;
+typedef git_diff * Diff;
 typedef git_index * Index;
 typedef git_push * Push;
 typedef git_reference * Reference;
@@ -160,8 +160,8 @@ unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	return out;
 }
 
-int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
-		char usage, const char *line, size_t line_len, void *data) {
+int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
+		const git_diff_line *line, void *data) {
 	dSP;
 
 	SV *coderef = data;
@@ -170,7 +170,7 @@ int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	switch (usage) {
+	switch (line -> origin) {
 		case GIT_DIFF_LINE_CONTEXT:
 			XPUSHs(sv_2mortal(newSVpv("ctx", 0))); break;
 
@@ -194,7 +194,7 @@ int git_diff_cb(const git_diff_delta *delta, const git_diff_range *range,
 		default: Perl_croak(aTHX_ "Unexpected diff usage");
 	}
 
-	XPUSHs(sv_2mortal(newSVpv(line, line_len)));
+	XPUSHs(sv_2mortal(newSVpv(line -> content, line -> content_len)));
 	PUTBACK;
 
 	call_sv(coderef, G_DISCARD);

@@ -33,7 +33,7 @@ index 0000000..6afc8a6
 --- /dev/null
 +++ b/diff
 hunk => @@ -0,0 +1 @@
-add => +diff me, biatch
+add => diff me, biatch
 EOS
 
 my $output = capture_stdout { $diff -> patch($printer) };
@@ -60,7 +60,7 @@ index 0000000..c7eaef2
 --- /dev/null
 +++ b/test3/under/the/tree/test3
 hunk => @@ -0,0 +1 @@
-add => +this is a third testdel => 
+add => this is a third testdel => 
 \ No newline at end of file
 EOS
 
