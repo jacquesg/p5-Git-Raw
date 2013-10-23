@@ -57,39 +57,6 @@ Like C<git diff --name-status>.
 
 =back
 
-=head2 patch( $callback )
-
-Generate text output from the diff object. The C<$callback> will be called for
-each line of the diff with two arguments: the first one represents the type of
-the patch line (C<"ctx"> for context lines, C<"add"> for additions, C<"del">
-for deletions, C<"file"> for file headers, C<"hunk"> for hunk headers or
-C<"bin"> for binary data) and the second argument contains the content of the
-patch line.
-
-Note that this method is deprecated in favor of C<print()>.
-
-=cut
-
-sub patch {
-	my ($self, $callback) = @_;
-	$self -> print("patch", $callback);
-}
-
-=head2 compact( $callback )
-
-Generate compact text output from a diff object. Differently from C<patch()>,
-this function only passes the names and statuses of changed files to the
-callback.
-
-Note that this method is deprecated in favor of C<print()>.
-
-=cut
-
-sub compact {
-	my ($self, $callback) = @_;
-	$self -> print("name_status", $callback);
-}
-
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

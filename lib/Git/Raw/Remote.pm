@@ -82,23 +82,6 @@ remote, and it must return a L<Git::Raw::Cred> object.
 
 =back
 
-=head2 cred_acquire( $callback )
-
-Run $callback any time authentication is required to connect to the remote
-repository. The callback receives a string containing the URL of the remote, and
-it must return a L<Git::Raw::Cred> object.
-
-Note that this method is deprecated in favor of C<callbacks()>
-
-=cut
-
-sub cred_acquire {
-	my ($self, $cb) = @_;
-
-	my %callbacks = { 'credentials' => $cb };
-	$self -> callbacks(\%callbacks);
-}
-
 =head2 connect( $direction )
 
 Connect to the remote. The direction can be either C<"fetch"> or C<"push">.
