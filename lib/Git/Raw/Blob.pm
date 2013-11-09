@@ -35,6 +35,10 @@ Retrieve the raw content of a blob.
 
 Retrieve the size of the raw content of a blob.
 
+=head2 id( )
+
+Return the raw ID (the SHA-1 hash) of the blob.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
