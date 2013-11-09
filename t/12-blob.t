@@ -14,5 +14,6 @@ my $blob = $repo -> blob($buffer);
 
 is $blob -> content, $buffer;
 is $blob -> size, length $buffer;
+is $blob -> id, '30f51a3fba5274d53522d0f19748456974647b4f';
 
 done_testing;

@@ -68,6 +68,16 @@ size(self)
 
 	OUTPUT: RETVAL
 
+SV *
+id(self)
+	Blob self
+
+	CODE:
+		const git_oid *oid = git_blob_id(self);
+		RETVAL = git_oid_to_sv((git_oid *) oid);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self
