@@ -56,19 +56,20 @@ get(self, filename)
 
 	OUTPUT: RETVAL
 
-SV *
+void
 insert(self, filename, object, mode)
 	SV *self
 	const char *filename
 	SV *object
 	int mode
 
-	CODE:
+	PPCODE:
 		TreeBuilder builder;
 		TreeEntry entry;
 		const git_oid *oid;
 		SV *repo;
 		int rc;
+		int is_returning = GIMME_V != G_VOID;
 
 		builder = GIT_SV_TO_PTR(TreeBuilder, self);
 		repo    = GIT_SV_TO_REPO(self);
@@ -79,12 +80,16 @@ insert(self, filename, object, mode)
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 		}
 
-		rc = git_treebuilder_insert(&entry, builder, filename, oid, mode);
+		rc = git_treebuilder_insert(is_returning ? &entry : NULL, builder, filename, oid, mode);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry), repo);
-
-	OUTPUT: RETVAL
+		if(is_returning) {
+			GIT_NEW_OBJ(ST(0), "Git::Raw::TreeEntry", git_tree_entry_dup(entry), repo);
+			sv_2mortal(ST(0));
+			XSRETURN(1);
+		} else {
+			XSRETURN_EMPTY;
+		}
 
 void
 remove(self, filename)
@@ -97,27 +102,31 @@ remove(self, filename)
 		rc = git_treebuilder_remove(self, filename);
 		git_check_error(rc);
 
-SV *
+void
 write(self, repo)
 	TreeBuilder self
 	SV *repo
 
-	CODE:
+	PPCODE:
 		int rc;
 		git_oid oid;
 		Tree tree;
 		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		int is_returning = GIMME_V != G_VOID;
 
 		rc = git_treebuilder_write(&oid, repo_ptr, self);
 		git_check_error(rc);
 
-		rc = git_tree_lookup(&tree, repo_ptr, &oid);
-		git_check_error(rc);
+		if(is_returning) {
+			rc = git_tree_lookup(&tree, repo_ptr, &oid);
+			git_check_error(rc);
 
-		rc = git_treebuilder_write(&oid, repo_ptr, self);
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::Tree", tree, SvRV(repo));
-
-	OUTPUT: RETVAL
+			GIT_NEW_OBJ(ST(0), "Git::Raw::Tree", tree, SvRV(repo));
+			sv_2mortal(ST(0));
+			XSRETURN(1);
+		} else {
+			XSRETURN_EMPTY;
+		}
 
 void
 DESTROY(self)
