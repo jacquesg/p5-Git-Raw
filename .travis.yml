@@ -8,8 +8,8 @@ perl:
  - "5.18"
 
 install:
- - cpanm Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
- - dzil listdeps --missing | cpanm
+ - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
+ - dzil listdeps --missing | cpanm --notest
 
 script:
  - dzil test
