@@ -13,6 +13,7 @@ Repository				T_GIT_REF
 Signature				T_GIT_REF
 Tag					T_GIT_REF
 Tree					T_GIT_REF
+TreeBuilder				T_GIT_REF
 TreeEntry				T_GIT_REF
 Walker					T_GIT_REF
 
