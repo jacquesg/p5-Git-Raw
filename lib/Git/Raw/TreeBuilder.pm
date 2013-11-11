@@ -20,8 +20,9 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 new( $repo, [$tree] )
 
-Creates a new tree builder.  If C<$tree> is passed, the contents of the tree
-builder are initialized from the contents of C<$tree>.
+Creates a new tree builder that will build trees in C<$repo>.  If C<$tree> is
+passed, the contents of the tree builder are initialized from the contents of
+C<$tree>.
 
 =head2 clear( )
 
@@ -46,10 +47,9 @@ can be either a L<Git::Raw::Tree> or L<Git::Raw::Blob> object.
 Removes the entry associated with the filename C<$filename> from this tree
 builder.
 
-=head2 write( $repo )
+=head2 write( )
 
-Writes the tree object we've been building to the repository specified by
-C<$repo>.
+Writes the tree object we've been building into the repository.
 
 =head1 AUTHOR
 
