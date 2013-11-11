@@ -50,9 +50,13 @@ get(self, filename)
 		builder = GIT_SV_TO_PTR(TreeBuilder, self);
 		repo    = GIT_SV_TO_REPO(self);
 
-		entry = git_tree_entry_dup(git_treebuilder_get(builder, filename));
+		entry = git_treebuilder_get(builder, filename);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", entry, repo);
+		if(entry) {
+			GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry), repo);
+		} else {
+			RETVAL = &PL_sv_undef;
+		}
 
 	OUTPUT: RETVAL
 
