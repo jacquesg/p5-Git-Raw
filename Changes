@@ -3,6 +3,7 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Add Blob -> id() (GH#15) (thanks, @hoelzro!)
+ - Add TreeBuilder API (GH#16) (thanks, @hoelzro!)
 
 0.27      2013-10-23 12:34:13 Europe/Rome
 
