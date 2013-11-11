@@ -107,25 +107,30 @@ remove(self, filename)
 		git_check_error(rc);
 
 void
-write(self, repo)
-	TreeBuilder self
-	SV *repo
+write(self)
+	SV *self
 
 	PPCODE:
 		int rc;
 		git_oid oid;
 		Tree tree;
-		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		TreeBuilder builder;
+		SV *repo;
+		Repository repo_ptr;
 		int is_returning = GIMME_V != G_VOID;
 
-		rc = git_treebuilder_write(&oid, repo_ptr, self);
+		builder  = GIT_SV_TO_PTR(TreeBuilder, self);
+		repo     = GIT_SV_TO_REPO(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		rc = git_treebuilder_write(&oid, repo_ptr, builder);
 		git_check_error(rc);
 
 		if(is_returning) {
 			rc = git_tree_lookup(&tree, repo_ptr, &oid);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(ST(0), "Git::Raw::Tree", tree, SvRV(repo));
+			GIT_NEW_OBJ(ST(0), "Git::Raw::Tree", tree, repo);
 			sv_2mortal(ST(0));
 			XSRETURN(1);
 		} else {

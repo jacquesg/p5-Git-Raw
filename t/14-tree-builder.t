@@ -39,7 +39,7 @@ is $entry -> object -> id(), $empty_blob -> id ();
 $entry = $builder -> get('four.txt');
 ok !defined($entry);
 
-my $tree = $builder -> write($repo);
+my $tree = $builder -> write();
 
 isa_ok $tree, 'Git::Raw::Tree';
 is $tree -> id(), '228c738569c82d9906ea1801f698a7c2a70e56b1';
@@ -64,7 +64,7 @@ $builder -> remove('two.txt');
 
 is $builder -> entry_count, 2;
 
-$tree    = $builder -> write($repo);
+$tree    = $builder -> write();
 $entries = $tree -> entries();
 
 is_deeply [ sort map { $_ -> name() } @$entries ],
@@ -98,7 +98,7 @@ my $subtree = $tree;
 $builder -> insert('subdir', $subtree, 0040000);
 is $builder -> entry_count, 3;
 
-$tree    = $builder -> write($repo);
+$tree    = $builder -> write();
 $entries = $tree -> entries();
 
 @$entries = sort { $a -> name() cmp $b -> name() } @$entries;
