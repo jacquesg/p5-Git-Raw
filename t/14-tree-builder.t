@@ -36,6 +36,9 @@ $entry = $builder -> get('three.txt');
 is $entry -> name, 'three.txt';
 is $entry -> object -> id(), $empty_blob -> id ();
 
+$entry = $builder -> get('four.txt');
+ok !defined($entry);
+
 my $tree = $builder -> write($repo);
 
 isa_ok $tree, 'Git::Raw::Tree';
