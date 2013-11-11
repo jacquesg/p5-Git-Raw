@@ -21,6 +21,7 @@ typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
 typedef git_tree * Tree;
+typedef git_treebuilder * TreeBuilder;
 typedef git_tree_entry * TreeEntry;
 typedef git_revwalk * Walker;
 
@@ -431,5 +432,6 @@ INCLUDE: xs/Signature.xs
 INCLUDE: xs/Stash.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Tree.xs
+INCLUDE: xs/TreeBuilder.xs
 INCLUDE: xs/TreeEntry.xs
 INCLUDE: xs/Walker.xs
