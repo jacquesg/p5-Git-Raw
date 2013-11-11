@@ -45,7 +45,7 @@ get(self, filename)
 	CODE:
 		TreeBuilder builder;
 		SV *repo;
-		TreeEntry entry;
+		const git_tree_entry *entry;
 
 		builder = GIT_SV_TO_PTR(TreeBuilder, self);
 		repo    = GIT_SV_TO_REPO(self);
@@ -69,7 +69,7 @@ insert(self, filename, object, mode)
 
 	PPCODE:
 		TreeBuilder builder;
-		TreeEntry entry;
+		const git_tree_entry *entry;
 		const git_oid *oid;
 		SV *repo;
 		int rc;
