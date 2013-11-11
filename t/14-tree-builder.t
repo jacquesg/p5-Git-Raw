@@ -89,6 +89,7 @@ eval {
 
 eval {
 	$builder -> remove('two.txt');
+	fail q{Should've raised an error!};
 } or do {
 	like $@, qr/Failed to remove entry/;
 };
