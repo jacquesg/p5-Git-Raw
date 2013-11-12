@@ -8,22 +8,21 @@ create(class, name, repo, object, ...)
 	SV *object
 
 	CODE:
+		int rc, force = 0;
+
 		Reference ref;
-		int rc;
-		int force = 0;
+
 		const git_oid *oid;
 
-		if(items > 4) {
+		if (items > 4)
 			force = SvTRUE(ST(4));
-		}
 
-		if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob")) {
+		if (sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob"))
 			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
-		} else if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Commit")) {
+		else if (sv_isobject(object) && sv_derived_from(object, "Git::Raw::Commit"))
 			oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
-		} else {
+		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
-		}
 
 		rc = git_reference_create(
 			&ref, GIT_SV_TO_PTR(Repository, repo),
