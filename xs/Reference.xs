@@ -1,6 +1,40 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Reference
 
 SV *
+create(class, name, repo, object, ...)
+	const char *class
+	const char *name
+	SV *repo
+	SV *object
+
+	CODE:
+		Reference ref;
+		int rc;
+		int force = 0;
+		const git_oid *oid;
+
+		if(items > 4) {
+			force = SvTRUE(ST(4));
+		}
+
+		if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob")) {
+			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
+		} else if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Commit")) {
+			oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
+		} else {
+			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
+		}
+
+		rc = git_reference_create(
+			&ref, GIT_SV_TO_PTR(Repository, repo),
+			name, oid, force);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ(RETVAL, class, ref, SvRV(repo));
+
+	OUTPUT: RETVAL
+
+SV *
 lookup(class, name, repo)
 	SV *class
 	SV *name
