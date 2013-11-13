@@ -124,4 +124,50 @@ is $head -> committer -> offset, $off;
 is $head -> time, $time;
 is $head -> offset, $off;
 
+my @before_refs = sort map { $_ -> name() } Git::Raw::Reference -> all($repo);
+
+my $commit4 = $repo -> commit(
+    "fourth commit\n", $me, $me, [], $tree, undef
+);
+
+is $repo -> head -> target -> id, $commit3 -> id, q{Make sure that undef reference doesn't update HEAD};
+
+$commit4 = Git::Raw::Commit -> lookup($repo, $commit4 -> id);
+
+is $commit4 -> message, "fourth commit\n";
+
+is $commit4 -> author -> name, $name;
+is $commit4 -> author -> email, $email;
+is $commit4 -> author -> time, $time;
+is $commit4 -> author -> offset, $off;
+
+is $commit4 -> committer -> name, $name;
+is $commit4 -> committer -> email, $email;
+is $commit4 -> committer -> time, $time;
+is $commit4 -> committer -> offset, $off;
+
+my @after_refs = sort map { $_ -> name() } Git::Raw::Reference -> all($repo);
+
+is_deeply \@after_refs, \@before_refs, 'No new references should be created when specifying undef as the update ref argument';
+
+my $commit5 = $repo -> commit(
+    "fifth commit\n", $me, $me, [], $tree, 'refs/commit-test-ref',
+);
+
+is $repo -> head -> target -> id, $commit3 -> id, q{Make sure that stringy reference doesn't update HEAD};
+
+$commit5 = Git::Raw::Reference -> lookup('refs/commit-test-ref', $repo) -> target;
+
+is $commit5 -> message, "fifth commit\n";
+
+is $commit5 -> author -> name, $name;
+is $commit5 -> author -> email, $email;
+is $commit5 -> author -> time, $time;
+is $commit5 -> author -> offset, $off;
+
+is $commit5 -> committer -> name, $name;
+is $commit5 -> committer -> email, $email;
+is $commit5 -> committer -> time, $time;
+is $commit5 -> committer -> offset, $off;
+
 done_testing;
