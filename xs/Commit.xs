@@ -1,7 +1,7 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
 SV *
-create(class, repo, msg, author, committer, parents, tree)
+create(class, repo, msg, author, committer, parents, tree, ...)
 	SV *class
 	SV *repo
 	SV *msg
@@ -13,6 +13,17 @@ create(class, repo, msg, author, committer, parents, tree)
 	CODE:
 		git_oid oid;
 		Commit commit, *commit_parents = NULL;
+		const char *update_ref = "HEAD";
+
+		if(items > 7) {
+			SV *sv_update_ref = ST(7);
+
+			if (SvOK(sv_update_ref)) {
+				update_ref = SvPVbyte_nolen(sv_update_ref);
+			} else {
+				update_ref = NULL;
+			}
+		}
 
 		int count = av_len(parents) + 1;
 
@@ -29,7 +40,7 @@ create(class, repo, msg, author, committer, parents, tree)
 		}
 
 		int rc = git_commit_create(
-			&oid, GIT_SV_TO_PTR(Repository, repo), "HEAD", author, committer, NULL,
+			&oid, GIT_SV_TO_PTR(Repository, repo), update_ref, author, committer, NULL,
 			SvPVbyte_nolen(msg), tree, count,
 			(const git_commit **) commit_parents
 		);
