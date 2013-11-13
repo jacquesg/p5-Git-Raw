@@ -78,6 +78,6 @@ is scalar(grep { !$_ -> isa('Git::Raw::Reference') } @refs), 0, 'Everything retu
 
 my @ref_names = sort map { $_ -> name() } @refs;
 
-is_deeply \@ref_names, [ 'refs/heads/master' ];
+is_deeply \@ref_names, [ 'refs/commit-test-ref', 'refs/heads/master' ];
 
 done_testing;
