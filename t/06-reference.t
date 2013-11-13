@@ -72,4 +72,12 @@ ok !$ref -> is_remote;
 
 $ref -> delete;
 
+my @refs = Git::Raw::Reference -> all($repo);
+
+is scalar(grep { !$_ -> isa('Git::Raw::Reference') } @refs), 0, 'Everything returned by Git::Raw::Reference->all should be a Git::Raw::Reference';
+
+my @ref_names = sort map { $_ -> name() } @refs;
+
+is_deeply \@ref_names, [ 'refs/heads/master' ];
+
 done_testing;
