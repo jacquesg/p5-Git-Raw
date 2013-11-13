@@ -48,11 +48,13 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
-=head2 create( $repo, $msg, $author, $committer, [@parents], $tree )
+=head2 create( $repo, $msg, $author, $committer, [@parents], $tree [, $update_ref ] )
 
 Create a new commit given a message, two L<Git::Raw::Signature> (one is the
 commit author and the other the committer), a list of parent commits and a
-L<Git::Raw::Tree>.
+L<Git::Raw::Tree>.  If C<$update_ref> is provided and is defined, the reference with
+the corresponding name is automatically updated or created.  If C<$update_ref> is
+C<undef>, no reference is updated.  If C<$update_ref> is not provided, "HEAD" is updated.
 
 =head2 lookup( $repo, $id )
 
