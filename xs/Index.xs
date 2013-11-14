@@ -21,7 +21,7 @@ read(self)
 	Index self
 
 	CODE:
-		int rc = git_index_read(self);
+		int rc = git_index_read(self, 0);
 		git_check_error(rc);
 
 void
