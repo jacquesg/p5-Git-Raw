@@ -173,38 +173,6 @@ is_remote(self)
 	OUTPUT: RETVAL
 
 void
-all(class, repo)
-	const char *class
-	SV *repo
-
-	PPCODE:
-		Repository repo_ptr;
-		git_reference_iterator *itr;
-		Reference ref;
-		int rc;
-		int num_refs = 0;
-
-		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
-
-		rc = git_reference_iterator_new(&itr, repo_ptr);
-		git_check_error(rc);
-		while((rc = git_reference_next(&ref, itr)) == 0) {
-			SV *perl_ref;
-
-			GIT_NEW_OBJ(perl_ref, class, ref, SvRV(repo));
-
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
-			num_refs++;
-		}
-		git_reference_iterator_free(itr);
-		if(rc != GIT_ITEROVER) {
-			git_check_error(rc);
-		}
-		
-		XSRETURN(num_refs);
-
-void
 DESTROY(self)
 	SV *self
 

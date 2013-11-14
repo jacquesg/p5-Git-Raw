@@ -72,9 +72,9 @@ ok !$ref -> is_remote;
 
 $ref -> delete;
 
-my @refs = Git::Raw::Reference -> all($repo);
+my @refs = $repo -> refs();
 
-is scalar(grep { !$_ -> isa('Git::Raw::Reference') } @refs), 0, 'Everything returned by Git::Raw::Reference->all should be a Git::Raw::Reference';
+is scalar(grep { !$_ -> isa('Git::Raw::Reference') } @refs), 0, 'Everything returned by $repo->refs() should be a Git::Raw::Reference';
 
 my @ref_names = sort map { $_ -> name() } @refs;
 
