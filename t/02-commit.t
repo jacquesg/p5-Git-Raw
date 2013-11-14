@@ -124,7 +124,7 @@ is $head -> committer -> offset, $off;
 is $head -> time, $time;
 is $head -> offset, $off;
 
-my @before_refs = sort map { $_ -> name() } Git::Raw::Reference -> all($repo);
+my @before_refs = sort map { $_ -> name() } $repo -> refs();
 
 my $commit4 = $repo -> commit(
     "fourth commit\n", $me, $me, [], $tree, undef
@@ -146,7 +146,7 @@ is $commit4 -> committer -> email, $email;
 is $commit4 -> committer -> time, $time;
 is $commit4 -> committer -> offset, $off;
 
-my @after_refs = sort map { $_ -> name() } Git::Raw::Reference -> all($repo);
+my @after_refs = sort map { $_ -> name() } $repo -> refs();
 
 is_deeply \@after_refs, \@before_refs, 'No new references should be created when specifying undef as the update ref argument';
 
