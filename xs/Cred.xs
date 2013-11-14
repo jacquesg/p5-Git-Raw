@@ -35,7 +35,7 @@ keyfile(class, user, public, private, pass)
 		const char *privatekey = SvPVbyte_nolen(private);
 		const char *passphrase = SvPVbyte_nolen(pass);
 
-		int rc = git_cred_ssh_keyfile_passphrase_new(
+		int rc = git_cred_ssh_key_new(
 			&out, username, publickey, privatekey, passphrase
 		);
 		git_check_error(rc);
