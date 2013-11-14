@@ -30,10 +30,6 @@ or a L<Git::Raw::Tree> object.  If C<$force> is a truthy value, any existing
 reference is overwritten.  If C<$force> is falsy (the default) and a reference
 named C<$name> already exists, an error is thrown.
 
-=head2 all ( $repo )
-
-Returns an array of all of the L<Git::Raw::Reference> objects found in C<$repo>.
-
 =head2 delete( )
 
 Delete the reference. The L<Git::Raw::Reference> object must not be accessed
