@@ -211,7 +211,7 @@ sub branches {
 	return $branches;
 }
 
-=head2 commit( $msg, $author, $committer, \@parents, $tree )
+=head2 commit( $msg, $author, $committer, [@parents], $tree [, $update_ref ] )
 
 Create a new L<Git::Raw::Commit>. Shortcut for C<Git::Raw::Commit-E<gt>create()>.
 
@@ -229,7 +229,7 @@ sub tag { return Git::Raw::Tag -> create(@_) }
 
 =head2 tags( )
 
-Retrieve a list of L<Git::Raw::Tag> objects.
+Retrieve the list of L<Git::Raw::Tag> objects.
 
 =cut
 
@@ -254,11 +254,11 @@ sub stash { return Git::Raw::Stash -> save(@_) }
 
 =head2 remotes( )
 
-Retrieve a list of L<Git::Raw::Remote> objects.
+Retrieve the list of L<Git::Raw::Remote> objects.
 
 =head2 refs( )
 
-Retrieve of list of L<Git::Raw::Reference> objects for this repository.
+Retrieve the list of L<Git::Raw::Reference> objects.
 
 =head2 walker( )
 
