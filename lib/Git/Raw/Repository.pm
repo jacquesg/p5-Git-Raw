@@ -260,6 +260,10 @@ Retrieve the list of L<Git::Raw::Remote> objects.
 
 Retrieve the list of L<Git::Raw::Reference> objects.
 
+=head2 refs( )
+
+Retrieve of list of L<Git::Raw::Reference> objects for this repository.
+
 =head2 walker( )
 
 Create a new L<Git::Raw::Walker>. Shortcut for C<Git::Raw::Walker-E<gt>create()>.
