@@ -313,6 +313,43 @@ diff(self, ...)
 
 	OUTPUT: RETVAL
 
+void
+branches(self)
+	SV *self
+
+	PPCODE:
+		int rc;
+		int num_branches = 0;
+
+		Branch branch;
+		Repository repo_ptr;
+
+		git_branch_t type;
+		git_branch_iterator *itr;
+
+		repo_ptr = GIT_SV_TO_PTR(Repository, self);
+
+		rc = git_branch_iterator_new(&itr, repo_ptr,
+			GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE);
+		git_check_error(rc);
+
+		while ((rc = git_branch_next(&branch, &type, itr)) == 0) {
+			SV *perl_ref;
+
+			GIT_NEW_OBJ(perl_ref, "Git::Raw::Branch", branch, SvRV(self));
+
+			EXTEND(SP, 1);
+			PUSHs(sv_2mortal(perl_ref));
+
+			num_branches++;
+		}
+		git_branch_iterator_free(itr);
+
+		if (rc != GIT_ITEROVER)
+			git_check_error(rc);
+
+		XSRETURN(num_branches);
+
 AV *
 remotes(self)
 	Repository self

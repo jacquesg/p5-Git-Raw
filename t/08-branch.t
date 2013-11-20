@@ -48,7 +48,7 @@ my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 is $look -> type, 'direct';
 is $look -> name, 'refs/heads/some_branch';
 
-my $branches = [ sort { $a -> name cmp $b -> name } @{$repo -> branches} ];
+my $branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
 
 is $branches -> [0] -> type, 'direct';
 is $branches -> [0] -> name, 'refs/heads/master';
