@@ -1,7 +1,7 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Cred
 
 Cred
-plaintext(class, user, pass)
+userpass(class, user, pass)
 	SV *class
 	SV *user
 	SV *pass
@@ -20,7 +20,7 @@ plaintext(class, user, pass)
 	OUTPUT: RETVAL
 
 Cred
-keyfile(class, user, public, private, pass)
+sshkey(class, user, public, private, pass)
 	SV *class
 	SV *user
 	SV *public

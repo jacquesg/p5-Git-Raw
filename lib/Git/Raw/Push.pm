@@ -19,7 +19,7 @@ Git::Raw::Push - Git push class
 
     # set the acquire credentials callback
     $remote -> callbacks({
-      credentials => sub { Git::Raw::Cred -> plaintext($usr, $pwd) }
+      credentials => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
     });
 
     # connect the remote
