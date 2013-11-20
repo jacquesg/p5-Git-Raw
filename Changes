@@ -2,6 +2,13 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update to libgit2 v0.20
+   + Remove Branch -> foreach() (incompatible change)
+   + Repository -> branches() now returns a "real" list instead of an array
+     reference
+ - Rename Cred -> plaintext() to Cred -> userpass() and Cred -> keyfile()
+   to Cred -> sshkey() (incompatible change)
+
 0.28      2013-11-18 15:00:10 Europe/Rome
 
  - Add Blob -> id() (GH#15) (thanks, @hoelzro!)
