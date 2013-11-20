@@ -66,28 +66,6 @@ move(self, name, force)
 		);
 		git_check_error(rc);
 
-void
-foreach(class, repo, cb)
-	SV *class
-	SV *repo
-	SV *cb
-
-	CODE:
-		git_foreach_payload payload = {
-			.repo     = repo,
-			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
-			.cb       = cb,
-			.class    = SvPVbyte_nolen(class)
-		};
-
-		int rc = git_branch_foreach(
-			payload.repo_ptr, GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE,
-			git_branch_foreach_cbb, &payload
-		);
-
-		if (rc != GIT_EUSER)
-			git_check_error(rc);
-
 Reference
 upstream(self)
 	Branch self

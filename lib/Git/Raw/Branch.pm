@@ -43,11 +43,6 @@ Retrieve the branch corresponding to the given branch name.
 Rename the branch to C<$name>. Note that in order to get the updated branch
 object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 
-=head2 foreach( $repo, $callback )
-
-Run C<$callback> for every branch in the repo. The callback receives a
-branch object. A non-zero return value stops the loop.
-
 =head2 upstream( )
 
 Retrieve the reference supporting the remote tracking branch, given the local
