@@ -8,6 +8,7 @@ Revision history for Git-Raw
      reference
  - Rename Cred -> plaintext() to Cred -> userpass() and Cred -> keyfile()
    to Cred -> sshkey() (incompatible change)
+ - Add Cred -> sshagent() method
 
 0.28      2013-11-18 15:00:10 Europe/Rome
 
