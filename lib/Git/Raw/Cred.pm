@@ -26,6 +26,12 @@ Create a new credential object given a SSH public and private key files, and
 the password of the private key. If the SSH support has not been enabled at
 build-time, this method will always return C<undef>.
 
+=head2 sshagent( $user )
+
+Create a new credential object used for querying an ssh-agent. If the SSH
+support has not been enabled at build-time, this method will always return
+C<undef>.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

@@ -43,3 +43,20 @@ sshkey(class, user, public, private, pass)
 		RETVAL = out;
 
 	OUTPUT: RETVAL
+
+Cred
+sshagent(class, user)
+	SV *class
+	SV *user
+
+	CODE:
+		Cred out;
+
+		const char *username   = SvPVbyte_nolen(user);
+
+		int rc = git_cred_ssh_key_from_agent(&out, username);
+		git_check_error(rc);
+
+		RETVAL = out;
+
+	OUTPUT: RETVAL
