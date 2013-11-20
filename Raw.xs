@@ -213,42 +213,6 @@ typedef struct {
 	const char *class;
 } git_foreach_payload;
 
-int git_branch_foreach_cbb(const char *name, git_branch_t type, void *payload) {
-	dSP;
-	int rv;
-	Branch branch;
-	SV *repo, *cb_arg;
-	git_foreach_payload *pl = payload;
-
-	int rc = git_branch_lookup(&branch, pl -> repo_ptr, name, type);
-	git_check_error(rc);
-
-	ENTER;
-	SAVETMPS;
-
-	repo = SvRV(((git_foreach_payload *) payload) -> repo);
-
-	cb_arg = sv_newmortal();
-
-	sv_setref_pv(cb_arg, pl -> class, (void *) branch);
-	xs_object_magic_attach_struct(aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(repo));
-
-	PUSHMARK(SP);
-	PUSHs(cb_arg);
-	PUTBACK;
-
-	call_sv(pl -> cb, G_SCALAR);
-
-	SPAGAIN;
-
-	rv = POPi;
-
-	FREETMPS;
-	LEAVE;
-
-	return rv;
-}
-
 int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
 	dSP;
 	int rv;
