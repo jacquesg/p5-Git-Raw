@@ -10,6 +10,8 @@ use Capture::Tiny 'capture_stdout';
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
+$repo -> config -> bool('diff.mnemonicprefix', 0);
+
 my $file  = $repo -> workdir . 'diff';
 write_file($file, "diff me, biatch\n");
 
