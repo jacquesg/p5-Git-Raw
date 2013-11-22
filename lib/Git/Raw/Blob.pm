@@ -5,6 +5,9 @@ use warnings;
 
 use Git::Raw;
 
+sub is_blob { !0 }
+sub is_tree { !1 }
+
 =head1 NAME
 
 Git::Raw::Blob - Git blob class
@@ -38,6 +41,14 @@ Retrieve the size of the raw content of a blob.
 =head2 id( )
 
 Return the raw ID (the SHA-1 hash) of the blob.
+
+=head2 is_blob( )
+
+Returns true.
+
+=head2 is_tree( )
+
+Returns false.
 
 =head1 AUTHOR
 
