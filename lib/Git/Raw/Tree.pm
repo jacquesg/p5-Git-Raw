@@ -5,6 +5,9 @@ use warnings;
 
 use Git::Raw;
 
+sub is_tree { !0 }
+sub is_blob { !1 }
+
 =head1 NAME
 
 Git::Raw::Tree - Git tree class
@@ -43,6 +46,14 @@ Retrieve a L<Git::Raw::TreeEntry> object by path.
 
 Compute the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed, the
 diff will be computed against the working directory.
+
+=head2 is_tree( )
+
+Returns true.
+
+=head2 is_blob( )
+
+Returns false.
 
 =head1 AUTHOR
 
