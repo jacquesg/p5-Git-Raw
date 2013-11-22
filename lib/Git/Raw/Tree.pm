@@ -44,6 +44,22 @@ Retrieve a L<Git::Raw::TreeEntry> object by path.
 Compute the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed, the
 diff will be computed against the working directory.
 
+=head2 is_tree( )
+
+Returns true.
+
+=cut
+
+sub is_tree { !0 }
+
+=head2 is_blob( )
+
+Returns false.
+
+=cut
+
+sub is_blob { !1 }
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

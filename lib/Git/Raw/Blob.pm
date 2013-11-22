@@ -39,6 +39,22 @@ Retrieve the size of the raw content of a blob.
 
 Return the raw ID (the SHA-1 hash) of the blob.
 
+=head2 is_blob( )
+
+Returns true.
+
+=cut
+
+sub is_blob { !0 }
+
+=head2 is_tree( )
+
+Returns false.
+
+=cut
+
+sub is_tree { !1 }
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
