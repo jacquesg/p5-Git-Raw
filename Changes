@@ -9,6 +9,7 @@ Revision history for Git-Raw
  - Rename Cred -> plaintext() to Cred -> userpass() and Cred -> keyfile()
    to Cred -> sshkey() (incompatible change)
  - Add Cred -> sshagent() method
+ - Add is_tree() and is_blob() to Tree and Blob
 
 0.28      2013-11-18 15:00:10 Europe/Rome
 
