@@ -5,3 +5,4 @@ t/test_repo
 .*\.o
 .*\.a
 .*\.pc$
+xs/libgit2/tests/resources/status/这
