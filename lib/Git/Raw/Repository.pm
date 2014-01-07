@@ -146,10 +146,20 @@ Skip files with unmerged index entries, instead of treating them as conflicts.
 
 =back
 
+=over 4
+
+=item * "paths"
+
+An optional array representing the list of files thay should be checked out. If C<"paths">
+is not specified, all files will be checked out (default).
+
+=back
+
 Example:
 
     $repo -> checkout($repo -> head -> target, {
       'checkout_strategy' => { 'safe'  => 1 }
+      'paths' => [ 'myscript.pl' ]
     });
 
 =head2 reset( $target, $type )
