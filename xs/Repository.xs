@@ -187,14 +187,45 @@ checkout(self, target, opts)
 
 	CODE:
 		int rc;
-		SV *strategy;
+		SV **strategy;
+		SV **paths;
 
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
 		/* TODO: support all checkout_opts */
-		strategy = *hv_fetchs(opts, "checkout_strategy", 0);
-		checkout_opts.checkout_strategy =
-			git_hv_to_checkout_strategy((HV *) SvRV(strategy));
+		if ((strategy = hv_fetchs(opts, "checkout_strategy", 0)) != NULL) {
+			checkout_opts.checkout_strategy =
+				git_hv_to_checkout_strategy((HV *) SvRV(*strategy));
+		}
+
+		if ((paths = hv_fetchs(opts, "paths", 0)) != NULL) {
+			int max_index;
+			char *p[32];
+
+			if (!SvROK(*paths) || SvTYPE(SvRV(*paths)) != SVt_PVAV) {
+				Perl_croak(aTHX_ "Invalid type");
+			}
+
+			max_index = av_len ((AV *) SvRV(*paths));
+
+			if (max_index != -1) {
+				int i, count = 0;
+
+				for (i = 0; i <= max_index; ++i) {
+					SV *path = *av_fetch ((AV *) SvRV (*paths), i, 0);
+					if (SvOK (path)) {
+						/* TODO: The maximum file count is hard coded to 32 files*/
+						if (count >= 32) {
+							continue;
+						}
+						p[count++] = SvPVbyte_nolen (path);
+					}
+				}
+
+				checkout_opts.paths.strings = (char **) &p;
+				checkout_opts.paths.count = count;
+			}
+		}
 
 		rc = git_checkout_tree(
 			self, git_sv_to_obj(target), &checkout_opts
