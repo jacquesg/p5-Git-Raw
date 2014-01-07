@@ -214,9 +214,9 @@ reset(self, target, type)
 		STRLEN len;
 		const char *type_str = SvPVbyte(type, len);
 
-		if (strcmp(type_str, "soft"))
+		if (strcmp(type_str, "soft") == 0)
 			reset = GIT_RESET_SOFT;
-		else if (strcmp(type_str, "mixed"))
+		else if (strcmp(type_str, "mixed") == 0)
 			reset = GIT_RESET_MIXED;
 		else
 			Perl_croak(aTHX_ "Invalid type");
