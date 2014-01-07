@@ -188,6 +188,7 @@ checkout(self, target, opts)
 	CODE:
 		int rc;
 		SV **opt;
+		char **paths = NULL;
 
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
@@ -198,9 +199,31 @@ checkout(self, target, opts)
 					(HV *) SvRV(*opt)
 				);
 
+		if ((opt = hv_fetchs(opts, "paths", 0))) {
+			SV **path;
+			size_t count = 0;
+
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
+				if (SvOK(*path)) {
+					Renew(paths, count+1, char *);
+					paths[count++] = SvPVbyte_nolen(*path);
+				}
+			}
+
+			if (count > 0) {
+				checkout_opts.paths.strings = paths;
+				checkout_opts.paths.count   = count;
+			}
+		}
+
 		rc = git_checkout_tree(
 			self, git_sv_to_obj(target), &checkout_opts
 		);
+
+		Safefree(paths);
 		git_check_error(rc);
 
 void
