@@ -187,14 +187,16 @@ checkout(self, target, opts)
 
 	CODE:
 		int rc;
-		SV *strategy;
+		SV **opt;
 
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
 		/* TODO: support all checkout_opts */
-		strategy = *hv_fetchs(opts, "checkout_strategy", 0);
-		checkout_opts.checkout_strategy =
-			git_hv_to_checkout_strategy((HV *) SvRV(strategy));
+		if ((opt = hv_fetchs(opts, "checkout_strategy", 0)))
+			checkout_opts.checkout_strategy =
+				git_hv_to_checkout_strategy(
+					(HV *) SvRV(*opt)
+				);
 
 		rc = git_checkout_tree(
 			self, git_sv_to_obj(target), &checkout_opts
