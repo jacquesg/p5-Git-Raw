@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Add "paths" checkout option (GH#23) (thanks, @jacquesg!)
+
 0.29      2013-11-24 20:17:02 Europe/Rome
 
  - Update to libgit2 v0.20
