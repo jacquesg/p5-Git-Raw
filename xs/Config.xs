@@ -60,7 +60,7 @@ bool(self, name, ...)
 				break;
 		}
 
-		RETVAL = (rc != GIT_ENOTFOUND) ? boolSV(value) : &PL_sv_undef;
+		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
 
 	OUTPUT: RETVAL
 

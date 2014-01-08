@@ -169,12 +169,12 @@ callbacks(self, callbacks)
 
 		git_remote_set_callbacks(self, &rcallbacks);
 
-bool
+SV *
 is_connected(self)
 	Remote self
 
 	CODE:
-		RETVAL = git_remote_connected(self);
+		RETVAL = newSViv(git_remote_connected(self));
 
 	OUTPUT: RETVAL
 

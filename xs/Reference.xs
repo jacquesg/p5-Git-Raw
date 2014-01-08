@@ -153,21 +153,21 @@ target(self)
 
 	OUTPUT: RETVAL
 
-bool
+SV *
 is_branch(self)
 	Reference self
 
 	CODE:
-		RETVAL = git_reference_is_branch(self);
+		RETVAL = newSViv(git_reference_is_branch(self));
 
 	OUTPUT: RETVAL
 
-bool
+SV *
 is_remote(self)
 	Reference self
 
 	CODE:
-		RETVAL = git_reference_is_remote(self);
+		RETVAL = newSViv(git_reference_is_remote(self));
 
 	OUTPUT: RETVAL
 

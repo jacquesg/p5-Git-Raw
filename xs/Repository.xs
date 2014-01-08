@@ -469,21 +469,21 @@ workdir(self, ...)
 
 	OUTPUT: RETVAL
 
-bool
+SV *
 is_bare(self)
 	Repository self
 
 	CODE:
-		RETVAL = git_repository_is_bare(self);
+		RETVAL = newSViv(git_repository_is_bare(self));
 
 	OUTPUT: RETVAL
 
-bool
+SV *
 is_empty(self)
 	Repository self
 
 	CODE:
-		RETVAL = git_repository_is_empty(self);
+		RETVAL = newSViv(git_repository_is_empty(self));
 
 	OUTPUT: RETVAL
 

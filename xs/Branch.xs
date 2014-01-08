@@ -80,11 +80,11 @@ upstream(self)
 
 	OUTPUT: RETVAL
 
-bool
+SV *
 is_head(self)
 	Branch self
 
 	CODE:
-		RETVAL = git_branch_is_head(self);
+		RETVAL = newSViv(git_branch_is_head(self));
 
 	OUTPUT: RETVAL
