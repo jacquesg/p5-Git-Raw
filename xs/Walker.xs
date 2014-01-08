@@ -5,10 +5,12 @@ create(class, repo)
 	SV *class
 	Repository repo
 
-	CODE:
+	PREINIT:
+		int rc;
 		Walker walk;
 
-		int rc = git_revwalk_new(&walk, repo);
+	CODE:
+		rc = git_revwalk_new(&walk, repo);
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), walk);
@@ -20,8 +22,11 @@ push(self, commit)
 	Walker self
 	Commit commit
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_push(self, git_commit_id(commit));
+		rc = git_revwalk_push(self, git_commit_id(commit));
 		git_check_error(rc);
 
 void
@@ -29,8 +34,11 @@ push_glob(self, glob)
 	Walker self
 	char* glob
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_push_glob(self, glob);
+		rc = git_revwalk_push_glob(self, glob);
 		git_check_error(rc);
 
 void
@@ -38,16 +46,22 @@ push_ref(self, ref)
 	Walker self
 	char* ref
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_push_ref(self, ref);
+		rc = git_revwalk_push_ref(self, ref);
 		git_check_error(rc);
 
 void
 push_head(self)
 	Walker self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_push_head(self);
+		rc = git_revwalk_push_head(self);
 		git_check_error(rc);
 
 void
@@ -55,8 +69,11 @@ hide(self, commit)
 	Walker self
 	Commit commit
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_hide(self, git_commit_id(commit));
+		rc = git_revwalk_hide(self, git_commit_id(commit));
 		git_check_error(rc);
 
 void
@@ -64,8 +81,11 @@ hide_glob(self, glob)
 	Walker self
 	char* glob
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_hide_glob(self, glob);
+		rc = git_revwalk_hide_glob(self, glob);
 		git_check_error(rc);
 
 void
@@ -73,26 +93,35 @@ hide_ref(self, ref)
 	Walker self
 	char* ref
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_hide_ref(self, ref);
+		rc = git_revwalk_hide_ref(self, ref);
 		git_check_error(rc);
 
 void
 hide_head(self)
 	Walker self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_revwalk_hide_head(self);
+		rc = git_revwalk_hide_head(self);
 		git_check_error(rc);
 
 Commit
 next(self)
 	Walker self
 
-	CODE:
+	PREINIT:
+		int rc;
 		git_oid oid;
 		Commit commit;
-		int rc = git_revwalk_next(&oid, self);
+
+	CODE:
+		rc = git_revwalk_next(&oid, self);
 
 		switch (rc) {
 			case 0: {

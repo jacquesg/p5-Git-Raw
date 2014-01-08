@@ -5,13 +5,13 @@ new(class, repo, ...)
 	const char *class
 	SV *repo
 
-	CODE:
-		Tree source = NULL;
-		TreeBuilder builder;
+	PREINIT:
 		int rc;
-		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		TreeBuilder builder;
+		Tree source = NULL;
 
-		if(items > 2) {
+	CODE:
+		if (items > 2) {
 			source = GIT_SV_TO_PTR(Tree, ST(2));
 		}
 
@@ -42,18 +42,15 @@ get(self, filename)
 	SV *self
 	const char *filename
 
-	CODE:
-		TreeBuilder builder;
-		SV *repo;
+	PREINIT:
 		const git_tree_entry *entry;
 
-		builder = GIT_SV_TO_PTR(TreeBuilder, self);
-		repo    = GIT_SV_TO_REPO(self);
-
-		entry = git_treebuilder_get(builder, filename);
+	CODE:
+		entry = git_treebuilder_get(GIT_SV_TO_PTR(TreeBuilder, self), filename);
 
 		if(entry) {
-			GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry), repo);
+			GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry),
+				GIT_SV_TO_REPO(self));
 		} else {
 			RETVAL = &PL_sv_undef;
 		}
@@ -67,28 +64,27 @@ insert(self, filename, object, mode)
 	SV *object
 	int mode
 
-	PPCODE:
-		TreeBuilder builder;
+	PREINIT:
+		int rc;
+
 		const git_tree_entry *entry;
 		const git_oid *oid;
-		SV *repo;
-		int rc;
+
 		int is_returning = GIMME_V != G_VOID;
 
-		builder = GIT_SV_TO_PTR(TreeBuilder, self);
-		repo    = GIT_SV_TO_REPO(self);
-
+	PPCODE:
 		if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob")) {
 			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
 		} else {
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 		}
 
-		rc = git_treebuilder_insert(is_returning ? &entry : NULL, builder, filename, oid, mode);
+		rc = git_treebuilder_insert(is_returning ? &entry : NULL,
+			GIT_SV_TO_PTR(TreeBuilder, self), filename, oid, mode);
 		git_check_error(rc);
 
-		if(is_returning) {
-			GIT_NEW_OBJ(ST(0), "Git::Raw::TreeEntry", git_tree_entry_dup(entry), repo);
+		if (is_returning) {
+			GIT_NEW_OBJ(ST(0), "Git::Raw::TreeEntry", git_tree_entry_dup(entry), GIT_SV_TO_REPO(self));
 			sv_2mortal(ST(0));
 			XSRETURN(1);
 		} else {
@@ -100,9 +96,10 @@ remove(self, filename)
 	TreeBuilder self
 	const char *filename
 
-	CODE:
+	PREINIT:
 		int rc;
 
+	CODE:
 		rc = git_treebuilder_remove(self, filename);
 		git_check_error(rc);
 
@@ -110,20 +107,19 @@ void
 write(self)
 	SV *self
 
-	PPCODE:
+	PREINIT:
 		int rc;
 		git_oid oid;
 		Tree tree;
-		TreeBuilder builder;
 		SV *repo;
 		Repository repo_ptr;
 		int is_returning = GIMME_V != G_VOID;
 
-		builder  = GIT_SV_TO_PTR(TreeBuilder, self);
+	PPCODE:
 		repo     = GIT_SV_TO_REPO(self);
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
-		rc = git_treebuilder_write(&oid, repo_ptr, builder);
+		rc = git_treebuilder_write(&oid, repo_ptr, GIT_SV_TO_PTR(TreeBuilder, self));
 		git_check_error(rc);
 
 		if(is_returning) {

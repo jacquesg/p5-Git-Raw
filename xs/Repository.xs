@@ -6,10 +6,12 @@ init(class, path, is_bare)
 	SV *path
 	unsigned is_bare
 
-	CODE:
+	PREINIT:
+		int rc;
 		Repository repo;
 
-		int rc = git_repository_init(
+	CODE:
+		rc = git_repository_init(
 			&repo, SvPVbyte_nolen(path), is_bare
 		);
 		git_check_error(rc);
@@ -25,13 +27,14 @@ clone(class, url, path, opts)
 	SV *path
 	HV *opts
 
-	CODE:
+	PREINIT:
 		int rc;
 		SV **opt;
 		Repository repo;
 
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
+	CODE:
 		/* TODO: support all clone_opts */
 		/* Bare repository */
 		if ((opt = hv_fetchs(opts, "bare", 0)) && (SvIV(*opt) != 0))
@@ -66,10 +69,12 @@ open(class, path)
 	SV *class
 	SV *path
 
-	CODE:
+	PREINIT:
+		int rc;
 		Repository repo;
 
-		int rc = git_repository_open(&repo, SvPVbyte_nolen(path));
+	CODE:
+		rc = git_repository_open(&repo, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
@@ -81,11 +86,13 @@ discover(class, path)
 	SV *class
 	SV *path
 
-	CODE:
-		Repository repo;
+	PREINIT:
+		int rc;
 		char found[GIT_PATH_MAX];
+		Repository repo;
 
-		int rc = git_repository_discover(
+	CODE:
+		rc = git_repository_discover(
 			found, GIT_PATH_MAX, SvPVbyte_nolen(path), 1, NULL
 		);
 		git_check_error(rc);
@@ -101,10 +108,12 @@ Config
 config(self)
 	Repository self
 
-	CODE:
+	PREINIT:
+		int rc;
 		Config cfg;
 
-		int rc = git_repository_config(&cfg, self);
+	CODE:
+		rc = git_repository_config(&cfg, self);
 		git_check_error(rc);
 
 		RETVAL = cfg;
@@ -115,10 +124,12 @@ SV *
 index(self)
 	SV *self
 
-	CODE:
+	PREINIT:
+		int rc;
 		Index index;
 
-		int rc = git_repository_index(&index, GIT_SV_TO_PTR(Repository, self));
+	CODE:
+		rc = git_repository_index(&index, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, "Git::Raw::Index", index, SvRV(self));
@@ -130,10 +141,13 @@ head(self, ...)
 	SV *self
 
 	PROTOTYPE: $;$
-	CODE:
+	PREINIT:
 		int rc;
 		Reference head;
-		Repository repo = GIT_SV_TO_PTR(Repository, self);
+		Repository repo;
+
+	CODE:
+		repo = GIT_SV_TO_PTR(Repository, self);
 
 		if (items == 2) {
 			Reference new_head = GIT_SV_TO_PTR(Reference, ST(1));
@@ -160,14 +174,19 @@ lookup(self, id)
 	SV *self
 	SV *id
 
-	CODE:
+	PREINIT:
+		int rc;
+
 		git_oid oid;
 		git_object *obj;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
+		const char *id_str;
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+	CODE:
+		id_str = SvPVbyte(id, len);
+
+		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
 		rc = git_object_lookup_prefix(
@@ -185,13 +204,14 @@ checkout(self, target, opts)
 	SV *target
 	HV *opts
 
-	CODE:
+	PREINIT:
 		int rc;
 		SV **opt;
 		char **paths = NULL;
 
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
+	CODE:
 		/* TODO: support all checkout_opts */
 		if ((opt = hv_fetchs(opts, "checkout_strategy", 0)))
 			checkout_opts.checkout_strategy =
@@ -232,12 +252,15 @@ reset(self, target, type)
 	SV *target
 	SV *type
 
-	CODE:
+	PREINIT:
 		int rc;
 		git_reset_t reset;
 
 		STRLEN len;
-		const char *type_str = SvPVbyte(type, len);
+		const char *type_str;
+
+	CODE:
+		type_str = SvPVbyte(type, len);
 
 		if (strcmp(type_str, "soft") == 0)
 			reset = GIT_RESET_SOFT;
@@ -254,12 +277,13 @@ status(self, path)
 	Repository self
 	SV *path
 
-	CODE:
+	PREINIT:
+		int rc;
 		unsigned iflags;
-
 		AV *flags = newAV();
 
-		int rc = git_status_file(&iflags, self, SvPVbyte_nolen(path));
+	CODE:
+		rc = git_status_file(&iflags, self, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 		if (iflags & GIT_STATUS_INDEX_NEW)
@@ -292,8 +316,11 @@ ignore(self, rules)
 	Repository self
 	SV *rules
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_ignore_add_rule(self, SvPVbyte_nolen(rules));
+		rc = git_ignore_add_rule(self, SvPVbyte_nolen(rules));
 		git_check_error(rc);
 
 Diff
@@ -301,12 +328,12 @@ diff(self, ...)
 	Repository self
 
 	PROTOTYPE: $;$
-	CODE:
+	PREINIT:
 		int rc;
-
 		Diff diff;
 		Index index;
 
+	CODE:
 		rc = git_repository_index(&index, self);
 		git_check_error(rc);
 
@@ -342,19 +369,17 @@ void
 branches(self)
 	SV *self
 
-	PPCODE:
+	PREINIT:
 		int rc;
 		int num_branches = 0;
 
 		Branch branch;
-		Repository repo_ptr;
 
 		git_branch_t type;
 		git_branch_iterator *itr;
 
-		repo_ptr = GIT_SV_TO_PTR(Repository, self);
-
-		rc = git_branch_iterator_new(&itr, repo_ptr,
+	PPCODE:
+		rc = git_branch_iterator_new(&itr, GIT_SV_TO_PTR(Repository, self),
 			GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE);
 		git_check_error(rc);
 
@@ -379,13 +404,14 @@ AV *
 remotes(self)
 	Repository self
 
-	CODE:
-		int i;
+	PREINIT:
+		int rc, i;
 
-		AV *output = newAV();
 		git_strarray remotes;
+		AV *output = newAV();
 
-		int rc = git_remote_list(&remotes, self);
+	CODE:
+		rc = git_remote_list(&remotes, self);
 		git_check_error(rc);
 
 		for (i = 0; i < remotes.count; i++) {
@@ -409,17 +435,15 @@ void
 refs(self)
 	SV *self
 
-	PPCODE:
+	PREINIT:
 		int rc;
-		int num_refs = 0;
 
 		Reference ref;
-		Repository repo_ptr;
 		git_reference_iterator *itr;
+		int num_refs = 0;
 
-		repo_ptr = GIT_SV_TO_PTR(Repository, self);
-
-		rc = git_reference_iterator_new(&itr, repo_ptr);
+	PPCODE:
+		rc = git_reference_iterator_new(&itr, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
 		while ((rc = git_reference_next(&ref, itr)) == 0) {
@@ -443,8 +467,11 @@ SV *
 path(self)
 	Repository self
 
+	PREINIT:
+		const char *path;
+
 	CODE:
-		const char *path = git_repository_path(self);
+		path = git_repository_path(self);
 		RETVAL = newSVpv(path, 0);
 
 	OUTPUT: RETVAL
@@ -454,13 +481,15 @@ workdir(self, ...)
 	Repository self
 
 	PROTOTYPE: $;$
-	CODE:
+	PREINIT:
+		int rc;
 		const char *path;
 
+	CODE:
 		if (items == 2) {
 			const char *new_path = SvPVbyte_nolen(ST(1));
 
-			int rc = git_repository_set_workdir(self, new_path, 1);
+			rc = git_repository_set_workdir(self, new_path, 1);
 			git_check_error(rc);
 		}
 

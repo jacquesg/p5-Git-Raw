@@ -5,8 +5,11 @@ add(self, path)
 	Index self
 	SV *path
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_index_add_bypath(self, SvPVbyte_nolen(path));
+		rc = git_index_add_bypath(self, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 void
@@ -20,16 +23,22 @@ void
 read(self)
 	Index self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_index_read(self, 0);
+		rc = git_index_read(self, 0);
 		git_check_error(rc);
 
 void
 write(self)
 	Index self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_index_write(self);
+		rc = git_index_write(self);
 		git_check_error(rc);
 
 void
@@ -37,18 +46,23 @@ read_tree(self, tree)
 	Index self
 	Tree tree
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_index_read_tree(self, tree);
+		rc = git_index_read_tree(self, tree);
 		git_check_error(rc);
 
 SV *
 write_tree(self)
 	Index self
 
-	CODE:
+	PREINIT:
+		int rc;
 		git_oid oid;
 
-		int rc = git_index_write_tree(&oid, self);
+	CODE:
+		rc = git_index_write_tree(&oid, self);
 		git_check_error(rc);
 
 		RETVAL = git_oid_to_sv(&oid);
@@ -60,8 +74,11 @@ remove(self, path)
 	Index self
 	SV *path
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_index_remove(self, SvPVbyte_nolen(path), 0);
+		rc = git_index_remove(self, SvPVbyte_nolen(path), 0);
 		git_check_error(rc);
 
 void

@@ -10,11 +10,13 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 	AV *parents
 	Tree tree
 
-	CODE:
+	PREINIT:
+		int count, rc;
 		git_oid oid;
 		Commit commit, *commit_parents = NULL;
 		const char *update_ref = "HEAD";
 
+	CODE:
 		if(items > 7) {
 			SV *sv_update_ref = ST(7);
 
@@ -25,7 +27,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 			}
 		}
 
-		int count = av_len(parents) + 1;
+		count = av_len(parents) + 1;
 
 		if (count > 0) {
 			int i; SV *iter;
@@ -39,7 +41,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 			}
 		}
 
-		int rc = git_commit_create(
+		rc = git_commit_create(
 			&oid, GIT_SV_TO_PTR(Repository, repo), update_ref, author, committer, NULL,
 			SvPVbyte_nolen(msg), tree, count,
 			(const git_commit **) commit_parents
@@ -59,17 +61,20 @@ lookup(class, repo, id)
 	SV *repo
 	SV *id
 
-	CODE:
+	PREINIT:
+		int rc;
 		git_oid oid;
 		Commit commit;
-		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		Repository repo_ptr;
 
 		STRLEN len;
 		const char *id_str = SvPVbyte(id, len);
 
-		int rc = git_oid_fromstrn(&oid, id_str, len);
+	CODE:
+		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_commit_lookup_prefix(&commit, repo_ptr, &oid, len);
 		git_check_error(rc);
 
@@ -81,8 +86,11 @@ SV *
 id(self)
 	Commit self
 
+	PREINIT:
+		const git_oid *oid;
+
 	CODE:
-		const git_oid *oid = git_commit_id(self);
+		oid = git_commit_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
 
 	OUTPUT: RETVAL
@@ -91,8 +99,11 @@ SV *
 message(self)
 	Commit self
 
+	PREINIT:
+		const char *msg;
+
 	CODE:
-		const char *msg = git_commit_message(self);
+		msg = git_commit_message(self);
 		RETVAL = newSVpv(msg, 0);
 
 	OUTPUT: RETVAL
@@ -101,8 +112,11 @@ Signature
 author(self)
 	Commit self
 
+	PREINIT:
+		Signature a;
+
 	CODE:
-		Signature a = (Signature) git_commit_author(self);
+		a = (Signature) git_commit_author(self);
 		RETVAL = git_signature_dup(a);
 
 	OUTPUT: RETVAL
@@ -111,8 +125,11 @@ Signature
 committer(self)
 	Commit self
 
+	PREINIT:
+		Signature c;
+
 	CODE:
-		Signature c = (Signature) git_commit_committer(self);
+		c = (Signature) git_commit_committer(self);
 		RETVAL = git_signature_dup(c);
 
 	OUTPUT: RETVAL
@@ -121,9 +138,12 @@ SV *
 time(self)
 	Commit self
 
-	CODE:
+	PREINIT:
 		char *buf;
-		git_time_t time = git_commit_time(self);
+		git_time_t time;
+
+	CODE:
+		time = git_commit_time(self);
 
 		Newx(buf, snprintf(NULL, 0, "%" PRId64, time)+1, char);
 		sprintf(buf, "%" PRId64, time);
@@ -146,11 +166,14 @@ SV *
 tree(self)
 	SV *self
 
-	CODE:
+	PREINIT:
+		int rc;
 		Tree tree;
-		SV *repo = GIT_SV_TO_REPO(self);
+		SV *repo;
 
-		int rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
+	CODE:
+		repo = GIT_SV_TO_REPO(self);
+		rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, "Git::Raw::Tree", tree, repo);
@@ -161,12 +184,18 @@ AV *
 parents(self)
 	SV *self
 
-	CODE:
-		SV *repo = GIT_SV_TO_REPO(self);
+	PREINIT:
+		int rc, i, count;
+		SV *repo;
 
-		AV *parents = newAV();
-		Commit child = GIT_SV_TO_PTR(Commit, self);
-		int rc, i, count = git_commit_parentcount(child);
+		AV *parents;
+		Commit child;
+
+	CODE:
+		repo = GIT_SV_TO_REPO(self);
+		child = GIT_SV_TO_PTR(Commit, self);
+		count = git_commit_parentcount(child);
+		parents = newAV();
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;

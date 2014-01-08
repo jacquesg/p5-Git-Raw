@@ -5,8 +5,11 @@ merge(self, from)
 	Diff self
 	Diff from
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_diff_merge(self, from);
+		rc = git_diff_merge(self, from);
 		git_check_error(rc);
 
 void
@@ -15,11 +18,13 @@ print(self, format, callback)
 	SV *format
 	SV *callback
 
-	CODE:
+	PREINIT:
 		int rc;
 		git_diff_format_t fmt;
+		const char *fmt_str;
 
-		const char *fmt_str = SvPVbyte_nolen(format);
+	CODE:
+		fmt_str = SvPVbyte_nolen(format);
 
 		if (!strcmp(fmt_str, "patch"))
 			fmt = GIT_DIFF_FORMAT_PATCH;
