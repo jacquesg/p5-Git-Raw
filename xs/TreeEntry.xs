@@ -5,8 +5,10 @@ id(self)
 	TreeEntry self
 
 	CODE:
+	{
 		const git_oid *oid = git_tree_entry_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
+	}
 
 	OUTPUT: RETVAL
 
@@ -15,8 +17,10 @@ name(self)
 	TreeEntry self
 
 	CODE:
+	{
 		const char *name = git_tree_entry_name(self);
 		RETVAL = newSVpv(name, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -25,6 +29,7 @@ object(self)
 	SV *self
 
 	CODE:
+	{
 		git_object *obj;
 		TreeEntry self_ptr = GIT_SV_TO_PTR(TreeEntry, self);
 		Repository repo = INT2PTR(
@@ -36,6 +41,7 @@ object(self)
 		git_check_error(rc);
 
 		RETVAL = git_obj_to_sv(obj, self);
+	}
 
 	OUTPUT: RETVAL
 
