@@ -11,6 +11,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 	Tree tree
 
 	CODE:
+	{
 		git_oid oid;
 		Commit commit, *commit_parents = NULL;
 		const char *update_ref = "HEAD";
@@ -50,6 +51,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -60,6 +62,7 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+	{
 		git_oid oid;
 		Commit commit;
 		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
@@ -74,6 +77,7 @@ lookup(class, repo, id)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -82,8 +86,10 @@ id(self)
 	Commit self
 
 	CODE:
+	{
 		const git_oid *oid = git_commit_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
+	}
 
 	OUTPUT: RETVAL
 
@@ -92,8 +98,10 @@ message(self)
 	Commit self
 
 	CODE:
+	{
 		const char *msg = git_commit_message(self);
 		RETVAL = newSVpv(msg, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -102,8 +110,10 @@ author(self)
 	Commit self
 
 	CODE:
+	{
 		Signature a = (Signature) git_commit_author(self);
 		RETVAL = git_signature_dup(a);
+	}
 
 	OUTPUT: RETVAL
 
@@ -112,8 +122,10 @@ committer(self)
 	Commit self
 
 	CODE:
+	{
 		Signature c = (Signature) git_commit_committer(self);
 		RETVAL = git_signature_dup(c);
+	}
 
 	OUTPUT: RETVAL
 
@@ -122,6 +134,7 @@ time(self)
 	Commit self
 
 	CODE:
+	{
 		char *buf;
 		git_time_t time = git_commit_time(self);
 
@@ -130,6 +143,7 @@ time(self)
 
 		RETVAL = newSVpv(buf, 0);
 		Safefree(buf);
+	}
 
 	OUTPUT: RETVAL
 
@@ -147,6 +161,7 @@ tree(self)
 	SV *self
 
 	CODE:
+	{
 		Tree tree;
 		SV *repo = GIT_SV_TO_REPO(self);
 
@@ -154,6 +169,7 @@ tree(self)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, "Git::Raw::Tree", tree, repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -162,6 +178,7 @@ parents(self)
 	SV *self
 
 	CODE:
+	{
 		SV *repo = GIT_SV_TO_REPO(self);
 
 		AV *parents = newAV();
@@ -180,6 +197,7 @@ parents(self)
 		}
 
 		RETVAL = parents;
+	}
 
 	OUTPUT: RETVAL
 
