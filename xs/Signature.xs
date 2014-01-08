@@ -8,13 +8,16 @@ new(class, name, email, time, off)
 	SV *time
 	unsigned off
 
-	CODE:
+	PREINIT:
+		int rc;
 		Signature sig;
 
 		git_time_t git_time;
+
+	CODE:
 		sscanf(SvPVbyte_nolen(time), "%" PRId64, &git_time);
 
-		int rc = git_signature_new(
+		rc = git_signature_new(
 			&sig, SvPVbyte_nolen(name),
 			SvPVbyte_nolen(email), git_time, off
 		);
@@ -30,10 +33,12 @@ now(class, name, email)
 	SV *name
 	SV *email
 
-	CODE:
+	PREINIT:
+		int rc;
 		Signature sig;
 
-		int rc = git_signature_now(
+	CODE:
+		rc = git_signature_now(
 			&sig, SvPVbyte_nolen(name), SvPVbyte_nolen(email)
 		);
 		git_check_error(rc);
@@ -64,9 +69,12 @@ SV *
 time(self)
 	Signature self
 
-	CODE:
+	PREINIT:
 		char *buf;
-		git_time_t time = self -> when.time;
+		git_time_t time;
+
+	CODE:
+		time = self -> when.time;
 
 		Newx(buf, snprintf(NULL, 0, "%" PRId64, time)+1, char);
 		sprintf(buf, "%" PRId64, time);

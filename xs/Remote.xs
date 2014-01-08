@@ -7,10 +7,12 @@ create(class, repo, name, url)
 	SV *name
 	SV *url
 
-	CODE:
+	PREINIT:
+		int rc;
 		Remote remote;
 
-		int rc = git_remote_create(
+	CODE:
+		rc = git_remote_create(
 			&remote, repo, SvPVbyte_nolen(name), SvPVbyte_nolen(url)
 		);
 		git_check_error(rc);
@@ -25,10 +27,12 @@ load(class, repo, name)
 	Repository repo
 	SV *name
 
-	CODE:
+	PREINIT:
+		int rc;
 		Remote remote;
 
-		int rc = git_remote_load(&remote, repo, SvPVbyte_nolen(name));
+	CODE:
+		rc = git_remote_load(&remote, repo, SvPVbyte_nolen(name));
 		git_check_error(rc);
 
 		RETVAL = remote;
@@ -40,13 +44,15 @@ name(self, ...)
 	Remote self
 
 	PROTOTYPE: $;$
-	CODE:
+	PREINIT:
+		int rc;
 		char *name;
 
+	CODE:
 		if (items == 2) {
 			name = SvPVbyte_nolen(ST(1));
 
-			int rc = git_remote_rename(self, name, NULL, NULL);
+			rc = git_remote_rename(self, name, NULL, NULL);
 			git_check_error(rc);
 		}
 
@@ -61,13 +67,15 @@ url(self, ...)
 	Remote self
 
 	PROTOTYPE: $;$
-	CODE:
+	PREINIT:
+		int rc;
 		const char *url;
 
+	CODE:
 		if (items == 2) {
 			url = SvPVbyte_nolen(ST(1));
 
-			int rc = git_remote_set_url(self, url);
+			rc = git_remote_set_url(self, url);
 			git_check_error(rc);
 
 			rc = git_remote_save(self);
@@ -85,8 +93,11 @@ add_fetch(self, spec)
 	Remote self
 	SV *spec
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_remote_add_fetch(self, SvPVbyte_nolen(spec));
+		rc = git_remote_add_fetch(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
 
 void
@@ -94,8 +105,11 @@ add_push(self, spec)
 	Remote self
 	SV *spec
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_remote_add_push(self, SvPVbyte_nolen(spec));
+		rc = git_remote_add_push(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
 
 void
@@ -103,9 +117,13 @@ connect(self, direction)
 	Remote self
 	SV *direction
 
-	CODE:
+	PREINIT:
+		int rc;
 		git_direction direct;
-		const char *dir = SvPVbyte_nolen(direction);
+		const char *dir;
+
+	CODE:
+		dir = SvPVbyte_nolen(direction);
 
 		if (strcmp(dir, "fetch") == 0)
 			direct = GIT_DIRECTION_FETCH;
@@ -114,7 +132,7 @@ connect(self, direction)
 		else
 			Perl_croak(aTHX_ "Invalid direction");
 
-		int rc = git_remote_connect(self, direct);
+		rc = git_remote_connect(self, direct);
 		git_check_error(rc);
 
 void
@@ -128,24 +146,33 @@ void
 download(self)
 	Remote self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_remote_download(self);
+		rc = git_remote_download(self);
 		git_check_error(rc);
 
 void
 save(self)
 	Remote self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_remote_save(self);
+		rc = git_remote_save(self);
 		git_check_error(rc);
 
 void
 update_tips(self)
 	Remote self
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_remote_update_tips(self);
+		rc = git_remote_update_tips(self);
 		git_check_error(rc);
 
 void
@@ -153,10 +180,11 @@ callbacks(self, callbacks)
 	Remote self
 	HV *callbacks
 
-	CODE:
+	PREINIT:
 		SV **opt;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
+	CODE:
 		/* TODO: support all callbacks */
 		if ((opt = hv_fetchs(callbacks, "credentials", 0))) {
 			SV *cb = *opt;

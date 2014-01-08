@@ -7,13 +7,13 @@ create(class, name, repo, object, ...)
 	SV *repo
 	SV *object
 
-	CODE:
+	PREINIT:
 		int rc, force = 0;
 
 		Reference ref;
-
 		const git_oid *oid;
 
+	CODE:
 		if (items > 4)
 			force = SvTRUE(ST(4));
 
@@ -39,10 +39,12 @@ lookup(class, name, repo)
 	SV *name
 	SV *repo
 
-	CODE:
+	PREINIT:
+		int rc;
 		Reference ref;
 
-		int rc = git_reference_lookup(
+	CODE:
+		rc = git_reference_lookup(
 			&ref, GIT_SV_TO_PTR(Repository, repo),
 			SvPVbyte_nolen(name)
 		);
@@ -56,11 +58,11 @@ void
 delete(self)
 	SV *self
 
-	CODE:
+	PREINIT:
 		int rc;
-		Reference ref = GIT_SV_TO_PTR(Reference, self);
 
-		rc = git_reference_delete(ref);
+	CODE:
+		rc = git_reference_delete(GIT_SV_TO_PTR(Reference, self));
 		git_check_error(rc);
 
 		sv_setiv(SvRV(self), 0);
@@ -69,8 +71,11 @@ SV *
 name(self)
 	Reference self
 
+	PREINIT:
+		const char *msg;
+
 	CODE:
-		const char *msg = git_reference_name(self);
+		msg = git_reference_name(self);
 		RETVAL = newSVpv(msg, 0);
 
 	OUTPUT: RETVAL
@@ -79,9 +84,10 @@ SV *
 type(self)
 	Reference self
 
-	CODE:
+	PREINIT:
 		SV *type;
 
+	CODE:
 		switch (git_reference_type(self)) {
 			case GIT_REF_OID: type = newSVpv("direct", 0); break;
 			case GIT_REF_SYMBOLIC: type = newSVpv("symbolic", 0); break;
@@ -96,10 +102,13 @@ SV *
 owner(self)
 	SV *self
 
+	PREINIT:
+		SV *r;
+
 	CODE:
 		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
 
-		SV *r = xs_object_magic_get_struct(aTHX_ SvRV(self));
+		r = xs_object_magic_get_struct(aTHX_ SvRV(self));
 		if (!r) Perl_croak(aTHX_ "Invalid object");
 
 		RETVAL = newRV_inc(r);
@@ -111,9 +120,12 @@ target(self)
 	SV *self
 
 	PROTOTYPE: $
-	CODE:
+	PREINIT:
 		int rc;
-		Reference ref = GIT_SV_TO_PTR(Reference, self);
+		Reference ref;
+
+	CODE:
+		ref = GIT_SV_TO_PTR(Reference, self);
 
 		switch (git_reference_type(ref)) {
 			case GIT_REF_OID: {
@@ -135,7 +147,6 @@ target(self)
 			case GIT_REF_SYMBOLIC: {
 				Reference ref;
 				const char *target;
-				SV *repo = GIT_SV_TO_REPO(self);
 
 				target = git_reference_symbolic_target(ref);
 
@@ -143,7 +154,7 @@ target(self)
 				git_check_error(rc);
 
 				GIT_NEW_OBJ(
-					RETVAL, "Git::Raw::Reference", ref, repo
+					RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_REPO(self)
 				);
 				break;
 			}

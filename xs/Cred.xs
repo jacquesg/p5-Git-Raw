@@ -6,13 +6,16 @@ userpass(class, user, pass)
 	SV *user
 	SV *pass
 
-	CODE:
+	PREINIT:
+		int rc;
+		const char *usr, *pwd;
 		Cred out;
 
-		const char *usr = SvPVbyte_nolen(user);
-		const char *pwd = SvPVbyte_nolen(pass);
+	CODE:
+		usr = SvPVbyte_nolen(user);
+		pwd = SvPVbyte_nolen(pass);
 
-		int rc = git_cred_userpass_plaintext_new(&out, usr, pwd);
+		rc = git_cred_userpass_plaintext_new(&out, usr, pwd);
 		git_check_error(rc);
 
 		RETVAL = out;
@@ -27,15 +30,18 @@ sshkey(class, user, public, private, pass)
 	SV *private
 	SV *pass
 
-	CODE:
+	PREINIT:
+		int rc;
+		const char *username, *publickey, *privatekey, *passphrase;
 		Cred out;
 
-		const char *username   = SvPVbyte_nolen(user);
-		const char *publickey  = SvPVbyte_nolen(public);
-		const char *privatekey = SvPVbyte_nolen(private);
-		const char *passphrase = SvPVbyte_nolen(pass);
+	CODE:
+		username   = SvPVbyte_nolen(user);
+		publickey  = SvPVbyte_nolen(public);
+		privatekey = SvPVbyte_nolen(private);
+		passphrase = SvPVbyte_nolen(pass);
 
-		int rc = git_cred_ssh_key_new(
+		rc = git_cred_ssh_key_new(
 			&out, username, publickey, privatekey, passphrase
 		);
 		git_check_error(rc);
@@ -49,12 +55,15 @@ sshagent(class, user)
 	SV *class
 	SV *user
 
-	CODE:
+	PREINIT:
+		int rc;
+		const char *username;
 		Cred out;
 
-		const char *username   = SvPVbyte_nolen(user);
+	CODE:
+		username = SvPVbyte_nolen(user);
 
-		int rc = git_cred_ssh_key_from_agent(&out, username);
+		rc = git_cred_ssh_key_from_agent(&out, username);
 		git_check_error(rc);
 
 		RETVAL = out;
