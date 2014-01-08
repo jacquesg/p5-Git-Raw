@@ -65,14 +65,14 @@ time(self)
 	Signature self
 
 	CODE:
+		char *buf;
 		git_time_t time = self -> when.time;
 
-		const int n = snprintf(NULL, 0, "%" PRId64, time);
-		char buf[n + 1];
-
-		snprintf(buf, n + 1, "%" PRId64, time);
+		Newx(buf, snprintf(NULL, 0, "%" PRId64, time)+1, char);
+		sprintf(buf, "%" PRId64, time);
 
 		RETVAL = newSVpv(buf, 0);
+		Safefree(buf);
 
 	OUTPUT: RETVAL
 
