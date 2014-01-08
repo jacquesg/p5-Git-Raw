@@ -9,6 +9,7 @@ new(class, name, email, time, off)
 	unsigned off
 
 	CODE:
+	{
 		Signature sig;
 
 		git_time_t git_time;
@@ -21,6 +22,7 @@ new(class, name, email, time, off)
 		git_check_error(rc);
 
 		RETVAL = sig;
+	}
 
 	OUTPUT: RETVAL
 
@@ -31,6 +33,7 @@ now(class, name, email)
 	SV *email
 
 	CODE:
+	{
 		Signature sig;
 
 		int rc = git_signature_now(
@@ -39,6 +42,7 @@ now(class, name, email)
 		git_check_error(rc);
 
 		RETVAL = sig;
+	}
 
 	OUTPUT: RETVAL
 
@@ -65,6 +69,7 @@ time(self)
 	Signature self
 
 	CODE:
+	{
 		char *buf;
 		git_time_t time = self -> when.time;
 
@@ -73,6 +78,7 @@ time(self)
 
 		RETVAL = newSVpv(buf, 0);
 		Safefree(buf);
+	}
 
 	OUTPUT: RETVAL
 

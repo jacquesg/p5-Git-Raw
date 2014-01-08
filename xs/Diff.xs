@@ -6,8 +6,10 @@ merge(self, from)
 	Diff from
 
 	CODE:
+	{
 		int rc = git_diff_merge(self, from);
 		git_check_error(rc);
+	}
 
 void
 print(self, format, callback)
@@ -16,6 +18,7 @@ print(self, format, callback)
 	SV *callback
 
 	CODE:
+	{
 		int rc;
 		git_diff_format_t fmt;
 
@@ -36,6 +39,7 @@ print(self, format, callback)
 
 		rc = git_diff_print(self, fmt, git_diff_cb, callback);
 		git_check_error(rc);
+	}
 
 void
 DESTROY(self)

@@ -14,6 +14,7 @@ create(class, repo, name, target)
 	SV *target
 
 	CODE:
+	{
 		Reference ref;
 		Commit obj = (Commit) git_sv_to_obj(target);
 
@@ -24,6 +25,7 @@ create(class, repo, name, target)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -35,6 +37,7 @@ lookup(class, repo, name, is_local)
 	bool is_local
 
 	CODE:
+	{
 		Reference branch;
 
 		git_branch_t type = is_local ?
@@ -48,6 +51,7 @@ lookup(class, repo, name, is_local)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -58,6 +62,7 @@ move(self, name, force)
 	bool force
 
 	CODE:
+	{
 		Branch old_branch = GIT_SV_TO_PTR(Branch, self),
 		       new_branch;
 
@@ -65,18 +70,21 @@ move(self, name, force)
 			&new_branch, old_branch, SvPVbyte_nolen(name), force
 		);
 		git_check_error(rc);
+	}
 
 Reference
 upstream(self)
 	Branch self
 
 	CODE:
+	{
 		Reference ref;
 
 		int rc = git_branch_upstream(&ref, self);
 		git_check_error(rc);
 
 		RETVAL = ref;
+	}
 
 	OUTPUT: RETVAL
 

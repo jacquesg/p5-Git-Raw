@@ -7,6 +7,7 @@ init(class, path, is_bare)
 	unsigned is_bare
 
 	CODE:
+	{
 		Repository repo;
 
 		int rc = git_repository_init(
@@ -15,6 +16,7 @@ init(class, path, is_bare)
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -26,6 +28,7 @@ clone(class, url, path, opts)
 	HV *opts
 
 	CODE:
+	{
 		int rc;
 		SV **opt;
 		Repository repo;
@@ -58,6 +61,7 @@ clone(class, url, path, opts)
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -67,12 +71,14 @@ open(class, path)
 	SV *path
 
 	CODE:
+	{
 		Repository repo;
 
 		int rc = git_repository_open(&repo, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -82,6 +88,7 @@ discover(class, path)
 	SV *path
 
 	CODE:
+	{
 		Repository repo;
 		char found[GIT_PATH_MAX];
 
@@ -94,6 +101,7 @@ discover(class, path)
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -102,12 +110,14 @@ config(self)
 	Repository self
 
 	CODE:
+	{
 		Config cfg;
 
 		int rc = git_repository_config(&cfg, self);
 		git_check_error(rc);
 
 		RETVAL = cfg;
+	}
 
 	OUTPUT: RETVAL
 
@@ -116,12 +126,14 @@ index(self)
 	SV *self
 
 	CODE:
+	{
 		Index index;
 
 		int rc = git_repository_index(&index, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, "Git::Raw::Index", index, SvRV(self));
+	}
 
 	OUTPUT: RETVAL
 
@@ -131,6 +143,7 @@ head(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		int rc;
 		Reference head;
 		Repository repo = GIT_SV_TO_PTR(Repository, self);
@@ -152,6 +165,7 @@ head(self, ...)
 		xs_object_magic_attach_struct(
 			aTHX_ SvRV(RETVAL), SvREFCNT_inc_NN(SvRV(self))
 		);
+	}
 
 	OUTPUT: RETVAL
 
@@ -161,6 +175,7 @@ lookup(self, id)
 	SV *id
 
 	CODE:
+	{
 		git_oid oid;
 		git_object *obj;
 
@@ -176,6 +191,7 @@ lookup(self, id)
 		git_check_error(rc);
 
 		RETVAL = git_obj_to_sv(obj, self);
+	}
 
 	OUTPUT: RETVAL
 
@@ -186,6 +202,7 @@ checkout(self, target, opts)
 	HV *opts
 
 	CODE:
+	{
 		int rc;
 		SV **opt;
 		char **paths = NULL;
@@ -225,6 +242,7 @@ checkout(self, target, opts)
 
 		Safefree(paths);
 		git_check_error(rc);
+	}
 
 void
 reset(self, target, type)
@@ -233,6 +251,7 @@ reset(self, target, type)
 	SV *type
 
 	CODE:
+	{
 		int rc;
 		git_reset_t reset;
 
@@ -248,6 +267,7 @@ reset(self, target, type)
 
 		rc = git_reset(self, git_sv_to_obj(target), reset);
 		git_check_error(rc);
+	}
 
 AV *
 status(self, path)
@@ -255,6 +275,7 @@ status(self, path)
 	SV *path
 
 	CODE:
+	{
 		unsigned iflags;
 
 		AV *flags = newAV();
@@ -284,6 +305,7 @@ status(self, path)
 			av_push(flags, newSVpv("ignored", 0));
 
 		RETVAL = flags;
+	}
 
 	OUTPUT: RETVAL
 
@@ -293,8 +315,10 @@ ignore(self, rules)
 	SV *rules
 
 	CODE:
+	{
 		int rc = git_ignore_add_rule(self, SvPVbyte_nolen(rules));
 		git_check_error(rc);
+	}
 
 Diff
 diff(self, ...)
@@ -302,6 +326,7 @@ diff(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		int rc;
 
 		Diff diff;
@@ -335,6 +360,7 @@ diff(self, ...)
 		}
 
 		RETVAL = diff;
+	}
 
 	OUTPUT: RETVAL
 
@@ -343,6 +369,7 @@ branches(self)
 	SV *self
 
 	PPCODE:
+	{
 		int rc;
 		int num_branches = 0;
 
@@ -374,12 +401,14 @@ branches(self)
 			git_check_error(rc);
 
 		XSRETURN(num_branches);
+	}
 
 AV *
 remotes(self)
 	Repository self
 
 	CODE:
+	{
 		int i;
 
 		AV *output = newAV();
@@ -402,6 +431,7 @@ remotes(self)
 		git_strarray_free(&remotes);
 
 		RETVAL = output;
+	}
 
 	OUTPUT: RETVAL
 
@@ -410,6 +440,7 @@ refs(self)
 	SV *self
 
 	PPCODE:
+	{
 		int rc;
 		int num_refs = 0;
 
@@ -438,14 +469,17 @@ refs(self)
 			git_check_error(rc);
 
 		XSRETURN(num_refs);
+	}
 
 SV *
 path(self)
 	Repository self
 
 	CODE:
+	{
 		const char *path = git_repository_path(self);
 		RETVAL = newSVpv(path, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -455,6 +489,7 @@ workdir(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		const char *path;
 
 		if (items == 2) {
@@ -466,6 +501,7 @@ workdir(self, ...)
 
 		path = git_repository_workdir(self);
 		RETVAL = newSVpv(path, 0);
+	}
 
 	OUTPUT: RETVAL
 

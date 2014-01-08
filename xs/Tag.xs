@@ -10,6 +10,7 @@ create(class, repo, name, msg, tagger, target)
 	SV *target
 
 	CODE:
+	{
 		Tag tag;
 
 		git_oid oid;
@@ -31,6 +32,7 @@ create(class, repo, name, msg, tagger, target)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -41,6 +43,7 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+	{
 		Tag tag;
 		git_oid oid;
 
@@ -55,6 +58,7 @@ lookup(class, repo, id)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -65,6 +69,7 @@ foreach(class, repo, cb)
 	SV *cb
 
 	CODE:
+	{
 		git_foreach_payload payload = {
 			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
 			.repo     = repo,
@@ -76,12 +81,14 @@ foreach(class, repo, cb)
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
+	}
 
 void
 delete(self)
 	SV *self
 
 	CODE:
+	{
 		Tag tag_ptr = GIT_SV_TO_PTR(Tag, self);
 
 		Repository repo = INT2PTR(
@@ -93,14 +100,17 @@ delete(self)
 
 		git_tag_free(tag_ptr);
 		sv_setiv(SvRV(self), 0);
+	}
 
 SV *
 id(self)
 	Tag self
 
 	CODE:
+	{
 		const git_oid *oid = git_tag_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
+	}
 
 	OUTPUT: RETVAL
 
@@ -109,8 +119,10 @@ name(self)
 	Tag self
 
 	CODE:
+	{
 		const char *msg = git_tag_name(self);
 		RETVAL = newSVpv(msg, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -119,8 +131,10 @@ message(self)
 	Tag self
 
 	CODE:
+	{
 		const char *msg = git_tag_message(self);
 		RETVAL = newSVpv(msg, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -129,8 +143,10 @@ tagger(self)
 	Tag self
 
 	CODE:
+	{
 		Signature c = (Signature) git_tag_tagger(self);
 		RETVAL = git_signature_dup(c);
+	}
 
 	OUTPUT: RETVAL
 
@@ -139,12 +155,14 @@ target(self)
 	SV *self
 
 	CODE:
+	{
 		git_object *obj;
 
 		int rc = git_tag_target(&obj, GIT_SV_TO_PTR(Tag, self));
 		git_check_error(rc);
 
 		RETVAL = git_obj_to_sv(obj, self);
+	}
 
 	OUTPUT: RETVAL
 
@@ -153,5 +171,7 @@ DESTROY(self)
 	SV *self
 
 	CODE:
+	{
 		git_tag_free(GIT_SV_TO_PTR(Tag, self));
 		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
+	}

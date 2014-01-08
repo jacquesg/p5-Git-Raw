@@ -7,6 +7,7 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+	{
 		Tree tree;
 		git_oid oid;
 
@@ -21,6 +22,7 @@ lookup(class, repo, id)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -29,8 +31,10 @@ id(self)
 	Tree self
 
 	CODE:
+	{
 		const git_oid *oid = git_tree_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
+	}
 
 	OUTPUT: RETVAL
 
@@ -39,6 +43,7 @@ entries(self)
 	SV *self
 
 	CODE:
+	{
 		SV *repo = GIT_SV_TO_REPO(self);
 
 		AV *entries = newAV();
@@ -58,6 +63,7 @@ entries(self)
 		}
 
 		RETVAL = entries;
+	}
 
 	OUTPUT: RETVAL
 
@@ -67,6 +73,7 @@ entry_byname(self, name)
 	SV *name
 
 	CODE:
+	{
 		SV *repo = GIT_SV_TO_REPO(self);
 
 		STRLEN len;
@@ -82,6 +89,7 @@ entry_byname(self, name)
 			RETVAL, "Git::Raw::TreeEntry",
 			git_tree_entry_dup(entry), repo
 		);
+	}
 
 	OUTPUT: RETVAL
 
@@ -91,6 +99,7 @@ entry_bypath(self, path)
 	SV *path
 
 	CODE:
+	{
 		SV *repo = GIT_SV_TO_REPO(self);
 
 		int rc;
@@ -105,6 +114,7 @@ entry_bypath(self, path)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", entry, repo);
+	}
 
 	OUTPUT: RETVAL
 
@@ -114,6 +124,7 @@ diff(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		int rc;
 		Diff diff;
 
@@ -142,6 +153,7 @@ diff(self, ...)
 		}
 
 		RETVAL = diff;
+	}
 
 	OUTPUT: RETVAL
 
@@ -150,5 +162,7 @@ DESTROY(self)
 	SV *self
 
 	CODE:
+	{
 		git_tree_free(GIT_SV_TO_PTR(Tree, self));
 		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
+	}

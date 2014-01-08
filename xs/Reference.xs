@@ -8,6 +8,7 @@ create(class, name, repo, object, ...)
 	SV *object
 
 	CODE:
+	{
 		int rc, force = 0;
 
 		Reference ref;
@@ -30,6 +31,7 @@ create(class, name, repo, object, ...)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, class, ref, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -40,6 +42,7 @@ lookup(class, name, repo)
 	SV *repo
 
 	CODE:
+	{
 		Reference ref;
 
 		int rc = git_reference_lookup(
@@ -49,6 +52,7 @@ lookup(class, name, repo)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -57,6 +61,7 @@ delete(self)
 	SV *self
 
 	CODE:
+	{
 		int rc;
 		Reference ref = GIT_SV_TO_PTR(Reference, self);
 
@@ -64,14 +69,17 @@ delete(self)
 		git_check_error(rc);
 
 		sv_setiv(SvRV(self), 0);
+	}
 
 SV *
 name(self)
 	Reference self
 
 	CODE:
+	{
 		const char *msg = git_reference_name(self);
 		RETVAL = newSVpv(msg, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -80,6 +88,7 @@ type(self)
 	Reference self
 
 	CODE:
+	{
 		SV *type;
 
 		switch (git_reference_type(self)) {
@@ -89,6 +98,7 @@ type(self)
 		}
 
 		RETVAL = type;
+	}
 
 	OUTPUT: RETVAL
 
@@ -97,12 +107,14 @@ owner(self)
 	SV *self
 
 	CODE:
+	{
 		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
 
 		SV *r = xs_object_magic_get_struct(aTHX_ SvRV(self));
 		if (!r) Perl_croak(aTHX_ "Invalid object");
 
 		RETVAL = newRV_inc(r);
+	}
 
 	OUTPUT: RETVAL
 
@@ -112,6 +124,7 @@ target(self)
 
 	PROTOTYPE: $
 	CODE:
+	{
 		int rc;
 		Reference ref = GIT_SV_TO_PTR(Reference, self);
 
@@ -150,6 +163,7 @@ target(self)
 
 			default: Perl_croak(aTHX_ "Invalid reference type");
 		}
+	}
 
 	OUTPUT: RETVAL
 

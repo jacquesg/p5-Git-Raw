@@ -6,6 +6,7 @@ new(class, repo, ...)
 	SV *repo
 
 	CODE:
+	{
 		Tree source = NULL;
 		TreeBuilder builder;
 		int rc;
@@ -18,6 +19,7 @@ new(class, repo, ...)
 		rc = git_treebuilder_create(&builder, source);
 		git_check_error(rc);
 		GIT_NEW_OBJ(RETVAL, class, builder, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -43,6 +45,7 @@ get(self, filename)
 	const char *filename
 
 	CODE:
+	{
 		TreeBuilder builder;
 		SV *repo;
 		const git_tree_entry *entry;
@@ -57,6 +60,7 @@ get(self, filename)
 		} else {
 			RETVAL = &PL_sv_undef;
 		}
+	}
 
 	OUTPUT: RETVAL
 
@@ -68,6 +72,7 @@ insert(self, filename, object, mode)
 	int mode
 
 	PPCODE:
+	{
 		TreeBuilder builder;
 		const git_tree_entry *entry;
 		const git_oid *oid;
@@ -94,6 +99,7 @@ insert(self, filename, object, mode)
 		} else {
 			XSRETURN_EMPTY;
 		}
+	}
 
 void
 remove(self, filename)
@@ -101,16 +107,19 @@ remove(self, filename)
 	const char *filename
 
 	CODE:
+	{
 		int rc;
 
 		rc = git_treebuilder_remove(self, filename);
 		git_check_error(rc);
+	}
 
 void
 write(self)
 	SV *self
 
 	PPCODE:
+	{
 		int rc;
 		git_oid oid;
 		Tree tree;
@@ -136,6 +145,7 @@ write(self)
 		} else {
 			XSRETURN_EMPTY;
 		}
+	}
 
 void
 DESTROY(self)
