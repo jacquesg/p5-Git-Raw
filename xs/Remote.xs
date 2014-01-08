@@ -8,6 +8,7 @@ create(class, repo, name, url)
 	SV *url
 
 	CODE:
+	{
 		Remote remote;
 
 		int rc = git_remote_create(
@@ -16,6 +17,7 @@ create(class, repo, name, url)
 		git_check_error(rc);
 
 		RETVAL = remote;
+	}
 
 	OUTPUT: RETVAL
 
@@ -26,12 +28,14 @@ load(class, repo, name)
 	SV *name
 
 	CODE:
+	{
 		Remote remote;
 
 		int rc = git_remote_load(&remote, repo, SvPVbyte_nolen(name));
 		git_check_error(rc);
 
 		RETVAL = remote;
+	}
 
 	OUTPUT: RETVAL
 
@@ -41,6 +45,7 @@ name(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		char *name;
 
 		if (items == 2) {
@@ -53,6 +58,7 @@ name(self, ...)
 		name = (char *) git_remote_name(self);
 
 		RETVAL = newSVpv(name, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -62,6 +68,7 @@ url(self, ...)
 
 	PROTOTYPE: $;$
 	CODE:
+	{
 		const char *url;
 
 		if (items == 2) {
@@ -77,6 +84,7 @@ url(self, ...)
 		url = git_remote_url(self);
 
 		RETVAL = newSVpv(url, 0);
+	}
 
 	OUTPUT: RETVAL
 
@@ -86,8 +94,10 @@ add_fetch(self, spec)
 	SV *spec
 
 	CODE:
+	{
 		int rc = git_remote_add_fetch(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
+	}
 
 void
 add_push(self, spec)
@@ -95,8 +105,10 @@ add_push(self, spec)
 	SV *spec
 
 	CODE:
+	{
 		int rc = git_remote_add_push(self, SvPVbyte_nolen(spec));
 		git_check_error(rc);
+	}
 
 void
 connect(self, direction)
@@ -104,6 +116,7 @@ connect(self, direction)
 	SV *direction
 
 	CODE:
+	{
 		git_direction direct;
 		const char *dir = SvPVbyte_nolen(direction);
 
@@ -116,37 +129,46 @@ connect(self, direction)
 
 		int rc = git_remote_connect(self, direct);
 		git_check_error(rc);
+	}
 
 void
 disconnect(self)
 	Remote self
 
 	CODE:
+	{
 		git_remote_disconnect(self);
+	}
 
 void
 download(self)
 	Remote self
 
 	CODE:
+	{
 		int rc = git_remote_download(self);
 		git_check_error(rc);
+	}
 
 void
 save(self)
 	Remote self
 
 	CODE:
+	{
 		int rc = git_remote_save(self);
 		git_check_error(rc);
+	}
 
 void
 update_tips(self)
 	Remote self
 
 	CODE:
+	{
 		int rc = git_remote_update_tips(self);
 		git_check_error(rc);
+	}
 
 void
 callbacks(self, callbacks)
@@ -154,6 +176,7 @@ callbacks(self, callbacks)
 	HV *callbacks
 
 	CODE:
+	{
 		SV **opt;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
@@ -168,6 +191,7 @@ callbacks(self, callbacks)
 		}
 
 		git_remote_set_callbacks(self, &rcallbacks);
+	}
 
 SV *
 is_connected(self)
