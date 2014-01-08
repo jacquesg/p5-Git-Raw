@@ -7,6 +7,7 @@ create(class, repo, buffer)
 	SV *buffer
 
 	CODE:
+	{
 		Blob blob;
 		git_oid oid;
 
@@ -21,6 +22,7 @@ create(class, repo, buffer)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -31,6 +33,7 @@ lookup(class, repo, id)
 	SV *id
 
 	CODE:
+	{
 		Blob blob;
 		git_oid oid;
 		Repository repo_ptr = GIT_SV_TO_PTR(Repository, repo);
@@ -45,6 +48,7 @@ lookup(class, repo, id)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo));
+	}
 
 	OUTPUT: RETVAL
 
@@ -53,8 +57,10 @@ content(self)
 	Blob self
 
 	CODE:
+	{
 		size_t len = git_blob_rawsize(self);
 		RETVAL = newSVpv(git_blob_rawcontent(self), len);
+	}
 
 	OUTPUT: RETVAL
 
@@ -63,8 +69,10 @@ size(self)
 	Blob self
 
 	CODE:
+	{
 		size_t len = git_blob_rawsize(self);
 		RETVAL = len;
+	}
 
 	OUTPUT: RETVAL
 
@@ -73,8 +81,10 @@ id(self)
 	Blob self
 
 	CODE:
+	{
 		const git_oid *oid = git_blob_id(self);
 		RETVAL = git_oid_to_sv((git_oid *) oid);
+	}
 
 	OUTPUT: RETVAL
 
