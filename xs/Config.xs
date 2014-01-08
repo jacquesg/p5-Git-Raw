@@ -5,12 +5,14 @@ new(class)
 	SV *class
 
 	CODE:
+	{
 		Config cfg;
 
 		int rc = git_config_new(&cfg);
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), cfg);
+	}
 
 	OUTPUT: RETVAL
 
@@ -21,10 +23,12 @@ add_file(self, path, level)
 	int level
 
 	CODE:
+	{
 		int rc = git_config_add_file_ondisk(
 			self, SvPVbyte_nolen(path), level, 0
 		);
 		git_check_error(rc);
+	}
 
 SV *
 bool(self, name, ...)
@@ -33,6 +37,7 @@ bool(self, name, ...)
 
 	PROTOTYPE: $$;$
 	CODE:
+	{
 		int rc, value;
 		const char *var = SvPVbyte_nolen(name);
 
@@ -61,6 +66,7 @@ bool(self, name, ...)
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
+	}
 
 	OUTPUT: RETVAL
 
@@ -71,6 +77,7 @@ int(self, name, ...)
 
 	PROTOTYPE: $$;$
 	CODE:
+	{
 		int rc, value;
 		const char *var = SvPVbyte_nolen(name);
 
@@ -99,6 +106,7 @@ int(self, name, ...)
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
+	}
 
 	OUTPUT: RETVAL
 
@@ -109,6 +117,7 @@ str(self, name, ...)
 
 	PROTOTYPE: $$;$
 	CODE:
+	{
 		int rc;
 		const char *value, *var = SvPVbyte_nolen(name);
 
@@ -137,6 +146,7 @@ str(self, name, ...)
 		}
 
 		RETVAL = (rc != GIT_ENOTFOUND) ? newSVpv(value, 0) : &PL_sv_undef;
+	}
 
 	OUTPUT: RETVAL
 
@@ -146,6 +156,7 @@ foreach(self, cb)
 	SV *cb
 
 	CODE:
+	{
 		git_foreach_payload payload = {
 			.repo = NULL,
 			.cb = cb
@@ -157,14 +168,17 @@ foreach(self, cb)
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
+	}
 
 void
 refresh(self)
 	Config self
 
 	CODE:
+	{
 		int rc = git_config_refresh(self);
 		git_check_error(rc);
+	}
 
 void
 delete(self, name)
@@ -172,8 +186,10 @@ delete(self, name)
 	SV *name
 
 	CODE:
+	{
 		int rc = git_config_delete_entry(self, SvPVbyte_nolen(name));
 		git_check_error(rc);
+	}
 
 void
 DESTROY(self)
