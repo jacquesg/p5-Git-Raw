@@ -7,6 +7,7 @@ userpass(class, user, pass)
 	SV *pass
 
 	CODE:
+	{
 		Cred out;
 
 		const char *usr = SvPVbyte_nolen(user);
@@ -16,6 +17,7 @@ userpass(class, user, pass)
 		git_check_error(rc);
 
 		RETVAL = out;
+	}
 
 	OUTPUT: RETVAL
 
@@ -28,6 +30,7 @@ sshkey(class, user, public, private, pass)
 	SV *pass
 
 	CODE:
+	{
 		Cred out;
 
 		const char *username   = SvPVbyte_nolen(user);
@@ -41,6 +44,7 @@ sshkey(class, user, public, private, pass)
 		git_check_error(rc);
 
 		RETVAL = out;
+	}
 
 	OUTPUT: RETVAL
 
@@ -50,6 +54,7 @@ sshagent(class, user)
 	SV *user
 
 	CODE:
+	{
 		Cred out;
 
 		const char *username   = SvPVbyte_nolen(user);
@@ -58,5 +63,6 @@ sshagent(class, user)
 		git_check_error(rc);
 
 		RETVAL = out;
+	}
 
 	OUTPUT: RETVAL
