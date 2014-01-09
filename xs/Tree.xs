@@ -129,6 +129,7 @@ diff(self, ...)
 	Tree self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 		Diff diff;

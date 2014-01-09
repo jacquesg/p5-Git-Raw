@@ -44,6 +44,7 @@ name(self, ...)
 	Remote self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 		char *name;
@@ -67,6 +68,7 @@ url(self, ...)
 	Remote self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 		const char *url;

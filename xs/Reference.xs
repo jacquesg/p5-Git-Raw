@@ -119,7 +119,6 @@ SV *
 target(self)
 	SV *self
 
-	PROTOTYPE: $
 	PREINIT:
 		int rc;
 		Reference ref;

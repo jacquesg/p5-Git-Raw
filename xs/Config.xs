@@ -37,6 +37,7 @@ bool(self, name, ...)
 	SV *name
 
 	PROTOTYPE: $$;$
+
 	PREINIT:
 		int rc, value;
 
@@ -75,6 +76,7 @@ int(self, name, ...)
 	SV *name
 
 	PROTOTYPE: $$;$
+
 	PREINIT:
 		int rc, value;
 
@@ -113,6 +115,7 @@ str(self, name, ...)
 	SV *name
 
 	PROTOTYPE: $$;$
+
 	PREINIT:
 		int rc;
 		const char *value;

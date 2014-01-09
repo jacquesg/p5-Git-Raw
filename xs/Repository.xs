@@ -143,6 +143,7 @@ head(self, ...)
 	SV *self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 
@@ -370,6 +371,7 @@ diff(self, ...)
 	Repository self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 
@@ -540,6 +542,7 @@ workdir(self, ...)
 	Repository self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
 		int rc;
 		const char *path;
