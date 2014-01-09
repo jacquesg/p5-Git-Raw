@@ -40,15 +40,15 @@ is $target -> message, "third commit\n";
 is $target -> author -> name, $name;
 is $target -> author -> email, $email;
 
-my $tags = $repo -> tags;
+my @tags = $repo -> tags;
 
-isa_ok $tags -> [0], 'Git::Raw::Tag';
+isa_ok $tags[0], 'Git::Raw::Tag';
 
-is $tags -> [0] -> name, $tag_name;
-is $tags -> [0] -> message, $tag_msg;
-is $tags -> [1], undef;
+is $tags[0] -> name, $tag_name;
+is $tags[0] -> message, $tag_msg;
+is $tags[1], undef;
 
-$tags -> [0] -> delete;
-is $repo -> tags, undef;
+$tags[0] -> delete;
+is $repo -> tags, 0;
 
 done_testing;

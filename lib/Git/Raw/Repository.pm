@@ -18,7 +18,7 @@ Git::Raw::Repository - Git repository class
     my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', { });
 
     # print all the tags of the repository
-    foreach my $tag (@{ $repo -> tags }) {
+    foreach my $tag ($repo -> tags) {
       say $tag -> name;
     }
 
@@ -232,13 +232,14 @@ Retrieve the list of L<Git::Raw::Tag> objects.
 
 sub tags {
 	my $self = shift;
-	my $tags;
+
+	my @tags;
 
 	Git::Raw::Tag -> foreach($self, sub {
-		push @$tags, shift; 0
+		push @tags, shift; 0
 	});
 
-	return $tags;
+	return @tags;
 }
 
 =head2 stash( $stasher, $msg )
