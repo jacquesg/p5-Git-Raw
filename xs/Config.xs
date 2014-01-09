@@ -153,12 +153,15 @@ foreach(self, cb)
 
 	PREINIT:
 		int rc;
+		git_foreach_payload payload = {
+			NULL,
+			NULL,
+			NULL,
+			NULL
+		};
 
 	CODE:
-		git_foreach_payload payload = {
-			.repo = NULL,
-			.cb = cb
-		};
+		payload.cb = cb;
 
 		rc = git_config_foreach(
 			self, git_config_foreach_cbb, &payload

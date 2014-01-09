@@ -75,10 +75,10 @@ foreach(class, repo, cb)
 
 	CODE:
 		git_foreach_payload payload = {
-			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
-			.repo     = repo,
-			.cb       = cb,
-			.class    = SvPVbyte_nolen(class)
+			GIT_SV_TO_PTR(Repository, repo),
+			repo,
+			cb,
+			SvPVbyte_nolen(class)
 		};
 
 		rc = git_tag_foreach(payload.repo_ptr, git_tag_foreach_cbb, &payload);

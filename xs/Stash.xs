@@ -28,9 +28,10 @@ foreach(class, repo, cb)
 
 	CODE:
 		git_foreach_payload payload = {
-			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
-			.repo     = repo,
-			.cb       = cb
+			GIT_SV_TO_PTR(Repository, repo),
+			repo,
+			cb,
+			NULL
 		};
 
 		rc = git_stash_foreach(
