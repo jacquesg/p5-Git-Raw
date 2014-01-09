@@ -118,7 +118,7 @@ next(self)
 	PREINIT:
 		int rc;
 		git_oid oid;
-		Commit commit;
+		Commit commit = NULL;
 
 	CODE:
 		rc = git_revwalk_next(&oid, self);
