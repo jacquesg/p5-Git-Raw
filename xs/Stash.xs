@@ -7,11 +7,14 @@ save(class, repo, stasher, msg)
 	Signature stasher
 	SV *msg
 
-	CODE:
+	PREINIT:
+		int rc;
 		git_oid oid;
-		const char *message = SvPVbyte_nolen(msg);
+		const char *message;
 
-		int rc = git_stash_save(&oid, repo, stasher, message, 0);
+	CODE:
+		message = SvPVbyte_nolen(msg);
+		rc = git_stash_save(&oid, repo, stasher, message, 0);
 		git_check_error(rc);
 
 void
@@ -20,14 +23,18 @@ foreach(class, repo, cb)
 	SV *repo
 	SV *cb
 
+	PREINIT:
+		int rc;
+
 	CODE:
 		git_foreach_payload payload = {
-			.repo_ptr = GIT_SV_TO_PTR(Repository, repo),
-			.repo     = repo,
-			.cb       = cb
+			GIT_SV_TO_PTR(Repository, repo),
+			repo,
+			cb,
+			NULL
 		};
 
-		int rc = git_stash_foreach(
+		rc = git_stash_foreach(
 			payload.repo_ptr, git_stash_foreach_cb, &payload
 		);
 
@@ -39,6 +46,9 @@ drop(class, repo, index)
 	Repository repo
 	size_t index
 
+	PREINIT:
+		int rc;
+
 	CODE:
-		int rc = git_stash_drop(repo, index);
+		rc = git_stash_drop(repo, index);
 		git_check_error(rc);
