@@ -145,16 +145,16 @@ target(self)
 			}
 
 			case GIT_REF_SYMBOLIC: {
-				Reference ref;
+				Reference linked_ref;
 				const char *target;
 
 				target = git_reference_symbolic_target(ref);
 
-				rc = git_reference_lookup(&ref, git_reference_owner(ref), target);
+				rc = git_reference_lookup(&linked_ref, git_reference_owner(ref), target);
 				git_check_error(rc);
 
 				GIT_NEW_OBJ(
-					RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_REPO(self)
+					RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_REPO(self)
 				);
 				break;
 			}
