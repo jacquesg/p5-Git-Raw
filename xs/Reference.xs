@@ -169,7 +169,8 @@ is_branch(self)
 	Reference self
 
 	CODE:
-		RETVAL = newSViv(git_reference_is_branch(self));
+		RETVAL = (git_reference_is_branch(self) != 0) ?
+				&PL_sv_yes : &PL_sv_no;
 
 	OUTPUT: RETVAL
 
@@ -178,7 +179,8 @@ is_remote(self)
 	Reference self
 
 	CODE:
-		RETVAL = newSViv(git_reference_is_remote(self));
+		RETVAL = (git_reference_is_remote(self) != 0) ?
+				&PL_sv_yes : &PL_sv_no;
 
 	OUTPUT: RETVAL
 

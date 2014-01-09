@@ -96,7 +96,8 @@ is_head(self)
 	Branch self
 
 	CODE:
-		RETVAL = newSViv(git_branch_is_head(self));
+		RETVAL = (git_branch_is_head(self) != 0) ?
+				&PL_sv_yes : &PL_sv_no;
 
 	OUTPUT: RETVAL
 
