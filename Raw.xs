@@ -83,21 +83,6 @@ git_object *git_sv_to_obj(SV *sv) {
 	return NULL;
 }
 
-/* The Microsoft preprocessor has a problem with the following:
- * void *ptr = { void *x = blah; x; }
- *
- * git_sv_to_ptr() works around this problem for these compilers
- * at the expense of doing an allocation on the heap.
- *
- * Ideally it would be nice to have a single implementation that
- * works on all platforms, however, from an effiency point of view
- * letting the preprocessor perform string concatenations is superior.
- *
- * Maybe the extra penalty is a fair trade-off from a portability and
- * maintainability point of view?
- */
-#ifdef _MSC_VER
-
 void *git_sv_to_ptr(const char *type, SV *sv) {
 	SV *full_type = sv_2mortal(newSVpvf("Git::Raw::%s", type));
 
@@ -109,20 +94,6 @@ void *git_sv_to_ptr(const char *type, SV *sv) {
 
 #define GIT_SV_TO_PTR(type, sv) \
 	git_sv_to_ptr (#type, sv)
-
-#else
-#define GIT_SV_TO_PTR(type, sv) ({					\
-	void *ptr;							\
-									\
-	if (sv_isobject(sv) && sv_derived_from(sv, "Git::Raw::" #type))	\
-		ptr = INT2PTR(void *, SvIV((SV *) SvRV(sv)));		\
-	else								\
-		Perl_croak(aTHX_ "Argument is not of type Git::Raw::" #type); \
-									\
-	ptr;								\
-})
-#endif
-
 
 SV *git_oid_to_sv(git_oid *oid) {
 	char out[41];
