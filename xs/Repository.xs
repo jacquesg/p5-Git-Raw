@@ -405,7 +405,8 @@ remotes(self)
 	Repository self
 
 	PREINIT:
-		int rc, i;
+		int rc;
+		size_t i;
 
 		git_strarray remotes;
 		AV *output = newAV();
