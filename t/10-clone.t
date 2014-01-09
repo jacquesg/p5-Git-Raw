@@ -27,7 +27,7 @@ my $repo = Git::Raw::Repository -> clone($url, $path, { });
 ok !$repo -> is_bare;
 ok !$repo -> is_empty;
 
-is_deeply $repo -> status('Changes'), [];
+is_deeply $repo -> status -> {'Changes'}, undef;
 
 my @remotes = $repo -> remotes;
 

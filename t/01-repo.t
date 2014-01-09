@@ -28,7 +28,9 @@ my $file  = $repo -> workdir . 'ignore';
 write_file($file, 'this file should be ignored');
 
 $repo -> ignore("ignore\n");
-ok eq_array($repo -> status('ignore'), ['ignored']);
+
+is_deeply $repo -> status('ignore') -> {'ignore'}, ['ignored'];
+is_deeply $repo -> status -> {'ignore'}, ['ignored'];
 
 my $config = $repo -> config;
 

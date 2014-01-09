@@ -12,7 +12,7 @@ my $repo = Git::Raw::Repository -> open($path);
 my $file  = $repo -> workdir . 'test';
 write_file($file, 'this is a test for stash');
 
-ok eq_array($repo -> status('test'), ['worktree_modified']);
+is_deeply $repo -> status -> {'test'}, ['worktree_modified'];
 
 my $config = $repo -> config;
 my $name   = $config -> str('user.name');

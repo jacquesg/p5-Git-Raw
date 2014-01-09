@@ -272,43 +272,84 @@ reset(self, target, type)
 		rc = git_reset(self, git_sv_to_obj(target), reset);
 		git_check_error(rc);
 
-AV *
-status(self, path)
+HV *
+status(self, ...)
 	Repository self
-	SV *path
+
+	PROTOTYPE: $;@
 
 	PREINIT:
 		int rc;
 
-		unsigned iflags;
-		AV *flags = newAV();
+		size_t i, count;
+
+		HV *status_hv = newHV();
+
+		git_status_list *list;
+		git_status_options opt = GIT_STATUS_OPTIONS_INIT;
 
 	CODE:
-		rc = git_status_file(&iflags, self, SvPVbyte_nolen(path));
+		rc = git_status_list_new(&list, self, NULL);
 		git_check_error(rc);
 
-		if (iflags & GIT_STATUS_INDEX_NEW)
-			av_push(flags, newSVpv("index_new", 0));
+		if (items > 1) {
+			opt.flags |= GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
 
-		if (iflags & GIT_STATUS_INDEX_MODIFIED)
-			av_push(flags, newSVpv("index_modified", 0));
+			Newx(opt.pathspec.strings, items - 1, char *);
 
-		if (iflags & GIT_STATUS_INDEX_DELETED)
-			av_push(flags, newSVpv("index_deleted", 0));
+			for (i = 1; i < items; i++)
+				opt.pathspec.strings[0] = SvPVbyte_nolen(ST(i));
 
-		if (iflags & GIT_STATUS_WT_NEW)
-			av_push(flags, newSVpv("worktree_new", 0));
+			opt.pathspec.count = i - 1;
+		}
 
-		if (iflags & GIT_STATUS_WT_MODIFIED)
-			av_push(flags, newSVpv("worktree_modified", 0));
+		count = git_status_list_entrycount(list);
 
-		if (iflags & GIT_STATUS_WT_DELETED)
-			av_push(flags, newSVpv("worktree_deleted", 0));
+		Safefree(opt.pathspec.strings);
 
-		if (iflags & GIT_STATUS_IGNORED)
-			av_push(flags, newSVpv("ignored", 0));
+		for (i = 0; i < count; i++) {
+			AV *flags = newAV();
 
-		RETVAL = flags;
+			const char *path;
+			const git_status_entry *entry;
+
+			av_clear(flags);
+
+			entry = git_status_byindex(list, i);
+			if (entry == NULL) continue;
+
+			if (entry -> status & GIT_STATUS_INDEX_NEW)
+				av_push(flags, newSVpv("index_new", 0));
+
+			if (entry -> status & GIT_STATUS_INDEX_MODIFIED)
+				av_push(flags, newSVpv("index_modified", 0));
+
+			if (entry -> status & GIT_STATUS_INDEX_DELETED)
+				av_push(flags, newSVpv("index_deleted", 0));
+
+			if (entry -> status & GIT_STATUS_WT_NEW)
+				av_push(flags, newSVpv("worktree_new", 0));
+
+			if (entry -> status & GIT_STATUS_WT_MODIFIED)
+				av_push(flags, newSVpv("worktree_modified", 0));
+
+			if (entry -> status & GIT_STATUS_WT_DELETED)
+				av_push(flags, newSVpv("worktree_deleted", 0));
+
+			if (entry -> status & GIT_STATUS_IGNORED)
+				av_push(flags, newSVpv("ignored", 0));
+
+			if (entry -> head_to_index)
+				path = entry -> head_to_index -> old_file.path;
+			else
+				path = entry -> index_to_workdir -> old_file.path;
+
+			hv_store(status_hv, path, strlen(path), newRV_inc((SV *) flags), 0);
+		}
+
+		git_status_list_free(list);
+
+		RETVAL = status_hv;
 
 	OUTPUT: RETVAL
 

@@ -14,7 +14,7 @@ is $fst -> message, "second commit\n";
 
 $repo -> checkout($fst, {});
 
-is_deeply $repo -> status('test3/under/the/tree/test3'), [];
+is_deeply $repo -> status -> {'test3/under/the/tree/test3'}, undef;
 
 $repo -> checkout($repo -> head, {});
 
@@ -22,7 +22,7 @@ $repo -> checkout($fst, {
 	'checkout_strategy' => { 'safe' => 1, 'remove_untracked' => 1 }
 });
 
-is_deeply $repo -> status('test3/under/the/tree/test3'), ['index_deleted'];
+is_deeply $repo -> status -> {'test3/under/the/tree/test3'}, ['index_deleted'];
 
 $repo -> checkout($repo -> head, {});
 
