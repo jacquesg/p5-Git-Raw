@@ -17,12 +17,12 @@ my $github = Git::Raw::Remote -> create($repo, $name, $url);
 is $github -> name, $name;
 is $github -> url, $url;
 
-my $remotes = $repo -> remotes;
+my @remotes = $repo -> remotes;
 
-is $remotes -> [0] -> name, $name;
-is $remotes -> [0] -> url, $url;
+is $remotes[0] -> name, $name;
+is $remotes[0] -> url, $url;
 
-is $remotes -> [1], undef;
+is $remotes[1], undef;
 
 $name = 'github';
 $url  = 'git://github.com/ghedo/p5-Git-Raw.git';

@@ -384,8 +384,12 @@ branches(self)
 		git_branch_t type;
 		git_branch_iterator *itr;
 
+		Repository repo;
+
 	PPCODE:
-		rc = git_branch_iterator_new(&itr, GIT_SV_TO_PTR(Repository, self),
+		repo = GIT_SV_TO_PTR(Repository, self);
+
+		rc = git_branch_iterator_new(&itr, repo,
 			GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE);
 		git_check_error(rc);
 
@@ -406,37 +410,43 @@ branches(self)
 
 		XSRETURN(num_branches);
 
-AV *
+void
 remotes(self)
-	Repository self
+	SV *self
 
 	PREINIT:
 		int rc;
 		size_t i;
 
+		Remote remote;
+		int num_remotes = 0;
 		git_strarray remotes;
-		AV *output = newAV();
 
-	CODE:
-		rc = git_remote_list(&remotes, self);
+		Repository repo;
+
+	PPCODE:
+		repo = GIT_SV_TO_PTR(Repository, self);
+
+		rc = git_remote_list(&remotes, repo);
 		git_check_error(rc);
 
 		for (i = 0; i < remotes.count; i++) {
-			SV *sv;
-			Remote remote;
+			SV *perl_ref;
 
-			rc = git_remote_load(&remote, self, remotes.strings[i]);
+			rc = git_remote_load(&remote, repo, remotes.strings[i]);
 			git_check_error(rc);
 
-			sv = sv_setref_pv(newSV(0), "Git::Raw::Remote", remote);
-			av_push(output, sv);
+			GIT_NEW_OBJ(perl_ref, "Git::Raw::Remote", remote, SvRV(self));
+
+			EXTEND(SP, 1);
+			PUSHs(sv_2mortal(perl_ref));
+
+			num_remotes++;
 		}
 
 		git_strarray_free(&remotes);
 
-		RETVAL = output;
-
-	OUTPUT: RETVAL
+		XSRETURN(num_remotes);
 
 void
 refs(self)

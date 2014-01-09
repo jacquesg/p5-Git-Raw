@@ -29,11 +29,11 @@ ok !$repo -> is_empty;
 
 is_deeply $repo -> status('Changes'), [];
 
-my $remotes = $repo -> remotes;
+my @remotes = $repo -> remotes;
 
-is $remotes -> [0] -> name, 'origin';
-is $remotes -> [0] -> url, $url;
-is $remotes -> [1], undef;
+is $remotes[0] -> name, 'origin';
+is $remotes[0] -> url, $url;
+is $remotes[1], undef;
 
 my $ref = Git::Raw::Branch -> lookup($repo, 'master', 1);
 
