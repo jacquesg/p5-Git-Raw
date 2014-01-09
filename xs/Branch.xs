@@ -15,6 +15,7 @@ create(class, repo, name, target)
 
 	PREINIT:
 		int rc;
+
 		Reference ref;
 		Commit obj = (Commit) git_sv_to_obj(target);
 
@@ -39,6 +40,7 @@ lookup(class, repo, name, is_local)
 	PREINIT:
 		int rc;
 		Reference branch;
+
 		git_branch_t type = is_local ?
 			GIT_BRANCH_LOCAL     :
 			GIT_BRANCH_REMOTE    ;
@@ -62,8 +64,9 @@ move(self, name, force)
 
 	PREINIT:
 		int rc;
-		Branch old_branch = GIT_SV_TO_PTR(Branch, self),
-		       new_branch;
+
+		Branch new_branch;
+		Branch old_branch = GIT_SV_TO_PTR(Branch, self);
 
 	CODE:
 		rc = git_branch_move(
@@ -77,6 +80,7 @@ upstream(self)
 
 	PREINIT:
 		int rc;
+
 		Reference ref;
 
 	CODE:
@@ -95,3 +99,11 @@ is_head(self)
 		RETVAL = newSViv(git_branch_is_head(self));
 
 	OUTPUT: RETVAL
+
+void
+DESTROY(self)
+	SV *self
+
+	CODE:
+		git_reference_free(GIT_SV_TO_PTR(Reference, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));

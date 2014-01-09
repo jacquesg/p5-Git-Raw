@@ -8,8 +8,9 @@ userpass(class, user, pass)
 
 	PREINIT:
 		int rc;
-		const char *usr, *pwd;
+
 		Cred out;
+		const char *usr, *pwd;
 
 	CODE:
 		usr = SvPVbyte_nolen(user);
@@ -32,8 +33,9 @@ sshkey(class, user, public, private, pass)
 
 	PREINIT:
 		int rc;
-		const char *username, *publickey, *privatekey, *passphrase;
+
 		Cred out;
+		const char *username, *publickey, *privatekey, *passphrase;
 
 	CODE:
 		username   = SvPVbyte_nolen(user);
@@ -57,8 +59,9 @@ sshagent(class, user)
 
 	PREINIT:
 		int rc;
-		const char *username;
+
 		Cred out;
+		const char *username;
 
 	CODE:
 		username = SvPVbyte_nolen(user);

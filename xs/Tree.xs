@@ -47,6 +47,7 @@ entries(self)
 
 	PREINIT:
 		int i, count;
+
 		Tree self_ptr;
 		AV *entries = newAV();
 
@@ -105,6 +106,7 @@ entry_bypath(self, path)
 
 	PREINIT:
 		int rc;
+
 		STRLEN len;
 		const char *path_str;
 

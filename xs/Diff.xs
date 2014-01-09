@@ -20,8 +20,9 @@ print(self, format, callback)
 
 	PREINIT:
 		int rc;
-		git_diff_format_t fmt;
+
 		const char *fmt_str;
+		git_diff_format_t fmt;
 
 	CODE:
 		fmt_str = SvPVbyte_nolen(format);

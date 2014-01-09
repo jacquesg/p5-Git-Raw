@@ -7,8 +7,9 @@ new(class, repo, ...)
 
 	PREINIT:
 		int rc;
-		TreeBuilder builder;
+
 		Tree source = NULL;
+		TreeBuilder builder;
 
 	CODE:
 		if (items > 2) {
@@ -48,12 +49,11 @@ get(self, filename)
 	CODE:
 		entry = git_treebuilder_get(GIT_SV_TO_PTR(TreeBuilder, self), filename);
 
-		if(entry) {
+		if (entry)
 			GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry),
 				GIT_SV_TO_REPO(self));
-		} else {
+		else
 			RETVAL = &PL_sv_undef;
-		}
 
 	OUTPUT: RETVAL
 
@@ -67,17 +67,16 @@ insert(self, filename, object, mode)
 	PREINIT:
 		int rc;
 
-		const git_tree_entry *entry;
 		const git_oid *oid;
+		const git_tree_entry *entry;
 
 		int is_returning = GIMME_V != G_VOID;
 
 	PPCODE:
-		if(sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob")) {
+		if (sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob"))
 			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
-		} else {
+		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
-		}
 
 		rc = git_treebuilder_insert(is_returning ? &entry : NULL,
 			GIT_SV_TO_PTR(TreeBuilder, self), filename, oid, mode);
@@ -109,10 +108,13 @@ write(self)
 
 	PREINIT:
 		int rc;
-		git_oid oid;
+
 		Tree tree;
+		git_oid oid;
+
 		SV *repo;
 		Repository repo_ptr;
+
 		int is_returning = GIMME_V != G_VOID;
 
 	PPCODE:

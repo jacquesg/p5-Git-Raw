@@ -117,6 +117,7 @@ next(self)
 
 	PREINIT:
 		int rc;
+
 		git_oid oid;
 		Commit commit = NULL;
 

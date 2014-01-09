@@ -29,6 +29,7 @@ clone(class, url, path, opts)
 
 	PREINIT:
 		int rc;
+
 		SV **opt;
 		Repository repo;
 
@@ -88,8 +89,9 @@ discover(class, path)
 
 	PREINIT:
 		int rc;
-		char found[GIT_PATH_MAX];
+
 		Repository repo;
+		char found[GIT_PATH_MAX];
 
 	CODE:
 		rc = git_repository_discover(
@@ -143,6 +145,7 @@ head(self, ...)
 	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
+
 		Reference head;
 		Repository repo;
 
@@ -161,11 +164,7 @@ head(self, ...)
 		rc = git_repository_head(&head, repo);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), "Git::Raw::Reference", head);
-
-		xs_object_magic_attach_struct(
-			aTHX_ SvRV(RETVAL), SvREFCNT_inc_NN(SvRV(self))
-		);
+		GIT_NEW_OBJ(RETVAL, "Git::Raw::Reference", head, SvRV(self));
 
 	OUTPUT: RETVAL
 
@@ -206,6 +205,7 @@ checkout(self, target, opts)
 
 	PREINIT:
 		int rc;
+
 		SV **opt;
 		char **paths = NULL;
 
@@ -279,6 +279,7 @@ status(self, path)
 
 	PREINIT:
 		int rc;
+
 		unsigned iflags;
 		AV *flags = newAV();
 
@@ -330,6 +331,7 @@ diff(self, ...)
 	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
+
 		Diff diff;
 		Index index;
 
@@ -358,8 +360,12 @@ diff(self, ...)
 				break;
 			}
 
-			default: Perl_croak(aTHX_ "Wrong number of arguments");
+			default:
+				git_index_free(index);
+				Perl_croak(aTHX_ "Wrong number of arguments");
 		}
+
+		git_index_free(index);
 
 		RETVAL = diff;
 
@@ -371,9 +377,9 @@ branches(self)
 
 	PREINIT:
 		int rc;
-		int num_branches = 0;
 
 		Branch branch;
+		int num_branches = 0;
 
 		git_branch_t type;
 		git_branch_iterator *itr;
@@ -440,8 +446,9 @@ refs(self)
 		int rc;
 
 		Reference ref;
-		git_reference_iterator *itr;
 		int num_refs = 0;
+
+		git_reference_iterator *itr;
 
 	PPCODE:
 		rc = git_reference_iterator_new(&itr, GIT_SV_TO_PTR(Repository, self));

@@ -11,26 +11,30 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 	Tree tree
 
 	PREINIT:
-		int count, rc;
+		int rc;
+
+		int count;
 		git_oid oid;
-		Commit commit, *commit_parents = NULL;
+
 		const char *update_ref = "HEAD";
 
+		Commit commit, *commit_parents = NULL;
+
 	CODE:
-		if(items > 7) {
+		if (items > 7) {
 			SV *sv_update_ref = ST(7);
 
-			if (SvOK(sv_update_ref)) {
+			if (SvOK(sv_update_ref))
 				update_ref = SvPVbyte_nolen(sv_update_ref);
-			} else {
+			else
 				update_ref = NULL;
-			}
 		}
 
 		count = av_len(parents) + 1;
 
 		if (count > 0) {
-			int i; SV *iter;
+			int i;
+			SV *iter;
 
 			Newx(commit_parents, count, git_commit *);
 
@@ -46,6 +50,8 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 			SvPVbyte_nolen(msg), tree, count,
 			(const git_commit **) commit_parents
 		);
+
+		Safefree(commit_parents);
 		git_check_error(rc);
 
 		rc = git_commit_lookup(&commit, GIT_SV_TO_PTR(Repository, repo), &oid);
@@ -63,7 +69,9 @@ lookup(class, repo, id)
 
 	PREINIT:
 		int rc;
+
 		git_oid oid;
+
 		Commit commit;
 		Repository repo_ptr;
 
@@ -101,7 +109,6 @@ message(self)
 
 	PREINIT:
 		const char *msg;
-
 	CODE:
 		msg = git_commit_message(self);
 		RETVAL = newSVpv(msg, 0);
@@ -168,11 +175,13 @@ tree(self)
 
 	PREINIT:
 		int rc;
-		Tree tree;
+
 		SV *repo;
+		Tree tree;
 
 	CODE:
 		repo = GIT_SV_TO_REPO(self);
+
 		rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
 		git_check_error(rc);
 
@@ -185,16 +194,20 @@ parents(self)
 	SV *self
 
 	PREINIT:
-		int rc, i, count;
+		int rc;
+
 		SV *repo;
+		int count, i;
 
 		AV *parents;
 		Commit child;
 
 	CODE:
 		repo = GIT_SV_TO_REPO(self);
+
 		child = GIT_SV_TO_PTR(Commit, self);
 		count = git_commit_parentcount(child);
+
 		parents = newAV();
 
 		for (i = 0; i < count; i++) {

@@ -119,8 +119,9 @@ connect(self, direction)
 
 	PREINIT:
 		int rc;
-		git_direction direct;
+
 		const char *dir;
+		git_direction direct;
 
 	CODE:
 		dir = SvPVbyte_nolen(direction);

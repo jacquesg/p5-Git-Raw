@@ -15,7 +15,7 @@ create(class, repo, name, msg, tagger, target)
 
 		git_oid oid;
 		git_object *obj;
-		Repository r;
+		Repository repo_ptr;
 
 	CODE:
 		obj = git_sv_to_obj(target);
@@ -23,14 +23,15 @@ create(class, repo, name, msg, tagger, target)
 		if (obj == NULL)
 			Perl_croak(aTHX_ "target is not of a valid type");
 
-		r = GIT_SV_TO_PTR(Repository, repo);
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+
 		rc = git_tag_create(
-			&oid, r, SvPVbyte_nolen(name),
+			&oid, repo_ptr, SvPVbyte_nolen(name),
 			obj, tagger, SvPVbyte_nolen(msg), 0
 		);
 		git_check_error(rc);
 
-		rc = git_tag_lookup(&tag, r, &oid);
+		rc = git_tag_lookup(&tag, repo_ptr, &oid);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
@@ -45,6 +46,7 @@ lookup(class, repo, id)
 
 	PREINIT:
 		int rc;
+
 		Tag tag;
 		git_oid oid;
 
@@ -92,6 +94,7 @@ delete(self)
 
 	PREINIT:
 		int rc;
+
 		Tag tag_ptr;
 		Repository repo;
 

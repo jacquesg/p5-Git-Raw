@@ -8,10 +8,13 @@ create(class, repo, buffer)
 
 	PREINIT:
 		int rc;
+
 		Blob blob;
 		git_oid oid;
+
 		STRLEN len;
 		const char *buffer_str;
+
 		Repository repo_ptr;
 
 	CODE:
@@ -36,8 +39,10 @@ lookup(class, repo, id)
 
 	PREINIT:
 		int rc;
+
 		Blob blob;
 		git_oid oid;
+
 		STRLEN len;
 		const char *id_str;
 

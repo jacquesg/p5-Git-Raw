@@ -9,6 +9,7 @@ save(class, repo, stasher, msg)
 
 	PREINIT:
 		int rc;
+
 		git_oid oid;
 		const char *message;
 

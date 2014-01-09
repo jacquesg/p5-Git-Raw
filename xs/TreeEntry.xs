@@ -32,8 +32,9 @@ object(self)
 
 	PREINIT:
 		int rc;
-		Repository repo;
+
 		git_object *obj;
+		Repository repo;
 
 	CODE:
 		repo = INT2PTR(
