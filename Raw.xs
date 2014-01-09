@@ -83,6 +83,34 @@ git_object *git_sv_to_obj(SV *sv) {
 	return NULL;
 }
 
+/* The Microsoft preprocessor has a problem with the following:
+ * void *ptr = { void *x = blah; x; }
+ *
+ * git_sv_to_ptr() works around this problem for these compilers
+ * at the expense of doing an allocation on the heap.
+ *
+ * Ideally it would be nice to have a single implementation that
+ * works on all platforms, however, from an effiency point of view
+ * letting the preprocessor perform string concatenations is superior.
+ *
+ * Maybe the extra penalty is a fair trade-off from a portability and
+ * maintainability point of view?
+ */
+#ifdef _MSC_VER
+
+void *git_sv_to_ptr(const char *type, SV *sv) {
+	SV *full_type = sv_2mortal(newSVpvf("Git::Raw::%s", type));
+
+	if (sv_isobject(sv) && sv_derived_from(sv, SvPV_nolen(full_type)))
+		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
+
+	Perl_croak(aTHX_ "Argument is not of type %s", SvPV_nolen(full_type));
+}
+
+#define GIT_SV_TO_PTR(type, sv) \
+	git_sv_to_ptr (#type, sv)
+
+#else
 #define GIT_SV_TO_PTR(type, sv) ({					\
 	void *ptr;							\
 									\
@@ -93,6 +121,8 @@ git_object *git_sv_to_obj(SV *sv) {
 									\
 	ptr;								\
 })
+#endif
+
 
 SV *git_oid_to_sv(git_oid *oid) {
 	char out[41];
@@ -103,59 +133,58 @@ SV *git_oid_to_sv(git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
-#define GIT_CHECKOUT_OPT(HV, NAME, MASK) ({				\
-	SV **opt;							\
-									\
-	if ((opt = hv_fetchs(HV, NAME, 0)) && (SvIV(*opt) != 0)) {	\
-		out |= MASK;						\
-	}								\
-})
+void git_checkout_opt(HV *value, const char *name, int mask, unsigned *out) {
+	SV **opt;
+
+	if ((opt = hv_fetch(value, name, strlen(name), 0)) && SvIV(*opt))
+		*out |= mask;
+}
 
 unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 
-	GIT_CHECKOUT_OPT(
-		strategy, "none", GIT_CHECKOUT_NONE
+	git_checkout_opt(
+		strategy, "none", GIT_CHECKOUT_NONE, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "force", GIT_CHECKOUT_FORCE
+	git_checkout_opt(
+		strategy, "force", GIT_CHECKOUT_FORCE, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "safe", GIT_CHECKOUT_SAFE
+	git_checkout_opt(
+		strategy, "safe", GIT_CHECKOUT_SAFE, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE
+	git_checkout_opt(
+		strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "allow_conflicts", GIT_CHECKOUT_ALLOW_CONFLICTS
+	git_checkout_opt(
+		strategy, "allow_conflicts", GIT_CHECKOUT_ALLOW_CONFLICTS, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "remove_untracked", GIT_CHECKOUT_REMOVE_UNTRACKED
+	git_checkout_opt(
+		strategy, "remove_untracked", GIT_CHECKOUT_REMOVE_UNTRACKED, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "remove_ignored", GIT_CHECKOUT_REMOVE_IGNORED
+	git_checkout_opt(
+		strategy, "remove_ignored", GIT_CHECKOUT_REMOVE_IGNORED, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY
+	git_checkout_opt(
+		strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "dont_update_index", GIT_CHECKOUT_DONT_UPDATE_INDEX
+	git_checkout_opt(
+		strategy, "dont_update_index", GIT_CHECKOUT_DONT_UPDATE_INDEX, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH
+	git_checkout_opt(
+		strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH, &out
 	);
 
-	GIT_CHECKOUT_OPT(
-		strategy, "skip_unmerged",    GIT_CHECKOUT_SKIP_UNMERGED
+	git_checkout_opt(
+		strategy, "skip_unmerged", GIT_CHECKOUT_SKIP_UNMERGED, &out
 	);
 
 	return out;
@@ -365,9 +394,8 @@ void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 	return (mg) ? mg -> mg_ptr : NULL;
 }
 
-#define GIT_SV_TO_REPO(SV) ({				\
-	xs_object_magic_get_struct(aTHX_ SvRV(SV));	\
-})
+#define GIT_SV_TO_REPO(SV) \
+	xs_object_magic_get_struct(aTHX_ SvRV(SV))
 
 #define GIT_NEW_OBJ(rv, class, sv, magic)			\
 	STMT_START {						\
