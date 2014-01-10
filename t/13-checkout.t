@@ -22,7 +22,7 @@ $repo -> checkout($fst, {
 	'checkout_strategy' => { 'safe' => 1, 'remove_untracked' => 1 }
 });
 
-is_deeply $repo -> status -> {'test3/under/the/tree/test3'}, ['index_deleted'];
+is_deeply $repo -> status -> {'test3/under/the/tree/test3'}, {'flags' => ['index_deleted']};
 
 $repo -> checkout($repo -> head, {});
 
