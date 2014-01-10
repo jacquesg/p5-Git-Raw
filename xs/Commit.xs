@@ -115,6 +115,19 @@ message(self)
 
 	OUTPUT: RETVAL
 
+SV *
+summary(self)
+	Commit self
+
+	PREINIT:
+		const char *summary;
+
+	CODE:
+		summary = git_commit_summary(self);
+		RETVAL = newSVpv(summary, 0);
+
+	OUTPUT: RETVAL
+
 Signature
 author(self)
 	Commit self
