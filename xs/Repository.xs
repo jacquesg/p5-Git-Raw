@@ -521,8 +521,7 @@ is_bare(self)
 	Repository self
 
 	CODE:
-		RETVAL = (git_repository_is_bare(self) != 0) ?
-				&PL_sv_yes : &PL_sv_no;
+		RETVAL = newSViv(git_repository_is_bare(self));
 
 	OUTPUT: RETVAL
 
@@ -531,8 +530,7 @@ is_empty(self)
 	Repository self
 
 	CODE:
-		RETVAL = (git_repository_is_empty(self) != 0) ?
-				&PL_sv_yes : &PL_sv_no;
+		RETVAL = newSViv(git_repository_is_empty(self));
 
 	OUTPUT: RETVAL
 

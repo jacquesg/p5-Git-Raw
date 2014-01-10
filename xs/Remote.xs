@@ -203,8 +203,7 @@ is_connected(self)
 	Remote self
 
 	CODE:
-		RETVAL = (git_remote_connected(self) != 0) ?
-				&PL_sv_yes : &PL_sv_no;
+		RETVAL = newSViv(git_remote_connected(self));
 
 	OUTPUT: RETVAL
 
