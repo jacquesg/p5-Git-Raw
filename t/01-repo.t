@@ -3,6 +3,7 @@
 use Test::More;
 
 use Git::Raw;
+use File::Spec;
 use File::Slurp;
 use Cwd qw(abs_path);
 
@@ -64,5 +65,15 @@ $config -> foreach(sub {
 
 	0
 });
+
+is $repo -> state, "none";
+
+my $commit_msg_file = File::Spec->catfile($repo -> path, 'MERGE_MSG');
+
+ok (open HANDLE, ">$commit_msg_file");
+ok (close HANDLE);
+$repo -> state_cleanup;
+isnt -f $commit_msg_file, 1;
+
 
 done_testing;
