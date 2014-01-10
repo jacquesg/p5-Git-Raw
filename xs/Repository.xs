@@ -290,19 +290,22 @@ status(self, ...)
 		git_status_options opt = GIT_STATUS_OPTIONS_INIT;
 
 	CODE:
-		rc = git_status_list_new(&list, self, NULL);
-		git_check_error(rc);
-
 		if (items > 1) {
 			opt.flags |= GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
 
 			Newx(opt.pathspec.strings, items - 1, char *);
 
 			for (i = 1; i < items; i++)
-				opt.pathspec.strings[0] = SvPVbyte_nolen(ST(i));
+				opt.pathspec.strings[i - 1] =
+					SvPVbyte_nolen(ST(i));
 
 			opt.pathspec.count = i - 1;
 		}
+
+		opt.flags |= GIT_STATUS_OPT_DEFAULTS;
+
+		rc = git_status_list_new(&list, self, &opt);
+		git_check_error(rc);
 
 		count = git_status_list_entrycount(list);
 
