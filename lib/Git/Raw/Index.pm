@@ -46,6 +46,14 @@ Create a new tree from the index and write it to disk.
 
 Remove C<$path> from the index.
 
+=head2 has_conflicts( )
+
+Determine if the index contains entries representing file conflicts.
+
+=head2 conflic_cleanup( )
+
+Remove all conflicts in the index (entries with a stage greater than 0).
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
