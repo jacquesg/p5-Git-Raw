@@ -275,6 +275,59 @@ Retrieve the complete path of the repository.
 Retrieve the working directory of the repository. If C<$new_dir> is passed, the
 working directory of the repository will be set to the directory.
 
+=head2 state( )
+
+Determine the status of the repository. One of the following values is returned:
+
+=over 4
+
+=item * "none"
+
+Normal state
+
+=item * "merge"
+
+Repository is in a merge.
+
+=item * "revert"
+
+Repository is in a revert.
+
+=item * "cherry_pick"
+
+Repository is in a cherry-pick.
+
+=item * "bisect"
+
+Repository is bisecting.
+
+=item * "rebase"
+
+Repository is rebasing.
+
+=item * "rebase_interactive"
+
+Repository is in an interactive rebase.
+
+=item * "rebase_merge"
+
+Repository is in an rebase merge.
+
+=item * "apply_mailbox"
+
+Repository is applying patches.
+
+=item * "mailbox_or_rebase"
+
+Repository is applying patches or rebasing.
+
+=back
+
+=head2 state_cleanup( )
+
+Remove all the metadata associated with an ongoing command like merge, revert,
+cherry-pick, etc.
+
 =head2 is_empty( )
 
 Check if the repository is empty.
@@ -282,6 +335,10 @@ Check if the repository is empty.
 =head2 is_bare( )
 
 Check if the repository is bare.
+
+=head2 is_shallow( )
+
+Check if the repository is a shallow clone.
 
 =head1 AUTHOR
 
