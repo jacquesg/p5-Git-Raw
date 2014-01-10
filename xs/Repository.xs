@@ -564,6 +564,67 @@ workdir(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+state(self)
+	Repository self
+
+	PREINIT:
+		int rc;
+		const char *s;
+
+	CODE:
+		rc = git_repository_state(self);
+		git_check_error(rc);
+
+		switch (rc) {
+			case GIT_REPOSITORY_STATE_NONE:
+				s = "none";
+				break;
+
+			case GIT_REPOSITORY_STATE_MERGE:
+				s = "merge";
+				break;
+
+			case GIT_REPOSITORY_STATE_REVERT:
+				s = "revert";
+				break;
+
+			case GIT_REPOSITORY_STATE_CHERRY_PICK:
+				s = "cherry_pick";
+				break;
+
+			case GIT_REPOSITORY_STATE_BISECT:
+				s = "bisect";
+				break;
+
+			case GIT_REPOSITORY_STATE_REBASE:
+				s = "rebase";
+				break;
+
+			case GIT_REPOSITORY_STATE_REBASE_INTERACTIVE:
+				s = "rebase_interactive";
+				break;
+
+			case GIT_REPOSITORY_STATE_REBASE_MERGE:
+				s = "rebase_merge";
+				break;
+
+			case GIT_REPOSITORY_STATE_APPLY_MAILBOX:
+				s = "apply_mailbox";
+				break;
+
+			case GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE:
+				s = "mailbox_or_rebase";
+				break;
+
+			default:
+				Perl_croak(aTHX_ "Unhandle state: %i", rc);
+		}
+
+		RETVAL = newSVpv(s, strlen(s));
+
+	OUTPUT: RETVAL
+
+SV *
 is_bare(self)
 	Repository self
 
@@ -580,6 +641,26 @@ is_empty(self)
 		RETVAL = newSViv(git_repository_is_empty(self));
 
 	OUTPUT: RETVAL
+
+SV *
+is_shallow(self)
+	Repository self
+
+	CODE:
+		RETVAL = newSViv(git_repository_is_shallow(self));
+
+	OUTPUT: RETVAL
+
+void
+state_cleanup(self)
+	Repository self
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_repository_state_cleanup(self);
+		git_check_error(rc);
 
 void
 DESTROY(self)
