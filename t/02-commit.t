@@ -41,6 +41,7 @@ is_deeply $repo -> status -> {'test'}, undef;
 my $author = $commit -> author;
 
 is $commit -> message, "initial commit\n";
+is $commit -> summary, "initial commit";
 
 is $commit -> author -> name, $name;
 is $commit -> author -> email, $email;
@@ -73,6 +74,7 @@ my $head = $repo -> head -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> message, "second commit\n";
+is $head -> summary, "second commit";
 
 is $head -> author -> name, $name;
 is $head -> author -> email, $email;
@@ -110,6 +112,7 @@ $head = $repo -> head -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> message, "third commit\n";
+is $head -> summary, "third commit";
 
 is $head -> author -> name, $name;
 is $head -> author -> email, $email;
@@ -135,6 +138,7 @@ is $repo -> head -> target -> id, $commit3 -> id, q{Make sure that undef referen
 $commit4 = Git::Raw::Commit -> lookup($repo, $commit4 -> id);
 
 is $commit4 -> message, "fourth commit\n";
+is $commit4 -> summary, "fourth commit";
 
 is $commit4 -> author -> name, $name;
 is $commit4 -> author -> email, $email;
@@ -159,6 +163,7 @@ is $repo -> head -> target -> id, $commit3 -> id, q{Make sure that stringy refer
 $commit5 = Git::Raw::Reference -> lookup('refs/commit-test-ref', $repo) -> target;
 
 is $commit5 -> message, "fifth commit\n";
+is $commit5 -> summary, "fifth commit";
 
 is $commit5 -> author -> name, $name;
 is $commit5 -> author -> email, $email;
