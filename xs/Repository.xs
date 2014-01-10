@@ -365,6 +365,22 @@ status(self, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+path_is_ignored(self, path)
+	Repository self
+	const char *path
+
+	PREINIT:
+		int rc, ignore;
+
+	CODE:
+		rc = git_ignore_path_is_ignored(&ignore, self, path);
+		git_check_error(rc);
+
+		RETVAL = newSViv(ignore);
+
+	OUTPUT: RETVAL
+
 void
 ignore(self, rules)
 	Repository self

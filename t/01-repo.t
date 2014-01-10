@@ -33,6 +33,9 @@ $repo -> ignore("ignore\n");
 is_deeply $repo -> status('ignore') -> {'ignore'}, ['ignored'];
 is_deeply $repo -> status -> {'ignore'}, ['ignored'];
 
+is $repo -> path_is_ignored('ignore'), 1;
+is $repo -> path_is_ignored('test'), 0;
+
 my $config = $repo -> config;
 
 my $name  = 'Git::Raw author';
