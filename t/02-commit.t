@@ -3,17 +3,19 @@
 use Test::More;
 
 use Git::Raw;
+use File::Copy;
 use File::Slurp;
 use Cwd qw(abs_path);
-use File::Path 2.07 qw(make_path);
+use File::Path 2.07 qw(make_path remove_tree);
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $file  = $repo -> workdir . 'test';
+my $untracked_file = $repo -> workdir . 'untracked_file';
 write_file($file, 'this is a test');
 
-is_deeply $repo -> status -> {'test'}, ['worktree_new'];
+is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_new']};
 
 my $index = $repo -> index;
 $index -> add('test');
@@ -22,7 +24,25 @@ $index -> write;
 my $tree_id = $index -> write_tree;
 my $tree    = $repo -> lookup($tree_id);
 
-is_deeply $repo -> status -> {'test'}, ['index_new'];
+is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
+
+write_file($file, 'this is a test with more content');
+is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new', 'worktree_modified']};
+
+$index -> add('test');
+$index -> write;
+
+is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
+
+write_file($file, 'this is a test');
+$index -> add('test');
+$index -> write;
+
+write_file($untracked_file, 'this is an untracked file');
+is_deeply $repo -> status -> {'untracked_file'}, {'flags' => ['worktree_new']};
+
+remove_tree($untracked_file);
+is_deeply $repo -> status -> {'untracked_file'}, undef;
 
 isa_ok $tree, 'Git::Raw::Tree';
 
@@ -55,6 +75,28 @@ is $commit -> committer -> offset, $off;
 
 is $commit -> time, $time;
 is $commit -> offset, $off;
+
+move($file, $file.'.moved');
+$index -> remove('test');
+$index -> add('test.moved');
+$index -> write;
+is_deeply $repo -> status -> {'test.moved'}, {'flags' => ['index_renamed'],
+	'index' => {'old_file' => 'test'}};
+
+write_file($file.'.moved', 'this is a test with more content');
+is_deeply $repo -> status -> {'test.moved'}, {'flags' => ['index_renamed', 'worktree_modified'],
+	'index' => {'old_file' => 'test'}};
+
+move($file.'.moved', $file);
+$index -> remove('test.moved');
+$index -> add('test');
+$index -> write;
+is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
+
+write_file($file, 'this is a test');
+$index -> add('test');
+$index -> write;
+is_deeply $repo -> status -> {'test'}, undef;
 
 $file  = $repo -> workdir . 'test2';
 write_file($file, 'this is a second test');
