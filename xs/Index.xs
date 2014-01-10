@@ -82,6 +82,22 @@ remove(self, path)
 		git_check_error(rc);
 
 void
+conflict_cleanup(self)
+	Index self
+
+	CODE:
+		git_index_conflict_cleanup(self);
+
+SV *
+has_conflicts(self)
+	Index self
+
+	CODE:
+		RETVAL = newSViv(git_index_has_conflicts(self));
+
+	OUTPUT: RETVAL
+
+void
 DESTROY(self)
 	SV* self
 
