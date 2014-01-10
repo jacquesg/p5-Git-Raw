@@ -198,6 +198,12 @@ of the C<.gitignore> file (see the C<gitignore(5)> manpage). Example:
 
     $repo -> ignore("*.o\n");
 
+=head2 path_is_ignored( $path )
+
+Checks the ignore rules to see if they would apply to the given file. This indicates
+if the file would be ignored regardless of whether the file is already in the index
+or committed to the repository.
+
 =head2 diff( $repo [, $tree] )
 
 Compute the L<Git::Raw::Diff> between the given L<Git::Raw::Tree> and the repo
