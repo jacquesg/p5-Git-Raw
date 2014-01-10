@@ -69,6 +69,10 @@ Retrieve the id of the commit, as string.
 
 Retrieve the message of the commit.
 
+=head2 summary( )
+
+Retrieve the summary of the commit.
+
 =head2 author( )
 
 Retrieve the L<Git::Raw::Signature> representing the author of the commit.
