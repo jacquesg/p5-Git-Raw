@@ -78,6 +78,10 @@ Open the repository at C<$path>.
 
 Discover the path to the repository directory given a subdirectory.
 
+=head2 new( )
+
+Create a new repository with neither backends nor config object.
+
 =head2 config( )
 
 Retrieve the default L<Git::Raw::Config> of the repository.
