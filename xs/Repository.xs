@@ -36,12 +36,20 @@ clone(class, url, path, opts)
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
 	CODE:
-		/* TODO: support all clone_opts */
-		/* Bare repository */
-		if ((opt = hv_fetchs(opts, "bare", 0)) && (SvIV(*opt) != 0))
+		if ((opt = hv_fetchs(opts, "bare", 0)) && SvIV(*opt) != 0)
 			clone_opts.bare = 1;
-		else
-			clone_opts.bare = 0;
+
+		if ((opt = hv_fetchs(opts, "ignore_cert_errors", 0)) && SvIV(*opt) != 0)
+			clone_opts.ignore_cert_errors = 1;
+
+		if ((opt = hv_fetchs(opts, "remote_name", 0)))
+			clone_opts.remote_name = SvPVbyte_nolen(*opt);
+
+		if ((opt = hv_fetchs(opts, "checkout_branch", 0)))
+			clone_opts.checkout_branch = SvPVbyte_nolen(*opt);
+
+		if ((opt = hv_fetchs(opts, "disable_checkout", 0)) && SvIV(*opt) != 0)
+			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 
 		/* Cred acquire */
 		if ((opt = hv_fetchs(opts, "cred_acquire", 0))) {
