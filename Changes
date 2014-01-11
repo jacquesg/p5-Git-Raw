@@ -3,6 +3,23 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Add "paths" checkout option (GH#23) (thanks, @jacquesg!)
+ - Various fixes to make it possible to build with MSVC
+   (GH#24, GH#25, GH#26, GH#27, GH#28) (thanks, @jacquesg!)
+ - Repository -> remotes() now returns a list like branches() and refs()
+   (incompatible change)
+ - Repository -> tags() now returns a list like branches() and refs()
+   (incompatible change)
+ - Add Commit -> summary() method (GH#32) (thanks, @jacquesg!)
+ - Add new Repository methods (GH#33) (thanks, @jacquesg!):
+   + Repository -> state()
+   + Repository -> state_cleanup()
+   + Repository -> is_shallow()
+ - Add new clone options (GH#34) (thanks, @jacquesg!):
+   + "remote_name"
+   + "checkout_branch"
+   + "ignore_cert_errors"
+   + "disable_checkout"
+ - Update to libgit2 426d845
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
