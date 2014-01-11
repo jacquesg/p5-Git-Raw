@@ -114,6 +114,22 @@ discover(class, path)
 
 	OUTPUT: RETVAL
 
+SV *
+new(class)
+	SV *class
+
+	PREINIT:
+		int rc;
+		Repository repo;
+
+	CODE:
+		rc = git_repository_new(&repo);
+		git_check_error(rc);
+
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+
+	OUTPUT: RETVAL
+
 Config
 config(self)
 	Repository self
