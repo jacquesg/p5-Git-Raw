@@ -211,20 +211,84 @@ callbacks(self, callbacks)
 
 	PREINIT:
 		SV **opt;
+		xs_git_remote_callbacks *cbs;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
-		/* TODO: support all callbacks */
+		Newx(cbs, 1, xs_git_remote_callbacks);
+
 		if ((opt = hv_fetchs(callbacks, "credentials", 0))) {
 			SV *cb = *opt;
 
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for credentials callback");
+
 			SvREFCNT_inc(cb);
 
-			rcallbacks.credentials = git_cred_acquire_cbb;
-			rcallbacks.payload     = cb;
+			cbs->credentials = cb;
+			rcallbacks.credentials = git_credentials_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "progress", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for progress callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->progress = cb;
+			rcallbacks.progress = git_progress_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "completion", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for completion callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->completion = cb;
+			rcallbacks.completion = git_completion_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "transfer_progress", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for transfer progress callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->transfer_progress = cb;
+			rcallbacks.transfer_progress = git_transfer_progress_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "update_tips", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for update tips callback");
+
+			SvREFCNT_inc(cb);
+
+<<<<<<< HEAD
+			xs_callbacks.update_tips = cb;
+			rcallbacks.update_tips = git_update_tips_cbb;
 		}
 
 		git_remote_set_callbacks(self, &rcallbacks);
+=======
+			cbs->update_tips = cb;
+			rcallbacks.update_tips = git_update_tips_cbb;
+		}
+
+		rcallbacks.payload = cbs;
+
+		rc = git_remote_set_callbacks(self, &rcallbacks);
+		git_check_error(rc);
+>>>>>>> 133f55d... Remote.xs: Fixup
 
 SV *
 is_connected(self)

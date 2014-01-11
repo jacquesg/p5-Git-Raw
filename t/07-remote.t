@@ -63,4 +63,37 @@ my $ls = $github -> ls;
 
 is_deeply $ls -> {'HEAD'}, $ls -> {'refs/heads/master'};
 
+$path = abs_path('t/callbacks_repo');
+$repo = Git::Raw::Repository -> init ($path, 0);
+
+$github = Git::Raw::Remote -> create($repo, $name, $url);
+
+my ($progress, $transfer_progress, $update_tips);
+$github -> callbacks({
+	'progress' => sub {
+		$progress = 1;
+	},
+	'transfer_progress' => sub {
+		$transfer_progress = 1;
+	},
+	'update_tips' => sub {
+		my ($ref, $a, $b) = @_;
+		ok $ref =~ /^refs\//;
+		ok $a eq '0000000000000000000000000000000000000000';
+		ok length($b) == 40;
+
+		$update_tips = 1;
+	}
+});
+
+$github -> connect('fetch');
+is $github -> is_connected, 1;
+
+$github -> download;
+ok $progress;
+ok $transfer_progress;
+
+$github -> update_tips;
+ok $update_tips;
+
 done_testing;
