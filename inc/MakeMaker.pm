@@ -1,6 +1,7 @@
 package inc::MakeMaker;
 
 use Moose;
+use Config;
 
 extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 
@@ -82,12 +83,14 @@ override _build_WriteMakefile_args => sub {
 
 	my $libgit2_objs = join ' ', @objs;
 
+	my $bits = $Config{longsize} == 4 ? '-m32' : '';
+
 	return +{
 		%{ super() },
 		INC	=> "-I. $inc",
 		LIBS	=> "-lrt",
 		DEFINE	=> $def,
-		CCFLAGS	=> '-Wall -Wno-unused-variable',
+		CCFLAGS	=> "$bits -Wall -Wno-unused-variable",
 		OBJECT	=> "$libgit2_objs \$(O_FILES)",
 	}
 };
