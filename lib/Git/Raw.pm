@@ -8,6 +8,10 @@ XSLoader::load('Git::Raw', $Git::Raw::VERSION);
 
 use Git::Raw::Repository;
 
+# for use is_blob or is_tree methods.
+require Git::Raw::Blob;
+require Git::Raw::Tree;
+
 =head1 NAME
 
 Git::Raw - Perl bindings to the Git linkable library (libgit2)
