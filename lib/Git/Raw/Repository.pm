@@ -15,7 +15,17 @@ Git::Raw::Repository - Git repository class
 
     # clone a Git repository
     my $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
-    my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', { });
+    my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', {
+      'callbacks' => {
+        'transfer_progress' => sub {
+          my ($total_objects, $received_objects, $local_objects, $total_deltas,
+            $indexed_deltas, $received_bytes) = @_;
+
+          print "Objects: $received_objects/$total_objecs", "\n";
+          print "Received: ", int($received_bytes/1024), "KB", "\n";
+        }
+      }
+    });
 
     # print all the tags of the repository
     foreach my $tag ($repo -> tags) {
@@ -46,12 +56,6 @@ are:
 
 If true (default is false) create a bare repository.
 
-=item * "cred_acquire"
-
-The callback to be called any time authentication is required to connect to the
-remote repository. The callback receives a string containing the URL of the
-remote, and it must return a L<Git::Raw::Cred> object.
-
 =item * "remote_name"
 
 The name to be given to the "origin" remote (default is "origin").
@@ -67,6 +71,42 @@ If true (default is false) ignore errors validating the remote host's certificat
 =item * "disable_checkout"
 
 If true (default is false) files will not be checked out after the clone completes.
+
+=item * "callbacks"
+
+=over 8
+
+=item * "cred_acquire"
+
+The callback to be called any time authentication is required to connect to the
+remote repository. The callback receives a string containing the URL of the
+remote, and it must return a L<Git::Raw::Cred> object.
+
+=item * "progress"
+
+Textual progress from the remote. Text send over the progress side-band will be
+passed to this function (this is the 'counting objects' output). The callback
+receives a string containing progress information.
+
+=item * "completion"
+
+Completion is called when different parts of the download process are done
+(currently unused).
+
+=item * "transfer_progress"
+
+During the download of new data, this will be regularly called with the current
+count of progress done by the indexer. The callback receives the following integers:
+L<"total_objects">, L<"received_objects">, L<"local_objects">, L<"total_deltas">,
+L<"indexed_deltas"> and L<"received_bytes">.
+
+=item * "update_tips"
+
+Each time a reference is updated locally, this function will be called with
+information about it. The callback receives a string containing the name of the
+reference that was updated, and the two OID's L<"a"> before and L<"b"> after the update.
+
+=back
 
 =back
 
@@ -168,6 +208,66 @@ Skip files with unmerged index entries, instead of treating them as conflicts.
 
 =over 4
 
+=item * "notify"
+
+Notification flags for the notify callback. A list of the following options:
+
+=over 8
+
+=item * "conflict"
+
+Notifies about conflicting paths.
+
+=item * "dirty"
+
+Notifies about file that don't need an update but no longer matches the baseline.
+Core git displays these files when checkout runs, but won't stop the checkout.
+
+=item * "updated"
+
+Notification on any file changed.
+
+=item * "untracked"
+
+Notification about untracked files.
+
+=item * "ignored"
+
+Notifies about ignored files.
+
+=item * "all"
+
+All of the above.
+
+=back
+
+=back
+
+=over 4
+
+=item * "callbacks"
+
+Hash containg progress and notification callbacks. Valid fields are:
+
+=over 8
+
+=item * "notify"
+
+This callback is called for each file matching one of the L<"notify"> options selected.
+It runs before modifying any files on disk. This callback should return a non-zero value
+should the checkout be cancelled.  The callback receives a string containing the path
+of the file L<"path"> and an array reference containing the reason L<"why">.
+
+=item * "progress"
+
+The callback to be invoked as a file is checked out. The callback receives a string
+containing the path of the file L<"path">, an integer L<"completed_steps"> and an
+integer L<"total_steps">.
+
+=back
+
+=back
+
 =item * "paths"
 
 An optional array representing the list of files thay should be checked out. If
@@ -179,6 +279,20 @@ Example:
 
     $repo -> checkout($repo -> head -> target, {
       'checkout_strategy' => { 'safe'  => 1 },
+	  'notify'    => [ 'all' ],
+      'callbacks' => {
+         'notify' => sub {
+           my ($path, $why) = @_;
+
+           print "File: $path: ", join(' ', @$why), "\n";
+         },
+         'progress' => sub {
+            my ($path, $completed_steps, $total_steps) = @_;
+
+            print "File: $path", "\n" if defined ($path);
+            print "Progress: $completed_steps/$ptotal_steps", "\n";
+         }
+      },
       'paths' => [ 'myscript.pl' ]
     });
 
