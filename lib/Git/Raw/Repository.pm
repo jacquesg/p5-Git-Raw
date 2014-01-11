@@ -52,6 +52,22 @@ The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string containing the URL of the
 remote, and it must return a L<Git::Raw::Cred> object.
 
+=item * "remote_name"
+
+The name to be given to the "origin" remote (default is "origin").
+
+=item * "checkout_branch"
+
+The name of the branch to checkout (default is to use the remote's HEAD).
+
+=item * "ignore_cert_errors"
+
+If true (default is false) ignore errors validating the remote host's certificate.
+
+=item * "disable_checkout"
+
+If true (default is false) files will not be checked out after the clone completes.
+
 =back
 
 =head2 open( $path )
