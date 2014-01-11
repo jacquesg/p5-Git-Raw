@@ -9,6 +9,7 @@ BEGIN {
 
 use Test::More;
 
+use File::Spec;
 use Git::Raw;
 use Cwd qw(abs_path);
 
@@ -44,5 +45,19 @@ my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';
+
+$path = abs_path('t/test_repo_remote_name');
+$repo = Git::Raw::Repository -> clone($url, $path, {'remote_name' => 'github' });
+
+@remotes = $repo -> remotes;
+
+is $remotes[0] -> name, 'github';
+is $remotes[0] -> url, $url;
+is $remotes[1], undef;
+
+$path = abs_path('t/test_repo_disable_checkout');
+$repo = Git::Raw::Repository -> clone($url, $path, {'disable_checkout' => 1 });
+
+isnt -f File::Spec->catfile($repo -> workdir, 'Raw.xs'), 1;
 
 done_testing;
