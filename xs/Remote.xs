@@ -22,6 +22,32 @@ create(class, repo, name, url)
 	OUTPUT: RETVAL
 
 Remote
+create_inmemory(class, repo, fetch, url)
+	SV *class
+	Repository repo
+	SV *fetch
+	SV *url
+
+	PREINIT:
+		int rc;
+		Remote remote;
+
+		const char *f = NULL;
+
+	CODE:
+		if (SvOK(fetch))
+			f = SvPVbyte_nolen(fetch);
+
+		rc = git_remote_create_inmemory(
+			&remote, repo, f, SvPVbyte_nolen(url)
+		);
+		git_check_error(rc);
+
+		RETVAL = remote;
+
+	OUTPUT: RETVAL
+
+Remote
 load(class, repo, name)
 	SV *class
 	Repository repo
@@ -206,6 +232,53 @@ is_connected(self)
 
 	CODE:
 		RETVAL = newSViv(git_remote_connected(self));
+
+	OUTPUT: RETVAL
+
+SV *
+ls(self)
+	Remote self
+
+	PREINIT:
+		int rc;
+
+		const char *peel = "^{}";
+		size_t i, count;
+		const git_remote_head **refs;
+
+		HV *r;
+
+	CODE:
+		rc = git_remote_ls(&refs, &count, self);
+		git_check_error(rc);
+
+		r = newHV();
+
+		for (i = 0; i < count; ++i) {
+			size_t len;
+			const char *ref_name;
+
+			HV *entry = newHV();
+			int local = refs[i] -> local;
+
+			hv_stores(entry, "local", newSViv(local));
+
+			hv_stores(entry, "id", git_oid_to_sv(&refs[i] -> oid));
+
+			if (local)
+				hv_stores(entry, "lid",
+					git_oid_to_sv(&refs[i] -> loid));
+
+			ref_name = refs[i] -> name;
+			len = strlen(ref_name) -
+			     (strstr(ref_name, peel) == NULL ?
+				0 : strlen(peel));
+
+			hv_store(r, refs[i] -> name, len,
+				newRV_noinc((SV *) entry), 0);
+		}
+
+		RETVAL = newRV_noinc((SV *) r);
 
 	OUTPUT: RETVAL
 

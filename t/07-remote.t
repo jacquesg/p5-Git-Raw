@@ -53,4 +53,14 @@ isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';
 
+$repo = Git::Raw::Repository -> new();
+$github = Git::Raw::Remote -> create_inmemory($repo, undef, $url);
+
+$github -> connect('fetch');
+is $github -> is_connected, 1;
+
+my $ls = $github -> ls;
+
+is_deeply $ls -> {'HEAD'}, $ls -> {'refs/heads/master'};
+
 done_testing;
