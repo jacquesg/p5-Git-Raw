@@ -60,4 +60,58 @@ $repo = Git::Raw::Repository -> clone($url, $path, {'disable_checkout' => 1 });
 
 isnt -f File::Spec->catfile($repo -> workdir, 'Raw.xs'), 1;
 
+my $state = undef;
+my $total_objects = 0;
+my $received_objects = 0;
+my $local_objects = 0;
+my $total_deltas = 0;
+my $indexed_deltas = 0;
+my $received_bytes = 0;
+
+$path = abs_path('t/test_repo_clone_callbacks');
+$repo = Git::Raw::Repository -> clone($url, $path, {
+	'callbacks' => {
+		'progress' => sub {
+			my $description = shift;
+
+			if (!defined ($state)) {
+				ok $description =~ /^Reusing existing pack/i;
+				$state = 'counting' if ($description =~ /done/);
+			} elsif ($state eq 'counting') {
+				ok $description =~ /^Counting objects/i;
+				$state = 'compression' if ($description =~ /done/);
+			} elsif ($state eq 'compression') {
+				ok $description =~ /^Compressing objects/i;
+				$state = 'done' if ($description =~ /done/);
+			}
+		},
+		'transfer_progress' => sub {
+			my ($to, $ro, $lo, $td, $id, $rb) = @_;
+
+			if ($total_objects == 0) {
+				$total_objects = $to;
+			} else {
+				if ($received_objects < $total_objects) {
+					ok $ro >= $received_objects;
+					$received_objects = $ro;
+				} else {
+					if ($total_deltas == 0) {
+						$total_deltas = $td;
+					} else {
+						is $td, $total_deltas;
+						ok $id >= $indexed_deltas;
+						$indexed_deltas = $id;
+					}
+				}
+			}
+
+			ok $rb >= $received_bytes;
+			$received_bytes = $rb;
+		}
+	}
+});
+
+ok ($received_bytes > 0);
+is $received_objects, $total_objects;
+
 done_testing;

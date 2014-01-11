@@ -51,15 +51,64 @@ clone(class, url, path, opts)
 		if ((opt = hv_fetchs(opts, "disable_checkout", 0)) && SvIV(*opt) != 0)
 			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 
-		/* Cred acquire */
-		if ((opt = hv_fetchs(opts, "cred_acquire", 0))) {
-			SV *cb = *opt;
+		xs_git_remote_callbacks cbs;
+		clone_opts.remote_callbacks.payload = &cbs;
 
-			SvREFCNT_inc(cb);
 
-			clone_opts.remote_callbacks.credentials =
-							git_cred_acquire_cbb;
-			clone_opts.remote_callbacks.payload = cb;
+		/* Callbacks */
+		if ((opt = hv_fetchs(opts, "callbacks", 0))) {
+			SV **cb;
+			HV *callbacks;
+
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			callbacks = (HV *) SvRV(*opt);
+
+			if ((cb = hv_fetchs(opts, "cred_acquire", 0))) {
+				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for credential acquisition callback'");
+
+				cbs.credentials = *cb;
+				clone_opts.remote_callbacks.credentials =
+					git_cred_acquire_cbb;
+			}
+
+			if ((cb = hv_fetchs(callbacks, "progress", 0))) {
+				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for progress callback");
+
+				cbs.progress = *cb;
+				clone_opts.remote_callbacks.progress = 
+					git_progress_cbb;
+			}
+
+			if ((cb = hv_fetchs(callbacks, "completion", 0))) {
+				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for completion callback");
+
+				cbs.completion = *cb;
+				clone_opts.remote_callbacks.completion =
+					git_completion_cbb;
+			}
+
+			if ((cb = hv_fetchs(callbacks, "transfer_progress", 0))) {
+				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for transfer progress callback");
+
+				cbs.transfer_progress = *cb;
+				clone_opts.remote_callbacks.transfer_progress =
+					git_transfer_progress_cbb;
+			}
+
+			if ((cb = hv_fetchs(callbacks, "update_tips", 0))) {
+				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for update tips callback");
+
+				cbs.update_tips = *cb;
+				clone_opts.remote_callbacks.update_tips =
+					git_update_tips_cbb;
+			}
 		}
 
 		rc = git_clone(
@@ -261,6 +310,65 @@ checkout(self, target, opts)
 			if (count > 0) {
 				checkout_opts.paths.strings = paths;
 				checkout_opts.paths.count   = count;
+			}
+		}
+
+		if ((opt = hv_fetchs(opts, "callbacks", 0))) {
+			HV *callbacks;
+			SV **cb;
+
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			callbacks = (HV *) SvRV(*opt);
+
+			if ((cb = hv_fetchs(callbacks, "progress", 0))) {
+				if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for progress callback'");
+
+				checkout_opts.progress_cb      = git_checkout_progress_cbb;
+				checkout_opts.progress_payload = *cb;
+			}
+
+			if ((cb = hv_fetchs(callbacks, "notify", 0))) {
+				if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
+					Perl_croak(aTHX_ "Expected a subroutine for notify callback'");
+
+				checkout_opts.notify_cb      = git_checkout_notify_cbb;
+				checkout_opts.notify_payload = *cb;
+
+				if ((opt = hv_fetchs(opts, "notify", 0))) {
+					size_t count = 0;
+					SV **flag;
+
+					if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
+						Perl_croak(aTHX_ "Invalid type for 'notify'");
+
+					while ((flag = av_fetch((AV *) SvRV(*opt), count, 0))) {
+						if (SvOK(*flag)) {
+							const char *f = SvPVbyte_nolen(*flag);
+
+							if (strcmp(f, "conflict") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_CONFLICT;
+
+							if (strcmp(f, "dirty") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_DIRTY;
+
+							if (strcmp(f, "updated") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_UPDATED;
+
+							if (strcmp(f, "untracked") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_UNTRACKED;
+
+							if (strcmp(f, "ignored") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_IGNORED;
+
+							if (strcmp(f, "all") == 0)
+								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_ALL;
+						}
+						++count;
+					}
+				}
 			}
 		}
 

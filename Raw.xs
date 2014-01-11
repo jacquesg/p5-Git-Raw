@@ -25,6 +25,14 @@ typedef git_treebuilder * TreeBuilder;
 typedef git_tree_entry * TreeEntry;
 typedef git_revwalk * Walker;
 
+typedef struct xs_git_remote_callbacks {
+	SV *progress;
+	SV *completion;
+	SV *credentials;
+	SV *transfer_progress;
+	SV *update_tips;
+} xs_git_remote_callbacks;
+
 void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr);
 void *xs_object_magic_get_struct(pTHX_ SV *sv);
 
@@ -298,8 +306,184 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	return rv;
 }
 
+int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, const git_diff_file *baseline,
+	const git_diff_file *target, const git_diff_file *workdir, void *payload) {
+	dSP;
+
+	int rv;
+	AV *w = newAV();
+
+	if (why & GIT_CHECKOUT_NOTIFY_NONE)
+		av_push(w, newSVpv("none", 0));
+
+	if (why & GIT_CHECKOUT_NOTIFY_CONFLICT)
+		av_push(w, newSVpv("conflict", 0));
+
+	if (why & GIT_CHECKOUT_NOTIFY_DIRTY)
+		av_push(w, newSVpv("dirty", 0));
+
+	if (why & GIT_CHECKOUT_NOTIFY_UPDATED)
+		av_push(w, newSVpv("updated", 0));
+
+	if (why & GIT_CHECKOUT_NOTIFY_UNTRACKED)
+		av_push(w, newSVpv("untracked", 0));
+
+	if (why & GIT_CHECKOUT_NOTIFY_IGNORED)
+		av_push(w, newSVpv("ignored", 0));
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVpv(path, 0));
+	PUSHs(sv_2mortal(newRV_noinc((SV *) w)));
+	PUTBACK;
+
+	call_sv(payload, G_SCALAR);
+
+	SPAGAIN;
+
+	rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
+void git_checkout_progress_cbb(const char *path, size_t completed_steps, size_t total_steps,
+	void *payload) {
+	dSP;
+
+	SV *coderef = payload;
+	HV *progress = newHV();
+
+	hv_stores(progress, "path", newSVpv(path, 0));
+	hv_stores(progress, "completed_steps", newSViv(completed_steps));
+	hv_stores(progress, "total_steps", newSViv(total_steps));
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(sv_2mortal(newRV_noinc((SV *) progress)));
+	PUTBACK;
+
+	call_sv(coderef, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+}
+
+int git_progress_cbb(const char *str, int len, void *cbs) {
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVpv(str, len));
+	PUTBACK;
+
+	call_sv(((xs_git_remote_callbacks *) cbs) -> progress, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
+int git_completion_cbb(git_remote_completion_type type, void *cbs) {
+	dSP;
+	SV* ct;
+
+	switch (type) {
+		case GIT_REMOTE_COMPLETION_DOWNLOAD:
+			ct = newSVpv("download", 0);
+			break;
+
+		case GIT_REMOTE_COMPLETION_INDEXING:
+			ct = newSVpv("indexing", 0);
+			break;
+
+		case GIT_REMOTE_COMPLETION_ERROR:
+			ct = newSVpv("error", 0);
+			break;
+
+		default: Perl_croak(aTHX_ "Unhandle completion type");
+	}
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(ct);
+	PUTBACK;
+
+	call_sv(((xs_git_remote_callbacks *) cbs) -> completion, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
+int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSViv(stats -> total_objects));
+	PUSHs(newSViv(stats -> received_objects));
+	PUSHs(newSViv(stats -> local_objects));
+	PUSHs(newSViv(stats -> total_deltas));
+	PUSHs(newSViv(stats -> indexed_deltas));
+	PUSHs(newSVuv(stats -> received_bytes));
+	PUTBACK;
+
+	call_sv(((xs_git_remote_callbacks *) cbs) -> transfer_progress, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
+int git_update_tips_cbb(const char *name, const git_oid *a,
+	const git_oid *b, void *cbs) {
+	dSP;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(newSVpv(name, 0));
+	PUSHs(a != NULL ? git_oid_to_sv(a) : &PL_sv_undef);
+	PUSHs(b != NULL ? git_oid_to_sv(b) : &PL_sv_undef);
+	PUTBACK;
+
+	call_sv(((xs_git_remote_callbacks *) cbs) -> update_tips, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return 0;
+}
+
 int git_cred_acquire_cbb(git_cred **cred, const char *url,
-		const char *usr_from_url, unsigned int allow, void *cb) {
+		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
 	SV *creds;
 
@@ -310,7 +494,7 @@ int git_cred_acquire_cbb(git_cred **cred, const char *url,
 	PUSHs(newSVpv(url, 0));
 	PUTBACK;
 
-	call_sv(cb, G_SCALAR);
+	call_sv(((xs_git_remote_callbacks *) cbs) -> credentials, G_SCALAR);
 
 	SPAGAIN;
 
@@ -349,9 +533,9 @@ STATIC MAGIC *xs_object_magic_get_mg(pTHX_ SV *sv) {
 	MAGIC *mg;
 
 	if (SvTYPE(sv) >= SVt_PVMG) {
-		for (mg = SvMAGIC(sv); mg; mg = mg->mg_moremagic) {
-			if ((mg->mg_type == PERL_MAGIC_ext) &&
-			    (mg->mg_virtual == &null_mg_vtbl))
+		for (mg = SvMAGIC(sv); mg; mg = mg -> mg_moremagic) {
+			if ((mg -> mg_type == PERL_MAGIC_ext) &&
+			    (mg -> mg_virtual == &null_mg_vtbl))
 				return mg;
 		}
 	}
