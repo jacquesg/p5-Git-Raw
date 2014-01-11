@@ -95,7 +95,7 @@ void *git_sv_to_ptr(const char *type, SV *sv) {
 #define GIT_SV_TO_PTR(type, sv) \
 	git_sv_to_ptr (#type, sv)
 
-SV *git_oid_to_sv(git_oid *oid) {
+SV *git_oid_to_sv(const git_oid *oid) {
 	char out[41];
 
 	git_oid_fmt(out, oid);
