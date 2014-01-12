@@ -68,6 +68,9 @@ my $total_deltas = 0;
 my $indexed_deltas = 0;
 my $received_bytes = 0;
 
+my $expected_states = ['pack', 'count', 'compress', 'total'];
+my $states = [];
+
 $path = abs_path('t/test_repo_clone_callbacks');
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
@@ -75,17 +78,30 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 			my $description = shift;
 
 			if (!defined ($state)) {
-				ok $description =~ /^Reusing existing pack/i;
-				$state = 'total' if ($description =~ /done/);
+				if ($description =~ /pack/) {
+					if ($description =~ /done/) {
+						push @$states, 'pack';
+						$state = 'count';
+					}
+				}
+			} elsif ($state eq 'count') {
+				if ($description =~ /Counting objects/) {
+					if ($description =~ /done/) {
+						push @$states, 'count';
+						$state = 'compress';
+					}
+				}
+			} elsif ($state eq 'compress') {
+				if ($description =~ /Compressing/) {
+					if ($description =~ /done/) {
+						push @$states, 'compress';
+						$state = 'total';
+					}
+				}
 			} elsif ($state eq 'total') {
-				ok $description =~ /^Total/i;
-				$state = 'counting';
-			} elsif ($state eq 'counting') {
-				ok $description =~ /^Counting objects/i;
-				$state = 'compression' if ($description =~ /done/);
-			} elsif ($state eq 'compression') {
-				ok $description =~ /^Compressing objects/i;
-				$state = 'done' if ($description =~ /done/);
+				if ($description =~ /Total/) {
+					push @$states, 'total';
+				}
 			}
 		},
 		'transfer_progress' => sub {
@@ -116,5 +132,6 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 
 ok ($received_bytes > 0);
 is $received_objects, $total_objects;
+is_deeply $states, $expected_states;
 
 done_testing;
