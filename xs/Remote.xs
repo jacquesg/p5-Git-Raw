@@ -206,25 +206,108 @@ update_tips(self)
 
 void
 callbacks(self, callbacks)
-	Remote self
+	SV *self
 	HV *callbacks
 
 	PREINIT:
+		int rc;
+
+		Remote remote_ptr;
 		SV **opt;
+
+		SV *cb_obj;
+		xs_git_remote_callbacks *cbs;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
-		/* TODO: support all callbacks */
+		remote_ptr = GIT_SV_TO_PTR(Remote, self);
+
+		cbs = xs_object_magic_get_struct(aTHX_ self);
+		if (cbs) {
+			if (cbs->credentials)
+				SvREFCNT_dec(cbs->credentials);
+			if (cbs->progress)
+				SvREFCNT_dec(cbs->progress);
+			if (cbs->completion)
+				SvREFCNT_dec(cbs->completion);
+			if (cbs->transfer_progress)
+				SvREFCNT_dec(cbs->transfer_progress);
+			if (cbs->update_tips)
+				SvREFCNT_dec(cbs->update_tips);
+
+			Safefree(cbs);
+		}
+
+		Newx(cbs, 1, xs_git_remote_callbacks);
+
 		if ((opt = hv_fetchs(callbacks, "credentials", 0))) {
 			SV *cb = *opt;
 
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for credentials callback");
+
 			SvREFCNT_inc(cb);
 
-			rcallbacks.credentials = git_cred_acquire_cbb;
-			rcallbacks.payload     = cb;
+			cbs->credentials = cb;
+			rcallbacks.credentials = git_credentials_cbb;
 		}
 
-		git_remote_set_callbacks(self, &rcallbacks);
+		if ((opt = hv_fetchs(callbacks, "progress", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for progress callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->progress = cb;
+			rcallbacks.progress = git_progress_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "completion", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for completion callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->completion = cb;
+			rcallbacks.completion = git_completion_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "transfer_progress", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for transfer progress callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->transfer_progress = cb;
+			rcallbacks.transfer_progress = git_transfer_progress_cbb;
+		}
+
+		if ((opt = hv_fetchs(callbacks, "update_tips", 0))) {
+			SV *cb = *opt;
+
+			if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+				Perl_croak(aTHX_ "Expected a subroutine for update tips callback");
+
+			SvREFCNT_inc(cb);
+
+			cbs->update_tips = cb;
+			rcallbacks.update_tips = git_update_tips_cbb;
+		}
+
+		rcallbacks.payload = cbs;
+
+		cb_obj = sv_setref_pv(newSV(0), "Git::Raw::Remote::Callbacks", cbs);
+		//xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), SvREFCNT_inc_NN(self));
+		xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), self);
+
+		rc = git_remote_set_callbacks(remote_ptr, &rcallbacks);
+		git_check_error(rc);
 
 SV *
 is_connected(self)
@@ -284,7 +367,27 @@ ls(self)
 
 void
 DESTROY(self)
-	Remote self
+	SV *self
+
+	PREINIT:
+		xs_git_remote_callbacks *cbs;
 
 	CODE:
-		git_remote_free(self);
+		cbs = xs_object_magic_get_struct(aTHX_ self);
+		if (cbs) {
+			if (cbs->credentials)
+				SvREFCNT_dec(cbs->credentials);
+			if (cbs->progress)
+				SvREFCNT_dec(cbs->progress);
+			if (cbs->completion)
+				SvREFCNT_dec(cbs->completion);
+			if (cbs->transfer_progress)
+				SvREFCNT_dec(cbs->transfer_progress);
+			if (cbs->update_tips)
+				SvREFCNT_dec(cbs->update_tips);
+		}
+
+		git_remote_free(GIT_SV_TO_PTR(Remote, self));
+		SvREFCNT_dec(cbs);
+
+		Safefree(cbs);

@@ -49,10 +49,44 @@ my $commit = $repo -> commit(
 is read_file($repo -> workdir . 'test'),  'this is a checkout test';
 is read_file($repo -> workdir . 'test2'), 'this is a checkout test';
 
+my $untracked_file = $repo -> workdir . 'untracked_file';
+write_file($untracked_file, 'this is a checkout test');
+
+my $files_expected = [ 'test2', 'untracked_file' ];
+my $files_checked_out = [];
 $repo -> checkout($fst, {
 	'checkout_strategy' => { 'safe' => 1, 'remove_untracked' => 1 },
-	'paths' => [ 'test2' ]
+	'paths'     => $files_expected,
+	'notify'    => [ 'all' ],
+	'callbacks' => {
+		'notify' => sub {
+			my ($path, $flags) = @_;
+
+			if ($path eq 'untracked_file') {
+				is_deeply $flags, ['untracked'];
+			} elsif ($path eq 'test2') {
+				is_deeply $flags, ['updated'];
+			}
+
+			push @$files_checked_out, $path;
+
+			return 0;
+		},
+		'progress' => sub {
+			my ($path, $completed_steps, $total_steps) = @_;
+
+			if (!defined $path) {
+				is $completed_steps, 0;
+				is $total_steps, scalar(@$files_expected);
+			} else {
+				ok $completed_steps <= $total_steps;
+				is scalar(grep { $_ eq $path } @$files_expected), 1;
+			}
+		}
+	}
 });
+
+is_deeply $files_checked_out, $files_expected;
 
 is read_file($repo -> workdir . 'test'),  'this is a checkout test';
 is read_file($repo -> workdir . 'test2'), 'this is a second test';

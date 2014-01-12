@@ -21,7 +21,11 @@ Git::Raw::Remote - Git remote class
 
     # set the acquire credentials callback
     $remote -> callbacks({
-      credentials => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
+      'credentials' => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
+      'update_tips' => sub {
+        my ($ref, $a, $b) = @_);
+		print "Updated $ref: $a -> $b", "\n";
+	  }
     });
 
     # connect the remote
@@ -109,6 +113,30 @@ The local object ID of the reference (optional).
 The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string containing the URL of the
 remote, and it must return a L<Git::Raw::Cred> object.
+
+=item * "progress"
+
+Textual progress from the remote. Text send over the progress side-band will be
+passed to this function (this is the 'counting objects' output). The callback
+receives a string containing progress information.
+
+=item * "completion"
+
+Completion is called when different parts of the download process are done
+(currently unused).
+
+=item * "transfer_progress"
+
+During the download of new data, this will be regularly called with the current
+count of progress done by the indexer. The callback receives the following integers:
+L<"total_objects">, L<"received_objects">, L<"local_objects">, L<"total_deltas">,
+L<"indexed_deltas"> and L<"received_bytes">.
+
+=item * "update_tips"
+
+Each time a reference is updated locally, this function will be called with
+information about it. The callback receives a string containing the name of the
+reference that was updated, and the two OID's L<a> before and after L<b> the update.
 
 =back
 
