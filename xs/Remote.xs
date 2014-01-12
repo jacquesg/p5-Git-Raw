@@ -303,7 +303,8 @@ callbacks(self, callbacks)
 		rcallbacks.payload = cbs;
 
 		cb_obj = sv_setref_pv(newSV(0), "Git::Raw::Remote::Callbacks", cbs);
-		xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), SvREFCNT_inc_NN(self));
+		//xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), SvREFCNT_inc_NN(self));
+		xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), self);
 
 		rc = git_remote_set_callbacks(remote_ptr, &rcallbacks);
 		git_check_error(rc);
