@@ -2,6 +2,7 @@ Raw.bs
 Raw.c
 Raw.o
 t/test_repo
+t/callbacks_repo
 .*\.o
 .*\.a
 .*\.pc$
