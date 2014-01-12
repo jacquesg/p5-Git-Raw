@@ -65,13 +65,13 @@ clone(class, url, path, opts)
 
 			callbacks = (HV *) SvRV(*opt);
 
-			if ((cb = hv_fetchs(opts, "cred_acquire", 0))) {
+			if ((cb = hv_fetchs(opts, "credentials", 0))) {
 				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
 					Perl_croak(aTHX_ "Expected a subroutine for credential acquisition callback'");
 
 				cbs.credentials = *cb;
 				clone_opts.remote_callbacks.credentials =
-					git_cred_acquire_cbb;
+					git_credentials_cbb;
 			}
 
 			if ((cb = hv_fetchs(callbacks, "progress", 0))) {
