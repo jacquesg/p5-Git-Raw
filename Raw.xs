@@ -356,17 +356,14 @@ void git_checkout_progress_cbb(const char *path, size_t completed_steps, size_t 
 	dSP;
 
 	SV *coderef = payload;
-	HV *progress = newHV();
-
-	hv_stores(progress, "path", newSVpv(path, 0));
-	hv_stores(progress, "completed_steps", newSViv(completed_steps));
-	hv_stores(progress, "total_steps", newSViv(total_steps));
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(sv_2mortal(newRV_noinc((SV *) progress)));
+	PUSHs(newSVpv(path, 0));
+	PUSHs(newSViv(completed_steps));
+	PUSHs(newSViv(total_steps));
 	PUTBACK;
 
 	call_sv(coderef, G_DISCARD);
