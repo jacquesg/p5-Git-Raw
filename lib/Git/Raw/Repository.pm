@@ -76,7 +76,7 @@ If true (default is false) files will not be checked out after the clone complet
 
 =over 8
 
-=item * "cred_acquire"
+=item * "credentials"
 
 The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string containing the URL of the

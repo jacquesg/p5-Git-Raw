@@ -482,7 +482,7 @@ int git_update_tips_cbb(const char *name, const git_oid *a,
 	return 0;
 }
 
-int git_cred_acquire_cbb(git_cred **cred, const char *url,
+int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
 	SV *creds;
