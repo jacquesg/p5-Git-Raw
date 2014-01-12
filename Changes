@@ -25,8 +25,11 @@ Revision history for Git-Raw
  - Add Repository -> new() (GH#37) (thanks, @jacquesg!)
  - Add Remote -> create_inmemory() and Remote -> ls()
    (GH#37) (thanks, @jacquesg!)
- - Add support for more callbacks in Repository -> clone() and
-   Repository -> checkout() (GH#39) (thanks, @jacquesg!) (incompatible change)
+ - Add support for more callbacks for:
+   + Remote -> callbacks()
+   + Repository -> clone()
+   + Repository -> checkout()
+   (GH#39) (thanks, @jacquesg!) (incompatible change)
  - Add Repository -> path_is_ignored() (GH#38) (thanks, @jacquesg!)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
