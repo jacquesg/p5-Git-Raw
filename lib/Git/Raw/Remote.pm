@@ -34,6 +34,11 @@ Git::Raw::Remote - Git remote class
     # disconnect
     $remote -> disconnect;
 
+	my $url = 'https://github.com/ghedo/p5-Git-Raw.git'
+    my $empty_repo = Git::Raw::Repository -> new()
+	my $inmem_remote = Git::Raw::Remote -> create_inmemory($repo, undef, $url)
+	my $list = $inmem_remote -> ls
+
 =head1 DESCRIPTION
 
 A C<Git::Raw::Remote> represents a Git remote.
@@ -47,6 +52,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Create a remote with the default fetch refspec and add it to the repository's
 configuration.
+
+=head2 create_inmemory( $repo, $fetch_refspec, $url )
+
+Create a remote in memory.
 
 =head2 load( $repo, $name )
 
@@ -69,6 +78,11 @@ Add a fetch spec to the remote.
 =head2 add_push( $spec )
 
 Add a push spec to the remote.
+
+=head2 ls( )
+
+Get a list of refs at the remote. Returns a hash reference containing
+L<"local"> (does the reference exists locally?), L<"id"> and optionally L<"lid>".
 
 =head2 callbacks( \%callbacks )
 
