@@ -11,6 +11,9 @@ my $repo = Git::Raw::Repository -> open($path);
 my $head = $repo -> head -> target;
 my $tree = $head -> tree;
 
+ok $tree -> is_tree;
+ok !$tree -> is_blob;
+
 my $entries = $tree -> entries;
 
 is $entries -> [0] -> name, 'test';

@@ -50,15 +50,11 @@ Returns true.
 
 =cut
 
-sub is_tree { !0 }
-
 =head2 is_blob( )
 
 Returns false.
 
 =cut
-
-sub is_blob { !1 }
 
 =head1 AUTHOR
 

@@ -16,4 +16,7 @@ is $blob -> content, $buffer;
 is $blob -> size, length $buffer;
 is $blob -> id, '30f51a3fba5274d53522d0f19748456974647b4f';
 
+ok $blob -> is_blob;
+ok !$blob -> is_tree;
+
 done_testing;
