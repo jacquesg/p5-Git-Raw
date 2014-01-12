@@ -210,6 +210,8 @@ callbacks(self, callbacks)
 	HV *callbacks
 
 	PREINIT:
+		int rc;
+
 		SV **opt;
 		xs_git_remote_callbacks *cbs;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
@@ -273,13 +275,6 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-<<<<<<< HEAD
-			xs_callbacks.update_tips = cb;
-			rcallbacks.update_tips = git_update_tips_cbb;
-		}
-
-		git_remote_set_callbacks(self, &rcallbacks);
-=======
 			cbs->update_tips = cb;
 			rcallbacks.update_tips = git_update_tips_cbb;
 		}
@@ -288,7 +283,6 @@ callbacks(self, callbacks)
 
 		rc = git_remote_set_callbacks(self, &rcallbacks);
 		git_check_error(rc);
->>>>>>> 133f55d... Remote.xs: Fixup
 
 SV *
 is_connected(self)
