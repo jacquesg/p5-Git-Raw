@@ -213,10 +213,11 @@ callbacks(self, callbacks)
 		int rc;
 
 		Remote remote_ptr;
-		SV **opt;
 
+		SV **opt;
 		SV *cb_obj;
-		xs_git_remote_callbacks *cbs;
+
+		xs_git_remote_callbacks *cbs = NULL;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
@@ -224,21 +225,23 @@ callbacks(self, callbacks)
 
 		cbs = xs_object_magic_get_struct(aTHX_ self);
 		if (cbs) {
-			if (cbs->credentials)
-				SvREFCNT_dec(cbs->credentials);
-			if (cbs->progress)
-				SvREFCNT_dec(cbs->progress);
-			if (cbs->completion)
-				SvREFCNT_dec(cbs->completion);
-			if (cbs->transfer_progress)
-				SvREFCNT_dec(cbs->transfer_progress);
-			if (cbs->update_tips)
-				SvREFCNT_dec(cbs->update_tips);
+			if (cbs -> credentials)
+				SvREFCNT_dec(cbs -> credentials);
 
-			Safefree(cbs);
+			if (cbs -> progress)
+				SvREFCNT_dec(cbs -> progress);
+
+			if (cbs -> completion)
+				SvREFCNT_dec(cbs -> completion);
+
+			if (cbs -> transfer_progress)
+				SvREFCNT_dec(cbs -> transfer_progress);
+
+			if (cbs -> update_tips)
+				SvREFCNT_dec(cbs -> update_tips);
 		}
 
-		Newx(cbs, 1, xs_git_remote_callbacks);
+		Renew(cbs, 1, xs_git_remote_callbacks);
 
 		if ((opt = hv_fetchs(callbacks, "credentials", 0))) {
 			SV *cb = *opt;
@@ -248,7 +251,7 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-			cbs->credentials = cb;
+			cbs -> credentials = cb;
 			rcallbacks.credentials = git_credentials_cbb;
 		}
 
@@ -260,7 +263,7 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-			cbs->progress = cb;
+			cbs -> progress = cb;
 			rcallbacks.progress = git_progress_cbb;
 		}
 
@@ -272,7 +275,7 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-			cbs->completion = cb;
+			cbs -> completion = cb;
 			rcallbacks.completion = git_completion_cbb;
 		}
 
@@ -284,7 +287,7 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-			cbs->transfer_progress = cb;
+			cbs -> transfer_progress = cb;
 			rcallbacks.transfer_progress = git_transfer_progress_cbb;
 		}
 
@@ -296,14 +299,13 @@ callbacks(self, callbacks)
 
 			SvREFCNT_inc(cb);
 
-			cbs->update_tips = cb;
+			cbs -> update_tips = cb;
 			rcallbacks.update_tips = git_update_tips_cbb;
 		}
 
 		rcallbacks.payload = cbs;
 
-		cb_obj = sv_setref_pv(newSV(0), "Git::Raw::Remote::Callbacks", cbs);
-		xs_object_magic_attach_struct(aTHX_ SvRV(cb_obj), SvREFCNT_inc_NN(self));
+		xs_object_magic_attach_struct(aTHX_ SvRV(self), cbs);
 
 		rc = git_remote_set_callbacks(remote_ptr, &rcallbacks);
 		git_check_error(rc);
@@ -374,19 +376,23 @@ DESTROY(self)
 	CODE:
 		cbs = xs_object_magic_get_struct(aTHX_ self);
 		if (cbs) {
-			if (cbs->credentials)
-				SvREFCNT_dec(cbs->credentials);
-			if (cbs->progress)
-				SvREFCNT_dec(cbs->progress);
-			if (cbs->completion)
-				SvREFCNT_dec(cbs->completion);
-			if (cbs->transfer_progress)
-				SvREFCNT_dec(cbs->transfer_progress);
-			if (cbs->update_tips)
-				SvREFCNT_dec(cbs->update_tips);
+			Perl_croak(aTHX_ "lol");
+			if (cbs -> credentials)
+				SvREFCNT_dec(cbs -> credentials);
+
+			if (cbs -> progress)
+				SvREFCNT_dec(cbs -> progress);
+
+			if (cbs -> completion)
+				SvREFCNT_dec(cbs -> completion);
+
+			if (cbs -> transfer_progress)
+				SvREFCNT_dec(cbs -> transfer_progress);
+
+			if (cbs -> update_tips)
+				SvREFCNT_dec(cbs -> update_tips);
+
+			Safefree(cbs);
 		}
 
 		git_remote_free(GIT_SV_TO_PTR(Remote, self));
-		SvREFCNT_dec(cbs);
-
-		Safefree(cbs);
