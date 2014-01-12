@@ -76,7 +76,10 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 
 			if (!defined ($state)) {
 				ok $description =~ /^Reusing existing pack/i;
-				$state = 'counting' if ($description =~ /done/);
+				$state = 'total' if ($description =~ /done/);
+			} elsif ($state eq 'total') {
+				ok $description =~ /^Total/i;
+				$state = 'counting';
 			} elsif ($state eq 'counting') {
 				ok $description =~ /^Counting objects/i;
 				$state = 'compression' if ($description =~ /done/);

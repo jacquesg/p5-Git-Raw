@@ -21,7 +21,11 @@ Git::Raw::Remote - Git remote class
 
     # set the acquire credentials callback
     $remote -> callbacks({
-      credentials => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
+      'credentials' => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
+      'update_tips' => sub {
+        my ($ref, $a, $b) = @_);
+		print "Updated $ref: $a -> $b", "\n";
+	  }
     });
 
     # connect the remote
@@ -124,9 +128,9 @@ Completion is called when different parts of the download process are done
 =item * "transfer_progress"
 
 During the download of new data, this will be regularly called with the current
-count of progress done by the indexer. The callback receives a hash reference
-containing L<total_objects>, L<received_objects>, L<local_objects>, L<total_deltas>,
-L<indexed_deltas>, L<received_bytes>
+count of progress done by the indexer. The callback receives the following integers:
+L<total_objects>, L<received_objects>, L<local_objects>, L<total_deltas>,
+L<indexed_deltas> and L<received_bytes>.
 
 =item * "update_tips"
 
