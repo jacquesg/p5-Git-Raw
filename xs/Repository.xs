@@ -416,12 +416,28 @@ status(self, ...)
 
 		size_t i, count;
 
-		HV *status_hv = newHV();
+		HV *status_hv;
 
 		git_status_list *list;
 		git_status_options opt = GIT_STATUS_OPTIONS_INIT;
 
 	CODE:
+		/* GIT_STATUS_OPTIONS_INIT only sets the version member of git_status_options */
+		opt.flags |= GIT_STATUS_OPT_DEFAULTS |
+			GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX |
+			GIT_STATUS_OPT_RENAMES_FROM_REWRITES;
+
+		/* Core git does not recurse untracked dirs, it merely informs the user that
+		 * the directory is untracked.
+		 */
+		opt.flags &= ~GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+
+		/* GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR seems to be broken if files are
+		 * renamed in both the index and in the working tree. Core git does not
+		 * tell you if the file was renamed in the worktree anyway. It would be
+		 * a useful feature to have though.
+		 */
+
 		if (items > 1) {
 			opt.flags |= GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
 
@@ -434,25 +450,24 @@ status(self, ...)
 			opt.pathspec.count = i - 1;
 		}
 
-		opt.flags |= GIT_STATUS_OPT_DEFAULTS;
-
 		rc = git_status_list_new(&list, self, &opt);
+		Safefree(opt.pathspec.strings);
 		git_check_error(rc);
 
 		count = git_status_list_entrycount(list);
 
-		Safefree(opt.pathspec.strings);
-
+		status_hv = newHV();
 		for (i = 0; i < count; i++) {
-			AV *flags = newAV();
+			AV *flags;
+			HV *file_status_hv;
 
-			const char *path;
-			const git_status_entry *entry;
+			const char *path = NULL;
+			const git_status_entry *entry = NULL;
 
-			av_clear(flags);
+			if ((entry = git_status_byindex(list, i)) == NULL)
+				continue;
 
-			entry = git_status_byindex(list, i);
-			if (entry == NULL) continue;
+			flags = newAV();
 
 			if (entry -> status & GIT_STATUS_INDEX_NEW)
 				av_push(flags, newSVpv("index_new", 0));
@@ -463,6 +478,9 @@ status(self, ...)
 			if (entry -> status & GIT_STATUS_INDEX_DELETED)
 				av_push(flags, newSVpv("index_deleted", 0));
 
+			if (entry -> status & GIT_STATUS_INDEX_RENAMED)
+				av_push(flags, newSVpv("index_renamed", 0));
+
 			if (entry -> status & GIT_STATUS_WT_NEW)
 				av_push(flags, newSVpv("worktree_new", 0));
 
@@ -472,15 +490,41 @@ status(self, ...)
 			if (entry -> status & GIT_STATUS_WT_DELETED)
 				av_push(flags, newSVpv("worktree_deleted", 0));
 
+			if (entry -> status & GIT_STATUS_WT_RENAMED)
+				av_push(flags, newSVpv("worktree_renamed", 0));
+
 			if (entry -> status & GIT_STATUS_IGNORED)
 				av_push(flags, newSVpv("ignored", 0));
 
-			if (entry -> head_to_index)
-				path = entry -> head_to_index -> old_file.path;
-			else
-				path = entry -> index_to_workdir -> old_file.path;
+			file_status_hv = newHV();
 
-			hv_store(status_hv, path, strlen(path), newRV_inc((SV *) flags), 0);
+			if (entry -> index_to_workdir) {
+				if (entry -> status & GIT_STATUS_WT_RENAMED) {
+					HV *worktree_status_hv = newHV();
+
+					hv_stores(worktree_status_hv, "old_file",
+						newSVpv(entry -> index_to_workdir -> old_file.path, 0));
+					hv_stores(file_status_hv, "worktree", newRV_noinc((SV *) worktree_status_hv));
+				}
+
+				path = entry -> index_to_workdir -> new_file.path;
+			}
+
+			if (entry -> head_to_index) {
+				if (entry -> status & GIT_STATUS_INDEX_RENAMED) {
+					HV *index_status_hv = newHV();
+
+					hv_stores(index_status_hv, "old_file",
+						newSVpv(entry -> head_to_index -> old_file.path, 0));
+					hv_stores(file_status_hv, "index", newRV_noinc((SV *) index_status_hv));
+				}
+
+				if (!path)
+					path = entry -> head_to_index -> new_file.path;
+			}
+
+			hv_stores(file_status_hv, "flags", newRV_noinc((SV *) flags));
+			hv_store(status_hv, path, strlen(path), newRV_noinc((SV *) file_status_hv), 0);
 		}
 
 		git_status_list_free(list);
