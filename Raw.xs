@@ -112,57 +112,111 @@ SV *git_oid_to_sv(const git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
-void git_checkout_opt(HV *value, const char *name, int mask, unsigned *out) {
+void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
 	SV **opt;
 
 	if ((opt = hv_fetch(value, name, strlen(name), 0)) && SvIV(*opt))
 		*out |= mask;
 }
 
+unsigned git_hv_to_diff_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(
+		flags, "reverse", GIT_DIFF_REVERSE, &out
+	);
+
+	git_flag_opt(
+		flags, "include_ignored", GIT_DIFF_INCLUDE_IGNORED, &out
+	);
+
+	git_flag_opt(
+		flags, "recurse_ignored_dirs", GIT_DIFF_RECURSE_IGNORED_DIRS, &out
+	);
+
+	git_flag_opt(
+		flags, "include_untracked", GIT_DIFF_INCLUDE_UNTRACKED, &out
+	);
+
+	git_flag_opt(
+		flags, "recurse_untracked_dirs", GIT_DIFF_RECURSE_UNTRACKED_DIRS, &out
+	);
+
+	git_flag_opt(
+		flags, "ignore_filemode", GIT_DIFF_IGNORE_FILEMODE, &out
+	);
+
+	git_flag_opt(
+		flags, "ignore_submodules", GIT_DIFF_IGNORE_SUBMODULES, &out
+	);
+
+	git_flag_opt(
+		flags, "ignore_whitespace", GIT_DIFF_IGNORE_WHITESPACE, &out
+	);
+
+	git_flag_opt(
+		flags, "ignore_whitespace_change", GIT_DIFF_IGNORE_WHITESPACE_CHANGE, &out
+	);
+
+	git_flag_opt(
+		flags, "ignore_whitespace_eol", GIT_DIFF_IGNORE_WHITESPACE_EOL, &out
+	);
+
+	git_flag_opt(
+		flags, "patience", GIT_DIFF_PATIENCE, &out
+	);
+
+	git_flag_opt(
+		flags, "minimal", GIT_DIFF_MINIMAL, &out
+	);
+
+	return out;
+}
+
 unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "none", GIT_CHECKOUT_NONE, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "force", GIT_CHECKOUT_FORCE, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "safe", GIT_CHECKOUT_SAFE, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "allow_conflicts", GIT_CHECKOUT_ALLOW_CONFLICTS, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "remove_untracked", GIT_CHECKOUT_REMOVE_UNTRACKED, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "remove_ignored", GIT_CHECKOUT_REMOVE_IGNORED, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "dont_update_index", GIT_CHECKOUT_DONT_UPDATE_INDEX, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH, &out
 	);
 
-	git_checkout_opt(
+	git_flag_opt(
 		strategy, "skip_unmerged", GIT_CHECKOUT_SKIP_UNMERGED, &out
 	);
 
