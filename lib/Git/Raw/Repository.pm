@@ -292,12 +292,36 @@ Reset the current HEAD to the given commit. Valid reset types are: C<"soft">
 (the head will be moved to the commit) or C<"mixed"> (trigger a soft reset and
 replace the index with the content of the commit tree).
 
-=head2 status( $file )
+=head2 status( [$file, $file, ...] )
 
-Retrieve the status of <$file> in the working directory. This functions returns
-a list of status flags. Possible status flags are: C<"index_new">,
-C<"index_modified">, C<"index_deleted">, C<"worktree_new">,
-C<"worktree_modified">, C<"worktree_deleted"> and C<"ignored">.
+Retrieve the status of files in the index and/or working directory. This functions
+returns a hash reference with an entry for each C<$file>, or all files if no file
+parameters are provided. Each <$file> entry has a list of C<"flags">, which may
+include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renamed">,
+C<"worktree_new">, C<"worktree_modified">, C<"worktree_deleted">,
+C<"worktree_renamed"> and C<"ignored">.
+
+If C<$file> has been renamed in either the index or worktree or both, C<$file> will
+also have a corresponding entry C<"index"> and/or C<"worktree">, containing the
+previous filename C<"old_file">.
+
+Example:
+
+    my $file_statuses = $repo -> status();
+    while (my ($file, $status) = each %$file_statuses) {
+      my $flags = $status -> {'flags'};
+      print "File: $file: Status: ", join (' ', @$flags), "\n";
+
+      if (grep { $_ eq 'index_renamed' } @$flags) {
+        print "Index previous filename: ",
+        $status -> {'index'} -> {'old_file'}, "\n";
+      }
+
+      if (grep { $_ eq 'worktree_renamed' } @$flags) {
+        print "Worktree previous filename: ",
+        $status -> {'worktree'} -> {'old_file'}, "\n";
+      }
+    }
 
 =head2 ignore( $rules )
 
@@ -407,7 +431,7 @@ working directory of the repository will be set to the directory.
 
 =head2 state( )
 
-Determine the status of the repository. One of the following values is returned:
+Determine the state of the repository. One of the following values is returned:
 
 =over 4
 
