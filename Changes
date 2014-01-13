@@ -11,14 +11,14 @@ Revision history for Git-Raw
    (incompatible change)
  - Add Commit -> summary() method (GH#32) (thanks, @jacquesg!)
  - Add new Repository methods (GH#33) (thanks, @jacquesg!):
-   + Repository -> state()
-   + Repository -> state_cleanup()
-   + Repository -> is_shallow()
+    + Repository -> state()
+    + Repository -> state_cleanup()
+    + Repository -> is_shallow()
  - Add new clone options (GH#34) (thanks, @jacquesg!):
-   + "remote_name"
-   + "checkout_branch"
-   + "ignore_cert_errors"
-   + "disable_checkout"
+    + "remote_name"
+    + "checkout_branch"
+    + "ignore_cert_errors"
+    + "disable_checkout"
  - Update to libgit2 426d845
  - Move Blob/Tree -> is_blob() and -> is_tree() to XS
    (GH#36) (thanks, @magnolia-k!)
@@ -26,18 +26,18 @@ Revision history for Git-Raw
  - Add Remote -> create_inmemory() and Remote -> ls()
    (GH#37) (thanks, @jacquesg!)
  - Add support for more callbacks for:
-   + Remote -> callbacks()
-   + Repository -> clone()
-   + Repository -> checkout()
+    + Remote -> callbacks()
+    + Repository -> clone()
+    + Repository -> checkout()
    (GH#39) (thanks, @jacquesg!) (incompatible change)
  - Add Repository -> path_is_ignored() (GH#38) (thanks, @jacquesg!)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
  - Update to libgit2 v0.20
-   + Remove Branch -> foreach() (incompatible change)
-   + Repository -> branches() now returns a "real" list instead of an array
-     reference
+    + Remove Branch -> foreach() (incompatible change)
+    + Repository -> branches() now returns a "real" list instead of an array
+      reference
  - Rename Cred -> plaintext() to Cred -> userpass() and Cred -> keyfile()
    to Cred -> sshkey() (incompatible change)
  - Add Cred -> sshagent() method
@@ -57,9 +57,9 @@ Revision history for Git-Raw
  - Update to libgit2 1c74686
  - Add Diff -> print() which replaces Diff -> patch() and Diff -> compact()
  - Remove deprecated methods (incompatible change):
-   + Remote -> cred_acquire()
-   + Diff -> patch()
-   + Diff -> compact()
+    + Remote -> cred_acquire()
+    + Diff -> patch()
+    + Diff -> compact()
 
 0.26      2013-10-09 16:11:42 Europe/Rome
 
@@ -68,9 +68,9 @@ Revision history for Git-Raw
 0.25      2013-10-09 15:17:56 Europe/Rome
 
  - Update to libgit2 711333e
-   + Rename Branch -> tracking() to upstream() (incompatible change)
-   + Rename Remote -> fetchspec() to add_fetch and pushspec to add_push()
-     They will not return the remote spec anymore (incompatible change)
+    + Rename Branch -> tracking() to upstream() (incompatible change)
+    + Rename Remote -> fetchspec() to add_fetch and pushspec to add_push()
+      They will not return the remote spec anymore (incompatible change)
  - Enable support for libssh2 at build-time
  - Add support for SSH key credentials via Cred -> keyfile()
  - Add Remote -> callbacks() method
@@ -85,10 +85,10 @@ Revision history for Git-Raw
 0.23      2013-03-25 14:09:09 Europe/Rome
 
  - Update libgit2 to 3f21a23
-   + The Branch -> move() method does not modify the Branch object anymore, as
-     per the new underlying libgit2 implementation. An additional lookup is
-     needed in order to get the new object (incompatible change)
-   + Remove Reference -> is_packed() method since it disappeared from libgit2
+    + The Branch -> move() method does not modify the Branch object anymore, as
+      per the new underlying libgit2 implementation. An additional lookup is
+      needed in order to get the new object (incompatible change)
+    + Remove Reference -> is_packed() method since it disappeared from libgit2
  - Add Branch -> tracking() method
 
 0.22      2013-02-23 15:19:30 Europe/Rome
