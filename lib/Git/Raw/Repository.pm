@@ -336,7 +336,7 @@ Checks the ignore rules to see if they would apply to the given file. This indic
 if the file would be ignored regardless of whether the file is already in the index
 or committed to the repository.
 
-=head2 diff( $repo [, \%opts] )
+=head2 diff( [\%opts] )
 
 Compute the L<Git::Raw::Diff> between the repo's default index and another tree.
 Valid fields for the C<%opts> hash are:
