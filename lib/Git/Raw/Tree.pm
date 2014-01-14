@@ -67,7 +67,7 @@ Include ignored files in the diff.
 
 =item * "recurse_ignored_dirs"
 
-Even if L<"include_ignored"> is specified, an entire ignored directory
+Even if C<"include_ignored"> is specified, an entire ignored directory
 will be marked with only a single entry in the diff. This flag adds all files
 under the directory as ignored entries, too.
 
@@ -77,7 +77,7 @@ Include untracked files in the diff.
 
 =item * "recurse_untracked_dirs"
 
-Even if L<"include_untracked"> is specified, an entire untracked directory
+Even if C<"include_untracked"> is specified, an entire untracked directory
 will be marked with only a single entry in the diff (core git behaviour).
 This flag adds all files under untracked directories as untracked entries, too.
 
@@ -103,7 +103,7 @@ Ignore whitespace at end of line.
 
 =item * "patience"
 
-Use the L<"patience diff"> algorithm.
+Use the C<"patience diff"> algorithm.
 
 =item * "minimal"
 
@@ -117,12 +117,12 @@ Take extra time to find minimal diff.
 
 =item * "a"
 
-The virtual L<"directory"> to prefix to old file names in hunk headers.
+The virtual C<"directory"> to prefix to old file names in hunk headers.
 (Default is L"a".)
 
 =item * "b"
 
-The virtual L<"directory"> to prefix to new file names in hunk headers.
+The virtual C<"directory"> to prefix to new file names in hunk headers.
 (Default is L"b".)
 
 =back

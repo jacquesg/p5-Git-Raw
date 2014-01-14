@@ -97,14 +97,14 @@ Completion is called when different parts of the download process are done
 
 During the download of new data, this will be regularly called with the current
 count of progress done by the indexer. The callback receives the following integers:
-L<total_objects>, L<received_objects>, L<local_objects>, L<total_deltas>,
-L<indexed_deltas> and L<received_bytes>.
+C<total_objects>, C<received_objects>, C<local_objects>, C<total_deltas>,
+C<indexed_deltas> and C<received_bytes>.
 
 =item * "update_tips"
 
 Each time a reference is updated locally, this function will be called with
 information about it. The callback receives a string containing the name of the
-reference that was updated, and the two OID's L<"a"> before and L<"b"> after the update.
+reference that was updated, and the two OID's C<"a"> before and C<"b"> after the update.
 
 =back
 
@@ -245,16 +245,16 @@ Hash containg progress and notification callbacks. Valid fields are:
 
 =item * "notify"
 
-This callback is called for each file matching one of the L<notify> options selected.
+This callback is called for each file matching one of the C<notify> options selected.
 It runs before modifying any files on disk. This callback should return a non-zero value
 should the checkout be cancelled.  The callback receives a string containing the path
-of the file L<path> and an array reference containing the reason L<why>.
+of the file C<path> and an array reference containing the reason C<why>.
 
 =item * "progress"
 
 The callback to be invoked as a file is checked out. The callback receives a string
-containing the path of the file L<path>, an integer L<completed_steps> and an
-integer L<total_steps>.
+containing the path of the file C<path>, an integer C<completed_steps> and an
+integer C<total_steps>.
 
 =back
 
@@ -364,7 +364,7 @@ Include ignored files in the diff.
 
 =item * "recurse_ignored_dirs"
 
-Even if L<"include_ignored"> is specified, an entire ignored directory
+Even if C<"include_ignored"> is specified, an entire ignored directory
 will be marked with only a single entry in the diff. This flag adds all files
 under the directory as ignored entries, too.
 
@@ -374,7 +374,7 @@ Include untracked files in the diff.
 
 =item * "recurse_untracked_dirs"
 
-Even if L<"include_untracked"> is specified, an entire untracked directory
+Even if C<"include_untracked"> is specified, an entire untracked directory
 will be marked with only a single entry in the diff (core git behaviour).
 This flag adds all files under untracked directories as untracked entries, too.
 
@@ -400,7 +400,7 @@ Ignore whitespace at end of line.
 
 =item * "patience"
 
-Use the L<"patience diff"> algorithm.
+Use the C<"patience diff"> algorithm.
 
 =item * "minimal"
 
@@ -414,12 +414,12 @@ Take extra time to find minimal diff.
 
 =item * "a"
 
-The virtual L<"directory"> to prefix to old file names in hunk headers.
+The virtual C<"directory"> to prefix to old file names in hunk headers.
 (Default is L"a".)
 
 =item * "b"
 
-The virtual L<"directory"> to prefix to new file names in hunk headers.
+The virtual C<"directory"> to prefix to new file names in hunk headers.
 (Default is L"b".)
 
 =back

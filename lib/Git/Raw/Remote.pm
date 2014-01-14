@@ -129,14 +129,14 @@ Completion is called when different parts of the download process are done
 
 During the download of new data, this will be regularly called with the current
 count of progress done by the indexer. The callback receives the following integers:
-L<total_objects>, L<received_objects>, L<local_objects>, L<total_deltas>,
-L<indexed_deltas> and L<received_bytes>.
+C<total_objects>, C<received_objects>, C<local_objects>, C<total_deltas>,
+C<indexed_deltas> and C<received_bytes>.
 
 =item * "update_tips"
 
 Each time a reference is updated locally, this function will be called with
 information about it. The callback receives a string containing the name of the
-reference that was updated, and the two OID's L<a> before and after L<b> the update.
+reference that was updated, and the two OID's C<a> before and after C<b> the update.
 
 =back
 
