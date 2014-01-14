@@ -39,10 +39,111 @@ Retrieve a L<Git::Raw::TreeEntry> object by name.
 
 Retrieve a L<Git::Raw::TreeEntry> object by path.
 
-=head2 diff( [$tree] )
+=head2 diff( [\%opts] )
 
-Compute the L<Git::Raw::Diff> between two trees. If no C<$tree> is passed, the
-diff will be computed against the working directory.
+Compute the L<Git::Raw::Diff> between the repo's default index and another tree.
+Valid fields for the C<%opts> hash are:
+
+=over 4
+
+=item * "tree"
+
+If provided, the diff is computed between C<"tree"> and the repo's default index.
+The default is the repo's working directory.
+
+=item * "flags"
+
+Flags for generating the diff. Valid values include:
+
+=over 8
+
+=item * "reverse"
+
+Reverse the sides of the diff.
+
+=item * "include_ignored"
+
+Include ignored files in the diff.
+
+=item * "recurse_ignored_dirs"
+
+Even if L<"include_ignored"> is specified, an entire ignored directory
+will be marked with only a single entry in the diff. This flag adds all files
+under the directory as ignored entries, too.
+
+=item * "include_untracked"
+
+Include untracked files in the diff.
+
+=item * "recurse_untracked_dirs"
+
+Even if L<"include_untracked"> is specified, an entire untracked directory
+will be marked with only a single entry in the diff (core git behaviour).
+This flag adds all files under untracked directories as untracked entries, too.
+
+=item * "ignore_filemode"
+
+Ignore file mode changes.
+
+=item * "ignore_submodules"
+
+Treat all submodules as unmodified.
+
+=item * "ignore_whitespace"
+
+Ignore all whitespace.
+
+=item * "ignore_whitespace_change"
+
+Ignore changes in amount of whitespace.
+
+=item * "ignore_whitespace_eol"
+
+Ignore whitespace at end of line.
+
+=item * "patience"
+
+Use the L<"patience diff"> algorithm.
+
+=item * "minimal"
+
+Take extra time to find minimal diff.
+
+=back
+
+=item * "prefix"
+
+=over 8
+
+=item * "a"
+
+The virtual L<"directory"> to prefix to old file names in hunk headers.
+(Default is L"a".)
+
+=item * "b"
+
+The virtual L<"directory"> to prefix to new file names in hunk headers.
+(Default is L"b".)
+
+=back
+
+=item * "context_lines"
+
+The number of unchanged lines that define the boundary of a hunk (and
+to display before and after)
+
+=item * "interhunk_lines"
+
+The maximum number of unchanged lines between hunk boundaries before
+the hunks will be merged into a one.
+
+=item * "paths"
+
+A list of paths to constrain diff.
+
+=back
+
+=cut
 
 =head2 is_tree( )
 
