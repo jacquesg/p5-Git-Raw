@@ -132,32 +132,104 @@ diff(self, ...)
 
 	PREINIT:
 		int rc;
+
 		Diff diff;
 
+		char **paths = NULL;
+		Tree tree = NULL;
+
+		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
+
 	CODE:
-		switch (items) {
-			case 1: {
-				rc = git_diff_tree_to_workdir(
-					&diff, git_tree_owner(self), self, NULL
-				);
-				git_check_error(rc);
+		if (items > 2)
+			Perl_croak(aTHX_ "Wrong number of arguments");
 
-				break;
+		if (items == 2) {
+			SV **opt;
+			HV *opts;
+
+			if (!SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			opts = (HV *) SvRV(ST(1));
+			if ((opt = hv_fetchs(opts, "tree", 0))) {
+				tree = GIT_SV_TO_PTR(Tree, *opt);
 			}
 
-			case 2: {
-				Tree new = GIT_SV_TO_PTR(Tree, ST(1));
+			if ((opt = hv_fetchs(opts, "flags", 0))) {
+				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+					Perl_croak(aTHX_ "Expected a list of 'flags'");
 
-				rc = git_diff_tree_to_tree(
-					&diff, git_tree_owner(self), self, new, NULL
-				);
-				git_check_error(rc);
-
-				break;
+				diff_opts.flags |=
+					git_hv_to_diff_flag((HV *) SvRV(*opt));
 			}
 
-			default: Perl_croak(aTHX_ "Wrong number of arguments");
+			if ((opt = hv_fetchs(opts, "prefix", 0))) {
+				SV **ab;
+
+				if ((ab = hv_fetchs((HV *) SvRV(*opt), "a", 0))) {
+					if (!SvPOK(*ab))
+						Perl_croak(aTHX_ "Expected a string for prefix");
+
+					diff_opts.old_prefix = SvPVbyte_nolen(*ab);
+				}
+
+				if ((ab = hv_fetchs((HV *) SvRV(*opt), "b", 0))) {
+					if (!SvPOK(*ab))
+						Perl_croak(aTHX_ "Expected a string for prefix");
+
+					diff_opts.new_prefix = SvPVbyte_nolen(*ab);
+				}
+			}
+
+			if ((opt = hv_fetchs(opts, "context_lines", 0))) {
+				if (!SvIOK(*opt))
+					Perl_croak(aTHX_ "Expected an integer for 'context_lines'");
+
+				diff_opts.context_lines = SvIV(*opt);
+			}
+
+			if ((opt = hv_fetchs(opts, "interhunk_lines", 0))) {
+				if (!SvIOK(*opt))
+					Perl_croak(aTHX_ "Expected an integer for 'interhunk_lines'");
+
+				diff_opts.interhunk_lines = SvIV(*opt);
+			}
+
+			if ((opt = hv_fetchs(opts, "paths", 0))) {
+				SV **path;
+				size_t count = 0;
+
+				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
+					Perl_croak(aTHX_ "Expected a list of 'paths'");
+
+				while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
+					if (SvOK(*path)) {
+						Renew(paths, count + 1, char *);
+						paths[count++] = SvPVbyte_nolen(*path);
+					}
+				}
+
+				if (count > 0) {
+					diff_opts.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+					diff_opts.pathspec.strings = paths;
+					diff_opts.pathspec.count   = count;
+				}
+			}
 		}
+
+		if (tree) {
+			rc = git_diff_tree_to_tree(
+				&diff, git_tree_owner(self), self, tree, &diff_opts
+			);
+		} else {
+			rc = git_diff_tree_to_workdir(
+				&diff, git_tree_owner(self), self, &diff_opts
+			);
+		}
+
+		Safefree(paths);
+		git_check_error(rc);
 
 		RETVAL = diff;
 
