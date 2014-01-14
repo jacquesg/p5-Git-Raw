@@ -3,7 +3,6 @@
 * filter
 * graph
 * note
-* merge (as Repository -> merge(...) + Repository -> state()
 * odb
 * packbuilder
 * reflog

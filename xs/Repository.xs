@@ -614,6 +614,81 @@ diff(self, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+merge(self, ref, opts)
+	Repository self
+	Reference ref
+	HV *opts
+
+	PREINIT:
+		int rc;
+
+		git_merge_head *merge_head;
+		git_merge_result *merge_result;
+
+		SV **opt;
+		git_merge_opts merge_opts = GIT_MERGE_OPTS_INIT;
+
+		HV *result;
+
+	CODE:
+		rc = git_merge_head_from_ref(&merge_head, self, ref);
+		git_check_error(rc);
+
+		if ((opt = hv_fetchs(opts, "flags", 0))) {
+			HV *flags;
+
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			flags = (HV *) SvRV(*opt);
+
+			if ((opt = hv_fetchs(flags, "fastforward_only", 0)) && SvIV(*opt))
+				merge_opts.merge_flags |= GIT_MERGE_FASTFORWARD_ONLY;
+			else if ((opt = hv_fetchs(flags, "no_fastfoward", 0)) && SvIV(*opt))
+				merge_opts.merge_flags |= GIT_MERGE_NO_FASTFORWARD;
+		}
+
+		if ((opt = hv_fetchs(opts, "tree_opts", 0))) {
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			git_hv_to_merge_tree_opts((HV *) SvRV(*opt),
+				&merge_opts.merge_tree_opts);
+		}
+
+		if ((opt = hv_fetchs(opts, "checkout_opts", 0))) {
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type");
+
+			git_hv_to_checkout_opts((HV *) SvRV(*opt),
+			&merge_opts.checkout_opts);
+		}
+
+		rc = git_merge(&merge_result, self,
+			(const git_merge_head **) &merge_head, 1, &merge_opts);
+		Safefree(merge_opts.checkout_opts.paths.strings);
+		git_check_error(rc);
+
+		result = newHV();
+
+		hv_stores(result, "up_to_date",
+			newSViv(git_merge_result_is_uptodate(merge_result)));
+
+		if (git_merge_result_is_fastforward(merge_result)) {
+			git_oid id;
+
+			git_merge_result_fastforward_oid(&id, merge_result);
+			hv_stores(result, "id", git_oid_to_sv(&id));
+			hv_stores(result, "fast_forward", newSViv(1));
+		} else {
+			hv_stores(result, "fast_forward", newSViv(0));
+		}
+
+		RETVAL = newRV_noinc((SV *) result);
+
+	OUTPUT: RETVAL
+
 void
 branches(self)
 	SV *self
