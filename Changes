@@ -31,6 +31,11 @@ Revision history for Git-Raw
     + Repository -> checkout()
    (GH#39) (thanks, @jacquesg!) (incompatible change)
  - Add Repository -> path_is_ignored() (GH#38) (thanks, @jacquesg!)
+ - Improve Repository -> status() (incompatible change):
+    + It can now return the statuses of multiple files (GH#29)
+    + It can now detect file renames (GH#30) (thanks, @jacquesg!)
+ - Improve Repository -> diff() and Tree -> diff(), they can now take options
+   and flags (GH#42) (thanks, @jacquesg!) (incompatible change)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
