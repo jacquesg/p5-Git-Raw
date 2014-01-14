@@ -18,8 +18,8 @@ write_file($file, "diff me, biatch\n");
 my $file2  = $repo -> workdir . 'diff2';
 write_file($file2, "diff me too, biatch\n");
 
-my $file2  = $repo -> workdir . 'diff3';
-write_file($file2, "diff me also, biatch, i have some whitespace    \r\n");
+my $file3  = $repo -> workdir . 'diff3';
+write_file($file3, "diff me also, biatch, i have some whitespace    \r\n");
 
 my $index = $repo -> index;
 my $tree  = $repo -> head -> target -> tree;
