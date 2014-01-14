@@ -47,6 +47,23 @@ now(class, name, email)
 
 	OUTPUT: RETVAL
 
+Signature
+default(class, repo)
+	SV *class
+	Repository repo
+
+	PREINIT:
+		int rc;
+		Signature sig;
+
+	CODE:
+		rc = git_signature_default(&sig, repo);
+		git_check_error(rc);
+
+		RETVAL = sig;
+
+	OUTPUT: RETVAL
+
 SV *
 name(self)
 	Signature self
