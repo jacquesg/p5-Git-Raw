@@ -36,6 +36,7 @@ Revision history for Git-Raw
     + It can now detect file renames (GH#30) (thanks, @jacquesg!)
  - Improve Repository -> diff() and Tree -> diff(), they can now take options
    and flags (GH#42) (thanks, @jacquesg!) (incompatible change)
+ - Add Signature -> default() method (GH#43) (thanks, @jacquesg!)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
