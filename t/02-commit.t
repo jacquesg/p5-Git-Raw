@@ -7,6 +7,7 @@ use File::Copy;
 use File::Slurp;
 use Cwd qw(abs_path);
 use File::Path 2.07 qw(make_path remove_tree);
+use Time::Local;
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
@@ -106,6 +107,11 @@ $index -> write;
 
 $tree_id = $index -> write_tree;
 $tree    = $repo -> lookup($tree_id);
+
+$me = Git::Raw::Signature -> default($repo);
+
+my @current_time = localtime($time);
+$off = (timegm(@current_time) - timelocal(@current_time))/60;
 
 my $commit2 = $repo -> commit(
 	"second commit\n", $me, $me, [$repo -> head -> target], $tree

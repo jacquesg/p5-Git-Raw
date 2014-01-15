@@ -26,6 +26,11 @@ Create a new signature.
 
 Create a new signature with a timestamp of 'now'.
 
+=head2 default( $repo )
+
+Create a new signature with default user and a timestamp of 'now'.
+This looks up the C<"user.name"> and C<"user.email"> from the configuration.
+
 =head2 name( )
 
 Retrieve the name associated with the signature.
