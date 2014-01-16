@@ -116,8 +116,10 @@ owner(self)
 	OUTPUT: RETVAL
 
 SV *
-target(self)
+target(self, ...)
 	SV *self
+
+	PROTOTYPE: $;$
 
 	PREINIT:
 		int rc;
@@ -126,39 +128,51 @@ target(self)
 	CODE:
 		ref = GIT_SV_TO_PTR(Reference, self);
 
-		switch (git_reference_type(ref)) {
-			case GIT_REF_OID: {
-				git_object *obj;
-				const git_oid *oid;
+		if (items == 2) {
+			Reference new_ref;
 
-				oid = git_reference_target(ref);
+			Commit commit = GIT_SV_TO_PTR(Commit, ST(1));
 
-				rc = git_object_lookup(
-					&obj, git_reference_owner(ref),
-					oid, GIT_OBJ_ANY
-				);
-				git_check_error(rc);
+			rc = git_reference_set_target(&new_ref, ref, git_commit_id(commit));
+			git_check_error(rc);
 
-				RETVAL = git_obj_to_sv(obj, self);
-				break;
+			GIT_NEW_OBJ(
+				RETVAL, "Git::Raw::Reference", new_ref, GIT_SV_TO_REPO(self));
+		} else {
+			switch (git_reference_type(ref)) {
+				case GIT_REF_OID: {
+					git_object *obj;
+					const git_oid *oid;
+
+					oid = git_reference_target(ref);
+
+					rc = git_object_lookup(
+						&obj, git_reference_owner(ref),
+						oid, GIT_OBJ_ANY
+					);
+					git_check_error(rc);
+
+					RETVAL = git_obj_to_sv(obj, self);
+					break;
+				}
+
+				case GIT_REF_SYMBOLIC: {
+					Reference linked_ref;
+					const char *target;
+
+					target = git_reference_symbolic_target(ref);
+
+					rc = git_reference_lookup(&linked_ref, git_reference_owner(ref), target);
+					git_check_error(rc);
+
+					GIT_NEW_OBJ(
+						RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_REPO(self)
+					);
+					break;
+				}
+
+				default: Perl_croak(aTHX_ "Invalid reference type");
 			}
-
-			case GIT_REF_SYMBOLIC: {
-				Reference linked_ref;
-				const char *target;
-
-				target = git_reference_symbolic_target(ref);
-
-				rc = git_reference_lookup(&linked_ref, git_reference_owner(ref), target);
-				git_check_error(rc);
-
-				GIT_NEW_OBJ(
-					RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_REPO(self)
-				);
-				break;
-			}
-
-			default: Perl_croak(aTHX_ "Invalid reference type");
 		}
 
 	OUTPUT: RETVAL
