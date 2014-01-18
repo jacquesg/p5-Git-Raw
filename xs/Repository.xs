@@ -280,103 +280,16 @@ checkout(self, target, opts)
 	PREINIT:
 		int rc;
 
-		SV **opt;
-		char **paths = NULL;
-
 		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
 
 	CODE:
-		/* TODO: support all checkout_opts */
-		if ((opt = hv_fetchs(opts, "checkout_strategy", 0)))
-			checkout_opts.checkout_strategy =
-				git_hv_to_checkout_strategy(
-					(HV *) SvRV(*opt)
-				);
-
-		if ((opt = hv_fetchs(opts, "paths", 0))) {
-			SV **path;
-			size_t count = 0;
-
-			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-				Perl_croak(aTHX_ "Invalid type");
-
-			while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
-				if (SvOK(*path)) {
-					Renew(paths, count+1, char *);
-					paths[count++] = SvPVbyte_nolen(*path);
-				}
-			}
-
-			if (count > 0) {
-				checkout_opts.paths.strings = paths;
-				checkout_opts.paths.count   = count;
-			}
-		}
-
-		if ((opt = hv_fetchs(opts, "callbacks", 0))) {
-			HV *callbacks;
-			SV **cb;
-
-			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
-
-			callbacks = (HV *) SvRV(*opt);
-
-			if ((cb = hv_fetchs(callbacks, "progress", 0))) {
-				if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for progress callback'");
-
-				checkout_opts.progress_cb      = git_checkout_progress_cbb;
-				checkout_opts.progress_payload = *cb;
-			}
-
-			if ((cb = hv_fetchs(callbacks, "notify", 0))) {
-				if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for notify callback'");
-
-				checkout_opts.notify_cb      = git_checkout_notify_cbb;
-				checkout_opts.notify_payload = *cb;
-
-				if ((opt = hv_fetchs(opts, "notify", 0))) {
-					size_t count = 0;
-					SV **flag;
-
-					if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-						Perl_croak(aTHX_ "Invalid type for 'notify'");
-
-					while ((flag = av_fetch((AV *) SvRV(*opt), count, 0))) {
-						if (SvOK(*flag)) {
-							const char *f = SvPVbyte_nolen(*flag);
-
-							if (strcmp(f, "conflict") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_CONFLICT;
-
-							if (strcmp(f, "dirty") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_DIRTY;
-
-							if (strcmp(f, "updated") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_UPDATED;
-
-							if (strcmp(f, "untracked") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_UNTRACKED;
-
-							if (strcmp(f, "ignored") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_IGNORED;
-
-							if (strcmp(f, "all") == 0)
-								checkout_opts.notify_flags |= GIT_CHECKOUT_NOTIFY_ALL;
-						}
-						++count;
-					}
-				}
-			}
-		}
+		git_hv_to_checkout_opts(opts, &checkout_opts);
 
 		rc = git_checkout_tree(
 			self, git_sv_to_obj(target), &checkout_opts
 		);
 
-		Safefree(paths);
+		Safefree(checkout_opts.paths.strings);
 		git_check_error(rc);
 
 void
