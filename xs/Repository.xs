@@ -380,30 +380,54 @@ checkout(self, target, opts)
 		git_check_error(rc);
 
 void
-reset(self, target, type)
+reset(self, target, opts)
 	Repository self
 	SV *target
-	SV *type
+	HV *opts
 
 	PREINIT:
 		int rc;
-		git_reset_t reset;
 
-		STRLEN len;
-		const char *type_str;
+		SV **opt;
 
 	CODE:
-		type_str = SvPVbyte(type, len);
+		if ((opt = hv_fetchs(opts, "paths", 0))) {
+			SV **path;
 
-		if (strcmp(type_str, "soft") == 0)
-			reset = GIT_RESET_SOFT;
-		else if (strcmp(type_str, "mixed") == 0)
-			reset = GIT_RESET_MIXED;
-		else
-			Perl_croak(aTHX_ "Invalid type");
+			size_t count = 0;
+			git_strarray paths = {0, 0};
 
-		rc = git_reset(self, git_sv_to_obj(target), reset);
-		git_check_error(rc);
+			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
+				Perl_croak(aTHX_ "Expected a list of 'paths'");
+
+			while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
+				if (SvOK(*path)) {
+					Renew(paths.strings, count + 1, char *);
+					paths.strings[count++] = SvPVbyte_nolen(*path);
+				}
+			}
+
+			paths.count = count;
+
+			rc = git_reset_default(self, git_sv_to_obj(target), &paths);
+			Safefree(paths.strings);
+			git_check_error(rc);
+		} else {
+			if ((opt = hv_fetchs(opts, "type", 0))) {
+				git_reset_t reset;
+				const char *type_str = SvPVbyte_nolen(*opt);
+
+				if (strcmp(type_str, "soft") == 0)
+					reset = GIT_RESET_SOFT;
+				else if (strcmp(type_str, "mixed") == 0)
+					reset = GIT_RESET_MIXED;
+				else
+					Perl_croak(aTHX_ "Invalid type");
+
+				rc = git_reset(self, git_sv_to_obj(target), reset);
+				git_check_error(rc);
+			}
+		}
 
 HV *
 status(self, ...)

@@ -94,6 +94,13 @@ $index -> add('test');
 $index -> write;
 is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
 
+$repo -> reset($commit, {'paths' => ['test']});
+is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+
+$index -> add('test');
+$index -> write;
+is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
+
 write_file($file, 'this is a test');
 $index -> add('test');
 $index -> write;
