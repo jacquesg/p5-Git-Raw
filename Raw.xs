@@ -673,8 +673,8 @@ void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
 					Perl_croak(aTHX_ "Invalid type for 'notify'");
 
-				while ((flag = av_fetch((AV *) SvRV(*opt), count, 0))) {
-					if (SvOK(*flag)) {
+				while ((flag = av_fetch((AV *) SvRV(*opt), count++, 0))) {
+					if (SvPOK(*flag)) {
 						const char *f = SvPVbyte_nolen(*flag);
 
 						if (strcmp(f, "conflict") == 0)
@@ -694,11 +694,64 @@ void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 
 						if (strcmp(f, "all") == 0)
 							checkout_opts -> notify_flags |= GIT_CHECKOUT_NOTIFY_ALL;
-					}
-					++count;
+					} else
+						Perl_croak(aTHX_ "Invalid type for 'notify' value");
 				}
 			}
 		}
+	}
+}
+
+void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_opts) {
+	SV **opt;
+
+	if ((opt = hv_fetchs(opts, "flags", 0))) {
+		size_t count = 0;
+		SV **flag;
+
+		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
+			Perl_croak(aTHX_ "Invalid type for 'flags'");
+
+		while ((flag = av_fetch((AV *) SvRV(*opt), count++, 0))) {
+			if (SvPOK(*flag)) {
+				const char *f = SvPVbyte_nolen(*flag);
+
+				if (strcmp(f, "find_renames") == 0)
+					merge_tree_opts -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
+				else
+					Perl_croak(aTHX_ "Invalid 'flags' value");
+			} else
+				Perl_croak(aTHX_ "Invalid type for 'flag'");
+		}
+	}
+
+	if ((opt = hv_fetchs(opts, "automerge", 0))) {
+		if (SvPOK(*opt)) {
+			const char *auto_merge = SvPVbyte_nolen(*opt);
+			if (strcmp(auto_merge, "favor_ours") == 0)
+				merge_tree_opts -> automerge_flags =
+					GIT_MERGE_AUTOMERGE_FAVOR_OURS;
+			else if (strcmp(auto_merge, "favor_theirs") == 0)
+				merge_tree_opts -> automerge_flags =
+					GIT_MERGE_AUTOMERGE_FAVOR_THEIRS;
+			else
+				Perl_croak(aTHX_ "Invalid 'automerge' value");
+		} else
+			Perl_croak(aTHX_ "Invalid type for 'automerge' value");
+	}
+
+	if ((opt = hv_fetchs(opts, "rename_threshold", 0))) {
+		if (!SvIOK(*opt) || SvIV(*opt) < 0)
+			Perl_croak(aTHX_ "Invalid type");
+
+		merge_tree_opts -> rename_threshold = SvIV(*opt);
+	}
+
+	if ((opt = hv_fetchs(opts, "target_limit", 0))) {
+		if (!SvIOK(*opt) || SvIV(*opt) < 0)
+			Perl_croak(aTHX_ "Invalid type");
+
+		merge_tree_opts -> target_limit = SvIV(*opt);
 	}
 }
 
