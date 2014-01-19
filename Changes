@@ -37,6 +37,9 @@ Revision history for Git-Raw
  - Improve Repository -> diff() and Tree -> diff(), they can now take options
    and flags (GH#42) (thanks, @jacquesg!) (incompatible change)
  - Add Signature -> default() method (GH#43) (thanks, @jacquesg!)
+ - Repository -> reset() now takes an %opts argument, which can also be used
+   to specify the entries that should be updated (like "git reset -- file")
+   (GH#44) (thanks, @jacquesg!) (incompatible change)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
