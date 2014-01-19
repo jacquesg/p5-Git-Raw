@@ -286,11 +286,28 @@ Example:
       'paths' => [ 'myscript.pl' ]
     });
 
-=head2 reset( $target, $type )
+=head2 reset( $target, \%opts )
 
-Reset the current HEAD to the given commit. Valid reset types are: C<"soft">
-(the head will be moved to the commit) or C<"mixed"> (trigger a soft reset and
-replace the index with the content of the commit tree).
+Reset the current HEAD to the given commit. Valid fields for the C<%opts>
+hash:
+
+=over 4
+
+=item * "type"
+
+Valid reset types are: C<"soft"> (the head will be moved to the commit) or
+C<"mixed"> (trigger a soft reset and replace the index with the content of
+the commit tree) or C<"hard"> (trigger a C<"mixed"> reset and the working
+directory will be replaced with the content of the index).
+
+=item * "paths"
+
+Entries in the index to be updated from the target commit tree.  This is
+particularly useful to implement L<"git reset HEAD -- file file"> behaviour.
+Note, if this parameter is specified, a value of C<"mixed"> will be used
+for C<"type"> (setting C<"type"> to C<"soft"> or C<"hard"> has no effect).
+
+=back
 
 =head2 status( [$file, $file, ...] )
 
