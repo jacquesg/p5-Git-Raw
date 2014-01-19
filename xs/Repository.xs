@@ -833,7 +833,6 @@ state(self)
 
 	CODE:
 		rc = git_repository_state(self);
-		git_check_error(rc);
 
 		switch (rc) {
 			case GIT_REPOSITORY_STATE_NONE:
@@ -880,7 +879,7 @@ state(self)
 				Perl_croak(aTHX_ "Unhandle state: %i", rc);
 		}
 
-		RETVAL = newSVpv(s, strlen(s));
+		RETVAL = newSVpv(s, 0);
 
 	OUTPUT: RETVAL
 
