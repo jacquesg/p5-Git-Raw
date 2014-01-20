@@ -40,6 +40,8 @@ Revision history for Git-Raw
  - Repository -> reset() now takes an %opts argument, which can also be used
    to specify the entries that should be updated (like "git reset -- file")
    (GH#44) (thanks, @jacquesg!) (incompatible change)
+ - Reference -> target() now takes an additional optional parameter $new_target
+   used to change the reference's target (GH#47) (thanks, @jacquesg!)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
