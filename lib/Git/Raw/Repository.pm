@@ -340,6 +340,81 @@ Example:
       }
     }
 
+=head2 merge( $ref, \%opts)
+
+Merge the given C<$ref> into HEAD. This function returns a hash reference
+with members C<"up_to_date">, C<"fast_forward"> and C<"id"> if the merge
+was fast-forward. Valid fields for C<%opts> include:
+
+=over4
+
+=item * "flags"
+
+Flags for the merge. Valid values include (mutually exclusive):
+
+=over 8
+
+=item * "fastforward_only"
+
+=item * "no_fastforward"
+
+=back
+
+=item * "tree_opts"
+
+=over 8
+
+=item * "flags"
+
+An array of flags for the tree, including:
+
+=over 12
+
+=item * "find_renames"
+
+Detect renames.
+
+=back
+
+=item * "automerge"
+
+Flags for automerging content. Valid values include C<"favor_ours">
+and C<"favor_theirs">.
+
+=item * "rename_threshold"
+
+Similarity metric to consider a file renamed (Default is 50).
+
+=item * "target_limit"
+
+Maximum similarity sources to examine (overrides the L<"merge.renameLimit">
+configuration entry). (Default 200).
+
+=back
+
+=item * "checkout_opts"
+
+See C<Git::Raw::Repository-E<gt>checkout()>.
+
+=back
+
+Example:
+
+    my $branch  = Git::Raw::Branch -> lookup($repo, 'branch', 1);
+    my $result = $repo -> merge($branch1, {
+      'flags' => {
+        'fastforward_only' => 1
+      }
+      'tree_opts' => {
+        'automerge' => 'favor_theirs'
+      }
+      'checkout_opts' => {
+        'checkout_strategy' => {
+          'force' => 1
+        }
+      }
+    }
+
 =head2 ignore( $rules )
 
 Add an ignore rules to the repository. The format of the rules is the same one
