@@ -54,7 +54,6 @@ clone(class, url, path, opts)
 		xs_git_remote_callbacks cbs;
 		clone_opts.remote_callbacks.payload = &cbs;
 
-
 		/* Callbacks */
 		if ((opt = hv_fetchs(opts, "callbacks", 0))) {
 			SV **cb;
@@ -359,20 +358,21 @@ status(self, ...)
 		git_status_options opt = GIT_STATUS_OPTIONS_INIT;
 
 	CODE:
-		/* GIT_STATUS_OPTIONS_INIT only sets the version member of git_status_options */
 		opt.flags |= GIT_STATUS_OPT_DEFAULTS |
 			GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX |
 			GIT_STATUS_OPT_RENAMES_FROM_REWRITES;
 
-		/* Core git does not recurse untracked dirs, it merely informs the user that
-		 * the directory is untracked.
+		/*
+		 * Core git does not recurse untracked dirs, it merely informs
+		 * the user that the directory is untracked.
 		 */
 		opt.flags &= ~GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
 
-		/* GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR seems to be broken if files are
-		 * renamed in both the index and in the working tree. Core git does not
-		 * tell you if the file was renamed in the worktree anyway. It would be
-		 * a useful feature to have though.
+		/*
+		 * GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR seems to be broken
+		 * if files are renamed in both the index and in the working
+		 * tree. Core git does not tell you if the file was renamed in
+		 * the worktree anyway.
 		 */
 
 		if (items > 1) {
@@ -820,6 +820,17 @@ state(self)
 
 	OUTPUT: RETVAL
 
+void
+state_cleanup(self)
+	Repository self
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_repository_state_cleanup(self);
+		git_check_error(rc);
+
 SV *
 is_bare(self)
 	Repository self
@@ -846,17 +857,6 @@ is_shallow(self)
 		RETVAL = newSViv(git_repository_is_shallow(self));
 
 	OUTPUT: RETVAL
-
-void
-state_cleanup(self)
-	Repository self
-
-	PREINIT:
-		int rc;
-
-	CODE:
-		rc = git_repository_state_cleanup(self);
-		git_check_error(rc);
 
 void
 DESTROY(self)

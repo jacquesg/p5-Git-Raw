@@ -99,19 +99,21 @@ id(self)
 
 SV *
 is_tree(self)
+	SV *self
 
-    CODE:
-        RETVAL = newSVuv(0);
+	CODE:
+		RETVAL = newSVuv(0);
 
-    OUTPUT: RETVAL
+	OUTPUT: RETVAL
 
 SV *
 is_blob(self)
+	SV *self
 
-    CODE:
-        RETVAL = newSVuv(1);
+	CODE:
+		RETVAL = newSVuv(1);
 
-    OUTPUT: RETVAL
+	OUTPUT: RETVAL
 
 void
 DESTROY(self)

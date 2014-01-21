@@ -36,13 +36,14 @@ object(self)
 		git_object *obj;
 		Repository repo;
 
-	CODE:
-		repo = INT2PTR(
-			Repository,
-			SvIV((SV *)xs_object_magic_get_struct(aTHX_ SvRV(self)))
-		);
+		TreeEntry entry;
 
-		rc = git_tree_entry_to_object(&obj, repo, GIT_SV_TO_PTR(TreeEntry, self));
+	CODE:
+		repo = INT2PTR(Repository, SvIV((SV *) GIT_SV_TO_REPO(self)));
+
+		entry = GIT_SV_TO_PTR(TreeEntry, self);
+
+		rc = git_tree_entry_to_object(&obj, repo, entry);
 		git_check_error(rc);
 
 		RETVAL = git_obj_to_sv(obj, self);

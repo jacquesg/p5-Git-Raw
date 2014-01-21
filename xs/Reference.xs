@@ -17,9 +17,11 @@ create(class, name, repo, object, ...)
 		if (items > 4)
 			force = SvTRUE(ST(4));
 
-		if (sv_isobject(object) && sv_derived_from(object, "Git::Raw::Blob"))
+		if (sv_isobject(object) &&
+		    sv_derived_from(object, "Git::Raw::Blob"))
 			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
-		else if (sv_isobject(object) && sv_derived_from(object, "Git::Raw::Commit"))
+		else if (sv_isobject(object) &&
+			 sv_derived_from(object, "Git::Raw::Commit"))
 			oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
 		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
@@ -89,9 +91,17 @@ type(self)
 
 	CODE:
 		switch (git_reference_type(self)) {
-			case GIT_REF_OID: type = newSVpv("direct", 0); break;
-			case GIT_REF_SYMBOLIC: type = newSVpv("symbolic", 0); break;
-			default: Perl_croak(aTHX_ "Invalid reference type");
+			case GIT_REF_OID:
+				type = newSVpv("direct", 0);
+				break;
+
+			case GIT_REF_SYMBOLIC:
+				type = newSVpv("symbolic", 0);
+				break;
+
+			default:
+				Perl_croak(aTHX_ "Invalid reference type");
+				break;
 		}
 
 		RETVAL = type;
@@ -103,15 +113,15 @@ owner(self)
 	SV *self
 
 	PREINIT:
-		SV *r;
+		SV *ref;
 
 	CODE:
 		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
 
-		r = xs_object_magic_get_struct(aTHX_ SvRV(self));
-		if (!r) Perl_croak(aTHX_ "Invalid object");
+		ref = xs_object_magic_get_struct(aTHX_ SvRV(self));
+		if (!ref) Perl_croak(aTHX_ "Invalid object");
 
-		RETVAL = newRV_inc(r);
+		RETVAL = newRV_inc(ref);
 
 	OUTPUT: RETVAL
 
@@ -137,7 +147,9 @@ target(self, ...)
 			git_check_error(rc);
 
 			GIT_NEW_OBJ(
-				RETVAL, "Git::Raw::Reference", new_ref, GIT_SV_TO_REPO(self));
+				RETVAL, "Git::Raw::Reference",
+				new_ref, GIT_SV_TO_REPO(self)
+			);
 		} else {
 			switch (git_reference_type(ref)) {
 				case GIT_REF_OID: {

@@ -45,9 +45,12 @@ Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
 
 =head2 target( [$new_target] )
 
-Retrieve the target of the reference. If the L<Git::Raw::Reference>
-C<$new_target> is passed, the reference will be changed to point to it. Note,
-updating the target will invalidate all existing handles to the reference.
+Retrieve the target of the reference. If the C<$new_target> parameter of type
+L<Git::Raw::Reference> is passed, the reference will be changed to point to it.
+
+Note that updating the target will invalidate all existing handles to the
+reference.
+
 This function returns either an object (L<Git::Raw::Blob>, L<Git::Raw::Commit>,
 L<Git::Raw::Tag> or L<Git::Raw::Tree>) for direct references, or another
 reference for symbolic references.

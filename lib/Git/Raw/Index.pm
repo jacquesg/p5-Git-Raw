@@ -50,7 +50,7 @@ Remove C<$path> from the index.
 
 Determine if the index contains entries representing file conflicts.
 
-=head2 conflic_cleanup( )
+=head2 conflict_cleanup( )
 
 Remove all conflicts in the index (entries with a stage greater than 0).
 

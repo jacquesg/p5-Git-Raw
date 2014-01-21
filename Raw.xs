@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #include <git2.h>
+#include <git2/sys/repository.h>
 
 typedef git_blob * Blob;
 typedef git_reference * Branch;
@@ -53,14 +54,24 @@ SV *git_obj_to_sv(git_object *o, SV *repo_src) {
 
 	switch (git_object_type(o)) {
 		case GIT_OBJ_BLOB:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Blob", o); break;
+			res = sv_setref_pv(newSV(0), "Git::Raw::Blob", o);
+			break;
+
 		case GIT_OBJ_COMMIT:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Commit", o); break;
+			res = sv_setref_pv(newSV(0), "Git::Raw::Commit", o);
+			break;
+
 		case GIT_OBJ_TAG:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Tag", o); break;
+			res = sv_setref_pv(newSV(0), "Git::Raw::Tag", o);
+			break;
+
 		case GIT_OBJ_TREE:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Tree", o); break;
-		default: Perl_croak(aTHX_ "Invalid object type");
+			res = sv_setref_pv(newSV(0), "Git::Raw::Tree", o);
+			break;
+
+		default:
+			Perl_croak(aTHX_ "Invalid object type");
+			break;
 	}
 
 	if (sv_isobject(repo_src) &&
@@ -80,12 +91,12 @@ SV *git_obj_to_sv(git_object *o, SV *repo_src) {
 }
 
 git_object *git_sv_to_obj(SV *sv) {
-	if (sv_isobject(sv) &&
-		(sv_derived_from(sv, "Git::Raw::Blob") ||
+	if (sv_isobject(sv) && (
+		sv_derived_from(sv, "Git::Raw::Blob") ||
 		sv_derived_from(sv, "Git::Raw::Commit") ||
 		sv_derived_from(sv, "Git::Raw::Tag") ||
-		sv_derived_from(sv, "Git::Raw::Tree"))
-	)
+		sv_derived_from(sv, "Git::Raw::Tree")
+	))
 		return INT2PTR(git_object *, SvIV((SV *) SvRV(sv)));
 
 	return NULL;
@@ -122,53 +133,50 @@ void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
 unsigned git_hv_to_diff_flag(HV *flags) {
 	unsigned out = 0;
 
+	git_flag_opt(flags, "reverse", GIT_DIFF_REVERSE, &out);
+
+	git_flag_opt(flags, "include_ignored", GIT_DIFF_INCLUDE_IGNORED, &out);
+
 	git_flag_opt(
-		flags, "reverse", GIT_DIFF_REVERSE, &out
+		flags, "recurse_ignored_dirs",
+		GIT_DIFF_RECURSE_IGNORED_DIRS, &out
 	);
 
 	git_flag_opt(
-		flags, "include_ignored", GIT_DIFF_INCLUDE_IGNORED, &out
+		flags, "include_untracked",
+		GIT_DIFF_INCLUDE_UNTRACKED, &out
 	);
 
 	git_flag_opt(
-		flags, "recurse_ignored_dirs", GIT_DIFF_RECURSE_IGNORED_DIRS, &out
+		flags, "recurse_untracked_dirs",
+		GIT_DIFF_RECURSE_UNTRACKED_DIRS, &out
+	);
+
+	git_flag_opt(flags, "ignore_filemode", GIT_DIFF_IGNORE_FILEMODE, &out);
+
+	git_flag_opt(
+		flags, "ignore_submodules",
+		GIT_DIFF_IGNORE_SUBMODULES, &out
 	);
 
 	git_flag_opt(
-		flags, "include_untracked", GIT_DIFF_INCLUDE_UNTRACKED, &out
+		flags, "ignore_whitespace",
+		GIT_DIFF_IGNORE_WHITESPACE, &out
 	);
 
 	git_flag_opt(
-		flags, "recurse_untracked_dirs", GIT_DIFF_RECURSE_UNTRACKED_DIRS, &out
+		flags, "ignore_whitespace_change",
+		GIT_DIFF_IGNORE_WHITESPACE_CHANGE, &out
 	);
 
 	git_flag_opt(
-		flags, "ignore_filemode", GIT_DIFF_IGNORE_FILEMODE, &out
+		flags, "ignore_whitespace_eol",
+		GIT_DIFF_IGNORE_WHITESPACE_EOL, &out
 	);
 
-	git_flag_opt(
-		flags, "ignore_submodules", GIT_DIFF_IGNORE_SUBMODULES, &out
-	);
+	git_flag_opt(flags, "patience", GIT_DIFF_PATIENCE, &out);
 
-	git_flag_opt(
-		flags, "ignore_whitespace", GIT_DIFF_IGNORE_WHITESPACE, &out
-	);
-
-	git_flag_opt(
-		flags, "ignore_whitespace_change", GIT_DIFF_IGNORE_WHITESPACE_CHANGE, &out
-	);
-
-	git_flag_opt(
-		flags, "ignore_whitespace_eol", GIT_DIFF_IGNORE_WHITESPACE_EOL, &out
-	);
-
-	git_flag_opt(
-		flags, "patience", GIT_DIFF_PATIENCE, &out
-	);
-
-	git_flag_opt(
-		flags, "minimal", GIT_DIFF_MINIMAL, &out
-	);
+	git_flag_opt(flags, "minimal", GIT_DIFF_MINIMAL, &out);
 
 	return out;
 }
@@ -176,48 +184,41 @@ unsigned git_hv_to_diff_flag(HV *flags) {
 unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 
+	git_flag_opt(strategy, "none", GIT_CHECKOUT_NONE, &out);
+
+	git_flag_opt(strategy, "force", GIT_CHECKOUT_FORCE, &out);
+
+	git_flag_opt(strategy, "safe", GIT_CHECKOUT_SAFE, &out);
+
+	git_flag_opt(strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE, &out);
+
 	git_flag_opt(
-		strategy, "none", GIT_CHECKOUT_NONE, &out
+		strategy, "allow_conflicts",
+		GIT_CHECKOUT_ALLOW_CONFLICTS, &out
 	);
 
 	git_flag_opt(
-		strategy, "force", GIT_CHECKOUT_FORCE, &out
+		strategy, "remove_untracked",
+		GIT_CHECKOUT_REMOVE_UNTRACKED, &out
 	);
 
 	git_flag_opt(
-		strategy, "safe", GIT_CHECKOUT_SAFE, &out
+		strategy, "remove_ignored",
+		GIT_CHECKOUT_REMOVE_IGNORED, &out
 	);
 
-	git_flag_opt(
-		strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE, &out
-	);
+	git_flag_opt(strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY, &out);
 
 	git_flag_opt(
-		strategy, "allow_conflicts", GIT_CHECKOUT_ALLOW_CONFLICTS, &out
+		strategy, "dont_update_index",
+		GIT_CHECKOUT_DONT_UPDATE_INDEX, &out
 	);
 
-	git_flag_opt(
-		strategy, "remove_untracked", GIT_CHECKOUT_REMOVE_UNTRACKED, &out
-	);
+	git_flag_opt(strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH, &out);
 
 	git_flag_opt(
-		strategy, "remove_ignored", GIT_CHECKOUT_REMOVE_IGNORED, &out
-	);
-
-	git_flag_opt(
-		strategy, "update_only", GIT_CHECKOUT_UPDATE_ONLY, &out
-	);
-
-	git_flag_opt(
-		strategy, "dont_update_index", GIT_CHECKOUT_DONT_UPDATE_INDEX, &out
-	);
-
-	git_flag_opt(
-		strategy, "no_refresh", GIT_CHECKOUT_NO_REFRESH, &out
-	);
-
-	git_flag_opt(
-		strategy, "skip_unmerged", GIT_CHECKOUT_SKIP_UNMERGED, &out
+		strategy, "skip_unmerged",
+		GIT_CHECKOUT_SKIP_UNMERGED, &out
 	);
 
 	return out;
@@ -235,26 +236,34 @@ int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 	PUSHMARK(SP);
 	switch (line -> origin) {
 		case GIT_DIFF_LINE_CONTEXT:
-			XPUSHs(sv_2mortal(newSVpv("ctx", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("ctx", 0)));
+			break;
 
 		case GIT_DIFF_LINE_ADDITION:
 		case GIT_DIFF_LINE_ADD_EOFNL:
-			XPUSHs(sv_2mortal(newSVpv("add", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("add", 0)));
+			break;
 
 		case GIT_DIFF_LINE_DELETION:
 		case GIT_DIFF_LINE_DEL_EOFNL:
-			XPUSHs(sv_2mortal(newSVpv("del", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("del", 0)));
+			break;
 
 		case GIT_DIFF_LINE_FILE_HDR:
-			XPUSHs(sv_2mortal(newSVpv("file", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("file", 0)));
+			break;
 
 		case GIT_DIFF_LINE_HUNK_HDR:
-			XPUSHs(sv_2mortal(newSVpv("hunk", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("hunk", 0)));
+			break;
 
 		case GIT_DIFF_LINE_BINARY:
-			XPUSHs(sv_2mortal(newSVpv("bin", 0))); break;
+			XPUSHs(sv_2mortal(newSVpv("bin", 0)));
+			break;
 
-		default: Perl_croak(aTHX_ "Unexpected diff usage");
+		default:
+			Perl_croak(aTHX_ "Unexpected diff usage");
+			break;
 	}
 
 	XPUSHs(sv_2mortal(newSVpv(line -> content, line -> content_len)));
@@ -465,7 +474,9 @@ int git_completion_cbb(git_remote_completion_type type, void *cbs) {
 			ct = newSVpv("error", 0);
 			break;
 
-		default: Perl_croak(aTHX_ "Unhandle completion type");
+		default:
+			Perl_croak(aTHX_ "Unhandled completion type");
+			break;
 	}
 
 	ENTER;
@@ -643,8 +654,8 @@ void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 	}
 
 	if ((opt = hv_fetchs(opts, "callbacks", 0))) {
-		HV *callbacks;
 		SV **cb;
+		HV *callbacks;
 
 		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
 			Perl_croak(aTHX_ "Invalid type");

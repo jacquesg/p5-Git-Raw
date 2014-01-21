@@ -311,15 +311,6 @@ callbacks(self, callbacks)
 		git_check_error(rc);
 
 SV *
-is_connected(self)
-	Remote self
-
-	CODE:
-		RETVAL = newSViv(git_remote_connected(self));
-
-	OUTPUT: RETVAL
-
-SV *
 ls(self)
 	Remote self
 
@@ -366,6 +357,15 @@ ls(self)
 
 	OUTPUT: RETVAL
 
+SV *
+is_connected(self)
+	Remote self
+
+	CODE:
+		RETVAL = newSViv(git_remote_connected(self));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self
@@ -376,7 +376,6 @@ DESTROY(self)
 	CODE:
 		cbs = xs_object_magic_get_struct(aTHX_ self);
 		if (cbs) {
-			Perl_croak(aTHX_ "lol");
 			if (cbs -> credentials)
 				SvREFCNT_dec(cbs -> credentials);
 

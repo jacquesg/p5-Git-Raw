@@ -12,12 +12,12 @@ new(class, repo, ...)
 		TreeBuilder builder;
 
 	CODE:
-		if (items > 2) {
+		if (items > 2)
 			source = GIT_SV_TO_PTR(Tree, ST(2));
-		}
 
 		rc = git_treebuilder_create(&builder, source);
 		git_check_error(rc);
+
 		GIT_NEW_OBJ(RETVAL, class, builder, SvRV(repo));
 
 	OUTPUT: RETVAL
@@ -47,11 +47,15 @@ get(self, filename)
 		const git_tree_entry *entry;
 
 	CODE:
-		entry = git_treebuilder_get(GIT_SV_TO_PTR(TreeBuilder, self), filename);
+		entry = git_treebuilder_get(
+			GIT_SV_TO_PTR(TreeBuilder, self), filename
+		);
 
 		if (entry)
-			GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", git_tree_entry_dup(entry),
-				GIT_SV_TO_REPO(self));
+			GIT_NEW_OBJ(
+				RETVAL, "Git::Raw::TreeEntry",
+				git_tree_entry_dup(entry), GIT_SV_TO_REPO(self)
+			);
 		else
 			RETVAL = &PL_sv_undef;
 
@@ -78,17 +82,23 @@ insert(self, filename, object, mode)
 		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 
-		rc = git_treebuilder_insert(is_returning ? &entry : NULL,
-			GIT_SV_TO_PTR(TreeBuilder, self), filename, oid, mode);
+		rc = git_treebuilder_insert(
+			is_returning ? &entry : NULL,
+			GIT_SV_TO_PTR(TreeBuilder, self),
+			filename, oid, mode
+		);
 		git_check_error(rc);
 
 		if (is_returning) {
-			GIT_NEW_OBJ(ST(0), "Git::Raw::TreeEntry", git_tree_entry_dup(entry), GIT_SV_TO_REPO(self));
+			GIT_NEW_OBJ(
+				ST(0), "Git::Raw::TreeEntry",
+				git_tree_entry_dup(entry),
+				GIT_SV_TO_REPO(self)
+			);
+
 			sv_2mortal(ST(0));
 			XSRETURN(1);
-		} else {
-			XSRETURN_EMPTY;
-		}
+		} else XSRETURN_EMPTY;
 
 void
 remove(self, filename)
@@ -121,7 +131,9 @@ write(self)
 		repo     = GIT_SV_TO_REPO(self);
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
-		rc = git_treebuilder_write(&oid, repo_ptr, GIT_SV_TO_PTR(TreeBuilder, self));
+		rc = git_treebuilder_write(
+			&oid, repo_ptr, GIT_SV_TO_PTR(TreeBuilder, self)
+		);
 		git_check_error(rc);
 
 		if(is_returning) {
@@ -130,10 +142,9 @@ write(self)
 
 			GIT_NEW_OBJ(ST(0), "Git::Raw::Tree", tree, repo);
 			sv_2mortal(ST(0));
+
 			XSRETURN(1);
-		} else {
-			XSRETURN_EMPTY;
-		}
+		} else XSRETURN_EMPTY;
 
 void
 DESTROY(self)

@@ -15,13 +15,17 @@ lookup(class, repo, id)
 		STRLEN len;
 		const char *id_str;
 
+		Repository repo_ptr;
+
 	CODE:
 		id_str = SvPVbyte(id, len);
 
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_tree_lookup_prefix(&tree, GIT_SV_TO_PTR(Repository, repo), &oid, len);
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+
+		rc = git_tree_lookup_prefix(&tree, repo_ptr, &oid, len);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo));
@@ -58,7 +62,8 @@ entries(self)
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;
-			TreeEntry entry = (TreeEntry) git_tree_entry_byindex(self_ptr, i);
+			TreeEntry entry = (TreeEntry)
+				git_tree_entry_byindex(self_ptr, i);
 
 			GIT_NEW_OBJ(
 				tmp, "Git::Raw::TreeEntry",
@@ -237,19 +242,21 @@ diff(self, ...)
 
 SV *
 is_tree(self)
+	SV *self
 
-    CODE:
-        RETVAL = newSVuv(1);
+	CODE:
+		RETVAL = newSVuv(1);
 
-    OUTPUT: RETVAL
+	OUTPUT: RETVAL
 
 SV *
 is_blob(self)
+	SV *self
 
-    CODE:
-        RETVAL = newSVuv(0);
+	CODE:
+		RETVAL = newSVuv(0);
 
-    OUTPUT: RETVAL
+	OUTPUT: RETVAL
 
 void
 DESTROY(self)
