@@ -115,6 +115,7 @@ $index -> write;
 $tree_id = $index -> write_tree;
 $tree    = $repo -> lookup($tree_id);
 
+$time = time();
 $me = Git::Raw::Signature -> default($repo);
 
 my @current_time = localtime($time);
