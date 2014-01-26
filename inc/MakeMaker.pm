@@ -13,19 +13,46 @@ use Devel::CheckLib;
 
 my $def = '';
 my $lib = '';
+my $inc = '';
+
+my %os_specific = (
+	'freebsd' => {
+		'ssh2' => {
+			'inc' => ['/usr/local/include'],
+			'lib' => ['/usr/local/lib']
+		}
+	}
+);
 
 if (check_lib(lib => 'ssl')) {
 	$def .= ' -DGIT_SSL';
 	$lib .= ' -lssl -lcrypto';
 
 	print "SSL support enabled\n";
+} else {
+	print "SSL support disabled\n";
 }
 
 if (check_lib(lib => 'ssh2')) {
+	my $os = $^O;
+
+	if (my $os_params = $os_specific{$os}) {
+		if (my $ssh2 = $os_params{'ssh2'}) {
+			if (my $ssh2inc = $ssh2{'inc'}) {
+				$inc .= ' -I'.join (' -I', @$ssh2inc);
+			}
+			if (my $ssh2lib = $ssh2{'lib'}) {
+				$lib .= ' -L'.join (' -L', @$ssh2lib);
+			}
+		}
+	}
+
 	$def .= ' -DGIT_SSH';
 	$lib .= ' -lssh2';
 
 	print "SSH support enabled\n";
+} else {
+	print "SSH support disabled\n";
 }
 
 sub MY::c_o {
@@ -46,6 +73,7 @@ my {{ $WriteMakefileArgs }}
 
 $WriteMakefileArgs{DEFINE} .= $def;
 $WriteMakefileArgs{LIBS}   .= $lib;
+$WriteMakefileArgs{INC}    .= $inc;
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
 	my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
