@@ -44,6 +44,7 @@ Revision history for Git-Raw
    used to change the reference's target (GH#47) (thanks, @jacquesg!)
  - Add Index -> has_conflicts() and Index -> conflict_cleanup() methods
    (GH#46) (thanks, @jacquesg!)
+ - Add Repository -> merge() method (GH#31) (thanks, @jacquesg!)
 
 0.29      2013-11-24 20:17:02 Europe/Rome
 
