@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.30      2014-01-26 14:39:08 Europe/Rome (TRIAL RELEASE)
+
  - Add "paths" checkout option (GH#23) (thanks, @jacquesg!)
  - Various fixes to make it possible to build with MSVC
    (GH#24, GH#25, GH#26, GH#27, GH#28) (thanks, @jacquesg!)
