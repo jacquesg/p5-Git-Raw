@@ -344,7 +344,7 @@ Example:
 
 Merge the given C<$ref> into HEAD. This function returns a hash reference
 with members C<"up_to_date">, C<"fast_forward"> and C<"id"> if the merge
-was fast-forward. Valid fields for C<%opts> include:
+was fast-forward. Valid fields for C<%opts> are
 
 =over 4
 
@@ -378,17 +378,17 @@ Detect renames.
 
 =item * "automerge"
 
-Flags for automerging content. Valid values include C<"favor_ours">
-and C<"favor_theirs">.
+Specify content automerging behavoiur. Valid values are C<"favor_ours"> and
+C<"favor_theirs">.
 
 =item * "rename_threshold"
 
-Similarity metric to consider a file renamed (Default is 50).
+Similarity metric for considering a file renamed (default is 50).
 
 =item * "target_limit"
 
 Maximum similarity sources to examine (overrides the L<"merge.renameLimit">
-configuration entry). (Default 200).
+configuration entry) (default is 200).
 
 =back
 
