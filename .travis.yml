@@ -14,7 +14,7 @@ install:
  - dzil listdeps --missing | cpanm --notest
 
 script:
- - dzil test
+ - dzil smoke --release
 
 notifications:
   recipient:
