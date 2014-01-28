@@ -117,7 +117,6 @@ TEMPLATE
 };
 
 override _build_WriteMakefile_args => sub {
-	# TODO: support Windows
 	my $inc = '-Ixs/libgit2 -Ixs/libgit2/src -Ixs/libgit2/include -Ixs/libgit2/deps/http-parser -Ixs/libgit2/deps/zlib';
 	my $def = '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 
