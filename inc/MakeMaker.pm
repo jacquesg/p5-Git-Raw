@@ -55,6 +55,22 @@ if (check_lib(lib => 'ssh2')) {
 	print "SSH support disabled\n";
 }
 
+my @deps = glob 'xs/libgit2/deps/{http-parser,zlib}/*.c';
+my @srcs = glob 'xs/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
+push @srcs, 'xs/libgit2/src/hash/hash_generic.c';
+
+if ($^O eq 'MSWin32') {
+	push @srcs, glob 'xs/libgit2/src/{win32,compat}/*.c';
+	push @srcs, 'xs/libgit2/deps/regex/regex.c';
+
+	$inc .= ' -Ideps/regex';
+	$def .= ' -DWIN32 -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
+} else {
+	push @srcs, glob 'xs/libgit2/src/unix/*.c'
+}
+
+my @objs = map { substr ($_, 0, -1) . 'o' } (@deps, @srcs);
+
 sub MY::c_o {
 	return <<'EOS'
 .c$(OBJ_EXT):
@@ -74,6 +90,7 @@ my {{ $WriteMakefileArgs }}
 $WriteMakefileArgs{DEFINE} .= $def;
 $WriteMakefileArgs{LIBS}   .= $lib;
 $WriteMakefileArgs{INC}    .= $inc;
+$WriteMakefileArgs{OBJECT} .= ' ' . join ' ', @objs;
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
 	my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
@@ -104,13 +121,6 @@ override _build_WriteMakefile_args => sub {
 	my $inc = '-Ixs/libgit2 -Ixs/libgit2/src -Ixs/libgit2/include -Ixs/libgit2/deps/http-parser -Ixs/libgit2/deps/zlib';
 	my $def = '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 
-	my @deps = glob 'xs/libgit2/deps/{http-parser,zlib}/*.c';
-	my @srcs = glob 'xs/libgit2/src/{*.c,transports/*.c,unix/*.c,xdiff/*.c}';
-	push @srcs, 'xs/libgit2/src/hash/hash_generic.c';
-	my @objs = map { substr ($_, 0, -1) . 'o' } (@deps, @srcs);
-
-	my $libgit2_objs = join ' ', @objs;
-
 	my $bits = $Config{longsize} == 4 ? '-m32' : '';
 	my $ccflags = "$bits -Wall -Wno-unused-variable";
 
@@ -124,7 +134,7 @@ override _build_WriteMakefile_args => sub {
 		LIBS	=> "-lrt",
 		DEFINE	=> $def,
 		CCFLAGS	=> $ccflags,
-		OBJECT	=> "$libgit2_objs \$(O_FILES)",
+		OBJECT	=> '$(O_FILES)',
 	}
 };
 
