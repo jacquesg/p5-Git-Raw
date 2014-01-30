@@ -9,6 +9,7 @@ override _build_MakeFile_PL_template => sub {
 	my ($self) = @_;
 
 	my $template = <<'TEMPLATE';
+use strict;
 use Devel::CheckLib;
 
 my $def = '';
@@ -37,11 +38,11 @@ if (check_lib(lib => 'ssh2')) {
 	my $os = $^O;
 
 	if (my $os_params = $os_specific{$os}) {
-		if (my $ssh2 = $os_params{'ssh2'}) {
-			if (my $ssh2inc = $ssh2{'inc'}) {
+		if (my $ssh2 = $os_params->{'ssh2'}) {
+			if (my $ssh2inc = $ssh2->{'inc'}) {
 				$inc .= ' -I'.join (' -I', @$ssh2inc);
 			}
-			if (my $ssh2lib = $ssh2{'lib'}) {
+			if (my $ssh2lib = $ssh2->{'lib'}) {
 				$lib .= ' -L'.join (' -L', @$ssh2lib);
 			}
 		}
