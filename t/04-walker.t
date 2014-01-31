@@ -43,4 +43,12 @@ is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
 is $walk -> next, undef;
 
+$walk -> push_head;
+
+my $commit = $walk -> next;
+isnt $commit, undef;
+is   $commit -> message, "third commit\n";
+isnt $commit -> tree, undef;
+isnt $commit -> parents, undef;
+
 done_testing;

@@ -3,17 +3,17 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Walker
 SV *
 create(class, repo)
 	SV *class
-	Repository repo
+	SV *repo
 
 	PREINIT:
 		int rc;
 		Walker walk;
 
 	CODE:
-		rc = git_revwalk_new(&walk, repo);
+		rc = git_revwalk_new(&walk, GIT_SV_TO_PTR(Repository, repo));
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), walk);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), walk, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -111,35 +111,46 @@ hide_head(self)
 		rc = git_revwalk_hide_head(self);
 		git_check_error(rc);
 
-Commit
+SV *
 next(self)
-	Walker self
+	SV *self
 
 	PREINIT:
 		int rc;
 
+		SV *repo;
+
+		Walker walk;
+
 		git_oid oid;
 		Commit commit = NULL;
 
+		Repository repo_ptr;
+
 	CODE:
-		rc = git_revwalk_next(&oid, self);
+		repo = GIT_SV_TO_REPO(self);
+		walk = GIT_SV_TO_PTR(Walker, self);
+
+		repo_ptr = git_revwalk_repository(walk);
+
+		rc = git_revwalk_next(&oid, walk);
 
 		switch (rc) {
 			case 0: {
-				Repository repo = git_revwalk_repository(self);
-
-				rc = git_commit_lookup(&commit, repo, &oid);
+				rc = git_commit_lookup(&commit, repo_ptr, &oid);
 				git_check_error(rc);
 
 				break;
 			}
 
-			case GIT_ITEROVER: XSRETURN_UNDEF;
+			case GIT_ITEROVER:
+				XSRETURN_UNDEF;
 
-			default: git_check_error(rc);
+			default:
+				git_check_error(rc);
 		}
 
-		RETVAL = commit;
+		GIT_NEW_OBJ(RETVAL, "Git::Raw::Commit", commit, repo);
 
 	OUTPUT: RETVAL
 
@@ -152,7 +163,8 @@ reset(self)
 
 void
 DESTROY(self)
-	Walker self
+	SV *self
 
 	CODE:
-		git_revwalk_free(self);
+		git_revwalk_free(GIT_SV_TO_PTR(Walker, self));
+		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
