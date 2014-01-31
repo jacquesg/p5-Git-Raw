@@ -2,6 +2,11 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fix include paths on FreeBSD (GH#49) (GH#50) (thanks, @jacquesg!)
+ - (Try to) support building libgit2 on Windows
+ - Properly create Commit objects in Walker -> next()
+   (GH#52) (thanks, @karel-m for the test case!)
+
 0.30      2014-01-26 14:39:08 Europe/Rome (TRIAL RELEASE)
 
  - Add "paths" checkout option (GH#23) (thanks, @jacquesg!)
