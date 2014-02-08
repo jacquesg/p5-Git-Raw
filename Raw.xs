@@ -1,15 +1,17 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+
+#define NEED_sv_2pv_flags
+#define NEED_sv_2pvbyte_GLOBAL
+#define NEED_newRV_noinc_GLOBAL
+
 #include "ppport.h"
 
 #include <inttypes.h>
 
 #include <git2.h>
 #include <git2/sys/repository.h>
-
-#define NEED_sv_2pvbyte_GLOBAL
-#define NEED_newRV_noinc_GLOBAL
 
 typedef git_blob * Blob;
 typedef git_reference * Branch;
