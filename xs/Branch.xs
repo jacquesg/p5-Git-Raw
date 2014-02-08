@@ -2,7 +2,7 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Branch
 
 BOOT:
 {
-	AV *isa = perl_get_av("Git::Raw::Branch::ISA",1);
+	AV *isa = get_av("Git::Raw::Branch::ISA", 1);
 	av_push(isa, newSVpv("Git::Raw::Reference", 0));
 }
 

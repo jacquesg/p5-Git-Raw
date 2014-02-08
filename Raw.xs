@@ -8,6 +8,9 @@
 #include <git2.h>
 #include <git2/sys/repository.h>
 
+#define NEED_sv_2pvbyte_GLOBAL
+#define NEED_newRV_noinc_GLOBAL
+
 typedef git_blob * Blob;
 typedef git_reference * Branch;
 typedef git_commit * Commit;
