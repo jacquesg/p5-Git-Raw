@@ -59,6 +59,10 @@ reference for symbolic references.
 
 sub reflog { return Git::Raw::Reflog -> open (shift); }
 
+=head2 reflog( )
+
+Retrieve the L<Git::Raw::Reflog> of the reference.
+
 =head2 owner( )
 
 Retrieve the L<Git::Raw::Repository> owning the reference.
