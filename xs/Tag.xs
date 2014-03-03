@@ -155,11 +155,15 @@ tagger(self)
 	Tag self
 
 	PREINIT:
-		Signature c;
+		int rc;
+		Signature c, r;
 
 	CODE:
 		c = (Signature) git_tag_tagger(self);
-		RETVAL = git_signature_dup(c);
+		rc = git_signature_dup(&r, c);
+		git_check_error(rc);
+
+		RETVAL = r;
 
 	OUTPUT: RETVAL
 

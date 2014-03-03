@@ -147,15 +147,22 @@ discover(class, path)
 		int rc;
 
 		Repository repo;
-		char found[GIT_PATH_MAX];
 
 	CODE:
-		rc = git_repository_discover(
-			found, GIT_PATH_MAX, SvPVbyte_nolen(path), 1, NULL
-		);
+		git_buf buf = {0, 0, 0};
+		rc = git_buf_grow(&buf, GIT_PATH_MAX);
 		git_check_error(rc);
 
-		rc = git_repository_open(&repo, found);
+		rc = git_repository_discover(
+			&buf, SvPVbyte_nolen(path), 1, NULL
+		);
+		if (rc != GIT_OK) {
+			git_buf_free(&buf);
+		}
+		git_check_error(rc);
+
+		rc = git_repository_open(&repo, (const char*) buf.ptr);
+		git_buf_free(&buf);
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
@@ -221,6 +228,7 @@ head(self, ...)
 
 		Reference head;
 		Repository repo;
+		Signature sig;
 
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
@@ -228,9 +236,14 @@ head(self, ...)
 		if (items == 2) {
 			Reference new_head = GIT_SV_TO_PTR(Reference, ST(1));
 
+			rc = git_signature_default(&sig, repo);
+			git_check_error(rc);
+
 			rc = git_repository_set_head(
-				repo, git_reference_name(new_head)
+				repo, git_reference_name(new_head),
+				sig, NULL
 			);
+			git_signature_free(sig);
 			git_check_error(rc);
 		}
 
@@ -300,6 +313,7 @@ reset(self, target, opts)
 	PREINIT:
 		int rc;
 
+		Signature sig;
 		SV **opt;
 
 	CODE:
@@ -336,7 +350,11 @@ reset(self, target, opts)
 				else
 					Perl_croak(aTHX_ "Invalid type");
 
-				rc = git_reset(self, git_sv_to_obj(target), reset);
+				rc = git_signature_default(&sig, self);
+				git_check_error(rc);
+
+				rc = git_reset(self, git_sv_to_obj(target), reset, sig, NULL);
+				git_signature_free(sig);
 				git_check_error(rc);
 			}
 		}
@@ -678,7 +696,7 @@ merge(self, ref, opts)
 		if (git_merge_result_is_fastforward(merge_result)) {
 			git_oid id;
 
-			git_merge_result_fastforward_oid(&id, merge_result);
+			git_merge_result_fastforward_id(&id, merge_result);
 			hv_stores(result, "id", git_oid_to_sv(&id));
 			hv_stores(result, "fast_forward", newSViv(1));
 		} else {

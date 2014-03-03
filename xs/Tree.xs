@@ -50,9 +50,11 @@ entries(self)
 	SV *self
 
 	PREINIT:
+		int rc;
 		int i, count;
 
 		Tree self_ptr;
+		TreeEntry entry;
 		AV *entries = newAV();
 
 	CODE:
@@ -62,12 +64,15 @@ entries(self)
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;
-			TreeEntry entry = (TreeEntry)
+			TreeEntry tmp_entry = (TreeEntry)
 				git_tree_entry_byindex(self_ptr, i);
+
+			rc = git_tree_entry_dup(&entry, tmp_entry);
+			git_check_error(rc);
 
 			GIT_NEW_OBJ(
 				tmp, "Git::Raw::TreeEntry",
-				git_tree_entry_dup(entry), GIT_SV_TO_REPO(self)
+				entry, GIT_SV_TO_REPO(self)
 			);
 
 			av_push(entries, tmp);
@@ -83,23 +88,28 @@ entry_byname(self, name)
 	SV *name
 
 	PREINIT:
+		int rc;
+
 		STRLEN len;
 		const char *name_str;
 
-		TreeEntry entry;
+		TreeEntry tmp_entry, entry;
 
 	CODE:
 		name_str = SvPVbyte(name, len);
 
-		entry = (TreeEntry) git_tree_entry_byname(
+		tmp_entry = (TreeEntry) git_tree_entry_byname(
 			GIT_SV_TO_PTR(Tree, self), name_str
 		);
 
-		if (!entry) Perl_croak(aTHX_ "Invalid name");
+		if (!tmp_entry) Perl_croak(aTHX_ "Invalid name");
+
+		rc = git_tree_entry_dup(&entry, tmp_entry);
+		git_check_error(rc);
 
 		GIT_NEW_OBJ(
 			RETVAL, "Git::Raw::TreeEntry",
-			git_tree_entry_dup(entry), GIT_SV_TO_REPO(self)
+			entry, GIT_SV_TO_REPO(self)
 		);
 
 	OUTPUT: RETVAL

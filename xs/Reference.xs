@@ -11,6 +11,7 @@ create(class, name, repo, object, ...)
 		int rc, force = 0;
 
 		Reference ref;
+		Signature sig;
 		const git_oid *oid;
 
 	CODE:
@@ -26,9 +27,13 @@ create(class, name, repo, object, ...)
 		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 
+		rc = git_signature_default(&sig, GIT_SV_TO_PTR(Repository, repo));
+		git_check_error(rc);
+
 		rc = git_reference_create(
 			&ref, GIT_SV_TO_PTR(Repository, repo),
-			name, oid, force);
+			name, oid, force, sig, NULL);
+		git_signature_free(sig);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, class, ref, SvRV(repo));
@@ -134,6 +139,7 @@ target(self, ...)
 	PREINIT:
 		int rc;
 		Reference ref;
+		Signature sig;
 
 	CODE:
 		ref = GIT_SV_TO_PTR(Reference, self);
@@ -143,7 +149,11 @@ target(self, ...)
 
 			Commit commit = GIT_SV_TO_PTR(Commit, ST(1));
 
-			rc = git_reference_set_target(&new_ref, ref, git_commit_id(commit));
+			rc = git_signature_default(&sig, git_reference_owner(ref));
+			git_check_error(rc);
+
+			rc = git_reference_set_target(&new_ref, ref, git_commit_id(commit), sig, NULL);
+			git_signature_free(sig);
 			git_check_error(rc);
 
 			GIT_NEW_OBJ(
