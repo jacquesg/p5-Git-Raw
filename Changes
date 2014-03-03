@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to 494be4 (GH#53) (thanks, @jacquesg!)
+ - Minor Win32 build fix
+
 0.31      2014-02-08 19:07:55 Europe/Rome
 
  - Fix include paths on FreeBSD (GH#49) (GH#50) (thanks, @jacquesg!)
