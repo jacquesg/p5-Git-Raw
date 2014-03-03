@@ -10,7 +10,7 @@ perl:
 install:
  - sudo apt-get update
  - sudo apt-get install libssl-dev libssh2-1-dev
- - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO
+ - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - dzil listdeps --missing | cpanm --notest
 
 script:
