@@ -17,13 +17,19 @@ create(class, repo, name, target)
 		int rc;
 
 		Reference ref;
+		Signature sig;
 		Commit obj = (Commit) git_sv_to_obj(target);
 
 	CODE:
+		rc = git_signature_default(&sig, GIT_SV_TO_PTR(Repository, repo));
+		git_check_error(rc);
+
 		rc = git_branch_create(
 			&ref, GIT_SV_TO_PTR(Repository, repo),
-			SvPVbyte_nolen(name), obj, 0
+			SvPVbyte_nolen(name), obj, 0, sig, NULL
 		);
+
+		git_signature_free(sig);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
@@ -65,13 +71,22 @@ move(self, name, force)
 	PREINIT:
 		int rc;
 
+		Signature sig;
+
 		Branch new_branch;
 		Branch old_branch = GIT_SV_TO_PTR(Branch, self);
 
 	CODE:
+		rc = git_signature_default(&sig, git_reference_owner(
+			GIT_SV_TO_PTR(Reference, self)));
+		git_check_error(rc);
+
 		rc = git_branch_move(
-			&new_branch, old_branch, SvPVbyte_nolen(name), force
+			&new_branch, old_branch, SvPVbyte_nolen(name), force,
+			sig, NULL
 		);
+
+		git_signature_free(sig);
 		git_check_error(rc);
 
 Reference

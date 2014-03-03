@@ -44,18 +44,23 @@ get(self, filename)
 	const char *filename
 
 	PREINIT:
-		const git_tree_entry *entry;
+		int rc;
 
 	CODE:
-		entry = git_treebuilder_get(
+		const TreeEntry tmp_entry = (const TreeEntry) git_treebuilder_get(
 			GIT_SV_TO_PTR(TreeBuilder, self), filename
 		);
 
-		if (entry)
+		if (tmp_entry) {
+			TreeEntry entry;
+			rc = git_tree_entry_dup(&entry, tmp_entry);
+			git_check_error(rc);
+
 			GIT_NEW_OBJ(
 				RETVAL, "Git::Raw::TreeEntry",
-				git_tree_entry_dup(entry), GIT_SV_TO_REPO(self)
+				entry, GIT_SV_TO_REPO(self)
 			);
+		}
 		else
 			RETVAL = &PL_sv_undef;
 
@@ -72,7 +77,8 @@ insert(self, filename, object, mode)
 		int rc;
 
 		const git_oid *oid;
-		const git_tree_entry *entry;
+		const TreeEntry tmp_entry;
+		TreeEntry entry;
 
 		int is_returning = GIMME_V != G_VOID;
 
@@ -83,16 +89,18 @@ insert(self, filename, object, mode)
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 
 		rc = git_treebuilder_insert(
-			is_returning ? &entry : NULL,
+			is_returning ? (const git_tree_entry **) &tmp_entry : NULL,
 			GIT_SV_TO_PTR(TreeBuilder, self),
 			filename, oid, mode
 		);
 		git_check_error(rc);
 
 		if (is_returning) {
+			rc = git_tree_entry_dup(&entry, tmp_entry);
+			git_check_error(rc);
+
 			GIT_NEW_OBJ(
-				ST(0), "Git::Raw::TreeEntry",
-				git_tree_entry_dup(entry),
+				ST(0), "Git::Raw::TreeEntry", entry,
 				GIT_SV_TO_REPO(self)
 			);
 

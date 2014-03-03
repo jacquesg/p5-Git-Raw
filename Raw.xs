@@ -746,11 +746,11 @@ void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_opts) {
 		if (SvPOK(*opt)) {
 			const char *auto_merge = SvPVbyte_nolen(*opt);
 			if (strcmp(auto_merge, "favor_ours") == 0)
-				merge_tree_opts -> automerge_flags =
-					GIT_MERGE_AUTOMERGE_FAVOR_OURS;
+				merge_tree_opts -> file_favor =
+					GIT_MERGE_FILE_FAVOR_OURS;
 			else if (strcmp(auto_merge, "favor_theirs") == 0)
-				merge_tree_opts -> automerge_flags =
-					GIT_MERGE_AUTOMERGE_FAVOR_THEIRS;
+				merge_tree_opts -> file_favor =
+					GIT_MERGE_FILE_FAVOR_THEIRS;
 			else
 				Perl_croak(aTHX_ "Invalid 'automerge' value");
 		} else

@@ -133,11 +133,15 @@ author(self)
 	Commit self
 
 	PREINIT:
-		Signature a;
+		int rc;
+		Signature a, r;
 
 	CODE:
 		a = (Signature) git_commit_author(self);
-		RETVAL = git_signature_dup(a);
+		rc = git_signature_dup(&r, a);
+		git_check_error(rc);
+
+		RETVAL = r;
 
 	OUTPUT: RETVAL
 
@@ -146,11 +150,15 @@ committer(self)
 	Commit self
 
 	PREINIT:
-		Signature c;
+		int rc;
+		Signature c, r;
 
 	CODE:
 		c = (Signature) git_commit_committer(self);
-		RETVAL = git_signature_dup(c);
+		rc = git_signature_dup(&r, c);
+		git_check_error(rc);
+
+		RETVAL = r;
 
 	OUTPUT: RETVAL
 

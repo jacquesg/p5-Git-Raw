@@ -199,9 +199,14 @@ update_tips(self)
 
 	PREINIT:
 		int rc;
+		Signature sig;
 
 	CODE:
-		rc = git_remote_update_tips(self);
+		rc = git_signature_default(&sig, git_remote_owner(self));
+		git_check_error(rc);
+
+		rc = git_remote_update_tips(self, sig, NULL);
+		git_signature_free(sig);
 		git_check_error(rc);
 
 void
