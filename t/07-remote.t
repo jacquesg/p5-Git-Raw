@@ -93,6 +93,14 @@ $github -> download;
 ok $progress;
 ok $transfer_progress;
 
+my $config = $repo -> config;
+
+my $name  = 'Git::Raw author';
+my $email = 'git-xs@example.com';
+
+is $config -> str('user.name', $name), $name;
+is $config -> str('user.email', $email), $email;
+
 $github -> update_tips;
 ok $update_tips;
 
