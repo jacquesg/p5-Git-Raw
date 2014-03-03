@@ -22,6 +22,7 @@ typedef git_diff * Diff;
 typedef git_index * Index;
 typedef git_push * Push;
 typedef git_reference * Reference;
+typedef git_reflog * Reflog;
 typedef git_refspec * RefSpec;
 typedef git_remote * Remote;
 typedef git_repository * Repository;
@@ -779,6 +780,7 @@ INCLUDE: xs/Diff.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
+INCLUDE: xs/Reflog.xs
 INCLUDE: xs/RefSpec.xs
 INCLUDE: xs/Remote.xs
 INCLUDE: xs/Repository.xs
