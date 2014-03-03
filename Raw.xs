@@ -597,22 +597,18 @@ void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr) {
 	sv_magicext(sv, NULL, PERL_MAGIC_ext, &null_mg_vtbl, ptr, 0);
 }
 
-STATIC MAGIC *xs_object_magic_get_mg(pTHX_ SV *sv) {
-	MAGIC *mg;
+void *xs_object_magic_get_struct(pTHX_ SV *sv) {
+	MAGIC *mg = NULL;
 
 	if (SvTYPE(sv) >= SVt_PVMG) {
-		for (mg = SvMAGIC(sv); mg; mg = mg -> mg_moremagic) {
-			if ((mg -> mg_type == PERL_MAGIC_ext) &&
-			    (mg -> mg_virtual == &null_mg_vtbl))
-				return mg;
+		MAGIC *tmp;
+
+		for (tmp = SvMAGIC(sv); tmp; tmp = tmp -> mg_moremagic) {
+			if ((tmp -> mg_type == PERL_MAGIC_ext) &&
+			    (tmp -> mg_virtual == &null_mg_vtbl))
+				mg = tmp;
 		}
 	}
-
-	return NULL;
-}
-
-void *xs_object_magic_get_struct(pTHX_ SV *sv) {
-	MAGIC *mg = xs_object_magic_get_mg(aTHX_ sv);
 
 	return (mg) ? mg -> mg_ptr : NULL;
 }
