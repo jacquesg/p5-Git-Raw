@@ -121,4 +121,4 @@ DESTROY(self)
 
 	CODE:
 		git_blob_free(GIT_SV_TO_PTR(Blob, self));
-		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
+		SvREFCNT_dec(GIT_SV_TO_REPO(self));

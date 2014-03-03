@@ -56,4 +56,4 @@ DESTROY(self)
 
 	CODE:
 		git_tree_entry_free(GIT_SV_TO_PTR(TreeEntry, self));
-		SvREFCNT_dec(xs_object_magic_get_struct(aTHX_ SvRV(self)));
+		SvREFCNT_dec(GIT_SV_TO_REPO(self));
