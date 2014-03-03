@@ -53,6 +53,14 @@ isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';
 
+my $reflog = $ref -> reflog;
+my @entries = $reflog -> entries;
+is scalar(@entries), 1;
+
+ok !defined($entries[0] -> {'message'});
+is $entries[0] -> {'old_id'}, '0000000000000000000000000000000000000000';
+is $entries[0] -> {'new_id'}, $ref -> target -> id;
+
 $repo = Git::Raw::Repository -> new();
 $github = Git::Raw::Remote -> create_inmemory($repo, undef, $url);
 
