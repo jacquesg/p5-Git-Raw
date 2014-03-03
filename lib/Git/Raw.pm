@@ -7,6 +7,7 @@ require XSLoader;
 XSLoader::load('Git::Raw', $Git::Raw::VERSION);
 
 use Git::Raw::Repository;
+use Git::Raw::Reference;
 
 =head1 NAME
 
