@@ -118,6 +118,74 @@ EOS
 $output = capture_stdout { $diff -> print("name_status", $printer) };
 is $output, $expected;
 
+is $diff -> delta_count, 2;
+my @patches = $diff -> patches;
+is scalar(@patches), 2;
+
+foreach my $patch (@patches) {
+	my @hunks = $patch -> hunks;
+	is $patch -> hunk_count, 1;
+	is scalar(@hunks), 1;
+
+	my $hunk = $hunks[0];
+	isa_ok $hunk, 'Git::Raw::Diff::Hunk';
+	is $hunk -> new_start, 1;
+	is $hunk -> new_lines, 1;
+	is $hunk -> old_start, 0;
+	is $hunk -> old_lines, 0;
+	is $hunk -> header, '@@ -0,0 +1 @@';
+}
+
+$expected = <<'EOS';
+diff --git a/diff b/diff
+new file mode 100644
+index 0000000..6afc8a6
+--- /dev/null
++++ b/diff
+@@ -0,0 +1 @@
++diff me, biatch
+EOS
+
+is $patches[0] -> buffer, $expected;
+is_deeply $patches[0] -> line_stats, {
+	'context' => 0, 'additions' => 1, 'deletions' => 0
+};
+
+my $delta = $patches[0] -> delta;
+isa_ok $delta, 'Git::Raw::Diff::Delta';
+is $delta -> file_count, 1;
+is $delta -> status, "added";
+is_deeply $delta -> flags, [];
+
+my $old_file = $delta -> old_file;
+isa_ok $old_file, 'Git::Raw::Diff::File';
+is $old_file -> id, '0' x 40;
+is $old_file -> path, 'diff';
+is_deeply $old_file -> flags, ['valid_id'];
+is_deeply $old_file -> mode, 'new';
+
+my $new_file = $delta -> new_file;
+isa_ok $new_file, 'Git::Raw::Diff::File';
+is substr($new_file -> id, 0, 7), '6afc8a6';
+is $new_file -> path, 'diff';
+is_deeply $new_file -> flags, ['valid_id'];
+is_deeply $new_file -> mode, 'blob';
+
+$expected = <<'EOS';
+diff --git a/diff2 b/diff2
+new file mode 100644
+index 0000000..e6ada20
+--- /dev/null
++++ b/diff2
+@@ -0,0 +1 @@
++diff me too, biatch
+EOS
+
+is $patches[1] -> buffer, $expected;
+is_deeply $patches[1] -> line_stats, {
+	'context' => 0, 'additions' => 1, 'deletions' => 0
+};
+
 my $tree2 = $repo -> head -> target -> tree;
 my $tree1 = $repo -> head -> target -> parents -> [0] -> tree;
 
@@ -148,5 +216,13 @@ EOS
 $output = capture_stdout { $diff -> print("name_status", $printer) };
 
 is $output, $expected;
+
+is $diff -> delta_count, 1;
+@patches = $diff -> patches;
+is scalar(@patches), 1;
+
+$delta = $patches[0] -> delta;
+is $delta -> old_file -> id, '0' x 40;
+is substr($delta -> new_file -> id, 0, 7), 'c7eaef2';
 
 done_testing;
