@@ -9,7 +9,24 @@
 #include "ppport.h"
 
 #include <git2.h>
+#include <git2/sys/filter.h>
 #include <git2/sys/repository.h>
+
+typedef struct {
+	SV *progress;
+	SV *completion;
+	SV *credentials;
+	SV *transfer_progress;
+	SV *update_tips;
+} git_raw_remote_callbacks;
+
+typedef struct {
+	SV *initialize;
+	SV *shutdown;
+	SV *check;
+	SV *apply;
+	SV *cleanup;
+} git_filter_callbacks;
 
 typedef git_blob * Blob;
 typedef git_reference * Branch;
@@ -37,12 +54,14 @@ typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
 typedef struct {
-	SV *progress;
-	SV *completion;
-	SV *credentials;
-	SV *transfer_progress;
-	SV *update_tips;
-} git_raw_remote_callbacks;
+	git_filter filter;
+	git_filter_callbacks callbacks;
+	char *name;
+	char *attributes;
+} git_raw_filter;
+
+typedef git_raw_filter * Filter;
+typedef git_filter_source * Filter_Source;
 
 STATIC MGVTBL null_mg_vtbl = {
 	NULL, /* get */
@@ -226,6 +245,33 @@ STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	if (cbs -> update_tips) {
 		SvREFCNT_dec(cbs -> update_tips);
 		cbs -> update_tips = NULL;
+	}
+}
+
+STATIC void git_clean_filter_callbacks(git_filter_callbacks *cbs) {
+	if (cbs -> initialize) {
+		SvREFCNT_dec(cbs -> initialize);
+		cbs -> initialize = NULL;
+	}
+
+	if (cbs -> shutdown) {
+		SvREFCNT_dec(cbs -> shutdown);
+		cbs -> shutdown = NULL;
+	}
+
+	if (cbs -> check) {
+		SvREFCNT_dec(cbs -> check);
+		cbs -> check = NULL;
+	}
+
+	if (cbs -> apply) {
+		SvREFCNT_dec(cbs -> apply);
+		cbs -> apply = NULL;
+	}
+
+	if (cbs -> cleanup) {
+		SvREFCNT_dec(cbs -> cleanup);
+		cbs -> cleanup = NULL;
 	}
 }
 
@@ -677,6 +723,161 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	return 0;
 }
 
+int git_filter_init_cbb(git_filter *filter)
+{
+	dSP;
+
+	int rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUTBACK;
+
+	call_sv(((git_raw_filter *) filter) -> callbacks.initialize, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		POPs;
+	} else {
+		rv = POPi;
+	}
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
+void git_filter_shutdown_cbb(git_filter *filter)
+{
+	dSP;
+	SV *creds;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUTBACK;
+
+	call_sv(((git_raw_filter *) filter) -> callbacks.shutdown, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+}
+
+int git_filter_check_cbb(git_filter *filter, void **payload,
+	const git_filter_source *src, const char **attr_values)
+{
+	dSP;
+
+	int rv;
+	SV *filter_source = NULL;
+
+	GIT_NEW_OBJ(
+		filter_source, "Git::Raw::Filter::Source", (void *) src
+	);
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(filter_source);
+	PUTBACK;
+
+	call_sv(((git_raw_filter *) filter) -> callbacks.check, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		POPs;
+	} else {
+		rv = POPi;
+	}
+
+	FREETMPS;
+	LEAVE;
+
+	SvREFCNT_dec(filter_source);
+
+	return rv;
+}
+
+int git_filter_apply_cbb(git_filter *filter, void **payload,
+	git_buf *to, const git_buf *from, const git_filter_source *src)
+{
+	dSP;
+
+	int rv;
+	SV *filter_source = NULL;
+	SV *result = newSV(from -> size);
+
+	GIT_NEW_OBJ(
+		filter_source, "Git::Raw::Filter::Source", (void *) src
+	);
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUSHs(filter_source);
+	PUSHs(newSVpv(from -> ptr, from -> size));
+	PUSHs(newRV_noinc(result));
+	PUTBACK;
+
+	call_sv(((git_raw_filter *) filter) -> callbacks.apply, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		POPs;
+	} else {
+		rv = POPi;
+	}
+
+	FREETMPS;
+	LEAVE;
+
+	if (rv == GIT_OK) {
+		STRLEN len;
+		const char *ptr = SvPV(result, len);
+
+		git_buf_set(to, ptr, len);
+	}
+
+	SvREFCNT_dec(result);
+	SvREFCNT_dec(filter_source);
+
+	return rv;
+}
+
+void git_filter_cleanup_cbb(git_filter *filter, void *payload)
+{
+	dSP;
+	SV *creds;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	PUTBACK;
+
+	call_sv(((git_raw_filter *) filter) -> callbacks.cleanup, G_DISCARD);
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+}
+
+
 STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 	char **paths = NULL;
 	SV **opt;
@@ -824,6 +1025,8 @@ INCLUDE: xs/Diff.xs
 INCLUDE: xs/Diff/Delta.xs
 INCLUDE: xs/Diff/File.xs
 INCLUDE: xs/Diff/Hunk.xs
+INCLUDE: xs/Filter.xs
+INCLUDE: xs/Filter/Source.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Patch.xs
