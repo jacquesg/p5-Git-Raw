@@ -4,6 +4,7 @@ Revision history for Git-Raw
 
  - Update libgit2 to 494be4 (GH#53) (thanks, @jacquesg!)
  - Minor Win32 build fix
+ - Add Reflog class (GH#55) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
