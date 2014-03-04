@@ -49,6 +49,8 @@ append(self, message, ...)
 	SV *self
 	const char *message
 
+	PROTOTYPE: $$;$
+
 	PREINIT:
 		int rc, free_signature;
 
