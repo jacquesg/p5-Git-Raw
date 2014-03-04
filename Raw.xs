@@ -107,7 +107,13 @@ STATIC void git_check_error(int err) {
 
 	error = giterr_last();
 
-	Perl_croak(aTHX_ "%s", error -> message);
+	if (error)
+		Perl_croak(aTHX_ "%s", error -> message);
+
+	if (SvTRUE(ERRSV))
+		Perl_croak (aTHX_ "%s", SvPVbyte_nolen(ERRSV));
+
+	Perl_croak(aTHX_ "%s", "Unknown error!");
 }
 
 STATIC SV *git_obj_to_sv(git_object *o, SV *repo) {
