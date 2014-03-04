@@ -37,9 +37,7 @@ delete(self)
 		Reference ref;
 	
 	CODE:
-		ref = GIT_SV_TO_PTR(
-			Reference, xs_object_magic_get_struct(aTHX_ SvRV(self))
-		);
+		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));
 
 		rc = git_reflog_delete(
 			git_reference_owner(ref), git_reference_name(ref)
@@ -63,9 +61,7 @@ append(self, message, ...)
 		if (items > 3)
 			Perl_croak(aTHX_ "Wrong number of arguments");
 
-		ref = GIT_SV_TO_PTR(
-			Reference, xs_object_magic_get_struct(aTHX_ SvRV(self))
-		);
+		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));
 		ref_owner = git_reference_owner(ref);
 
 		rc = git_reference_name_to_id(
@@ -161,4 +157,4 @@ DESTROY(self)
 
 	CODE:
 		git_reflog_free(GIT_SV_TO_PTR(Reflog, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

@@ -74,7 +74,7 @@ entries(self)
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				tmp, "Git::Raw::TreeEntry",
-				entry, GIT_SV_TO_REPO(self)
+				entry, GIT_SV_TO_MAGIC(self)
 			);
 
 			av_push(entries, tmp);
@@ -111,7 +111,7 @@ entry_byname(self, name)
 
 		GIT_NEW_OBJ_WITH_MAGIC(
 			RETVAL, "Git::Raw::TreeEntry",
-			entry, GIT_SV_TO_REPO(self)
+			entry, GIT_SV_TO_MAGIC(self)
 		);
 
 	OUTPUT: RETVAL
@@ -138,7 +138,7 @@ entry_bypath(self, path)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::TreeEntry", entry, GIT_SV_TO_REPO(self)
+			RETVAL, "Git::Raw::TreeEntry", entry, GIT_SV_TO_MAGIC(self)
 		);
 
 	OUTPUT: RETVAL
@@ -278,4 +278,4 @@ DESTROY(self)
 
 	CODE:
 		git_tree_free(GIT_SV_TO_PTR(Tree, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

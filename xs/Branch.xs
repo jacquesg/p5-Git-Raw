@@ -125,4 +125,4 @@ DESTROY(self)
 
 	CODE:
 		git_reference_free(GIT_SV_TO_PTR(Reference, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

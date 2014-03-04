@@ -39,7 +39,7 @@ object(self)
 		TreeEntry entry;
 
 	CODE:
-		repo = INT2PTR(Repository, SvIV((SV *) GIT_SV_TO_REPO(self)));
+		repo = INT2PTR(Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self)));
 
 		entry = GIT_SV_TO_PTR(TreeEntry, self);
 
@@ -56,4 +56,4 @@ DESTROY(self)
 
 	CODE:
 		git_tree_entry_free(GIT_SV_TO_PTR(TreeEntry, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

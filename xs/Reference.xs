@@ -125,7 +125,7 @@ owner(self)
 	CODE:
 		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
 
-		ref = xs_object_magic_get_struct(aTHX_ SvRV(self));
+		ref = GIT_SV_TO_MAGIC(self);
 		if (!ref) Perl_croak(aTHX_ "Invalid object");
 
 		RETVAL = newRV_inc(ref);
@@ -160,7 +160,7 @@ target(self, ...)
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::Reference",
-				new_ref, GIT_SV_TO_REPO(self)
+				new_ref, GIT_SV_TO_MAGIC(self)
 			);
 		} else {
 			switch (git_reference_type(ref)) {
@@ -190,7 +190,7 @@ target(self, ...)
 					git_check_error(rc);
 
 					GIT_NEW_OBJ_WITH_MAGIC(
-						RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_REPO(self)
+						RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_MAGIC(self)
 					);
 					break;
 				}
@@ -225,4 +225,4 @@ DESTROY(self)
 
 	CODE:
 		git_reference_free(GIT_SV_TO_PTR(Reference, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

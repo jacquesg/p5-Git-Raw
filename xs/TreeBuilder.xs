@@ -58,7 +58,7 @@ get(self, filename)
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::TreeEntry",
-				entry, GIT_SV_TO_REPO(self)
+				entry, GIT_SV_TO_MAGIC(self)
 			);
 		}
 		else
@@ -101,7 +101,7 @@ insert(self, filename, object, mode)
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				ST(0), "Git::Raw::TreeEntry", entry,
-				GIT_SV_TO_REPO(self)
+				GIT_SV_TO_MAGIC(self)
 			);
 
 			sv_2mortal(ST(0));
@@ -136,7 +136,7 @@ write(self)
 		int is_returning = GIMME_V != G_VOID;
 
 	PPCODE:
-		repo     = GIT_SV_TO_REPO(self);
+		repo     = GIT_SV_TO_MAGIC(self);
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 		rc = git_treebuilder_write(
@@ -162,4 +162,4 @@ DESTROY(self)
 
 	CODE:
 		git_treebuilder_free(GIT_SV_TO_PTR(TreeBuilder, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

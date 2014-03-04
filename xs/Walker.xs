@@ -130,7 +130,7 @@ next(self)
 		Repository repo_ptr;
 
 	CODE:
-		repo = GIT_SV_TO_REPO(self);
+		repo = GIT_SV_TO_MAGIC(self);
 		walk = GIT_SV_TO_PTR(Walker, self);
 
 		repo_ptr = git_revwalk_repository(walk);
@@ -169,4 +169,4 @@ DESTROY(self)
 
 	CODE:
 		git_revwalk_free(GIT_SV_TO_PTR(Walker, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

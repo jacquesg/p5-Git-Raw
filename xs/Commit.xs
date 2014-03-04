@@ -205,7 +205,7 @@ tree(self)
 		Tree tree;
 
 	CODE:
-		repo = GIT_SV_TO_REPO(self);
+		repo = GIT_SV_TO_MAGIC(self);
 
 		rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
 		git_check_error(rc);
@@ -228,7 +228,7 @@ parents(self)
 		Commit child;
 
 	CODE:
-		repo = GIT_SV_TO_REPO(self);
+		repo = GIT_SV_TO_MAGIC(self);
 
 		child = GIT_SV_TO_PTR(Commit, self);
 		count = git_commit_parentcount(child);
@@ -258,4 +258,4 @@ DESTROY(self)
 
 	CODE:
 		git_commit_free(GIT_SV_TO_PTR(Commit, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

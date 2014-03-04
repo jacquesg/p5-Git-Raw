@@ -614,7 +614,7 @@ void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 	return (mg) ? mg -> mg_ptr : NULL;
 }
 
-#define GIT_SV_TO_REPO(SV) \
+#define GIT_SV_TO_MAGIC(SV) \
 	xs_object_magic_get_struct(aTHX_ SvRV(SV))
 
 #define GIT_NEW_OBJ(rv, class, sv)				\

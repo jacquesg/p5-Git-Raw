@@ -106,7 +106,7 @@ delete(self)
 		tag_ptr = GIT_SV_TO_PTR(Tag, self);
 
 		repo = INT2PTR(
-			Repository, SvIV((SV *) GIT_SV_TO_REPO(self))
+			Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self))
 		);
 
 		rc = git_tag_delete(repo, git_tag_name(tag_ptr));
@@ -193,4 +193,4 @@ DESTROY(self)
 
 	CODE:
 		git_tag_free(GIT_SV_TO_PTR(Tag, self));
-		SvREFCNT_dec(GIT_SV_TO_REPO(self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
