@@ -16,7 +16,7 @@ init(class, path, is_bare)
 		);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -117,7 +117,7 @@ clone(class, url, path, opts)
 
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -134,7 +134,7 @@ open(class, path)
 		rc = git_repository_open(&repo, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -165,7 +165,7 @@ discover(class, path)
 		git_buf_free(&buf);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -181,7 +181,7 @@ new(class)
 		rc = git_repository_new(&repo);
 		git_check_error(rc);
 
-		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), repo);
+		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
 
 	OUTPUT: RETVAL
 
@@ -213,7 +213,9 @@ index(self)
 		rc = git_repository_index(&index, GIT_SV_TO_PTR(Repository, self));
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::Index", index, SvRV(self));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Index", index, SvRV(self)
+		);
 
 	OUTPUT: RETVAL
 
@@ -250,7 +252,9 @@ head(self, ...)
 		rc = git_repository_head(&head, repo);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::Reference", head, SvRV(self));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Reference", head, SvRV(self)
+		);
 
 	OUTPUT: RETVAL
 
@@ -732,7 +736,9 @@ branches(self)
 		while ((rc = git_branch_next(&branch, &type, itr)) == 0) {
 			SV *perl_ref;
 
-			GIT_NEW_OBJ(perl_ref, "Git::Raw::Branch", branch, SvRV(self));
+			GIT_NEW_OBJ_WITH_MAGIC(
+				perl_ref, "Git::Raw::Branch", branch, SvRV(self)
+			);
 
 			EXTEND(SP, 1);
 			PUSHs(sv_2mortal(perl_ref));
@@ -772,7 +778,9 @@ remotes(self)
 			rc = git_remote_load(&remote, repo, remotes.strings[i]);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(perl_ref, "Git::Raw::Remote", remote, SvRV(self));
+			GIT_NEW_OBJ_WITH_MAGIC(
+				perl_ref, "Git::Raw::Remote", remote, SvRV(self)
+			);
 
 			EXTEND(SP, 1);
 			PUSHs(sv_2mortal(perl_ref));
@@ -803,7 +811,9 @@ refs(self)
 		while ((rc = git_reference_next(&ref, itr)) == 0) {
 			SV *perl_ref;
 
-			GIT_NEW_OBJ(perl_ref, "Git::Raw::Reference", ref, SvRV(self));
+			GIT_NEW_OBJ_WITH_MAGIC(
+				perl_ref, "Git::Raw::Reference", ref, SvRV(self)
+			);
 
 			EXTEND(SP, 1);
 			PUSHs(sv_2mortal(perl_ref));

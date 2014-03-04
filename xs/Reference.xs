@@ -36,7 +36,7 @@ create(class, name, repo, object, ...)
 		git_signature_free(sig);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, class, ref, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, class, ref, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -57,7 +57,9 @@ lookup(class, name, repo)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -156,7 +158,7 @@ target(self, ...)
 			git_signature_free(sig);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(
+			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::Reference",
 				new_ref, GIT_SV_TO_REPO(self)
 			);
@@ -187,7 +189,7 @@ target(self, ...)
 					rc = git_reference_lookup(&linked_ref, git_reference_owner(ref), target);
 					git_check_error(rc);
 
-					GIT_NEW_OBJ(
+					GIT_NEW_OBJ_WITH_MAGIC(
 						RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_REPO(self)
 					);
 					break;

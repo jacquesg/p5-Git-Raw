@@ -57,7 +57,9 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 		rc = git_commit_lookup(&commit, GIT_SV_TO_PTR(Repository, repo), &oid);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -86,7 +88,9 @@ lookup(class, repo, id)
 		rc = git_commit_lookup_prefix(&commit, repo_ptr, &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -206,7 +210,7 @@ tree(self)
 		rc = git_commit_tree(&tree, GIT_SV_TO_PTR(Commit, self));
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::Tree", tree, repo);
+		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, "Git::Raw::Tree", tree, repo);
 
 	OUTPUT: RETVAL
 
@@ -238,7 +242,9 @@ parents(self)
 			rc = git_commit_parent(&parent, child, i);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(tmp, "Git::Raw::Commit", parent, repo);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				tmp, "Git::Raw::Commit", parent, repo
+			);
 			av_push(parents, tmp);
 		}
 

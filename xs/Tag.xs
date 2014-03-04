@@ -34,7 +34,9 @@ create(class, repo, name, msg, tagger, target)
 		rc = git_tag_lookup(&tag, repo_ptr, &oid);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -62,7 +64,9 @@ lookup(class, repo, id)
 		rc = git_tag_lookup_prefix(&tag, GIT_SV_TO_PTR(Repository, repo), &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), tag, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 

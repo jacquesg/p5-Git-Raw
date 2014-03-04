@@ -32,7 +32,9 @@ create(class, repo, name, target)
 		git_signature_free(sig);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -58,7 +60,9 @@ lookup(class, repo, name, is_local)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 

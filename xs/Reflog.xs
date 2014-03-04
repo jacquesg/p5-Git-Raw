@@ -21,7 +21,9 @@ open(class, reference)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), reflog, reference);
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), reflog, reference
+		);
 
 	OUTPUT: RETVAL
 
@@ -130,7 +132,7 @@ entries(self)
 
 		entry_count = git_reflog_entrycount (reflog);
 		for (i = 0; i < entry_count; ++i) {
-			SV *committer = newSV(0);
+			SV *committer;
 
 			const git_reflog_entry *e =
 				git_reflog_entry_byindex(reflog, i);
@@ -140,7 +142,7 @@ entries(self)
 			rc = git_signature_dup(&sig, git_reflog_entry_committer(e));
 			git_check_error(rc);
 
-			sv_setref_pv(committer, "Git::Raw::Signature", sig);
+			GIT_NEW_OBJ(committer, "Git::Raw::Signature", sig);
 
 			hv_stores(entry, "committer", committer);
 			hv_stores(entry, "message", newSVpv(git_reflog_entry_message(e), 0));

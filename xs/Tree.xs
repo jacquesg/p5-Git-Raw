@@ -28,7 +28,9 @@ lookup(class, repo, id)
 		rc = git_tree_lookup_prefix(&tree, repo_ptr, &oid, len);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -70,7 +72,7 @@ entries(self)
 			rc = git_tree_entry_dup(&entry, tmp_entry);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(
+			GIT_NEW_OBJ_WITH_MAGIC(
 				tmp, "Git::Raw::TreeEntry",
 				entry, GIT_SV_TO_REPO(self)
 			);
@@ -107,7 +109,7 @@ entry_byname(self, name)
 		rc = git_tree_entry_dup(&entry, tmp_entry);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(
+		GIT_NEW_OBJ_WITH_MAGIC(
 			RETVAL, "Git::Raw::TreeEntry",
 			entry, GIT_SV_TO_REPO(self)
 		);
@@ -135,7 +137,9 @@ entry_bypath(self, path)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::TreeEntry", entry, GIT_SV_TO_REPO(self));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::TreeEntry", entry, GIT_SV_TO_REPO(self)
+		);
 
 	OUTPUT: RETVAL
 

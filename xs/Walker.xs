@@ -13,7 +13,9 @@ create(class, repo)
 		rc = git_revwalk_new(&walk, GIT_SV_TO_PTR(Repository, repo));
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), walk, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), walk, SvRV(repo)
+		);
 
 	OUTPUT: RETVAL
 
@@ -150,7 +152,7 @@ next(self)
 				git_check_error(rc);
 		}
 
-		GIT_NEW_OBJ(RETVAL, "Git::Raw::Commit", commit, repo);
+		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, "Git::Raw::Commit", commit, repo);
 
 	OUTPUT: RETVAL
 

@@ -119,7 +119,7 @@ void *git_sv_to_ptr(const char *type, SV *sv) {
 }
 
 #define GIT_SV_TO_PTR(type, sv) \
-	git_sv_to_ptr (#type, sv)
+	git_sv_to_ptr(#type, sv)
 
 SV *git_oid_to_sv(const git_oid *oid) {
 	char out[41];
@@ -617,7 +617,12 @@ void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 #define GIT_SV_TO_REPO(SV) \
 	xs_object_magic_get_struct(aTHX_ SvRV(SV))
 
-#define GIT_NEW_OBJ(rv, class, sv, magic)			\
+#define GIT_NEW_OBJ(rv, class, sv)				\
+	STMT_START {						\
+		(rv) = sv_setref_pv(newSV(0), class, sv);	\
+	} STMT_END
+
+#define GIT_NEW_OBJ_WITH_MAGIC(rv, class, sv, magic)		\
 	STMT_START {						\
 		(rv) = sv_setref_pv(newSV(0), class, sv);	\
 								\

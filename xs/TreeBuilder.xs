@@ -18,7 +18,7 @@ new(class, repo, ...)
 		rc = git_treebuilder_create(&builder, source);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, class, builder, SvRV(repo));
+		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, class, builder, SvRV(repo));
 
 	OUTPUT: RETVAL
 
@@ -56,7 +56,7 @@ get(self, filename)
 			rc = git_tree_entry_dup(&entry, tmp_entry);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(
+			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::TreeEntry",
 				entry, GIT_SV_TO_REPO(self)
 			);
@@ -99,7 +99,7 @@ insert(self, filename, object, mode)
 			rc = git_tree_entry_dup(&entry, tmp_entry);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(
+			GIT_NEW_OBJ_WITH_MAGIC(
 				ST(0), "Git::Raw::TreeEntry", entry,
 				GIT_SV_TO_REPO(self)
 			);
@@ -148,7 +148,9 @@ write(self)
 			rc = git_tree_lookup(&tree, repo_ptr, &oid);
 			git_check_error(rc);
 
-			GIT_NEW_OBJ(ST(0), "Git::Raw::Tree", tree, repo);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				ST(0), "Git::Raw::Tree", tree, repo
+			);
 			sv_2mortal(ST(0));
 
 			XSRETURN(1);
