@@ -55,6 +55,14 @@ This function returns either an object (L<Git::Raw::Blob>, L<Git::Raw::Commit>,
 L<Git::Raw::Tag> or L<Git::Raw::Tree>) for direct references, or another
 reference for symbolic references.
 
+=cut
+
+sub reflog { return Git::Raw::Reflog -> open (shift); }
+
+=head2 reflog( )
+
+Retrieve the L<Git::Raw::Reflog> of the reference.
+
 =head2 owner( )
 
 Retrieve the L<Git::Raw::Repository> owning the reference.

@@ -6,6 +6,7 @@ Cred					T_GIT_REF
 Diff					T_GIT_REF
 Index					T_GIT_REF
 Push					T_GIT_REF
+Reflog					T_GIT_REF
 RefSpec					T_GIT_REF
 Reference				T_GIT_REF
 Remote					T_GIT_REF
