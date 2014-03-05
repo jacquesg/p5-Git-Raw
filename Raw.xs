@@ -147,6 +147,33 @@ SV *get_callback_option(HV *callbacks, const char *name) {
 	return NULL;
 }
 
+void cleanup_xs_git_remote_callbacks (xs_git_remote_callbacks *cbs) {
+	if (cbs -> credentials) {
+		SvREFCNT_dec(cbs -> credentials);
+		cbs -> credentials = NULL;
+	}
+
+	if (cbs -> progress) {
+		SvREFCNT_dec(cbs -> progress);
+		cbs -> progress = NULL;
+	}
+
+	if (cbs -> completion) {
+		SvREFCNT_dec(cbs -> completion);
+		cbs -> completion = NULL;
+	}
+
+	if (cbs -> transfer_progress) {
+		SvREFCNT_dec(cbs -> transfer_progress);
+		cbs -> transfer_progress = NULL;
+	}
+
+	if (cbs -> update_tips) {
+		SvREFCNT_dec(cbs -> update_tips);
+		cbs -> update_tips = NULL;
+	}
+}
+
 void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
 	SV **opt;
 
