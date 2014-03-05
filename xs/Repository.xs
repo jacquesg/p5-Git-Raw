@@ -64,50 +64,30 @@ clone(class, url, path, opts)
 
 			callbacks = (HV *) SvRV(*opt);
 
-			if ((cb = hv_fetchs(opts, "credentials", 0))) {
-				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for credential acquisition callback'");
-
-				cbs.credentials = *cb;
+			if ((cbs.credentials =
+				get_callback_option(opts, "credentials")))
 				clone_opts.remote_callbacks.credentials =
 					git_credentials_cbb;
-			}
 
-			if ((cb = hv_fetchs(callbacks, "progress", 0))) {
-				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for progress callback");
-
-				cbs.progress = *cb;
-				clone_opts.remote_callbacks.progress = 
+			if ((cbs.progress =
+				get_callback_option(callbacks, "progress")))
+				clone_opts.remote_callbacks.progress =
 					git_progress_cbb;
-			}
 
-			if ((cb = hv_fetchs(callbacks, "completion", 0))) {
-				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for completion callback");
-
-				cbs.completion = *cb;
+			if ((cbs.completion =
+				get_callback_option(callbacks, "completion")))
 				clone_opts.remote_callbacks.completion =
 					git_completion_cbb;
-			}
 
-			if ((cb = hv_fetchs(callbacks, "transfer_progress", 0))) {
-				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for transfer progress callback");
-
-				cbs.transfer_progress = *cb;
+			if ((cbs.transfer_progress =
+				get_callback_option(callbacks, "transfer_progress")))
 				clone_opts.remote_callbacks.transfer_progress =
 					git_transfer_progress_cbb;
-			}
 
-			if ((cb = hv_fetchs(callbacks, "update_tips", 0))) {
-				if (SvTYPE(SvRV(*cb)) != SVt_PVCV)
-					Perl_croak(aTHX_ "Expected a subroutine for update tips callback");
-
-				cbs.update_tips = *cb;
+			if ((cbs.update_tips =
+				get_callback_option(callbacks, "update_tips")))
 				clone_opts.remote_callbacks.update_tips =
 					git_update_tips_cbb;
-			}
 		}
 
 		rc = git_clone(
