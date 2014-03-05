@@ -6,6 +6,7 @@ Revision history for Git-Raw
  - Minor Win32 build fix
  - Add Reflog class (GH#55) (thanks, @jacquesg!)
  - Suport non-default stash flags (GH#56) (thanks, @jacquesg!)
+ - Clean-up test repositories after test run (GH#59) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
