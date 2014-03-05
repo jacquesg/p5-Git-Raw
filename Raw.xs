@@ -130,6 +130,23 @@ SV *git_oid_to_sv(const git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
+SV *get_callback_option(HV *callbacks, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(callbacks, name, strlen(name), 0))) {
+		SV *cb = *opt;
+
+		if (SvTYPE(SvRV(cb)) != SVt_PVCV)
+			Perl_croak(aTHX_ "Expected a subroutine for '%s' callback", name);
+
+		SvREFCNT_inc(cb);
+
+		return cb;
+	}
+
+	return NULL;
+}
+
 void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
 	SV **opt;
 
@@ -670,20 +687,13 @@ void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 
 		callbacks = (HV *) SvRV(*opt);
 
-		if ((cb = hv_fetchs(callbacks, "progress", 0))) {
-			if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
-				Perl_croak(aTHX_ "Expected a subroutine for progress callback'");
+		if ((checkout_opts -> progress_payload =
+				get_callback_option(callbacks, "progress")))
+			checkout_opts -> progress_cb = git_checkout_progress_cbb;
 
-			checkout_opts -> progress_cb      = git_checkout_progress_cbb;
-			checkout_opts -> progress_payload = *cb;
-		}
-
-		if ((cb = hv_fetchs(callbacks, "notify", 0))) {
-			if (!SvROK(*cb) || SvTYPE(SvRV(*cb)) != SVt_PVCV)
-				Perl_croak(aTHX_ "Expected a subroutine for notify callback'");
-
+		if ((checkout_opts -> notify_payload =
+				get_callback_option(callbacks, "notify"))) {
 			checkout_opts -> notify_cb      = git_checkout_notify_cbb;
-			checkout_opts -> notify_payload = *cb;
 
 			if ((opt = hv_fetchs(opts, "notify", 0))) {
 				size_t count = 0;
