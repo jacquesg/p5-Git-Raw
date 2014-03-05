@@ -4,6 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use Cwd qw(abs_path);
+use File::Path qw(rmtree);
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
@@ -111,5 +112,9 @@ is $config -> str('user.email', $email), $email;
 
 $github -> update_tips;
 ok $update_tips;
+
+$repo = undef;
+rmtree $path;
+ok ! -e $path;
 
 done_testing;

@@ -12,6 +12,7 @@ use Test::More;
 use File::Spec;
 use Git::Raw;
 use Cwd qw(abs_path);
+use File::Path qw(rmtree);
 
 my $path;
 my $url = 'git://github.com/ghedo/p5-Git-Raw.git';
@@ -133,5 +134,11 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 ok ($received_bytes > 0);
 is $received_objects, $total_objects;
 is_deeply $states, $expected_states;
+
+rmtree abs_path('t/test_repo_clone');
+rmtree abs_path('t/test_repo_clone_bare');
+rmtree abs_path('t/test_repo_clone_callbacks');
+rmtree abs_path('t/test_repo_disable_checkout');
+rmtree abs_path('t/test_repo_remote_name');
 
 done_testing;
