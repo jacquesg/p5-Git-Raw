@@ -98,6 +98,59 @@ has_conflicts(self)
 	OUTPUT: RETVAL
 
 void
+conflicts(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		const git_index_entry *ancestor, *ours, *theirs;
+		git_index_conflict_iterator *iter;
+
+		size_t num_conflicts = 0;
+
+	PPCODE:
+		rc = git_index_conflict_iterator_new(
+			&iter, GIT_SV_TO_PTR(Index, self));
+		git_check_error(rc);
+
+		while ((rc = git_index_conflict_next(
+			&ancestor, &ours, &theirs, iter)) == GIT_OK) {
+			HV *entries = newHV();
+			SV *entry;
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				entry, "Git::Raw::Index::Entry", (Index_Entry) ancestor, SvRV(self)
+			);
+
+			hv_stores(entries, "ancestor", entry);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				entry, "Git::Raw::Index::Entry", (Index_Entry) ours, SvRV(self)
+			);
+
+			hv_stores(entries, "ours", entry);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				entry, "Git::Raw::Index::Entry", (Index_Entry) theirs, SvRV(self)
+			);
+
+			hv_stores(entries, "theirs", entry);
+			num_conflicts++;
+
+			EXTEND(SP, 1);
+			PUSHs(sv_2mortal(newRV_noinc((SV *) entries)));
+		}
+
+		git_index_conflict_iterator_free(iter);
+
+		if (rc != GIT_ITEROVER) {
+			git_check_error(rc);
+		}
+
+		XSRETURN(num_conflicts);
+
+void
 DESTROY(self)
 	SV* self
 
