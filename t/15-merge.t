@@ -6,6 +6,7 @@ use Git::Raw;
 use File::Spec;
 use File::Slurp;
 use Cwd qw(abs_path);
+use File::Path qw(rmtree);
 
 my $path = abs_path('t').'/merge_repo';
 my $repo = Git::Raw::Repository -> init($path, 0);
@@ -165,5 +166,9 @@ is $content, 'this is file1 on branch1 and branch2';
 is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
+
+$repo = undef;
+rmtree ($path);
+ok ! -e $path;
 
 done_testing;
