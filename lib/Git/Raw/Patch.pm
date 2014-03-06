@@ -18,13 +18,38 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 buffer( )
+
+Get the content of a patch as a single diff text.
+
+=head2 hunk_count( )
+
+Get the number of hunks in the patch.
+
+=head2 hunks( [$index] )
+
+Returns a list of C<Git::Raw::DiffHunk> objects. If C<$index> is specified
+only the hunk at the specified index will be returned.
+
+=head2 line_stats( )
+
+Get line counts of each type in the patch. Returns a hash with entries
+L<"context">, L<"addittions"> and L<"deletions">.
+
+=head2 delta( )
+
+Get the delta associated with the patch. Returns a C<Git::Raw::DiffDelta>
+object.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
 
+Jacques Germishuys <jacquesg@striata.com>
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Alessandro Ghedini.
+Copyright 2014 Alessandro Ghedini.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

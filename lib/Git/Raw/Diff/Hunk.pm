@@ -18,13 +18,35 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 old_start( )
+
+Starting line number in L<"old_file">.
+
+=head2 old_lines( )
+
+Number of lines in L<"old_file">.
+
+=head2 new_start( )
+
+Starting line number in L<"new_file">.
+
+=head2 new_lines( )
+
+Number of lines in L<"new_file">.
+
+=head2 header( )
+
+Header text.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
 
+Jacques Germishuys <jacquesg@striata.com>
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Alessandro Ghedini.
+Copyright 2014 Alessandro Ghedini.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

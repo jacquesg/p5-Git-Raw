@@ -22,6 +22,14 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Merge the given diff with the C<Git::Raw::Diff> C<$from>.
 
+=head2 delta_count( )
+
+Query how many diff records there are in the diff.
+
+=head2 patches( )
+
+Return a list of C<Git::Raw::Patch> objects for the diff.
+
 =head2 print( $format, $callback )
 
 Generate text output from the diff object. The C<$callback> will be called for

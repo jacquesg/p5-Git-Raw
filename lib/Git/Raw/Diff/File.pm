@@ -18,13 +18,64 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 id( )
+
+Retrieve the id of the diff file as a string.
+
+=head2 path( )
+
+Retrieve the path of the diff file.
+
+=head2 size( )
+
+Retrieve the size of the diff file.
+
+=head2 flags( )
+
+Retrieve the flags associated with the delta. Returns an array reference
+with zero or more of the following:
+
+=over 4
+
+=item * "binary"
+
+Files treated as binary data.
+
+=item * "valid_id"
+
+L<"id"> value is known correct.
+
+=back
+
+=head2 mode( )
+
+Retrieve the diff file mode. Returns one of the following:
+
+=over 4
+
+=item * "new"
+
+=item * "tree"
+
+=item * "blob"
+
+=item * "blob_executable"
+
+=item * "link"
+
+=item * "commit"
+
+=back
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
 
+Jacques Germishuys <jacquesg@striata.com>
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Alessandro Ghedini.
+Copyright 2014 Alessandro Ghedini.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
