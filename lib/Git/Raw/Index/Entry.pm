@@ -18,6 +18,22 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 id( )
+
+Retrieve the id of the index entry as a string.
+
+=head2 path( )
+
+Retrieve the path of the index entry.
+
+=head2 size( )
+
+Retrieve the size of the index entry.
+
+=head2 stage( )
+
+Retrieve the stage number for the index entry.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

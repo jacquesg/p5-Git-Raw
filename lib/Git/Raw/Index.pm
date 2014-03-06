@@ -54,6 +54,11 @@ Determine if the index contains entries representing file conflicts.
 
 Remove all conflicts in the index (entries with a stage greater than 0).
 
+=head2 conflicts( )
+
+Retrieve index entries that represent a conflict. Returns a list of
+C<Git::Raw::Index::Entry> objects.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
