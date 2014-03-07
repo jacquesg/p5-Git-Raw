@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Repository
 
-SV *
+Repository
 init(class, path, is_bare)
 	SV *class
 	SV *path
@@ -16,11 +16,11 @@ init(class, path, is_bare)
 		);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
+		RETVAL = repo;
 
 	OUTPUT: RETVAL
 
-SV *
+Repository
 clone(class, url, path, opts)
 	SV *class
 	SV *url
@@ -97,11 +97,11 @@ clone(class, url, path, opts)
 
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
+		RETVAL = repo;
 
 	OUTPUT: RETVAL
 
-SV *
+Repository
 open(class, path)
 	SV *class
 	SV *path
@@ -114,11 +114,11 @@ open(class, path)
 		rc = git_repository_open(&repo, SvPVbyte_nolen(path));
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
+		RETVAL = repo;
 
 	OUTPUT: RETVAL
 
-SV *
+Repository
 discover(class, path)
 	SV *class
 	SV *path
@@ -145,11 +145,11 @@ discover(class, path)
 		git_buf_free(&buf);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
+		RETVAL = repo;
 
 	OUTPUT: RETVAL
 
-SV *
+Repository
 new(class)
 	SV *class
 
@@ -161,7 +161,7 @@ new(class)
 		rc = git_repository_new(&repo);
 		git_check_error(rc);
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), repo);
+		RETVAL = repo;
 
 	OUTPUT: RETVAL
 
