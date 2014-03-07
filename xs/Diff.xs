@@ -43,6 +43,49 @@ print(self, format, callback)
 		rc = git_diff_print(self, fmt, git_diff_cb, callback);
 		git_check_error(rc);
 
+SV *
+delta_count(self)
+	Diff self
+
+	CODE:
+		RETVAL = newSVuv(git_diff_num_deltas(self));
+
+	OUTPUT: RETVAL
+
+void
+patches(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		size_t i, count, num_patches = 0;
+
+		Diff diff_ptr;
+
+	PPCODE:
+		diff_ptr = GIT_SV_TO_PTR(Diff, self);
+
+		count = git_diff_num_deltas(diff_ptr);
+		for (i = 0; i < count; ++i) {
+			Patch patch;
+
+			rc = git_patch_from_diff(&patch, diff_ptr, i);
+			git_check_error(rc);
+
+			if (patch) {
+				SV *p;
+				GIT_NEW_OBJ_WITH_MAGIC(
+					p, "Git::Raw::Patch", patch, SvRV(self));
+
+				EXTEND(SP, 1);
+				PUSHs(sv_2mortal(p));
+				++num_patches;
+			}
+		}
+
+		XSRETURN(num_patches);
+
 void
 DESTROY(self)
 	Diff self
