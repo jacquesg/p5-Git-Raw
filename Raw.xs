@@ -23,6 +23,7 @@ typedef git_diff_delta * Diff_Delta;
 typedef git_diff_file * Diff_File;
 typedef git_diff_hunk * Diff_Hunk;
 typedef git_index * Index;
+typedef git_index_entry * Index_Entry;
 typedef git_patch * Patch;
 typedef git_push * Push;
 typedef git_reference * Reference;
@@ -827,6 +828,7 @@ INCLUDE: xs/Diff/Delta.xs
 INCLUDE: xs/Diff/File.xs
 INCLUDE: xs/Diff/Hunk.xs
 INCLUDE: xs/Index.xs
+INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs

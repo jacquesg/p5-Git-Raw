@@ -8,6 +8,7 @@ Diff_Delta				T_GIT_REF
 Diff_File				T_GIT_REF
 Diff_Hunk				T_GIT_REF
 Index					T_GIT_REF
+Index_Entry				T_GIT_REF
 Patch					T_GIT_REF
 Push					T_GIT_REF
 Reflog					T_GIT_REF
