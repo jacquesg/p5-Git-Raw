@@ -19,7 +19,11 @@ typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_cred * Cred;
 typedef git_diff * Diff;
+typedef git_diff_delta * Diff_Delta;
+typedef git_diff_file * Diff_File;
+typedef git_diff_hunk * Diff_Hunk;
 typedef git_index * Index;
+typedef git_patch * Patch;
 typedef git_push * Push;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
@@ -819,7 +823,11 @@ INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Cred.xs
 INCLUDE: xs/Diff.xs
+INCLUDE: xs/Diff/Delta.xs
+INCLUDE: xs/Diff/File.xs
+INCLUDE: xs/Diff/Hunk.xs
 INCLUDE: xs/Index.xs
+INCLUDE: xs/Patch.xs
 INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/Reflog.xs
