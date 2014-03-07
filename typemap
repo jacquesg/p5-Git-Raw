@@ -20,7 +20,7 @@ Walker					T_GIT_REF
 
 OUTPUT
 T_GIT_REF
-	sv_setref_pv($arg, \"Git::Raw::${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\", (void *) $var);
+	sv_setref_pv($arg, \"Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\", (void *) $var);
 
 INPUT
 T_GIT_REF
