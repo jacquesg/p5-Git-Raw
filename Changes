@@ -10,9 +10,10 @@ Revision history for Git-Raw
  - Rename classes (incompatible changes):
     + Git::Raw::TreeBuilder -> Git::Raw::Tree::Builder
     + Git::Raw::TreeEntry -> Git::Raw::Tree::Entry
- - Improved patch and diff support (GH#61) (thanks, @jacquesg!)
+ - Improve patch and diff support (GH#61) (thanks, @jacquesg!)
     + New classes: Git::Raw::Patch, Git::Raw::Diff::Delta,
       Git::Raw::Diff::Hunk, Git::Raw::Diff::File
+ - Improve index conflicts handling (GH#62) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
