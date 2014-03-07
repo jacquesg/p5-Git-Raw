@@ -1,4 +1,4 @@
-MODULE = Git::Raw			PACKAGE = Git::Raw::TreeBuilder
+MODULE = Git::Raw			PACKAGE = Git::Raw::Tree::Builder
 
 SV *
 new(class, repo, ...)
@@ -9,7 +9,7 @@ new(class, repo, ...)
 		int rc;
 
 		Tree source = NULL;
-		TreeBuilder builder;
+		Tree_Builder builder;
 
 	CODE:
 		if (items > 2)
@@ -24,14 +24,14 @@ new(class, repo, ...)
 
 void
 clear(self)
-	TreeBuilder self
+	Tree_Builder self
 
 	CODE:
 		git_treebuilder_clear(self);
 
 unsigned int
 entry_count(self)
-	TreeBuilder self
+	Tree_Builder self
 
 	CODE:
 		RETVAL = git_treebuilder_entrycount(self);
@@ -47,17 +47,19 @@ get(self, filename)
 		int rc;
 
 	CODE:
-		const TreeEntry tmp_entry = (const TreeEntry) git_treebuilder_get(
-			GIT_SV_TO_PTR(TreeBuilder, self), filename
-		);
+		const Tree_Entry tmp_entry = (const Tree_Entry)
+			git_treebuilder_get(
+				GIT_SV_TO_PTR(Tree::Builder, self), filename
+			);
 
 		if (tmp_entry) {
-			TreeEntry entry;
+			Tree_Entry entry;
+
 			rc = git_tree_entry_dup(&entry, tmp_entry);
 			git_check_error(rc);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
-				RETVAL, "Git::Raw::TreeEntry",
+				RETVAL, "Git::Raw::Tree::Entry",
 				entry, GIT_SV_TO_MAGIC(self)
 			);
 		}
@@ -77,8 +79,8 @@ insert(self, filename, object, mode)
 		int rc;
 
 		const git_oid *oid;
-		const TreeEntry tmp_entry;
-		TreeEntry entry;
+		const Tree_Entry tmp_entry;
+		Tree_Entry entry;
 
 		int is_returning = GIMME_V != G_VOID;
 
@@ -90,7 +92,7 @@ insert(self, filename, object, mode)
 
 		rc = git_treebuilder_insert(
 			is_returning ? (const git_tree_entry **) &tmp_entry : NULL,
-			GIT_SV_TO_PTR(TreeBuilder, self),
+			GIT_SV_TO_PTR(Tree::Builder, self),
 			filename, oid, mode
 		);
 		git_check_error(rc);
@@ -100,7 +102,7 @@ insert(self, filename, object, mode)
 			git_check_error(rc);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
-				ST(0), "Git::Raw::TreeEntry", entry,
+				ST(0), "Git::Raw::Tree::Entry", entry,
 				GIT_SV_TO_MAGIC(self)
 			);
 
@@ -110,7 +112,7 @@ insert(self, filename, object, mode)
 
 void
 remove(self, filename)
-	TreeBuilder self
+	Tree_Builder self
 	const char *filename
 
 	PREINIT:
@@ -140,11 +142,11 @@ write(self)
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 		rc = git_treebuilder_write(
-			&oid, repo_ptr, GIT_SV_TO_PTR(TreeBuilder, self)
+			&oid, repo_ptr, GIT_SV_TO_PTR(Tree::Builder, self)
 		);
 		git_check_error(rc);
 
-		if(is_returning) {
+		if (is_returning) {
 			rc = git_tree_lookup(&tree, repo_ptr, &oid);
 			git_check_error(rc);
 
@@ -161,5 +163,5 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_treebuilder_free(GIT_SV_TO_PTR(TreeBuilder, self));
+		git_treebuilder_free(GIT_SV_TO_PTR(Tree::Builder, self));
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

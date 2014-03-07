@@ -39,12 +39,12 @@ is $entries -> [3], undef;
 
 my $entry = $tree -> entry_byname('test3');
 
-isa_ok $entry, 'Git::Raw::TreeEntry';
+isa_ok $entry, 'Git::Raw::Tree::Entry';
 isa_ok $entry -> object, 'Git::Raw::Tree';
 
 $entry = $tree -> entry_bypath('test3/under/the/tree/test3');
 
-isa_ok $entry, 'Git::Raw::TreeEntry';
+isa_ok $entry, 'Git::Raw::Tree::Entry';
 
 my $obj4 = $entry -> object;
 

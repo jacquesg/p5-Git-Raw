@@ -29,8 +29,8 @@ typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
 typedef git_tree * Tree;
-typedef git_treebuilder * TreeBuilder;
-typedef git_tree_entry * TreeEntry;
+typedef git_treebuilder * Tree_Builder;
+typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
 typedef struct xs_git_remote_callbacks {
@@ -830,6 +830,6 @@ INCLUDE: xs/Signature.xs
 INCLUDE: xs/Stash.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Tree.xs
-INCLUDE: xs/TreeBuilder.xs
-INCLUDE: xs/TreeEntry.xs
+INCLUDE: xs/Tree/Builder.xs
+INCLUDE: xs/Tree/Entry.xs
 INCLUDE: xs/Walker.xs

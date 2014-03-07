@@ -14,17 +14,18 @@ Repository				T_GIT_REF
 Signature				T_GIT_REF
 Tag					T_GIT_REF
 Tree					T_GIT_REF
-TreeBuilder				T_GIT_REF
-TreeEntry				T_GIT_REF
+Tree_Builder				T_GIT_REF
+Tree_Entry				T_GIT_REF
 Walker					T_GIT_REF
 
 OUTPUT
 T_GIT_REF
-	sv_setref_pv($arg, \"Git::Raw::${type}\", (void *) $var);
+	sv_setref_pv($arg, \"Git::Raw::${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\", (void *) $var);
 
 INPUT
 T_GIT_REF
-	if (sv_isobject($arg) && sv_derived_from($arg, \"Git::Raw::${type}\"))
+	if (sv_isobject($arg) &&
+	    sv_derived_from($arg, \"Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\"))
 		$var = INT2PTR($type, SvIV((SV *) SvRV($arg)));
 	else
 		Perl_croak(aTHX_ \"$var is not of type Git::Raw::${type}\");

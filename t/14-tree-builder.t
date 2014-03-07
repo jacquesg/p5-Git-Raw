@@ -11,7 +11,7 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $empty_blob = $repo -> blob('');
-my $builder    = Git::Raw::TreeBuilder -> new($repo);
+my $builder    = Git::Raw::Tree::Builder -> new($repo);
 
 is $builder -> entry_count, 0;
 
@@ -19,7 +19,7 @@ my $entry = $builder -> insert('one.txt', $empty_blob, 0100644);
 $builder -> insert('two.txt', $empty_blob, 0100644);
 $builder -> insert('three.txt', $empty_blob, 0100644);
 
-isa_ok $entry, 'Git::Raw::TreeEntry';
+isa_ok $entry, 'Git::Raw::Tree::Entry';
 is $entry -> name, 'one.txt';
 
 is $builder -> entry_count, 3;
@@ -56,7 +56,7 @@ $builder -> clear();
 
 is $builder -> entry_count, 0;
 
-$builder = Git::Raw::TreeBuilder -> new($repo, $tree);
+$builder = Git::Raw::Tree::Builder -> new($repo, $tree);
 
 is $builder -> entry_count, 3;
 

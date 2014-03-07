@@ -1,8 +1,8 @@
-MODULE = Git::Raw			PACKAGE = Git::Raw::TreeEntry
+MODULE = Git::Raw			PACKAGE = Git::Raw::Tree::Entry
 
 SV *
 id(self)
-	TreeEntry self
+	Tree_Entry self
 
 	PREINIT:
 		const git_oid *oid;
@@ -15,7 +15,7 @@ id(self)
 
 SV *
 name(self)
-	TreeEntry self
+	Tree_Entry self
 
 	PREINIT:
 		const char *name;
@@ -36,12 +36,12 @@ object(self)
 		git_object *obj;
 		Repository repo;
 
-		TreeEntry entry;
+		Tree_Entry entry;
 
 	CODE:
 		repo = INT2PTR(Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self)));
 
-		entry = GIT_SV_TO_PTR(TreeEntry, self);
+		entry = GIT_SV_TO_PTR(Tree::Entry, self);
 
 		rc = git_tree_entry_to_object(&obj, repo, entry);
 		git_check_error(rc);
@@ -55,5 +55,5 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_tree_entry_free(GIT_SV_TO_PTR(TreeEntry, self));
+		git_tree_entry_free(GIT_SV_TO_PTR(Tree::Entry, self));
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

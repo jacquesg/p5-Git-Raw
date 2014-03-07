@@ -56,7 +56,7 @@ entries(self)
 		int i, count;
 
 		Tree self_ptr;
-		TreeEntry entry;
+		Tree_Entry entry;
 		AV *entries = newAV();
 
 	CODE:
@@ -66,14 +66,14 @@ entries(self)
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;
-			TreeEntry tmp_entry = (TreeEntry)
+			Tree_Entry tmp_entry = (Tree_Entry)
 				git_tree_entry_byindex(self_ptr, i);
 
 			rc = git_tree_entry_dup(&entry, tmp_entry);
 			git_check_error(rc);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
-				tmp, "Git::Raw::TreeEntry",
+				tmp, "Git::Raw::Tree::Entry",
 				entry, GIT_SV_TO_MAGIC(self)
 			);
 
@@ -95,12 +95,12 @@ entry_byname(self, name)
 		STRLEN len;
 		const char *name_str;
 
-		TreeEntry tmp_entry, entry;
+		Tree_Entry tmp_entry, entry;
 
 	CODE:
 		name_str = SvPVbyte(name, len);
 
-		tmp_entry = (TreeEntry) git_tree_entry_byname(
+		tmp_entry = (Tree_Entry) git_tree_entry_byname(
 			GIT_SV_TO_PTR(Tree, self), name_str
 		);
 
@@ -110,7 +110,7 @@ entry_byname(self, name)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::TreeEntry",
+			RETVAL, "Git::Raw::Tree::Entry",
 			entry, GIT_SV_TO_MAGIC(self)
 		);
 
@@ -127,7 +127,7 @@ entry_bypath(self, path)
 		STRLEN len;
 		const char *path_str;
 
-		TreeEntry entry;
+		Tree_Entry entry;
 
 	CODE:
 		path_str = SvPVbyte(path, len);
@@ -138,7 +138,7 @@ entry_bypath(self, path)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::TreeEntry", entry, GIT_SV_TO_MAGIC(self)
+			RETVAL, "Git::Raw::Tree::Entry", entry, GIT_SV_TO_MAGIC(self)
 		);
 
 	OUTPUT: RETVAL
