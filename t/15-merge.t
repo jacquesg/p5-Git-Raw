@@ -99,7 +99,24 @@ ok eval { $r = $repo -> merge($branch2, {
 })};
 
 is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
-is $repo -> index -> has_conflicts, 1;
+is $index -> has_conflicts, 1;
+
+my @conflicts = $index -> conflicts;
+is scalar(@conflicts), 1;
+
+my $conflict = shift @conflicts;
+is $conflict -> {'ancestor'} -> path, 'test1';
+is $conflict -> {'ours'} -> path, 'test1';
+is $conflict -> {'theirs'} -> path, 'test1';
+
+is length($conflict -> {'ancestor'} -> id), 40;
+is length($conflict -> {'ours'} -> id), 40;
+is length($conflict -> {'theirs'} -> id), 40;
+
+ok $conflict -> {'ancestor'} -> id ne $conflict -> {'ours'} -> id;
+ok $conflict -> {'ancestor'} -> id ne $conflict -> {'theirs'} -> id;
+ok $conflict -> {'ours'} -> id ne $conflict -> {'theirs'} -> id;
+
 
 write_file($file1, 'this is file1 on branch1 and branch2');
 $index -> add('test1');
@@ -136,7 +153,7 @@ ok eval { $r = $repo -> merge($branch3, {
 	}
 })};
 
-is $repo -> index -> has_conflicts, 0;
+is $index -> has_conflicts, 0;
 is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 my $content = read_file($file1);
@@ -157,7 +174,7 @@ ok eval { $r = $repo -> merge($branch3, {
 	}
 })};
 
-is $repo -> index -> has_conflicts, 0;
+is $index -> has_conflicts, 0;
 is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 $content = read_file($file1);
