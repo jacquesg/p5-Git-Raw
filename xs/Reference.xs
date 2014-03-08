@@ -32,7 +32,8 @@ create(class, name, repo, object, ...)
 
 		rc = git_reference_create(
 			&ref, GIT_SV_TO_PTR(Repository, repo),
-			name, oid, force, sig, NULL);
+			name, oid, force, sig, NULL
+		);
 		git_signature_free(sig);
 		git_check_error(rc);
 
@@ -176,7 +177,9 @@ target(self, ...)
 					);
 					git_check_error(rc);
 
-					RETVAL = git_obj_to_sv(obj, self);
+					RETVAL = git_obj_to_sv(
+						obj, GIT_SV_TO_MAGIC(self)
+					);
 					break;
 				}
 
@@ -186,11 +189,16 @@ target(self, ...)
 
 					target = git_reference_symbolic_target(ref);
 
-					rc = git_reference_lookup(&linked_ref, git_reference_owner(ref), target);
+					rc = git_reference_lookup(
+						&linked_ref,
+						git_reference_owner(ref),
+						target
+					);
 					git_check_error(rc);
 
 					GIT_NEW_OBJ_WITH_MAGIC(
-						RETVAL, "Git::Raw::Reference", linked_ref, GIT_SV_TO_MAGIC(self)
+						RETVAL, "Git::Raw::Reference",
+						linked_ref, GIT_SV_TO_MAGIC(self)
 					);
 					break;
 				}

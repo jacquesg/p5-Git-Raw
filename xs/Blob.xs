@@ -28,7 +28,7 @@ create(class, repo, buffer)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo)
+			RETVAL, SvPVbyte_nolen(class), blob, repo
 		);
 
 	OUTPUT: RETVAL
@@ -57,7 +57,7 @@ lookup(class, repo, id)
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo)
+			RETVAL, SvPVbyte_nolen(class), blob, repo
 		);
 
 	OUTPUT: RETVAL

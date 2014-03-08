@@ -222,17 +222,17 @@ callbacks(self, callbacks)
 		SV **opt;
 		SV *cb_obj;
 
-		xs_git_remote_callbacks *cbs = NULL;
+		git_raw_remote_callbacks *cbs = NULL;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
 		remote_ptr = GIT_SV_TO_PTR(Remote, self);
 
 		if ((cbs = xs_object_magic_get_struct(aTHX_ self))) {
-			cleanup_xs_git_remote_callbacks(cbs);
+			git_clean_remote_callbacks(cbs);
 		}
 
-		Renew(cbs, 1, xs_git_remote_callbacks);
+		Renew(cbs, 1, git_raw_remote_callbacks);
 
 		if ((cbs -> credentials =
 			get_callback_option(callbacks, "credentials")))
@@ -268,8 +268,8 @@ ls(self)
 	PREINIT:
 		int rc;
 
-		const char *peel = "^{}";
 		size_t i, count;
+		const char *peel = "^{}";
 		const git_remote_head **refs;
 
 		HV *r;
@@ -296,8 +296,7 @@ ls(self)
 					git_oid_to_sv(&refs[i] -> loid));
 
 			ref_name = refs[i] -> name;
-			len = strlen(ref_name) -
-			     (strstr(ref_name, peel) == NULL ?
+			len = strlen(ref_name) - (strstr(ref_name, peel) == NULL ?
 				0 : strlen(peel));
 
 			hv_store(r, refs[i] -> name, len,
@@ -322,12 +321,13 @@ DESTROY(self)
 	SV *self
 
 	PREINIT:
-		xs_git_remote_callbacks *cbs;
+		git_raw_remote_callbacks *cbs;
 
 	CODE:
-		cbs = xs_object_magic_get_struct(aTHX_ self);
-		if (cbs) {
-			cleanup_xs_git_remote_callbacks(cbs);
+		
+
+		if ((cbs = xs_object_magic_get_struct(aTHX_ self))) {
+			git_clean_remote_callbacks(cbs);
 			Safefree(cbs);
 		}
 

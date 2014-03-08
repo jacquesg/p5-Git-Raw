@@ -17,9 +17,10 @@ lookup(class, repo, id)
 
 		Repository repo_ptr;
 
-	CODE:
+	INIT:
 		id_str = SvPVbyte(id, len);
 
+	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
@@ -66,6 +67,7 @@ entries(self)
 
 		for (i = 0; i < count; i++) {
 			SV *tmp;
+
 			Tree_Entry tmp_entry = (Tree_Entry)
 				git_tree_entry_byindex(self_ptr, i);
 

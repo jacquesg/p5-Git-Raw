@@ -78,7 +78,10 @@ lookup(class, repo, id)
 		Repository repo_ptr;
 
 		STRLEN len;
-		const char *id_str = SvPVbyte(id, len);
+		const char *id_str;
+
+	INIT:
+		id_str = SvPVbyte(id, len);
 
 	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);
@@ -177,7 +180,7 @@ time(self)
 	CODE:
 		time = git_commit_time(self);
 
-		Newx(buf, snprintf(NULL, 0, "%" PRId64, time)+1, char);
+		Newx(buf, snprintf(NULL, 0, "%" PRId64, time) + 1, char);
 		sprintf(buf, "%" PRId64, time);
 
 		RETVAL = newSVpv(buf, 0);

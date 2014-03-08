@@ -51,7 +51,7 @@ clone(class, url, path, opts)
 		if ((opt = hv_fetchs(opts, "disable_checkout", 0)) && SvIV(*opt) != 0)
 			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 
-		xs_git_remote_callbacks cbs;
+		git_raw_remote_callbacks cbs;
 		clone_opts.remote_callbacks.payload = &cbs;
 
 		/* Callbacks */
@@ -129,16 +129,18 @@ discover(class, path)
 		Repository repo;
 
 	CODE:
-		git_buf buf = {0, 0, 0};
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+
 		rc = git_buf_grow(&buf, GIT_PATH_MAX);
 		git_check_error(rc);
 
 		rc = git_repository_discover(
 			&buf, SvPVbyte_nolen(path), 1, NULL
 		);
-		if (rc != GIT_OK) {
+
+		if (rc != GIT_OK)
 			git_buf_free(&buf);
-		}
+
 		git_check_error(rc);
 
 		rc = git_repository_open(&repo, (const char*) buf.ptr);
@@ -252,9 +254,10 @@ lookup(self, id)
 		STRLEN len;
 		const char *id_str;
 
-	CODE:
+	INIT:
 		id_str = SvPVbyte(id, len);
 
+	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
@@ -376,7 +379,6 @@ status(self, ...)
 		 * tree. Core git does not tell you if the file was renamed in
 		 * the worktree anyway.
 		 */
-
 		if (items > 1) {
 			opt.flags |= GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
 
@@ -667,8 +669,11 @@ merge(self, ref, opts)
 			&merge_opts.checkout_opts);
 		}
 
-		rc = git_merge(&merge_result, self,
-			(const git_merge_head **) &merge_head, 1, &merge_opts);
+		rc = git_merge(
+			&merge_result, self,
+			(const git_merge_head **) &merge_head,
+			1, &merge_opts
+		);
 		Safefree(merge_opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
@@ -709,8 +714,9 @@ branches(self)
 	PPCODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 
-		rc = git_branch_iterator_new(&itr, repo,
-			GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE);
+		rc = git_branch_iterator_new(
+			&itr, repo, GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE
+		);
 		git_check_error(rc);
 
 		while ((rc = git_branch_next(&branch, &type, itr)) == 0) {

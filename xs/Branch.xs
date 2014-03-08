@@ -16,9 +16,12 @@ create(class, repo, name, target)
 	PREINIT:
 		int rc;
 
+		Commit obj;
 		Reference ref;
 		Signature sig;
-		Commit obj = (Commit) git_sv_to_obj(target);
+
+	INIT:
+		obj = (Commit) git_sv_to_obj(target);
 
 	CODE:
 		rc = git_signature_default(&sig, GIT_SV_TO_PTR(Repository, repo));
@@ -78,7 +81,10 @@ move(self, name, force)
 		Signature sig;
 
 		Branch new_branch;
-		Branch old_branch = GIT_SV_TO_PTR(Branch, self);
+		Branch old_branch;
+
+	INIT:
+		old_branch = GIT_SV_TO_PTR(Branch, self);
 
 	CODE:
 		rc = git_signature_default(&sig, git_reference_owner(

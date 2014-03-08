@@ -59,9 +59,9 @@ patches(self)
 	PREINIT:
 		int rc;
 
-		size_t i, count, num_patches = 0;
-
 		Diff diff_ptr;
+
+		size_t i, count, num_patches = 0;
 
 	PPCODE:
 		diff_ptr = GIT_SV_TO_PTR(Diff, self);
@@ -75,11 +75,14 @@ patches(self)
 
 			if (patch) {
 				SV *p;
+
 				GIT_NEW_OBJ_WITH_MAGIC(
-					p, "Git::Raw::Patch", patch, SvRV(self));
+					p, "Git::Raw::Patch", patch, SvRV(self)
+				);
 
 				EXTEND(SP, 1);
 				PUSHs(sv_2mortal(p));
+
 				++num_patches;
 			}
 		}

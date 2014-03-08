@@ -164,6 +164,7 @@ tagger(self)
 
 	CODE:
 		c = (Signature) git_tag_tagger(self);
+
 		rc = git_signature_dup(&r, c);
 		git_check_error(rc);
 
@@ -183,7 +184,7 @@ target(self)
 		rc = git_tag_target(&obj, GIT_SV_TO_PTR(Tag, self));
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(obj, self);
+		RETVAL = git_obj_to_sv(obj, GIT_SV_TO_MAGIC(self));
 
 	OUTPUT: RETVAL
 

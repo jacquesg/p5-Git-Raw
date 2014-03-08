@@ -8,8 +8,6 @@
 
 #include "ppport.h"
 
-#include <inttypes.h>
-
 #include <git2.h>
 #include <git2/sys/repository.h>
 
@@ -38,18 +36,70 @@ typedef git_treebuilder * Tree_Builder;
 typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
-typedef struct xs_git_remote_callbacks {
+typedef struct {
 	SV *progress;
 	SV *completion;
 	SV *credentials;
 	SV *transfer_progress;
 	SV *update_tips;
-} xs_git_remote_callbacks;
+} git_raw_remote_callbacks;
 
-void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr);
-void *xs_object_magic_get_struct(pTHX_ SV *sv);
+STATIC MGVTBL null_mg_vtbl = {
+	NULL, /* get */
+	NULL, /* set */
+	NULL, /* len */
+	NULL, /* clear */
+	NULL, /* free */
+#if MGf_COPY
+	NULL, /* copy */
+#endif /* MGf_COPY */
+#if MGf_DUP
+	NULL, /* dup */
+#endif /* MGf_DUP */
+#if MGf_LOCAL
+	NULL, /* local */
+#endif /* MGf_LOCAL */
+};
 
-void git_check_error(int err) {
+STATIC void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr) {
+	sv_magicext(sv, NULL, PERL_MAGIC_ext, &null_mg_vtbl, ptr, 0);
+}
+
+STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
+	MAGIC *mg = NULL;
+
+	if (SvTYPE(sv) >= SVt_PVMG) {
+		MAGIC *tmp;
+
+		for (tmp = SvMAGIC(sv); tmp;
+		     tmp = tmp -> mg_moremagic) {
+			if ((tmp -> mg_type == PERL_MAGIC_ext) &&
+			    (tmp -> mg_virtual == &null_mg_vtbl))
+				mg = tmp;
+		}
+	}
+
+	return (mg) ? mg -> mg_ptr : NULL;
+}
+
+#define GIT_SV_TO_MAGIC(SV) \
+	xs_object_magic_get_struct(aTHX_ SvRV(SV))
+
+#define GIT_NEW_OBJ(rv, class, sv)				\
+	STMT_START {						\
+		(rv) = sv_setref_pv(newSV(0), class, sv);	\
+	} STMT_END
+
+#define GIT_NEW_OBJ_WITH_MAGIC(rv, class, sv, magic)		\
+	STMT_START {						\
+		(rv) = sv_setref_pv(newSV(0), class, sv);	\
+								\
+		xs_object_magic_attach_struct(			\
+			aTHX_ SvRV(rv), SvREFCNT_inc_NN(magic)	\
+		);						\
+	} STMT_END
+
+STATIC void git_check_error(int err) {
 	const git_error *error;
 
 	if (err == GIT_OK)
@@ -60,25 +110,32 @@ void git_check_error(int err) {
 	Perl_croak(aTHX_ "%s", error -> message);
 }
 
-SV *git_obj_to_sv(git_object *o, SV *repo_src) {
+STATIC SV *git_obj_to_sv(git_object *o, SV *repo) {
 	SV *res;
-	SV *repo;
 
 	switch (git_object_type(o)) {
 		case GIT_OBJ_BLOB:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Blob", o);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				res, "Git::Raw::Blob", o, repo
+			);
 			break;
 
 		case GIT_OBJ_COMMIT:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Commit", o);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				res, "Git::Raw::Commit", o, repo
+			);
 			break;
 
 		case GIT_OBJ_TAG:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Tag", o);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				res, "Git::Raw::Tag", o, repo
+			);
 			break;
 
 		case GIT_OBJ_TREE:
-			res = sv_setref_pv(newSV(0), "Git::Raw::Tree", o);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				res, "Git::Raw::Tree", o, repo
+			);
 			break;
 
 		default:
@@ -86,23 +143,10 @@ SV *git_obj_to_sv(git_object *o, SV *repo_src) {
 			break;
 	}
 
-	if (sv_isobject(repo_src) &&
-	    sv_derived_from(repo_src, "Git::Raw::Repository"))
-		repo = SvRV(repo_src);
-	else if (sv_isobject(repo_src))
-		repo = xs_object_magic_get_struct(aTHX_ SvRV(repo_src));
-	else
-		Perl_croak(aTHX_ "Invalid repository source");
-
-	if (!repo)
-		Perl_croak(aTHX_ "Invalid repository source");
-
-	xs_object_magic_attach_struct(aTHX_ SvRV(res), SvREFCNT_inc_NN(repo));
-
 	return res;
 }
 
-git_object *git_sv_to_obj(SV *sv) {
+STATIC git_object *git_sv_to_obj(SV *sv) {
 	if (sv_isobject(sv) && (
 		sv_derived_from(sv, "Git::Raw::Blob") ||
 		sv_derived_from(sv, "Git::Raw::Commit") ||
@@ -114,7 +158,7 @@ git_object *git_sv_to_obj(SV *sv) {
 	return NULL;
 }
 
-void *git_sv_to_ptr(const char *type, SV *sv) {
+STATIC void *git_sv_to_ptr(const char *type, SV *sv) {
 	SV *full_type = sv_2mortal(newSVpvf("Git::Raw::%s", type));
 
 	if (sv_isobject(sv) && sv_derived_from(sv, SvPV_nolen(full_type)))
@@ -126,7 +170,7 @@ void *git_sv_to_ptr(const char *type, SV *sv) {
 #define GIT_SV_TO_PTR(type, sv) \
 	git_sv_to_ptr(#type, sv)
 
-SV *git_oid_to_sv(const git_oid *oid) {
+STATIC SV *git_oid_to_sv(const git_oid *oid) {
 	char out[41];
 
 	git_oid_fmt(out, oid);
@@ -135,7 +179,7 @@ SV *git_oid_to_sv(const git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
-SV *get_callback_option(HV *callbacks, const char *name) {
+STATIC SV *get_callback_option(HV *callbacks, const char *name) {
 	SV **opt;
 
 	if ((opt = hv_fetch(callbacks, name, strlen(name), 0))) {
@@ -152,7 +196,7 @@ SV *get_callback_option(HV *callbacks, const char *name) {
 	return NULL;
 }
 
-void cleanup_xs_git_remote_callbacks (xs_git_remote_callbacks *cbs) {
+STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	if (cbs -> credentials) {
 		SvREFCNT_dec(cbs -> credentials);
 		cbs -> credentials = NULL;
@@ -179,14 +223,15 @@ void cleanup_xs_git_remote_callbacks (xs_git_remote_callbacks *cbs) {
 	}
 }
 
-void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
+STATIC void git_flag_opt(HV *value, const char *name,
+			 int mask, unsigned *out) {
 	SV **opt;
 
 	if ((opt = hv_fetch(value, name, strlen(name), 0)) && SvIV(*opt))
 		*out |= mask;
 }
 
-unsigned git_hv_to_diff_flag(HV *flags) {
+STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 	unsigned out = 0;
 
 	git_flag_opt(flags, "reverse", GIT_DIFF_REVERSE, &out);
@@ -237,7 +282,7 @@ unsigned git_hv_to_diff_flag(HV *flags) {
 	return out;
 }
 
-unsigned git_hv_to_checkout_strategy(HV *strategy) {
+STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 
 	git_flag_opt(strategy, "none", GIT_CHECKOUT_NONE, &out);
@@ -280,7 +325,7 @@ unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	return out;
 }
 
-int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
+STATIC int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 		const git_diff_line *line, void *data) {
 	dSP;
 
@@ -340,7 +385,7 @@ typedef struct {
 	const char *class;
 } git_foreach_payload;
 
-int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
+STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
 	dSP;
 	int rv;
 
@@ -365,7 +410,7 @@ int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
 	return rv;
 }
 
-int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
+STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
 	dSP;
 	int rv;
 
@@ -390,7 +435,7 @@ int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *pa
 	return rv;
 }
 
-int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
+STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	dSP;
 	int rv;
 	Tag tag;
@@ -425,7 +470,7 @@ int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	return rv;
 }
 
-int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, const git_diff_file *baseline,
+STATIC int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, const git_diff_file *baseline,
 	const git_diff_file *target, const git_diff_file *workdir, void *payload) {
 	dSP;
 
@@ -470,8 +515,8 @@ int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, const g
 	return rv;
 }
 
-void git_checkout_progress_cbb(const char *path, size_t completed_steps, size_t total_steps,
-	void *payload) {
+STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
+				      size_t total_steps, void *payload) {
 	dSP;
 
 	SV *coderef = payload;
@@ -493,7 +538,7 @@ void git_checkout_progress_cbb(const char *path, size_t completed_steps, size_t 
 	LEAVE;
 }
 
-int git_progress_cbb(const char *str, int len, void *cbs) {
+STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
 	dSP;
 
 	ENTER;
@@ -503,7 +548,7 @@ int git_progress_cbb(const char *str, int len, void *cbs) {
 	PUSHs(newSVpv(str, len));
 	PUTBACK;
 
-	call_sv(((xs_git_remote_callbacks *) cbs) -> progress, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> progress, G_DISCARD);
 
 	SPAGAIN;
 
@@ -513,7 +558,7 @@ int git_progress_cbb(const char *str, int len, void *cbs) {
 	return 0;
 }
 
-int git_completion_cbb(git_remote_completion_type type, void *cbs) {
+STATIC int git_completion_cbb(git_remote_completion_type type, void *cbs) {
 	dSP;
 	SV* ct;
 
@@ -542,7 +587,7 @@ int git_completion_cbb(git_remote_completion_type type, void *cbs) {
 	PUSHs(ct);
 	PUTBACK;
 
-	call_sv(((xs_git_remote_callbacks *) cbs) -> completion, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> completion, G_DISCARD);
 
 	SPAGAIN;
 
@@ -552,7 +597,7 @@ int git_completion_cbb(git_remote_completion_type type, void *cbs) {
 	return 0;
 }
 
-int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
+STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
 	dSP;
 
 	ENTER;
@@ -567,7 +612,7 @@ int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
 	PUSHs(newSVuv(stats -> received_bytes));
 	PUTBACK;
 
-	call_sv(((xs_git_remote_callbacks *) cbs) -> transfer_progress, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> transfer_progress, G_DISCARD);
 
 	SPAGAIN;
 
@@ -577,7 +622,7 @@ int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
 	return 0;
 }
 
-int git_update_tips_cbb(const char *name, const git_oid *a,
+STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 	const git_oid *b, void *cbs) {
 	dSP;
 
@@ -590,7 +635,7 @@ int git_update_tips_cbb(const char *name, const git_oid *a,
 	PUSHs(b != NULL ? git_oid_to_sv(b) : &PL_sv_undef);
 	PUTBACK;
 
-	call_sv(((xs_git_remote_callbacks *) cbs) -> update_tips, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> update_tips, G_DISCARD);
 
 	SPAGAIN;
 
@@ -600,7 +645,7 @@ int git_update_tips_cbb(const char *name, const git_oid *a,
 	return 0;
 }
 
-int git_credentials_cbb(git_cred **cred, const char *url,
+STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
 	SV *creds;
@@ -612,7 +657,7 @@ int git_credentials_cbb(git_cred **cred, const char *url,
 	PUSHs(newSVpv(url, 0));
 	PUTBACK;
 
-	call_sv(((xs_git_remote_callbacks *) cbs) -> credentials, G_SCALAR);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_SCALAR);
 
 	SPAGAIN;
 
@@ -626,61 +671,7 @@ int git_credentials_cbb(git_cred **cred, const char *url,
 	return 0;
 }
 
-STATIC MGVTBL null_mg_vtbl = {
-	NULL, /* get */
-	NULL, /* set */
-	NULL, /* len */
-	NULL, /* clear */
-	NULL, /* free */
-#if MGf_COPY
-	NULL, /* copy */
-#endif /* MGf_COPY */
-#if MGf_DUP
-	NULL, /* dup */
-#endif /* MGf_DUP */
-#if MGf_LOCAL
-	NULL, /* local */
-#endif /* MGf_LOCAL */
-};
-
-void xs_object_magic_attach_struct(pTHX_ SV *sv, void *ptr) {
-	sv_magicext(sv, NULL, PERL_MAGIC_ext, &null_mg_vtbl, ptr, 0);
-}
-
-void *xs_object_magic_get_struct(pTHX_ SV *sv) {
-	MAGIC *mg = NULL;
-
-	if (SvTYPE(sv) >= SVt_PVMG) {
-		MAGIC *tmp;
-
-		for (tmp = SvMAGIC(sv); tmp; tmp = tmp -> mg_moremagic) {
-			if ((tmp -> mg_type == PERL_MAGIC_ext) &&
-			    (tmp -> mg_virtual == &null_mg_vtbl))
-				mg = tmp;
-		}
-	}
-
-	return (mg) ? mg -> mg_ptr : NULL;
-}
-
-#define GIT_SV_TO_MAGIC(SV) \
-	xs_object_magic_get_struct(aTHX_ SvRV(SV))
-
-#define GIT_NEW_OBJ(rv, class, sv)				\
-	STMT_START {						\
-		(rv) = sv_setref_pv(newSV(0), class, sv);	\
-	} STMT_END
-
-#define GIT_NEW_OBJ_WITH_MAGIC(rv, class, sv, magic)		\
-	STMT_START {						\
-		(rv) = sv_setref_pv(newSV(0), class, sv);	\
-								\
-		xs_object_magic_attach_struct(			\
-			aTHX_ SvRV(rv), SvREFCNT_inc_NN(magic)	\
-		);						\
-	} STMT_END
-
-void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
+STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 	char **paths = NULL;
 	SV **opt;
 
@@ -763,7 +754,7 @@ void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
 	}
 }
 
-void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_opts) {
+STATIC void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_opts) {
 	SV **opt;
 
 	if ((opt = hv_fetchs(opts, "flags", 0))) {

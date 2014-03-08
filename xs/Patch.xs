@@ -7,7 +7,7 @@ buffer(self)
 	PREINIT:
 		int rc;
 
-		git_buf buf = {0, 0, 0};
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
 		rc = git_patch_to_buf(&buf, self);
@@ -33,16 +33,16 @@ hunks(self, ...)
 	SV *self
 
 	PROTOTYPE: $;$
+
 	PREINIT:
-		size_t start, end, num_hunks;
+		size_t start = 0, end, num_hunks;
 
 	PPCODE:
-		start = 0;
-		num_hunks = git_patch_num_hunks(
-			GIT_SV_TO_PTR(Patch, self));
+		num_hunks = git_patch_num_hunks(GIT_SV_TO_PTR(Patch, self));
 
 		if (items == 2) {
 			SV *index = ST(1);
+
 			if (!SvUOK(index))
 				Perl_croak(aTHX_ "Invalid type for 'index'");
 
@@ -60,12 +60,14 @@ hunks(self, ...)
 			const git_diff_hunk *h;
 
 			int rc = git_patch_get_hunk(
-				&h, NULL, GIT_SV_TO_PTR(Patch, self), start);
+				&h, NULL, GIT_SV_TO_PTR(Patch, self), start
+			);
 			git_check_error(rc);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				hunk, "Git::Raw::Diff::Hunk",
-				(Diff_Hunk) h, SvRV(self));
+				(Diff_Hunk) h, SvRV(self)
+			);
 
 			EXTEND(SP, 1);
 			PUSHs(sv_2mortal(hunk));
@@ -86,8 +88,8 @@ line_stats(self)
 
 	CODE:
 		rc = git_patch_line_stats(
-			&total_context, &total_additions, &total_deletions,
-			self);
+			&total_context, &total_additions, &total_deletions, self
+		);
 		git_check_error(rc);
 
 		stats = newHV();
@@ -106,7 +108,8 @@ delta(self)
 
 	CODE:
 		const git_diff_delta *delta =
-			git_patch_get_delta(GIT_SV_TO_PTR(Patch, self));
+			git_patch_get_delta(GIT_SV_TO_PTR(Patch, self)
+		);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
 			RETVAL, "Git::Raw::Diff::Delta",

@@ -52,7 +52,7 @@ append(self, message, ...)
 	PROTOTYPE: $$;$
 
 	PREINIT:
-		int rc, free_signature;
+		int rc;
 
 		git_oid id;
 		Signature sig;
@@ -72,12 +72,8 @@ append(self, message, ...)
 		git_check_error(rc);
 
 		if (items == 3) {
-			free_signature = 0;
-
 			sig = GIT_SV_TO_PTR(Signature, ST(2));
 		} else {
-			free_signature = 1;
-
 			rc = git_signature_default(&sig, ref_owner);
 			git_check_error(rc);
 		}
@@ -86,7 +82,10 @@ append(self, message, ...)
 			GIT_SV_TO_PTR(Reflog, self),
 			&id, sig, message
 		);
-		if (free_signature) git_signature_free(sig);
+
+		if (items != 3)
+			git_signature_free(sig);
+
 		git_check_error(rc);
 
 void
