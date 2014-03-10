@@ -6,6 +6,7 @@ use warnings;
 require XSLoader;
 XSLoader::load('Git::Raw', $Git::Raw::VERSION);
 
+use Git::Raw::Filter;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
 
