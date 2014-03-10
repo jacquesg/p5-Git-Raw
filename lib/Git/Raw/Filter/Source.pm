@@ -18,6 +18,37 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 id( )
+
+Retrieve the id of the filter source as a string.
+
+=head2 path( )
+
+Retrieve the path that the filter source data is coming from.
+
+=head2 file_mode( )
+
+Retrieve the file mode of the source file. If the mode is unknown,
+this will return 0.
+
+=head2 mode( )
+
+Retrieve the mode to be applied. Possible values include:
+
+=over 4
+
+=item * "to_worktree"
+
+The file is being exported from the Git object database to the working
+directory.
+
+=item * "to_odb"
+
+The file is being import from the working directory to the Git object
+database.
+
+=back
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
