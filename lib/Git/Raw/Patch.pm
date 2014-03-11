@@ -28,17 +28,17 @@ Get the number of hunks in the patch.
 
 =head2 hunks( [$index] )
 
-Returns a list of C<Git::Raw::DiffHunk> objects. If C<$index> is specified
+Returns a list of C<Git::Raw::Diff::Hunk> objects. If C<$index> is specified
 only the hunk at the specified index will be returned.
 
 =head2 line_stats( )
 
 Get line counts of each type in the patch. Returns a hash with entries
-L<"context">, L<"addittions"> and L<"deletions">.
+L<"context">, L<"additions"> and L<"deletions">.
 
 =head2 delta( )
 
-Get the delta associated with the patch. Returns a C<Git::Raw::DiffDelta>
+Get the delta associated with the patch. Returns a C<Git::Raw::Diff::Delta>
 object.
 
 =head1 AUTHOR
