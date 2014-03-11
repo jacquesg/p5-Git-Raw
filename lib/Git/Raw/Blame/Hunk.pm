@@ -7,7 +7,7 @@ use Git::Raw;
 
 =head1 NAME
 
-Git::Raw::Blame::Hunk - Git blame class
+Git::Raw::Blame::Hunk - Git blame hunk class
 
 =head1 DESCRIPTION
 
@@ -17,6 +17,37 @@ B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
 =head1 METHODS
+
+=head2 lines_in_hunk( )
+
+Retrieve the number of lines in the hunk.
+
+=head2 final_commit_id( )
+
+Retrieve the id of the commit where this line was last changed as a string.
+
+=head2 final_start_line_number( )
+
+Retrieve the 1-based line number where this hunk begins in the final version
+of the file.
+
+=head2 orig_commit_id( )
+
+Retrieve the id of the commit where this hunk was found. This will usually
+be the same as L<"final_commit_id">.
+
+=head2 orig_start_line_number( )
+
+Retrieve the 1-based line number where this hunk begins in the file named by 
+L<"orig_path"> in the commit specified by L<"orig_commit_id">.
+
+=head2 orig_path( )
+
+Retrieve the path to the file where this hunk originated.
+
+=head2 boundary( )
+
+If the hunk has been tracked to a boundary commit.
 
 =head1 AUTHOR
 
