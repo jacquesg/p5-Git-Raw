@@ -43,7 +43,7 @@ hunks(self, ...)
 		if (items == 2) {
 			SV *index = ST(1);
 
-			if (!SvUOK(index))
+			if (!SvIOK(index) || SvIV(index) < 0)
 				Perl_croak(aTHX_ "Invalid type for 'index'");
 
 			start = SvUV(index);
