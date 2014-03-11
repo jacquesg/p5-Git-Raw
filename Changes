@@ -14,6 +14,7 @@ Revision history for Git-Raw
     + New classes: Git::Raw::Patch, Git::Raw::Diff::Delta,
       Git::Raw::Diff::Hunk, Git::Raw::Diff::File
  - Improve index conflicts handling (GH#62) (thanks, @jacquesg!)
+ - Add support for filters (GH#57) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
