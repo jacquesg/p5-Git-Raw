@@ -28,6 +28,8 @@ typedef struct {
 	SV *cleanup;
 } git_filter_callbacks;
 
+typedef git_blame * Blame;
+typedef git_blame_hunk * Blame_Hunk;
 typedef git_blob * Blob;
 typedef git_reference * Branch;
 typedef git_commit * Commit;
@@ -1016,6 +1018,8 @@ STATIC void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_
 
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
+INCLUDE: xs/Blame.xs
+INCLUDE: xs/Blame/Hunk.xs
 INCLUDE: xs/Blob.xs
 INCLUDE: xs/Branch.xs
 INCLUDE: xs/Commit.xs

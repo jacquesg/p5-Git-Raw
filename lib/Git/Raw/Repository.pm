@@ -619,6 +619,10 @@ Retrieve the complete path of the repository.
 Retrieve the working directory of the repository. If C<$new_dir> is passed, the
 working directory of the repository will be set to the directory.
 
+=head2 blame( $path )
+
+Retrieve blame information for C<$path>. Returns a C<Git::Raw::Blame> object.
+
 =head2 state( )
 
 Determine the state of the repository. One of the following values is returned:

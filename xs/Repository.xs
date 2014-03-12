@@ -850,6 +850,28 @@ workdir(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+blame (self, file)
+	SV *self
+	const char *file
+
+	PREINIT:
+		int rc;
+		Blame blame;
+
+		git_blame_options options = GIT_BLAME_OPTIONS_INIT;
+
+	CODE:
+		rc = git_blame_file(
+			&blame, GIT_SV_TO_PTR(Repository, self), file, &options);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Blame", blame, SvRV(self)
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 state(self)
 	Repository self
 
