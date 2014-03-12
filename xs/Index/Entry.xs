@@ -23,7 +23,7 @@ size(self)
 	Index_Entry self
 
 	CODE:
-		RETVAL = newSVuv(self -> file_size);
+		RETVAL = newSVuv((size_t) self -> file_size);
 
 	OUTPUT: RETVAL
 

@@ -55,10 +55,10 @@ callbacks(self, callbacks)
 	HV *callbacks
 
 	PREINIT:
-		SV **opt;
+		git_filter_callbacks *cbs = NULL;
 
 	CODE:
-		git_filter_callbacks *cbs = &self -> callbacks;
+		cbs = &self -> callbacks;
 
 		git_clean_filter_callbacks(cbs);
 
@@ -127,8 +127,10 @@ DESTROY(self)
 	PREINIT:
 		int rc = 0;
 
+		git_filter_callbacks *cbs = NULL;
+
 	CODE:
-		git_filter_callbacks *cbs = &self -> callbacks;
+		cbs = &self -> callbacks;
 
 		if (git_filter_lookup(self -> name))
 			rc = git_filter_unregister(self -> name);

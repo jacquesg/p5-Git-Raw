@@ -119,8 +119,6 @@ entries(self)
 		int rc;
 		size_t i, entry_count;
 
-		char *buf;
-
 		Reflog reflog;
 		Signature sig;
 

@@ -71,7 +71,7 @@ content(self)
 
 	CODE:
 		len = git_blob_rawsize(self);
-		RETVAL = newSVpv(git_blob_rawcontent(self), len);
+		RETVAL = newSVpv(git_blob_rawcontent(self), (STRLEN) len);
 
 	OUTPUT: RETVAL
 
@@ -84,7 +84,7 @@ size(self)
 
 	CODE:
 		len = git_blob_rawsize(self);
-		RETVAL = newSViv(len);
+		RETVAL = newSViv((IV) len);
 
 	OUTPUT: RETVAL
 

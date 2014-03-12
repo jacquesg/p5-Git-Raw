@@ -192,6 +192,8 @@ STATIC void *git_sv_to_ptr(const char *type, SV *sv) {
 		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
 
 	Perl_croak(aTHX_ "Argument is not of type %s", SvPV_nolen(full_type));
+
+	return NULL;
 }
 
 #define GIT_SV_TO_PTR(type, sv) \
@@ -757,7 +759,6 @@ int git_filter_init_cbb(git_filter *filter)
 void git_filter_shutdown_cbb(git_filter *filter)
 {
 	dSP;
-	SV *creds;
 
 	ENTER;
 	SAVETMPS;
@@ -863,7 +864,6 @@ int git_filter_apply_cbb(git_filter *filter, void **payload,
 void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 {
 	dSP;
-	SV *creds;
 
 	ENTER;
 	SAVETMPS;
@@ -911,7 +911,6 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) 
 	}
 
 	if ((opt = hv_fetchs(opts, "callbacks", 0))) {
-		SV **cb;
 		HV *callbacks;
 
 		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
