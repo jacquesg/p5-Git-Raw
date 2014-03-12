@@ -24,6 +24,7 @@ is $remotes[0] -> name, $name;
 is $remotes[0] -> url, $url;
 
 is $remotes[1], undef;
+@remotes = ();
 
 $name = 'github';
 $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
@@ -115,6 +116,7 @@ $github -> update_tips;
 ok $update_tips;
 
 $repo = undef;
+$github = undef;
 rmtree $path;
 ok ! -e $path;
 

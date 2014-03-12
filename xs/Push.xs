@@ -10,7 +10,7 @@ new(class, remote)
 		Push push;
 
 	CODE:
-		rc = git_push_new(&push, remote);
+		rc = git_push_new(&push, remote -> remote);
 		git_check_error(rc);
 
 		RETVAL = push;
