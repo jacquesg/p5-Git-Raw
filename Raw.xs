@@ -745,7 +745,7 @@ int git_filter_init_cbb(git_filter *filter)
 
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
-		POPs;
+		(void) POPs;
 	} else {
 		rv = POPi;
 	}
@@ -799,7 +799,7 @@ int git_filter_check_cbb(git_filter *filter, void **payload,
 
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
-		POPs;
+		(void) POPs;
 	} else {
 		rv = POPi;
 	}
@@ -840,7 +840,7 @@ int git_filter_apply_cbb(git_filter *filter, void **payload,
 
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
-		POPs;
+		(void) POPs;
 	} else {
 		rv = POPi;
 	}
