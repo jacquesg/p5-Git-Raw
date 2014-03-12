@@ -23,7 +23,7 @@ size(self)
 	Diff_File self
 
 	CODE:
-		RETVAL = newSVuv(self -> size);
+		RETVAL = newSVuv((size_t) self -> size);
 
 	OUTPUT: RETVAL
 

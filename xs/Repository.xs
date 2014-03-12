@@ -33,9 +33,12 @@ clone(class, url, path, opts)
 		SV **opt;
 		Repository repo;
 
+		git_raw_remote_callbacks cbs = {0, 0, 0, 0, 0};
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
 	CODE:
+		clone_opts.remote_callbacks.payload = &cbs;
+
 		if ((opt = hv_fetchs(opts, "bare", 0)) && SvIV(*opt) != 0)
 			clone_opts.bare = 1;
 
@@ -51,12 +54,8 @@ clone(class, url, path, opts)
 		if ((opt = hv_fetchs(opts, "disable_checkout", 0)) && SvIV(*opt) != 0)
 			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 
-		git_raw_remote_callbacks cbs;
-		clone_opts.remote_callbacks.payload = &cbs;
-
 		/* Callbacks */
 		if ((opt = hv_fetchs(opts, "callbacks", 0))) {
-			SV **cb;
 			HV *callbacks;
 
 			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
@@ -353,9 +352,7 @@ status(self, ...)
 	PROTOTYPE: $;@
 
 	PREINIT:
-		int rc;
-
-		size_t i, count;
+		int rc, i, count;
 
 		HV *status_hv;
 
@@ -384,18 +381,19 @@ status(self, ...)
 
 			Newx(opt.pathspec.strings, items - 1, char *);
 
-			for (i = 1; i < items; i++)
-				opt.pathspec.strings[i - 1] =
+			for (i = 1; i < items; i++) {
+				size_t index = (size_t) i - 1;
+				opt.pathspec.strings[index] =
 					SvPVbyte_nolen(ST(i));
-
-			opt.pathspec.count = i - 1;
+				opt.pathspec.count = index;
+			}
 		}
 
 		rc = git_status_list_new(&list, self, &opt);
 		Safefree(opt.pathspec.strings);
 		git_check_error(rc);
 
-		count = git_status_list_entrycount(list);
+		count = (int) git_status_list_entrycount(list);
 
 		status_hv = newHV();
 		for (i = 0; i < count; i++) {
@@ -568,14 +566,14 @@ diff(self, ...)
 				if (!SvIOK(*opt))
 					Perl_croak(aTHX_ "Expected an integer for 'context_lines'");
 
-				diff_opts.context_lines = SvIV(*opt);
+				diff_opts.context_lines = (uint16_t) SvIV(*opt);
 			}
 
 			if ((opt = hv_fetchs(opts, "interhunk_lines", 0))) {
 				if (!SvIOK(*opt))
 					Perl_croak(aTHX_ "Expected an integer for 'interhunk_lines'");
 
-				diff_opts.interhunk_lines = SvIV(*opt);
+				diff_opts.interhunk_lines = (uint16_t) SvIV(*opt);
 			}
 
 			if ((opt = hv_fetchs(opts, "paths", 0))) {

@@ -207,14 +207,14 @@ diff(self, ...)
 				if (!SvIOK(*opt))
 					Perl_croak(aTHX_ "Expected an integer for 'context_lines'");
 
-				diff_opts.context_lines = SvIV(*opt);
+				diff_opts.context_lines = (uint16_t) SvIV(*opt);
 			}
 
 			if ((opt = hv_fetchs(opts, "interhunk_lines", 0))) {
 				if (!SvIOK(*opt))
 					Perl_croak(aTHX_ "Expected an integer for 'interhunk_lines'");
 
-				diff_opts.interhunk_lines = SvIV(*opt);
+				diff_opts.interhunk_lines = (uint16_t) SvIV(*opt);
 			}
 
 			if ((opt = hv_fetchs(opts, "paths", 0))) {

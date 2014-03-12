@@ -40,9 +40,13 @@ SV *
 header(self)
 	Diff_Hunk self
 
+	PREINIT:
+		size_t header_len = 0;
+		const char *header = NULL;
+
 	CODE:
-		size_t header_len = self -> header_len;
-		const char *header = self -> header;
+		header_len = self -> header_len;
+		header = self -> header;
 
 		for (header_len = self -> header_len; header_len != 0; --header_len) {
 			if (header[header_len-1] != '\r' &&

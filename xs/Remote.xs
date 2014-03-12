@@ -219,9 +219,6 @@ callbacks(self, callbacks)
 
 		Remote remote_ptr;
 
-		SV **opt;
-		SV *cb_obj;
-
 		git_raw_remote_callbacks *cbs = NULL;
 		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
 
@@ -324,8 +321,6 @@ DESTROY(self)
 		git_raw_remote_callbacks *cbs;
 
 	CODE:
-		
-
 		if ((cbs = xs_object_magic_get_struct(aTHX_ self))) {
 			git_clean_remote_callbacks(cbs);
 			Safefree(cbs);
