@@ -71,6 +71,7 @@ is $branches -> [1] -> type, 'direct';
 is $branches -> [1] -> name, 'refs/heads/some_branch';
 
 if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
+	is scalar(@$branches), 3;
 	is $branches -> [2] -> type, 'direct';
 	is $branches -> [2] -> name, 'refs/remotes/github/master';
 	ok $branches -> [2] -> is_remote;

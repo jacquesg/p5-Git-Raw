@@ -94,6 +94,8 @@ clone(class, url, path, opts)
 			&clone_opts
 		);
 
+		git_clean_remote_callbacks(&cbs);
+
 		git_check_error(rc);
 
 		RETVAL = repo;
@@ -744,7 +746,6 @@ remotes(self)
 		int rc;
 		size_t i;
 
-		Remote remote;
 		int num_remotes = 0;
 		git_strarray remotes;
 
@@ -758,9 +759,15 @@ remotes(self)
 
 		for (i = 0; i < remotes.count; i++) {
 			SV *perl_ref;
+			git_remote *r = NULL;
+			Remote remote = NULL;
 
-			rc = git_remote_load(&remote, repo, remotes.strings[i]);
+			rc = git_remote_load(&r, repo, remotes.strings[i]);
 			git_check_error(rc);
+
+			Newx(remote, 1, git_raw_remote);
+			git_init_remote_callbacks(&remote -> callbacks);
+			remote -> remote = r;
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				perl_ref, "Git::Raw::Remote", remote, SvRV(self)

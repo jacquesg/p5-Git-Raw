@@ -46,7 +46,6 @@ typedef git_push * Push;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
 typedef git_refspec * RefSpec;
-typedef git_remote * Remote;
 typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
@@ -64,6 +63,13 @@ typedef struct {
 
 typedef git_raw_filter * Filter;
 typedef git_filter_source * Filter_Source;
+
+typedef struct {
+	git_remote *remote;
+	git_raw_remote_callbacks callbacks;
+} git_raw_remote;
+
+typedef git_raw_remote * Remote;
 
 STATIC MGVTBL null_mg_vtbl = {
 	NULL, /* get */
@@ -223,6 +229,14 @@ STATIC SV *get_callback_option(HV *callbacks, const char *name) {
 	}
 
 	return NULL;
+}
+
+STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
+	cbs -> credentials = NULL;
+	cbs -> progress = NULL;
+	cbs -> completion = NULL;
+	cbs -> transfer_progress = NULL;
+	cbs -> update_tips = NULL;
 }
 
 STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
