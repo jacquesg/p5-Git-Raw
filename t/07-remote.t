@@ -4,7 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use Cwd qw(abs_path);
-use File::Path qw(rmtree);
+use File::Path qw(make_path rmtree);
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
@@ -72,6 +72,7 @@ my $ls = $github -> ls;
 
 is_deeply $ls -> {'HEAD'}, $ls -> {'refs/heads/master'};
 
+make_path ('t/callbacks_repo');
 $path = abs_path('t/callbacks_repo');
 $repo = Git::Raw::Repository -> init ($path, 0);
 
@@ -104,8 +105,8 @@ ok $transfer_progress;
 
 my $config = $repo -> config;
 
-my $name  = 'Git::Raw author';
-my $email = 'git-xs@example.com';
+$name  = 'Git::Raw author';
+$email = 'git-xs@example.com';
 
 is $config -> str('user.name', $name), $name;
 is $config -> str('user.email', $email), $email;

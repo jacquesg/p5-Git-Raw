@@ -17,13 +17,14 @@ use File::Path qw(rmtree);
 my $path;
 my $url = 'git://github.com/ghedo/p5-Git-Raw.git';
 
-$path = abs_path('t/test_repo_clone_bare');
+$path = File::Spec->rel2abs('t/test_repo_clone_bare');
 my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
 
 ok $bare -> is_bare;
 ok !$bare -> is_empty;
+$bare = undef;
 
-$path = abs_path('t/test_repo_clone');
+$path = File::Spec->rel2abs('t/test_repo_clone');
 my $repo = Git::Raw::Repository -> clone($url, $path, { });
 
 ok !$repo -> is_bare;
@@ -47,7 +48,10 @@ isa_ok $head, 'Git::Raw::Commit';
 
 is $head -> author -> name, 'Alessandro Ghedini';
 
-$path = abs_path('t/test_repo_remote_name');
+$head = undef;
+$ref = undef;
+
+$path = File::Spec->rel2abs('t/test_repo_remote_name');
 $repo = Git::Raw::Repository -> clone($url, $path, {'remote_name' => 'github' });
 
 @remotes = $repo -> remotes;
@@ -56,7 +60,9 @@ is $remotes[0] -> name, 'github';
 is $remotes[0] -> url, $url;
 is $remotes[1], undef;
 
-$path = abs_path('t/test_repo_disable_checkout');
+@remotes = ();
+
+$path = File::Spec->rel2abs('t/test_repo_disable_checkout');
 $repo = Git::Raw::Repository -> clone($url, $path, {'disable_checkout' => 1 });
 
 isnt -f File::Spec->catfile($repo -> workdir, 'Raw.xs'), 1;
@@ -72,7 +78,7 @@ my $received_bytes = 0;
 my $expected_states = ['pack', 'count', 'compress', 'total'];
 my $states = [];
 
-$path = abs_path('t/test_repo_clone_callbacks');
+$path = File::Spec->rel2abs('t/test_repo_clone_callbacks');
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'progress' => sub {
@@ -134,6 +140,8 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 ok ($received_bytes > 0);
 is $received_objects, $total_objects;
 is_deeply $states, $expected_states;
+
+$repo = undef;
 
 rmtree abs_path('t/test_repo_clone');
 rmtree abs_path('t/test_repo_clone_bare');
