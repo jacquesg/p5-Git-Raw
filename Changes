@@ -17,6 +17,7 @@ Revision history for Git-Raw
  - Add support for filters (GH#57) (thanks, @jacquesg!)
  - Add support for blame (GH#63) (thanks, @jacquesg!)
  - Visual Studio build fixes (GH#64) (thanks, @jacquesg!)
+ - Correctly handle Git::Raw::Remote refcount (GH#65) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
