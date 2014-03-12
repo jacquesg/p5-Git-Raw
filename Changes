@@ -15,6 +15,7 @@ Revision history for Git-Raw
       Git::Raw::Diff::Hunk, Git::Raw::Diff::File
  - Improve index conflicts handling (GH#62) (thanks, @jacquesg!)
  - Add support for filters (GH#57) (thanks, @jacquesg!)
+ - Add support for blame (GH#63) (thanks, @jacquesg!)
 
 0.31      2014-02-08 19:07:55 Europe/Rome
 
