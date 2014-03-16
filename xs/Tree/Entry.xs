@@ -46,7 +46,7 @@ object(self)
 		rc = git_tree_entry_to_object(&obj, repo, entry);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(obj, self);
+		RETVAL = git_obj_to_sv(obj, GIT_SV_TO_MAGIC(self));
 
 	OUTPUT: RETVAL
 

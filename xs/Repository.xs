@@ -267,7 +267,7 @@ lookup(self, id)
 		);
 		git_check_error(rc);
 
-		RETVAL = git_obj_to_sv(obj, self);
+		RETVAL = git_obj_to_sv(obj, SvRV(self));
 
 	OUTPUT: RETVAL
 
