@@ -8,8 +8,14 @@ use Cwd qw(abs_path);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
-my $head = $repo -> head -> target;
-my $tree = $head -> tree;
+my $head_id = $repo -> head -> target -> id;
+
+my $head = $repo -> lookup($head_id);
+ok $head -> tree -> entries -> [0] -> object;
+
+$head = $repo -> head -> target;
+
+$tree = $head -> tree;
 
 ok $tree -> is_tree;
 ok !$tree -> is_blob;
