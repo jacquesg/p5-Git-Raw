@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fix segfaults caused by invalid object creation (GH#66) (thanks, @pipcet!)
+
 0.32      2014-03-16 15:02:47+01:00 Europe/Rome
 
  - Update libgit2 to 648a985 (GH#53, GH#56) (thanks, @jacquesg!)
