@@ -280,7 +280,7 @@ checkout(self, target, opts)
 	PREINIT:
 		int rc;
 
-		git_checkout_opts checkout_opts = GIT_CHECKOUT_OPTS_INIT;
+		git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
 
 	CODE:
 		git_hv_to_checkout_opts(opts, &checkout_opts);

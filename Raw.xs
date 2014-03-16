@@ -894,7 +894,7 @@ void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 }
 
 
-STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_opts *checkout_opts) {
+STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opts) {
 	char **paths = NULL;
 	SV **opt;
 
