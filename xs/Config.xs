@@ -180,6 +180,22 @@ refresh(self)
 		rc = git_config_refresh(self);
 		git_check_error(rc);
 
+SV *
+default(class)
+	SV *class
+
+	PREINIT:
+		int rc;
+		Config cfg;
+
+	CODE:
+		rc = git_config_open_default(&cfg);
+		git_check_error(rc);
+
+		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), cfg);
+
+	OUTPUT: RETVAL
+
 void
 delete(self, name)
 	Config self
