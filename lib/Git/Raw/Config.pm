@@ -54,7 +54,7 @@ the loop.
 
 Reload the config files from disk.
 
-=head2 open_default( )
+=head2 default( )
 
 Returns a config object that indicates default config data ( global, XDG and system configuration files ).
 

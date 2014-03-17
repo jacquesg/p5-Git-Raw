@@ -181,7 +181,7 @@ refresh(self)
 		git_check_error(rc);
 
 SV *
-open_default(class)
+default(class)
 	SV *class
 
 	PREINIT:
@@ -189,7 +189,7 @@ open_default(class)
 		Config cfg;
 
 	CODE:
-        rc = git_config_open_default(&cfg);
+		rc = git_config_open_default(&cfg);
 		git_check_error(rc);
 
 		RETVAL = sv_setref_pv(newSV(0), SvPVbyte_nolen(class), cfg);
