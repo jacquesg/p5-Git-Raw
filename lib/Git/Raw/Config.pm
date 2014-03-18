@@ -22,6 +22,12 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Create a new config object.
 
+=head2 default( )
+
+Retrieve the global, XDG and system configuration and open them into a single
+prioritized config object that can be used when accessing default config data
+outside a repository
+
 =head2 add_file( $path, $level )
 
 Add C<$path> to the config object with priority level C<$level>.
