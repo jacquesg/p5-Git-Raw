@@ -28,8 +28,8 @@ Retrieve the path that the filter source data is coming from.
 
 =head2 file_mode( )
 
-Retrieve the file mode of the source file. If the mode is unknown,
-this will return 0.
+Retrieve the file mode of the source file, as an integer. If the mode
+is unknown, this will return 0.
 
 =head2 mode( )
 

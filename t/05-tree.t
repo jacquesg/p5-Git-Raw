@@ -24,6 +24,10 @@ my $entries = $tree -> entries;
 
 is $entries -> [0] -> name, 'test';
 is $entries -> [1] -> name, 'test2';
+is $entries -> [2] -> name, 'test3';
+
+is $entries -> [0] -> file_mode, 0100644;
+is $entries -> [2] -> file_mode, 0040000;
 
 my $obj0 = $entries -> [0] -> object;
 

@@ -26,6 +26,11 @@ Retrieve the id of the tree entry, as string.
 
 Retrieve the filename of the tree entry.
 
+=head2 file_mode( )
+
+Retrieve the file mode of the tree entry, as an integer. For example,
+a normal file has mode 0100644 = 33188.
+
 =head2 object( $repo )
 
 Retrieve the object pointed by the tree entry.
