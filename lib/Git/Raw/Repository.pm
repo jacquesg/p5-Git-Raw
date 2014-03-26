@@ -570,7 +570,8 @@ sub tag { return Git::Raw::Tag -> create(@_) }
 
 =head2 tags( )
 
-Retrieve the list of L<Git::Raw::Tag> objects.
+Retrieve the list of L<Git::Raw::Tag> objects representing the
+repository's annotated Git tags. Lightweight tags are not returned.
 
 =cut
 

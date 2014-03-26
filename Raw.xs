@@ -508,12 +508,19 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	dSP;
 	int rv;
-	Tag tag;
+	git_object *tag;
+
 	SV *repo, *cb_arg;
 	git_foreach_payload *pl = payload;
 
-	int rc = git_tag_lookup(&tag, pl -> repo_ptr, oid);
+	int rc = git_object_lookup(&tag, pl -> repo_ptr, oid, GIT_OBJ_ANY);
 	git_check_error(rc);
+
+	if (git_object_type(tag) != GIT_OBJ_TAG) {
+		git_object_free(tag);
+
+		return 0;
+	}
 
 	ENTER;
 	SAVETMPS;

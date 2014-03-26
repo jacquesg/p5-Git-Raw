@@ -49,6 +49,15 @@ is $tags[0] -> message, $tag_msg;
 is $tags[1], undef;
 
 $tags[0] -> delete;
+
+Git::Raw::Reference -> create("refs/tags/lightweight-tag", $repo, $commit);
+
+@tags = $repo -> tags;
+
+is $tags[0], undef;
+
+Git::Raw::Reference -> lookup("refs/tags/lightweight-tag", $repo) -> delete();
+
 is $repo -> tags, 0;
 
 done_testing;
