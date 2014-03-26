@@ -4,6 +4,8 @@ Revision history for Git-Raw
 
  - Fix segfaults caused by invalid object creation (GH#66) (thanks, @pipcet!)
  - Add Config -> default() method (GH#67) (thanks, @magnolia-k!)
+ - Do not fail when a lightweight tag is found in the Tag->foreach() callback
+   (GH#68) (thanks, @pipcet!)
 
 0.32      2014-03-16 15:02:47+01:00 Europe/Rome
 
