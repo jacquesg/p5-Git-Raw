@@ -7,4 +7,4 @@ t/callbacks_repo
 .*\.o
 .*\.a
 .*\.pc$
-xs/libgit2/tests/resources/status/这
+deps/libgit2/tests/resources/status/这
