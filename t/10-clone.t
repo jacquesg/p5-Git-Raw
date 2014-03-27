@@ -15,22 +15,22 @@ use Cwd qw(abs_path);
 use File::Path qw(rmtree);
 
 my $path;
-my $url = 'git://github.com/ghedo/p5-Git-Raw.git';
+my $url = 'git://github.com/libgit2/TestGitRepository.git';
 
-$path = File::Spec->rel2abs('t/test_repo_clone_bare');
+$path = File::Spec -> rel2abs('t/test_repo_clone_bare');
 my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
 
 ok $bare -> is_bare;
 ok !$bare -> is_empty;
 $bare = undef;
 
-$path = File::Spec->rel2abs('t/test_repo_clone');
+$path = File::Spec -> rel2abs('t/test_repo_clone');
 my $repo = Git::Raw::Repository -> clone($url, $path, { });
 
 ok !$repo -> is_bare;
 ok !$repo -> is_empty;
 
-is_deeply $repo -> status -> {'Changes'}, undef;
+is_deeply $repo -> status -> {'master.txt'}, undef;
 
 my @remotes = $repo -> remotes;
 
@@ -46,7 +46,7 @@ is $ref -> type, 'direct';
 my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
-is $head -> author -> name, 'Alessandro Ghedini';
+is $head -> author -> name, 'A U Thor';
 
 $head = undef;
 $ref = undef;
@@ -75,10 +75,10 @@ my $total_deltas = 0;
 my $indexed_deltas = 0;
 my $received_bytes = 0;
 
-my $expected_states = ['pack', 'count', 'compress', 'total'];
+my $expected_states = ['pack', 'count'];
 my $states = [];
 
-$path = File::Spec->rel2abs('t/test_repo_clone_callbacks');
+$path = File::Spec -> rel2abs('t/test_repo_clone_callbacks');
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'progress' => sub {
@@ -111,6 +111,7 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 				}
 			}
 		},
+
 		'transfer_progress' => sub {
 			my ($to, $ro, $lo, $td, $id, $rb) = @_;
 
