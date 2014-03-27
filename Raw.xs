@@ -293,8 +293,7 @@ STATIC void git_clean_filter_callbacks(git_filter_callbacks *cbs) {
 	}
 }
 
-STATIC void git_flag_opt(HV *value, const char *name,
-			 int mask, unsigned *out) {
+STATIC void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
 	SV **opt;
 
 	if ((opt = hv_fetch(value, name, strlen(name), 0)) && SvIV(*opt))
@@ -593,7 +592,7 @@ STATIC int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, 
 }
 
 STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
-				      size_t total_steps, void *payload) {
+                                      size_t total_steps, void *payload) {
 	dSP;
 
 	SV *coderef = payload;

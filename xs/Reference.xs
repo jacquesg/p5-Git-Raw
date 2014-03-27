@@ -22,7 +22,7 @@ create(class, name, repo, object, ...)
 		    sv_derived_from(object, "Git::Raw::Blob"))
 			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
 		else if (sv_isobject(object) &&
-			 sv_derived_from(object, "Git::Raw::Commit"))
+		         sv_derived_from(object, "Git::Raw::Commit"))
 			oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
 		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
