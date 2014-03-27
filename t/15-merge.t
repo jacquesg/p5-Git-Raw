@@ -50,15 +50,15 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-my $r = $repo -> merge($branch1, {
-	'checkout_opts' => {
-		'checkout_strategy' => {
-			'force' => 1
-		}
+my $r = $repo -> merge_analysis($branch1);
+is_deeply $r, ['normal', 'fast_forward'];
+
+$repo -> merge($branch1, {}, {
+	'checkout_strategy' => {
+		'force' => 1
 	}
 });
 
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 1, 'id' => $commit -> id};
 is $repo -> index -> has_conflicts, 0;
 is_deeply $repo -> status -> {'test1'}, {'flags' => ['index_modified']};
 
@@ -86,19 +86,10 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-ok !eval { $repo -> merge($branch2, {
-	'flags' => {
-		'fastforward_only' => 1,
-	}
-})};
+$r = $repo ->merge_analysis($branch2);
+is_deeply $r, ['normal'];
 
-ok eval { $r = $repo -> merge($branch2, {
-	'flags' => {
-		'no_fastforward' => 1,
-	}
-})};
-
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
+$repo -> merge($branch2);
 is $index -> has_conflicts, 1;
 
 my @conflicts = $index -> conflicts;
@@ -129,6 +120,9 @@ is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
+$r = $repo ->merge_analysis($branch2);
+is_deeply $r, ['up_to_date'];
+
 $repo -> checkout($repo -> head($branch3), {
 	'checkout_strategy' => {
 		'force' => 1
@@ -147,14 +141,14 @@ $repo -> checkout($repo -> head($master), {
 		'force' => 1
 }});
 
-ok eval { $r = $repo -> merge($branch3, {
-	'tree_opts' => {
-		'automerge' => 'favor_theirs',
-	}
-})};
+$r = $repo -> merge_analysis($branch3);
+is_deeply $r, ['normal'];
+
+$repo -> merge($branch3, {
+	'favor' => 'theirs',
+});
 
 is $index -> has_conflicts, 0;
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 my $content = read_file($file1);
 chomp ($content);
@@ -166,16 +160,17 @@ is $repo -> state, "none";
 $repo -> checkout($repo -> head($master), {
 	checkout_strategy => {
 		'force' => 1
-}});
-
-ok eval { $r = $repo -> merge($branch3, {
-	'tree_opts' => {
-		'automerge' => 'favor_ours',
 	}
-})};
+});
+
+$r = $repo -> merge_analysis($branch3);
+is_deeply $r, ['normal'];
+
+$repo -> merge($branch3, {
+	'favor' => 'ours',
+});
 
 is $index -> has_conflicts, 0;
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 $content = read_file($file1);
 chomp ($content);

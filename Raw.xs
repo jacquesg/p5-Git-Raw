@@ -1034,7 +1034,7 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 	}
 }
 
-STATIC void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_opts) {
+STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 	SV **opt;
 
 	if ((opt = hv_fetchs(opts, "flags", 0))) {
@@ -1049,7 +1049,7 @@ STATIC void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_
 				const char *f = SvPVbyte_nolen(*flag);
 
 				if (strcmp(f, "find_renames") == 0)
-					merge_tree_opts -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
+					merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
 				else
 					Perl_croak(aTHX_ "Invalid 'flags' value");
 			} else
@@ -1057,33 +1057,36 @@ STATIC void git_hv_to_merge_tree_opts(HV *opts, git_merge_tree_opts *merge_tree_
 		}
 	}
 
-	if ((opt = hv_fetchs(opts, "automerge", 0))) {
+	if ((opt = hv_fetchs(opts, "favor", 0))) {
 		if (SvPOK(*opt)) {
-			const char *auto_merge = SvPVbyte_nolen(*opt);
-			if (strcmp(auto_merge, "favor_ours") == 0)
-				merge_tree_opts -> file_favor =
+			const char *favor = SvPVbyte_nolen(*opt);
+			if (strcmp(favor, "ours") == 0)
+				merge_options -> file_favor =
 					GIT_MERGE_FILE_FAVOR_OURS;
-			else if (strcmp(auto_merge, "favor_theirs") == 0)
-				merge_tree_opts -> file_favor =
+			else if (strcmp(favor, "theirs") == 0)
+				merge_options -> file_favor =
 					GIT_MERGE_FILE_FAVOR_THEIRS;
+			else if (strcmp(favor, "union") == 0)
+				merge_options -> file_favor =
+					GIT_MERGE_FILE_FAVOR_UNION;
 			else
-				Perl_croak(aTHX_ "Invalid 'automerge' value");
+				Perl_croak(aTHX_ "Invalid 'favor' value");
 		} else
-			Perl_croak(aTHX_ "Invalid type for 'automerge' value");
+			Perl_croak(aTHX_ "Invalid type for 'favor' value");
 	}
 
 	if ((opt = hv_fetchs(opts, "rename_threshold", 0))) {
 		if (!SvIOK(*opt) || SvIV(*opt) < 0)
 			Perl_croak(aTHX_ "Invalid type");
 
-		merge_tree_opts -> rename_threshold = SvIV(*opt);
+		merge_options -> rename_threshold = SvIV(*opt);
 	}
 
 	if ((opt = hv_fetchs(opts, "target_limit", 0))) {
 		if (!SvIOK(*opt) || SvIV(*opt) < 0)
 			Perl_croak(aTHX_ "Invalid type");
 
-		merge_tree_opts -> target_limit = SvIV(*opt);
+		merge_options -> target_limit = SvIV(*opt);
 	}
 }
 
