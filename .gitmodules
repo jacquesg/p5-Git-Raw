@@ -1,3 +1,0 @@
-[submodule "xs/libgit2"]
-	path = xs/libgit2
-	url = git://github.com/libgit2/libgit2.git
