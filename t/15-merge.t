@@ -184,6 +184,33 @@ is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
+$master = $repo -> head;
+my $head_commit = $master -> target;
+
+write_file($file1, 'pre-commit merge');
+$index -> add('test1');
+$index -> write;
+
+my $merge_commit1 = $repo -> commit("merge commit on branch1\n", $me, $me, [$head_commit],
+	$repo -> lookup($index -> write_tree));
+
+write_file($file1, 'post-commit merge');
+$index -> add('test1');
+$index -> write;
+
+my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$merge_commit1],
+	$repo -> lookup($index -> write_tree));
+
+my $merged_index = $merge_commit1 -> merge($merge_commit2);
+
+isa_ok $merged_index, 'Git::Raw::Index';
+is $merged_index -> has_conflicts, 0;
+
+my $squashed_commit = $repo -> commit ("squashed_commit\n", $me, $me, [$head_commit],
+	$repo -> lookup($index -> write_tree ($repo)));
+
+is $repo -> head -> target -> id, $squashed_commit -> id;
+
 $repo = undef;
 rmtree $path;
 ok ! -e $path;

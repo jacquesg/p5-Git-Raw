@@ -259,6 +259,48 @@ parents(self)
 
 	OUTPUT: RETVAL
 
+SV *
+merge(self, commit, ...)
+	SV *self
+	Commit commit
+
+	PROTOTYPE: $;$;$
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		Index index;
+		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
+
+	CODE:
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		if (items == 3) {
+			SV *opts = ST(2);
+
+			if (!SvROK(opts) || SvTYPE(SvRV(opts)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type for 'merge_opts'");
+
+			git_hv_to_merge_opts((HV *) SvRV(opts),
+				&merge_opts);
+		}
+
+		rc = git_merge_commits(
+			&index,
+			repo_ptr,
+			GIT_SV_TO_PTR(Commit, self),
+			commit, &merge_opts);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Index", index, repo
+		);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self
