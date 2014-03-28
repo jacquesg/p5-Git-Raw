@@ -40,7 +40,7 @@ write_file($file1, 'this is file1 on branch1');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
+my $commit1 = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
 	$repo -> lookup($index -> write_tree));
 
 my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
@@ -49,6 +49,8 @@ $repo -> checkout($repo -> head($master), {
 		'safe_create' => 1
 	}
 });
+
+is $master -> target -> id, $repo -> merge_base($master, $commit1);
 
 my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
@@ -62,7 +64,7 @@ $repo -> merge($branch1, {}, {
 is $repo -> index -> has_conflicts, 0;
 is_deeply $repo -> status -> {'test1'}, {'flags' => ['index_modified']};
 
-$master -> target($commit);
+$master -> target($commit1);
 $master = Git::Raw::Branch -> lookup ($repo, 'master', 1);
 
 is_deeply $repo -> status -> {'test1'}, undef;
@@ -77,7 +79,7 @@ write_file($file1, 'this is file1 on branch2');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
+my $commit2 = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
 	$repo -> lookup($index -> write_tree));
 
 $repo -> checkout($repo -> head($master), {
@@ -85,6 +87,9 @@ $repo -> checkout($repo -> head($master), {
 		'force' => 1
 	}
 });
+
+is $branch2 -> target -> id, $repo -> merge_base($branch2, $commit2);
+is $commit -> id, $repo -> merge_base($commit1, $commit2);
 
 $r = $repo ->merge_analysis($branch2);
 is_deeply $r, ['normal'];
@@ -113,7 +118,7 @@ write_file($file1, 'this is file1 on branch1 and branch2');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit],
+$commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit2],
 	$repo -> lookup($index -> write_tree));
 
 is $repo -> state, "merge";
