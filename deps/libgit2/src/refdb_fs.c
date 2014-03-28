@@ -21,6 +21,7 @@
 #include <git2/tag.h>
 #include <git2/object.h>
 #include <git2/refdb.h>
+#include <git2/branch.h>
 #include <git2/sys/refdb_backend.h>
 #include <git2/sys/refs.h>
 #include <git2/sys/reflog.h>
@@ -920,20 +921,38 @@ fail:
 	return -1;
 }
 
-static int reflog_append(refdb_fs_backend *backend, const git_reference *ref, const git_signature *author, const char *message);
+static int reflog_append(refdb_fs_backend *backend, const git_reference *ref, const git_oid *old, const git_oid *new, const git_signature *author, const char *message);
 static int has_reflog(git_repository *repo, const char *name);
 
 /* We only write if it's under heads/, remotes/ or notes/ or if it already has a log */
-static bool should_write_reflog(git_repository *repo, const char *name)
+static int should_write_reflog(int *write, git_repository *repo, const char *name)
 {
-	if (has_reflog(repo, name))
-		return 1;
+	git_config *config;
+	int error, logall, is_bare;
 
-	if (!git__prefixcmp(name, GIT_REFS_HEADS_DIR) ||
-	    !git__strcmp(name, GIT_HEAD_FILE) ||
-	    !git__prefixcmp(name, GIT_REFS_REMOTES_DIR) ||
-	    !git__prefixcmp(name, GIT_REFS_NOTES_DIR))
-		return 1;
+	/* Defaults to the oppsite of being bare */
+	is_bare = git_repository_is_bare(repo);
+	logall = !is_bare;
+
+	if ((error = git_repository_config__weakptr(&config, repo)) < 0)
+		return error;
+
+	error = git_config_get_bool(&logall, config, "core.logallrefupdates");
+	if (error < 0 && error != GIT_ENOTFOUND)
+		return error;
+
+	if (!logall) {
+		*write = 0;
+	} else if (has_reflog(repo, name)) {
+		*write = 1;
+	} else if (!git__prefixcmp(name, GIT_REFS_HEADS_DIR) ||
+		   !git__strcmp(name, GIT_HEAD_FILE) ||
+		   !git__prefixcmp(name, GIT_REFS_REMOTES_DIR) ||
+		   !git__prefixcmp(name, GIT_REFS_NOTES_DIR)) {
+		*write = 1;
+	} else {
+		*write = 0;
+	}
 
 	return 0;
 }
@@ -974,6 +993,73 @@ out:
 	return error;
 }
 
+/*
+ * The git.git comment regarding this, for your viewing pleasure:
+ *
+ * Special hack: If a branch is updated directly and HEAD
+ * points to it (may happen on the remote side of a push
+ * for example) then logically the HEAD reflog should be
+ * updated too.
+ * A generic solution implies reverse symref information,
+ * but finding all symrefs pointing to the given branch
+ * would be rather costly for this rare event (the direct
+ * update of a branch) to be worth it.  So let's cheat and
+ * check with HEAD only which should cover 99% of all usage
+ * scenarios (even 100% of the default ones).
+ */
+static int maybe_append_head(refdb_fs_backend *backend, const git_reference *ref, const git_signature *who, const char *message)
+{
+	int error;
+	git_oid old_id = {{0}};
+	git_reference *tmp = NULL, *head = NULL, *peeled = NULL;
+	const char *name;
+
+	if (ref->type == GIT_REF_SYMBOLIC)
+		return 0;
+
+	/* if we can't resolve, we use {0}*40 as old id */
+	git_reference_name_to_id(&old_id, backend->repo, ref->name);
+
+	if ((error = git_reference_lookup(&head, backend->repo, GIT_HEAD_FILE)) < 0)
+		return error;
+
+	if (git_reference_type(head) == GIT_REF_OID)
+		goto cleanup;
+
+	if ((error = git_reference_lookup(&tmp, backend->repo, GIT_HEAD_FILE)) < 0)
+		goto cleanup;
+
+	/* Go down the symref chain until we find the branch */
+	while (git_reference_type(tmp) == GIT_REF_SYMBOLIC) {
+		error = git_reference_lookup(&peeled, backend->repo, git_reference_symbolic_target(tmp));
+		if (error < 0)
+			break;
+
+		git_reference_free(tmp);
+		tmp = peeled;
+	}
+
+	if (error == GIT_ENOTFOUND) {
+		error = 0;
+		name = git_reference_symbolic_target(tmp);
+	} else if (error < 0) {
+		goto cleanup;
+	} else {
+		name = git_reference_name(tmp);
+	}
+
+	if (strcmp(name, ref->name))
+		goto cleanup;
+
+	error = reflog_append(backend, head, &old_id, git_reference_target(ref), who, message);
+
+cleanup:
+	git_reference_free(tmp);
+	git_reference_free(head);
+	return error;
+}
+
+
 static int refdb_fs_backend__write(
 	git_refdb_backend *_backend,
 	const git_reference *ref,
@@ -985,7 +1071,9 @@ static int refdb_fs_backend__write(
 {
 	refdb_fs_backend *backend = (refdb_fs_backend *)_backend;
 	git_filebuf file = GIT_FILEBUF_INIT;
-	int error = 0, cmp = 0;
+	int error = 0, cmp = 0, should_write;
+	const char *new_target = NULL;
+	const git_oid *new_id = NULL;
 
 	assert(backend);
 
@@ -1006,10 +1094,29 @@ static int refdb_fs_backend__write(
 		goto on_error;
 	}
 
-	if (should_write_reflog(backend->repo, ref->name) &&
-	    (error = reflog_append(backend, ref, who, message)) < 0) {
-		git_filebuf_cleanup(&file);
-		return error;
+	if (ref->type == GIT_REF_SYMBOLIC)
+		new_target = ref->target.symbolic;
+	else
+		new_id = &ref->target.oid;
+
+	error = cmp_old_ref(&cmp, _backend, ref->name, new_id, new_target);
+	if (error < 0 && error != GIT_ENOTFOUND)
+		goto on_error;
+
+	/* Don't update if we have the same value */
+	if (!error && !cmp) {
+		error = 0;
+		goto on_error; /* not really error */
+	}
+
+	if ((error = should_write_reflog(&should_write, backend->repo, ref->name)) < 0)
+		goto on_error;
+
+	if (should_write) {
+		if ((error = reflog_append(backend, ref, NULL, NULL, who, message)) < 0)
+			goto on_error;
+		if ((error = maybe_append_head(backend, ref, who, message)) < 0)
+			goto on_error;
 	}
 
 	return loose_commit(&file, ref);
@@ -1128,7 +1235,7 @@ static int refdb_fs_backend__rename(
 	/* Try to rename the refog; it's ok if the old doesn't exist */
 	error = refdb_reflog_fs__rename(_backend, old_name, new_name);
 	if (((error == 0) || (error == GIT_ENOTFOUND)) &&
-	    ((error = reflog_append(backend, new, who, message)) < 0)) {
+	    ((error = reflog_append(backend, new, NULL, NULL, who, message)) < 0)) {
 		git_reference_free(new);
 		git_filebuf_cleanup(&file);
 		return error;
@@ -1517,35 +1624,47 @@ success:
 }
 
 /* Append to the reflog, must be called under reference lock */
-static int reflog_append(refdb_fs_backend *backend, const git_reference *ref, const git_signature *who, const char *message)
+static int reflog_append(refdb_fs_backend *backend, const git_reference *ref, const git_oid *old, const git_oid *new, const git_signature *who, const char *message)
 {
-	int error;
-	git_oid old_id, new_id = {{0}};
+	int error, is_symbolic;
+	git_oid old_id = {{0}}, new_id = {{0}};
 	git_buf buf = GIT_BUF_INIT, path = GIT_BUF_INIT;
 	git_repository *repo = backend->repo;
 
-	/* Creation of a symbolic reference doesn't get a reflog entry, except for
-	 * HEAD. git_repository_set_head and friends go through here. */
-	if (ref->type == GIT_REF_SYMBOLIC &&
-	    0 != strcmp(ref->name, GIT_HEAD_FILE))
+	is_symbolic = ref->type == GIT_REF_SYMBOLIC;
+
+	/* "normal" symbolic updates do not write */
+	if (is_symbolic &&
+	    strcmp(ref->name, GIT_HEAD_FILE) &&
+	    !(old && new))
 		return 0;
 
-	error = git_reference_name_to_id(&old_id, repo, ref->name);
-	if (error == GIT_ENOTFOUND) {
-		memset(&old_id, 0, sizeof(git_oid));
-		error = 0;
-	}
-	if (error < 0)
-		return error;
+	/* From here on is_symoblic also means that it's HEAD */
 
-	if (git_reference_symbolic_target(ref) != NULL) {
-		error = git_reference_name_to_id(&new_id, repo, git_reference_symbolic_target(ref));
-		if (error != 0 && error != GIT_ENOTFOUND)
-			goto cleanup;
-		giterr_clear();
+	if (old) {
+		git_oid_cpy(&old_id, old);
+	} else {
+		error = git_reference_name_to_id(&old_id, repo, ref->name);
+		if (error < 0 && error != GIT_ENOTFOUND)
+			return error;
 	}
-	else if (git_reference_target(ref) != NULL)
-		git_oid_cpy(&new_id, git_reference_target(ref));
+
+	if (new) {
+		git_oid_cpy(&new_id, new);
+	} else {
+		if (!is_symbolic) {
+			git_oid_cpy(&new_id, git_reference_target(ref));
+		} else {
+			error = git_reference_name_to_id(&new_id, repo, git_reference_symbolic_target(ref));
+			if (error < 0 && error != GIT_ENOTFOUND)
+				return error;
+			/* detaching HEAD does not create an entry */
+			if (error == GIT_ENOTFOUND)
+				return 0;
+
+			giterr_clear();
+		}
+	}
 
 	if ((error = serialize_reflog_entry(&buf, &old_id, &new_id, who, message)) < 0)
 		goto cleanup;
