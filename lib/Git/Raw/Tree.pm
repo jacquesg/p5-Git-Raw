@@ -39,6 +39,13 @@ Retrieve a L<Git::Raw::Tree::Entry> object by name.
 
 Retrieve a L<Git::Raw::Tree::Entry> object by path.
 
+=head2 merge( $ancestor, $theirs, [\%merge_opts] )
+
+Merge C<$theirs> into this tree. C<$ancestor> and C<$theirs> should be
+C<Git::Raw::Tree> objects.  See C<Git::Raw::Repository-E<gt>merge()> for valid
+C<%merge_opts> values. Returns a C<Git::Raw::Index> object containing the
+merge result.
+
 =head2 diff( [\%opts] )
 
 Compute the L<Git::Raw::Diff> between two trees. Valid fields for the C<%opts>
