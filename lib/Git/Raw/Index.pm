@@ -18,9 +18,14 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
-=head2 add( $file )
+=head2 add( $entry )
 
-Add C<$file> to the index.
+Add C<$entry> to the index. C<$entry> should either be the path of a file
+or alternatively a C<Git::Raw::Index::Entry>.
+
+=head2 remove( $path )
+
+Remove C<$path> from the index.
 
 =head2 clear( )
 

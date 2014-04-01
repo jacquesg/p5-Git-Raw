@@ -1,15 +1,19 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Index
 
 void
-add(self, path)
+add(self, entry)
 	Index self
-	SV *path
+	SV *entry
 
 	PREINIT:
-		int rc;
+		int rc = 0;
 
 	CODE:
-		rc = git_index_add_bypath(self, SvPVbyte_nolen(path));
+		if (SvPOK(entry))
+			rc = git_index_add_bypath(self, SvPVbyte_nolen(entry));
+		else if (SvROK(entry))
+			rc = git_index_add(self, GIT_SV_TO_PTR(Index::Entry, entry));
+
 		git_check_error(rc);
 
 void
