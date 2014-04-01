@@ -391,6 +391,30 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 		GIT_CHECKOUT_SKIP_UNMERGED, &out
 	);
 
+	git_flag_opt(strategy, "use_ours", GIT_CHECKOUT_USE_OURS, &out);
+
+	git_flag_opt(strategy, "use_theirs", GIT_CHECKOUT_USE_THEIRS, &out);
+
+	git_flag_opt(
+		strategy, "skip_locked_directories",
+		GIT_CHECKOUT_SKIP_LOCKED_DIRECTORIES, &out);
+
+	git_flag_opt(
+		strategy, "dont_overwrite_ignored",
+		GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, &out);
+
+	git_flag_opt(
+		strategy, "conflict_style_merge",
+		GIT_CHECKOUT_CONFLICT_STYLE_MERGE, &out);
+
+	git_flag_opt(
+		strategy, "conflict_style_diff3",
+		GIT_CHECKOUT_CONFLICT_STYLE_DIFF3, &out);
+
+	git_flag_opt(
+		strategy, "disable_pathspec_match",
+		GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH, &out);
+
 	return out;
 }
 
@@ -915,7 +939,7 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 		size_t count = 0;
 
 		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-			Perl_croak(aTHX_ "Invalid type");
+			Perl_croak(aTHX_ "Invalid type for 'paths'");
 
 		while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
 			if (SvOK(*path)) {
@@ -930,11 +954,39 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 		}
 	}
 
+	if ((opt = hv_fetchs(opts, "target_directory", 0))) {
+		if (!SvPOK(*opt))
+			Perl_croak(aTHX_ "Invalid type for 'target_directory'");
+
+		checkout_opts -> target_directory = SvPVbyte_nolen(*opt);
+	}
+
+	if ((opt = hv_fetchs(opts, "ancestor_label", 0))) {
+		if (!SvPOK(*opt))
+			Perl_croak(aTHX_ "Invalid type for 'ancestor_label'");
+
+		checkout_opts -> ancestor_label = SvPVbyte_nolen(*opt);
+	}
+
+	if ((opt = hv_fetchs(opts, "our_label", 0))) {
+		if (!SvPOK(*opt))
+			Perl_croak(aTHX_ "Invalid type for 'our_label'");
+
+		checkout_opts -> our_label = SvPVbyte_nolen(*opt);
+	}
+
+	if ((opt = hv_fetchs(opts, "their_label", 0))) {
+		if (!SvPOK(*opt))
+			Perl_croak(aTHX_ "Invalid type for 'their_label'");
+
+		checkout_opts -> their_label = SvPVbyte_nolen(*opt);
+	}
+
 	if ((opt = hv_fetchs(opts, "callbacks", 0))) {
 		HV *callbacks;
 
 		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-			Perl_croak(aTHX_ "Invalid type");
+			Perl_croak(aTHX_ "Invalid type for 'callbacks'");
 
 		callbacks = (HV *) SvRV(*opt);
 
