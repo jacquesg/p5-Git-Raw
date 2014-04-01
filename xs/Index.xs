@@ -127,6 +127,8 @@ entries(self)
 	PREINIT:
 		size_t i, count;
 
+		SV *repo;
+
 		Index index_ptr = NULL;
 
 	PPCODE:
@@ -136,6 +138,8 @@ entries(self)
 		if (count > 0) {
 			EXTEND(SP, count);
 
+			repo = GIT_SV_TO_MAGIC(self);
+
 			for (i = 0; i < count; ++i) {
 				const git_index_entry *e =
 					git_index_get_byindex(index_ptr, i);
@@ -144,7 +148,7 @@ entries(self)
 					SV *entry = NULL;
 					GIT_NEW_OBJ_WITH_MAGIC(
 						entry, "Git::Raw::Index::Entry",
-						(Index_Entry) e, SvRV(self)
+						(Index_Entry) e, repo
 					);
 					PUSHs(sv_2mortal(entry));
 				}
@@ -213,6 +217,8 @@ conflicts(self)
 	PREINIT:
 		int rc;
 
+		SV *repo;
+
 		git_index_conflict_iterator *iter;
 		const git_index_entry *ancestor, *ours, *theirs;
 
@@ -224,31 +230,45 @@ conflicts(self)
 		);
 		git_check_error(rc);
 
+		repo = GIT_SV_TO_MAGIC(self);
+
 		while ((rc = git_index_conflict_next(
 			&ancestor, &ours, &theirs, iter)) == GIT_OK) {
 			HV *entries = newHV();
-			SV *entry;
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				entry, "Git::Raw::Index::Entry",
-				(Index_Entry) ancestor, SvRV(self)
-			);
+			if (ancestor != NULL) {
+				SV *entry = NULL;
 
-			hv_stores(entries, "ancestor", entry);
+				GIT_NEW_OBJ_WITH_MAGIC(
+					entry, "Git::Raw::Index::Entry",
+					(Index_Entry) ancestor, repo
+				);
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				entry, "Git::Raw::Index::Entry",
-				(Index_Entry) ours, SvRV(self)
-			);
+				hv_stores(entries, "ancestor", entry);
+			}
 
-			hv_stores(entries, "ours", entry);
+			if (ours != NULL) {
+				SV *entry = NULL;
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				entry, "Git::Raw::Index::Entry",
-				(Index_Entry) theirs, SvRV(self)
-			);
+				GIT_NEW_OBJ_WITH_MAGIC(
+					entry, "Git::Raw::Index::Entry",
+					(Index_Entry) ours, repo
+				);
 
-			hv_stores(entries, "theirs", entry);
+				hv_stores(entries, "ours", entry);
+			}
+
+			if (theirs != NULL) {
+				SV *entry = NULL;
+
+				GIT_NEW_OBJ_WITH_MAGIC(
+					entry, "Git::Raw::Index::Entry",
+					(Index_Entry) theirs, repo
+				);
+
+				hv_stores(entries, "theirs", entry);
+			}
+
 			num_conflicts++;
 
 			EXTEND(SP, 1);
