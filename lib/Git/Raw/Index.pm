@@ -49,9 +49,25 @@ Create a new tree from the index and write it to disk. C<$repo> is an optional,
 alternative C<Git::Raw::Repository>, or the repository the index should we
 written to if its an in-memory index.
 
-=head2 remove( $path )
+=head2 checkout( [\%checkout_opts] )
 
-Remove C<$path> from the index.
+Update files in the working tree to match the contents of the index.
+See C<Git::Raw::Repository-E<gt>checkout()> for valid
+C<%checkout_opts> values.
+
+=head2 entries( )
+
+Retrieve index entries. Returns a list of C<Git::Raw::Index::Entry> objects.
+
+=head2 add_conflict( $ancestor, $ours, $theirs )
+
+Add or update index entries to represent a conflict. C<$ancestor>,
+C<$ours> and C<$theirs> should be C<Git::Raw::Index::Entry> objects, or
+be L<undef>.
+
+=head2 remove_conflict( $file )
+
+Remove C<$file> from the index.
 
 =head2 has_conflicts( )
 
