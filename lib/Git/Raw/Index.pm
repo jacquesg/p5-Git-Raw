@@ -43,9 +43,11 @@ Write the index to disk.
 
 Replace the index contente with C<$tree>.
 
-=head2 write_tree( )
+=head2 write_tree( [$repo] )
 
-Create a new tree from the index and write it to disk.
+Create a new tree from the index and write it to disk. C<$repo> is an optional,
+alternative C<Git::Raw::Repository>, or the repository the index should we
+written to if its an in-memory index.
 
 =head2 remove( $path )
 

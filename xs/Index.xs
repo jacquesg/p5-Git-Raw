@@ -58,15 +58,22 @@ read_tree(self, tree)
 		git_check_error(rc);
 
 SV *
-write_tree(self)
+write_tree(self, ...)
 	Index self
 
+	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
 		git_oid oid;
 
 	CODE:
-		rc = git_index_write_tree(&oid, self);
+		if (items == 2) {
+			rc = git_index_write_tree_to(
+				&oid, self, GIT_SV_TO_PTR(Repository, ST(1))
+			);
+		} else {
+			rc = git_index_write_tree(&oid, self);
+		}
 		git_check_error(rc);
 
 		RETVAL = git_oid_to_sv(&oid);
