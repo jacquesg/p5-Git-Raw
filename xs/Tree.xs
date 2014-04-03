@@ -257,6 +257,50 @@ diff(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+merge(self, ancestor_tree, their_tree, ...)
+	SV *self
+	SV *ancestor_tree
+	SV *their_tree
+
+	PROTOTYPE: $$$;$
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		Tree ancestor = NULL, ours = NULL, theirs = NULL;
+
+		Index index;
+		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
+
+	CODE:
+		if (items == 4) {
+			git_hv_to_merge_opts((HV *) SvRV(ST(3)), &merge_opts);
+		}
+
+		if (SvOK(ancestor_tree))
+			ancestor = GIT_SV_TO_PTR(Tree, ancestor_tree);
+
+		if (SvOK(their_tree))
+			theirs = GIT_SV_TO_PTR(Tree, their_tree);
+
+		ours = GIT_SV_TO_PTR(Tree, self);
+
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		rc = git_merge_trees(&index, repo_ptr,
+			ancestor, ours, theirs, &merge_opts);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Index", index, repo
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 is_tree(self)
 	SV *self
 

@@ -16,6 +16,8 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 		int count;
 		git_oid oid;
 
+		Repository repo_ptr;
+
 		const char *update_ref = "HEAD";
 
 		Commit commit, *commit_parents = NULL;
@@ -45,8 +47,10 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 			}
 		}
 
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+
 		rc = git_commit_create(
-			&oid, GIT_SV_TO_PTR(Repository, repo), update_ref, author, committer, NULL,
+			&oid, repo_ptr, update_ref, author, committer, NULL,
 			SvPVbyte_nolen(msg), tree, count,
 			(const git_commit **) commit_parents
 		);
@@ -54,7 +58,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 		Safefree(commit_parents);
 		git_check_error(rc);
 
-		rc = git_commit_lookup(&commit, GIT_SV_TO_PTR(Repository, repo), &oid);
+		rc = git_commit_lookup(&commit, repo_ptr, &oid);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -252,6 +256,48 @@ parents(self)
 		}
 
 		RETVAL = parents;
+
+	OUTPUT: RETVAL
+
+SV *
+merge(self, commit, ...)
+	SV *self
+	Commit commit
+
+	PROTOTYPE: $;$;$
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		Index index;
+		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
+
+	CODE:
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		if (items == 3) {
+			SV *opts = ST(2);
+
+			if (!SvROK(opts) || SvTYPE(SvRV(opts)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type for 'merge_opts'");
+
+			git_hv_to_merge_opts((HV *) SvRV(opts),
+				&merge_opts);
+		}
+
+		rc = git_merge_commits(
+			&index,
+			repo_ptr,
+			GIT_SV_TO_PTR(Commit, self),
+			commit, &merge_opts);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Index", index, repo
+		);
 
 	OUTPUT: RETVAL
 

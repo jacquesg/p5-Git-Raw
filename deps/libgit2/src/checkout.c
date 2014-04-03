@@ -147,19 +147,23 @@ static bool checkout_is_workdir_modified(
 		git_submodule *sm;
 		unsigned int sm_status = 0;
 		const git_oid *sm_oid = NULL;
+		bool rval = false;
 
-		if (git_submodule_lookup(&sm, data->repo, wditem->path) < 0 ||
-			git_submodule_status(&sm_status, sm) < 0)
+		if (git_submodule_lookup(&sm, data->repo, wditem->path) < 0) {
+			giterr_clear();
 			return true;
+		}
 
-		if (GIT_SUBMODULE_STATUS_IS_WD_DIRTY(sm_status))
-			return true;
+		if (git_submodule_status(&sm_status, sm) < 0 ||
+			GIT_SUBMODULE_STATUS_IS_WD_DIRTY(sm_status))
+			rval = true;
+		else if ((sm_oid = git_submodule_wd_id(sm)) == NULL)
+			rval = false;
+		else
+			rval = (git_oid__cmp(&baseitem->id, sm_oid) != 0);
 
-		sm_oid = git_submodule_wd_id(sm);
-		if (!sm_oid)
-			return false;
-
-		return (git_oid__cmp(&baseitem->id, sm_oid) != 0);
+		git_submodule_free(sm);
+		return rval;
 	}
 
 	/* Look at the cache to decide if the workdir is modified.  If not,
@@ -324,11 +328,16 @@ static bool submodule_is_config_only(
 {
 	git_submodule *sm = NULL;
 	unsigned int sm_loc = 0;
+	bool rval = false;
 
-	if (git_submodule_lookup(&sm, data->repo, path) < 0 ||
-		git_submodule_location(&sm_loc, sm) < 0 ||
-		sm_loc == GIT_SUBMODULE_STATUS_IN_CONFIG)
+	if (git_submodule_lookup(&sm, data->repo, path) < 0)
 		return true;
+
+	if (git_submodule_location(&sm_loc, sm) < 0 ||
+		sm_loc == GIT_SUBMODULE_STATUS_IN_CONFIG)
+		rval = true;
+
+	git_submodule_free(sm);
 
 	return false;
 }
@@ -1258,7 +1267,6 @@ static int checkout_submodule(
 	const git_diff_file *file)
 {
 	int error = 0;
-	git_submodule *sm;
 
 	/* Until submodules are supported, UPDATE_ONLY means do nothing here */
 	if ((data->strategy & GIT_CHECKOUT_UPDATE_ONLY) != 0)
@@ -1269,7 +1277,7 @@ static int checkout_submodule(
 			data->opts.dir_mode, GIT_MKDIR_PATH)) < 0)
 		return error;
 
-	if ((error = git_submodule_lookup(&sm, data->repo, file->path)) < 0) {
+	if ((error = git_submodule_lookup(NULL, data->repo, file->path)) < 0) {
 		/* I've observed repos with submodules in the tree that do not
 		 * have a .gitmodules - core Git just makes an empty directory
 		 */
@@ -1510,7 +1518,7 @@ static int checkout_create_submodules(
 
 	/* initial reload of submodules if .gitmodules was changed */
 	if (data->reload_submodules &&
-		(error = git_submodule_reload_all(data->repo)) < 0)
+		(error = git_submodule_reload_all(data->repo, 1)) < 0)
 		return error;
 
 	git_vector_foreach(&data->diff->deltas, i, delta) {
@@ -1534,7 +1542,7 @@ static int checkout_create_submodules(
 	}
 
 	/* final reload once submodules have been updated */
-	return git_submodule_reload_all(data->repo);
+	return git_submodule_reload_all(data->repo, 1);
 }
 
 static int checkout_lookup_head_tree(git_tree **out, git_repository *repo)
@@ -1681,29 +1689,20 @@ static int checkout_write_merge(
 {
 	git_buf our_label = GIT_BUF_INIT, their_label = GIT_BUF_INIT,
 		path_suffixed = GIT_BUF_INIT, path_workdir = GIT_BUF_INIT;
-	git_merge_file_options merge_file_opts = GIT_MERGE_FILE_OPTIONS_INIT;
-	git_merge_file_input ancestor = GIT_MERGE_FILE_INPUT_INIT,
-		ours = GIT_MERGE_FILE_INPUT_INIT,
-		theirs = GIT_MERGE_FILE_INPUT_INIT;
-	git_merge_file_result result = GIT_MERGE_FILE_RESULT_INIT;
+	git_merge_file_options opts = GIT_MERGE_FILE_OPTIONS_INIT;
+	git_merge_file_result result = {0};
 	git_filebuf output = GIT_FILEBUF_INIT;
 	int error = 0;
 
 	if (data->opts.checkout_strategy & GIT_CHECKOUT_CONFLICT_STYLE_DIFF3)
-		merge_file_opts.style = GIT_MERGE_FILE_STYLE_DIFF3;
+		opts.flags |= GIT_MERGE_FILE_STYLE_DIFF3;
 
-	if ((conflict->ancestor &&
-		(error = git_merge_file_input_from_index_entry(
-		&ancestor, data->repo, conflict->ancestor)) < 0) ||
-		(error = git_merge_file_input_from_index_entry(
-		&ours, data->repo, conflict->ours)) < 0 ||
-		(error = git_merge_file_input_from_index_entry(
-		&theirs, data->repo, conflict->theirs)) < 0)
-		goto done;
-
-	ancestor.label = data->opts.ancestor_label ? data->opts.ancestor_label : "ancestor";
-	ours.label = data->opts.our_label ? data->opts.our_label : "ours";
-	theirs.label = data->opts.their_label ? data->opts.their_label : "theirs";
+	opts.ancestor_label = data->opts.ancestor_label ?
+		data->opts.ancestor_label : "ancestor";
+	opts.our_label = data->opts.our_label ?
+		data->opts.our_label : "ours";
+	opts.their_label = data->opts.their_label ?
+		data->opts.their_label : "theirs";
 
 	/* If all the paths are identical, decorate the diff3 file with the branch
 	 * names.  Otherwise, append branch_name:path.
@@ -1712,16 +1711,17 @@ static int checkout_write_merge(
 		strcmp(conflict->ours->path, conflict->theirs->path) != 0) {
 
 		if ((error = conflict_entry_name(
-			&our_label, ours.label, conflict->ours->path)) < 0 ||
+			&our_label, opts.our_label, conflict->ours->path)) < 0 ||
 			(error = conflict_entry_name(
-			&their_label, theirs.label, conflict->theirs->path)) < 0)
+			&their_label, opts.their_label, conflict->theirs->path)) < 0)
 			goto done;
 
-		ours.label = git_buf_cstr(&our_label);
-		theirs.label = git_buf_cstr(&their_label);
+		opts.our_label = git_buf_cstr(&our_label);
+		opts.their_label = git_buf_cstr(&their_label);
 	}
 
-	if ((error = git_merge_files(&result, &ancestor, &ours, &theirs, &merge_file_opts)) < 0)
+	if ((error = git_merge_file_from_index(&result, data->repo,
+		conflict->ancestor, conflict->ours, conflict->theirs, &opts)) < 0)
 		goto done;
 
 	if (result.path == NULL || result.mode == 0) {
@@ -1739,7 +1739,7 @@ static int checkout_write_merge(
 
 	if ((error = git_futils_mkpath2file(path_workdir.ptr, 0755)) < 0 ||
 		(error = git_filebuf_open(&output, path_workdir.ptr, GIT_FILEBUF_DO_NOT_BUFFER, result.mode)) < 0 ||
-		(error = git_filebuf_write(&output, result.data, result.len)) < 0 ||
+		(error = git_filebuf_write(&output, result.ptr, result.len)) < 0 ||
 		(error = git_filebuf_commit(&output)) < 0)
 		goto done;
 
@@ -1747,9 +1747,6 @@ done:
 	git_buf_free(&our_label);
 	git_buf_free(&their_label);
 
-	git_merge_file_input_free(&ancestor);
-	git_merge_file_input_free(&ours);
-	git_merge_file_input_free(&theirs);
 	git_merge_file_result_free(&result);
 	git_buf_free(&path_workdir);
 	git_buf_free(&path_suffixed);

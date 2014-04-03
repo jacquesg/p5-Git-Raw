@@ -40,7 +40,7 @@ write_file($file1, 'this is file1 on branch1');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
+my $commit1 = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
 	$repo -> lookup($index -> write_tree));
 
 my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
@@ -50,19 +50,21 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-my $r = $repo -> merge($branch1, {
-	'checkout_opts' => {
-		'checkout_strategy' => {
-			'force' => 1
-		}
+is $master -> target -> id, $repo -> merge_base($master, $commit1);
+
+my $r = $repo -> merge_analysis($branch1);
+is_deeply $r, ['normal', 'fast_forward'];
+
+$repo -> merge($branch1, {}, {
+	'checkout_strategy' => {
+		'force' => 1
 	}
 });
 
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 1, 'id' => $commit -> id};
 is $repo -> index -> has_conflicts, 0;
 is_deeply $repo -> status -> {'test1'}, {'flags' => ['index_modified']};
 
-$master -> target($commit);
+$master -> target($commit1);
 $master = Git::Raw::Branch -> lookup ($repo, 'master', 1);
 
 is_deeply $repo -> status -> {'test1'}, undef;
@@ -77,7 +79,7 @@ write_file($file1, 'this is file1 on branch2');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
+my $commit2 = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
 	$repo -> lookup($index -> write_tree));
 
 $repo -> checkout($repo -> head($master), {
@@ -86,19 +88,13 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-ok !eval { $repo -> merge($branch2, {
-	'flags' => {
-		'fastforward_only' => 1,
-	}
-})};
+is $branch2 -> target -> id, $repo -> merge_base($branch2, $commit2);
+is $commit -> id, $repo -> merge_base($commit1, $commit2);
 
-ok eval { $r = $repo -> merge($branch2, {
-	'flags' => {
-		'no_fastforward' => 1,
-	}
-})};
+$r = $repo ->merge_analysis($branch2);
+is_deeply $r, ['normal'];
 
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
+$repo -> merge($branch2);
 is $index -> has_conflicts, 1;
 
 my @conflicts = $index -> conflicts;
@@ -122,12 +118,15 @@ write_file($file1, 'this is file1 on branch1 and branch2');
 $index -> add('test1');
 $index -> write;
 
-$commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit],
+$commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit2],
 	$repo -> lookup($index -> write_tree));
 
 is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
+
+$r = $repo ->merge_analysis($branch2);
+is_deeply $r, ['up_to_date'];
 
 $repo -> checkout($repo -> head($branch3), {
 	'checkout_strategy' => {
@@ -147,14 +146,14 @@ $repo -> checkout($repo -> head($master), {
 		'force' => 1
 }});
 
-ok eval { $r = $repo -> merge($branch3, {
-	'tree_opts' => {
-		'automerge' => 'favor_theirs',
-	}
-})};
+$r = $repo -> merge_analysis($branch3);
+is_deeply $r, ['normal'];
+
+$repo -> merge($branch3, {
+	'favor' => 'theirs',
+});
 
 is $index -> has_conflicts, 0;
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 my $content = read_file($file1);
 chomp ($content);
@@ -166,16 +165,17 @@ is $repo -> state, "none";
 $repo -> checkout($repo -> head($master), {
 	checkout_strategy => {
 		'force' => 1
-}});
-
-ok eval { $r = $repo -> merge($branch3, {
-	'tree_opts' => {
-		'automerge' => 'favor_ours',
 	}
-})};
+});
+
+$r = $repo -> merge_analysis($branch3);
+is_deeply $r, ['normal'];
+
+$repo -> merge($branch3, {
+	'favor' => 'ours',
+});
 
 is $index -> has_conflicts, 0;
-is_deeply $r, {'up_to_date' => 0, 'fast_forward' => 0};
 
 $content = read_file($file1);
 chomp ($content);
@@ -183,6 +183,33 @@ is $content, 'this is file1 on branch1 and branch2';
 is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
+
+$master = $repo -> head;
+my $head_commit = $master -> target;
+
+write_file($file1, 'pre-commit merge');
+$index -> add('test1');
+$index -> write;
+
+my $merge_commit1 = $repo -> commit("merge commit on branch1\n", $me, $me, [$head_commit],
+	$repo -> lookup($index -> write_tree));
+
+write_file($file1, 'post-commit merge');
+$index -> add('test1');
+$index -> write;
+
+my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$merge_commit1],
+	$repo -> lookup($index -> write_tree));
+
+my $merged_index = $merge_commit1 -> merge($merge_commit2);
+
+isa_ok $merged_index, 'Git::Raw::Index';
+is $merged_index -> has_conflicts, 0;
+
+my $squashed_commit = $repo -> commit ("squashed_commit\n", $me, $me, [$head_commit],
+	$repo -> lookup($index -> write_tree ($repo)));
+
+is $repo -> head -> target -> id, $squashed_commit -> id;
 
 $repo = undef;
 rmtree $path;

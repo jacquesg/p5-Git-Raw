@@ -340,35 +340,58 @@ Example:
       }
     }
 
-=head2 merge( $ref, \%opts)
+=head2 merge_base( @objects )
+
+Find the merge base between C<@objects>. Each element in C<@objects> should
+either be a C<Git::Raw::Reference> or a C<Git::Raw::Commit>. A minimum
+of 2 objects should be provided.
+
+=head2 merge_analysis( $reference )
+
+Analyzes the given C<$reference> and determines the opportunities for
+merging them into the HEAD of the repository. This function returns an
+array reference with optional members C<"normal">, C<"up_to_date">,
+C<"fast_forward"> and/or C<"unborn">.
+
+=over 4
+
+=item * "normal"
+
+A "normal" merge. Both HEAD and the given merge input have diverged
+from their common ancestor. The divergent commits must be merged.
+
+=item * "up_to_date"
+
+All given merge inputs are reachable from HEAD, meaning the repository is
+up-to-date and no merge needs to be performed.
+
+=item * "fast_forward"
+
+The given merge input is a fast-forward from HEAD and no merge needs to be
+performed. Instead, the given merge input may be checked out.
+
+=item * "unborn"
+
+The HEAD of the current repository is "unborn" and does not point to a valid
+commit. No merge can be performed, but the caller may wish to simply set
+HEAD to the target commit(s).
+
+=back
+
+=head2 merge( $ref, [\%merge_opts, \%checkout_opts])
 
 Merge the given C<$ref> into HEAD. This function returns a hash reference
 with members C<"up_to_date">, C<"fast_forward"> and C<"id"> if the merge
-was fast-forward. Valid fields for C<%opts> are
+was fast-forward.  See C<Git::Raw::Repository-E<gt>checkout()> for valid
+C<%checkout_opts> values.  Valid fields for C<%merge_opts> are
 
 =over 4
 
 =item * "flags"
 
-Flags for the merge. Valid values include (mutually exclusive):
-
-=over 8
-
-=item * "fastforward_only"
-
-=item * "no_fastforward"
-
-=back
-
-=item * "tree_opts"
-
-=over 8
-
-=item * "flags"
-
 An array of flags for the tree, including:
 
-=over 12
+=over 8
 
 =item * "find_renames"
 
@@ -376,10 +399,10 @@ Detect renames.
 
 =back
 
-=item * "automerge"
+=item * "favor"
 
-Specify content automerging behavoiur. Valid values are C<"favor_ours"> and
-C<"favor_theirs">.
+Specify content automerging behaviour. Valid values are C<"ours">, C<"theirs">,
+and C<"union">.
 
 =item * "rename_threshold"
 
@@ -392,28 +415,17 @@ configuration entry) (default is 200).
 
 =back
 
-=item * "checkout_opts"
-
-See C<Git::Raw::Repository-E<gt>checkout()>.
-
-=back
-
 Example:
 
-    my $branch  = Git::Raw::Branch -> lookup($repo, 'branch', 1);
-    my $result = $repo -> merge($branch1, {
-      'flags' => {
-        'fastforward_only' => 1
+    my $branch = Git::Raw::Branch -> lookup($repo, 'branch', 1);
+    my $analysis = $repo -> merge_analysis($branch);
+    $repo -> merge($branch1, {
+      'favor' => 'theirs'
+    }, {
+      'checkout_strategy' => {
+        'force' => 1
       }
-      'tree_opts' => {
-        'automerge' => 'favor_theirs'
-      }
-      'checkout_opts' => {
-        'checkout_strategy' => {
-          'force' => 1
-        }
-      }
-    }
+    );
 
 =head2 ignore( $rules )
 

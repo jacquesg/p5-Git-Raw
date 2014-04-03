@@ -619,82 +619,143 @@ diff(self, ...)
 	OUTPUT: RETVAL
 
 SV *
-merge(self, ref, opts)
+merge_base(self, ...)
+	Repository self
+
+	PROTOTYPE: $;@
+
+	PREINIT:
+		int i, rc, count;
+
+		git_oid merge_base, *oids = NULL;
+
+	CODE:
+		if (items < 3)
+			Perl_croak(aTHX_ "At least 2 arguments needed");
+
+		count = items - 1;
+		Renew(oids, count, git_oid);
+		for (i = 0; i < count; ++i) {
+			SV *item = ST(i + 1);
+
+			if (sv_isobject(item)) {
+				if (sv_derived_from(item, "Git::Raw::Reference")) {
+					git_object *obj = NULL;
+
+					rc = git_reference_peel(&obj,
+						GIT_SV_TO_PTR(Reference, item),
+						GIT_OBJ_COMMIT);
+
+					/* Need to ensure we don't leak, git_check_error()
+					 * may croak */
+					if (rc != GIT_OK)
+						Safefree(oids);
+					git_check_error(rc);
+
+					git_oid_cpy(oids + i, git_object_id(obj));
+					git_object_free(obj);
+
+				} else if (sv_derived_from(item, "Git::Raw::Commit")) {
+					const git_oid *commit_id =
+						git_commit_id(GIT_SV_TO_PTR(Commit, item));
+					git_oid_cpy(oids + i, commit_id);
+				} else {
+					Safefree(oids);
+					Perl_croak(aTHX_ "Expected a 'Git::Raw::Commit' "
+						"or 'Git::Raw::Reference'");
+				}
+			}
+		}
+
+		rc = git_merge_base_many(
+			&merge_base, self, (size_t) count, oids);
+		Safefree(oids);
+		git_check_error(rc);
+
+		RETVAL = git_oid_to_sv(&merge_base);
+
+	OUTPUT: RETVAL
+
+SV *
+merge_analysis(self, ref)
 	Repository self
 	Reference ref
-	HV *opts
 
 	PREINIT:
 		int rc;
 
 		git_merge_head *merge_head;
-		git_merge_result *merge_result;
+		git_merge_analysis_t analysis;
+
+		AV *result;
+	CODE:
+		rc = git_merge_head_from_ref(&merge_head, self, ref);
+		git_check_error(rc);
+
+		rc = git_merge_analysis(&analysis,
+			self, (const git_merge_head **) &merge_head, 1);
+		git_merge_head_free(merge_head);
+		git_check_error(rc);
+
+		result = newAV();
+		if (analysis & GIT_MERGE_ANALYSIS_NORMAL)
+			av_push(result, newSVpv("normal", 0));
+		if (analysis & GIT_MERGE_ANALYSIS_UP_TO_DATE)
+			av_push(result, newSVpv("up_to_date", 0));
+		if (analysis & GIT_MERGE_ANALYSIS_FASTFORWARD)
+			av_push(result, newSVpv("fast_forward", 0));
+		if (analysis & GIT_MERGE_ANALYSIS_UNBORN)
+			av_push(result, newSVpv("unborn", 0));
+
+		RETVAL = newRV_noinc((SV *) result);
+
+	OUTPUT: RETVAL
+
+void
+merge(self, ref, ...)
+	Repository self
+	Reference ref
+
+	PROTOTYPE: $$;$;$
+	PREINIT:
+		int rc;
+
+		git_merge_head *merge_head;
 
 		SV **opt;
-		git_merge_opts merge_opts = GIT_MERGE_OPTS_INIT;
 
-		HV *result;
+		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
+		git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
 
 	CODE:
 		rc = git_merge_head_from_ref(&merge_head, self, ref);
 		git_check_error(rc);
 
-		if ((opt = hv_fetchs(opts, "flags", 0))) {
-			HV *flags;
+		if (items >= 3) {
+			SV *opts = ST(2);
+			if (!SvROK(opts) || SvTYPE(SvRV(opts)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type for 'merge_opts'");
 
-			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
-
-			flags = (HV *) SvRV(*opt);
-
-			if ((opt = hv_fetchs(flags, "fastforward_only", 0)) && SvIV(*opt))
-				merge_opts.merge_flags |= GIT_MERGE_FASTFORWARD_ONLY;
-			else if ((opt = hv_fetchs(flags, "no_fastfoward", 0)) && SvIV(*opt))
-				merge_opts.merge_flags |= GIT_MERGE_NO_FASTFORWARD;
+			git_hv_to_merge_opts((HV *) SvRV(opts),
+				&merge_opts);
 		}
 
-		if ((opt = hv_fetchs(opts, "tree_opts", 0))) {
-			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
+		if (items >= 4) {
+			SV *opts = ST(3);
+			if (!SvROK(opts) || SvTYPE(SvRV(opts)) != SVt_PVHV)
+				Perl_croak(aTHX_ "Invalid type for 'checkout_opts'");
 
-			git_hv_to_merge_tree_opts((HV *) SvRV(*opt),
-				&merge_opts.merge_tree_opts);
-		}
-
-		if ((opt = hv_fetchs(opts, "checkout_opts", 0))) {
-			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
-
-			git_hv_to_checkout_opts((HV *) SvRV(*opt),
-			&merge_opts.checkout_opts);
+			git_hv_to_checkout_opts((HV *) SvRV(opts),
+				&checkout_opts);
 		}
 
 		rc = git_merge(
-			&merge_result, self,
-			(const git_merge_head **) &merge_head,
-			1, &merge_opts
+			self, (const git_merge_head **) &merge_head,
+			1, &merge_opts, &checkout_opts
 		);
-		Safefree(merge_opts.checkout_opts.paths.strings);
+		Safefree(checkout_opts.paths.strings);
+		git_merge_head_free(merge_head);
 		git_check_error(rc);
-
-		result = newHV();
-
-		hv_stores(result, "up_to_date",
-			newSViv(git_merge_result_is_uptodate(merge_result)));
-
-		if (git_merge_result_is_fastforward(merge_result)) {
-			git_oid id;
-
-			git_merge_result_fastforward_id(&id, merge_result);
-			hv_stores(result, "id", git_oid_to_sv(&id));
-			hv_stores(result, "fast_forward", newSViv(1));
-		} else {
-			hv_stores(result, "fast_forward", newSViv(0));
-		}
-
-		RETVAL = newRV_noinc((SV *) result);
-
-	OUTPUT: RETVAL
 
 void
 branches(self)

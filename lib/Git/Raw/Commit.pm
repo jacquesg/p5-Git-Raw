@@ -98,6 +98,12 @@ Retrieve the L<Git::Raw::Tree> the commit points to.
 
 Retrieve the list of parents of the commit.
 
+=head2 merge( $commit, [ \%merge_opts ])
+
+Merge C<$commit> into this commit. See C<Git::Raw::Repository-E<gt>merge()>
+for valid C<%merge_opts> values. Returns a C<Git::Raw::Index> object
+containing the merge result.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
