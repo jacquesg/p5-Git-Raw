@@ -45,9 +45,8 @@ Replace the index contente with C<$tree>.
 
 =head2 write_tree( [$repo] )
 
-Create a new tree from the index and write it to disk. C<$repo> is an optional,
-alternative C<Git::Raw::Repository>, or the repository the index should we
-written to if its an in-memory index.
+Create a new tree from the index and write it to disk. C<$repo> optionally
+indicates which C<Git::Raw::Repository> the tree should be written to.
 
 =head2 checkout( [\%checkout_opts] )
 

@@ -96,15 +96,16 @@ Completion is called when different parts of the download process are done
 =item * "transfer_progress"
 
 During the download of new data, this will be regularly called with the current
-count of progress done by the indexer. The callback receives the following integers:
-C<total_objects>, C<received_objects>, C<local_objects>, C<total_deltas>,
-C<indexed_deltas> and C<received_bytes>.
+count of progress done by the indexer. The callback receives the following
+integers: C<total_objects>, C<received_objects>, C<local_objects>,
+C<total_deltas>, C<indexed_deltas> and C<received_bytes>.
 
 =item * "update_tips"
 
 Each time a reference is updated locally, this function will be called with
 information about it. The callback receives a string containing the name of the
-reference that was updated, and the two OID's C<"a"> before and C<"b"> after the update.
+reference that was updated, and the two OID's C<"a"> before and C<"b"> after the
+update.
 
 =back
 
@@ -245,16 +246,17 @@ Hash containg progress and notification callbacks. Valid fields are:
 
 =item * "notify"
 
-This callback is called for each file matching one of the C<notify> options selected.
-It runs before modifying any files on disk. This callback should return a non-zero value
-should the checkout be cancelled.  The callback receives a string containing the path
-of the file C<path> and an array reference containing the reason C<why>.
+This callback is called for each file matching one of the C<notify> options
+selected. It runs before modifying any files on disk. This callback should
+return a non-zero value should the checkout be cancelled.  The callback receives
+a string containing the path of the file C<path> and an array reference
+containing the reason C<why>.
 
 =item * "progress"
 
-The callback to be invoked as a file is checked out. The callback receives a string
-containing the path of the file C<path>, an integer C<completed_steps> and an
-integer C<total_steps>.
+The callback to be invoked as a file is checked out. The callback receives a
+string containing the path of the file C<path>, an integer C<completed_steps>
+and an integer C<total_steps>.
 
 =back
 
@@ -318,9 +320,9 @@ include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renam
 C<"worktree_new">, C<"worktree_modified">, C<"worktree_deleted">,
 C<"worktree_renamed"> and C<"ignored">.
 
-If C<$file> has been renamed in either the index or worktree or both, C<$file> will
-also have a corresponding entry C<"index"> and/or C<"worktree">, containing the
-previous filename C<"old_file">.
+If C<$file> has been renamed in either the index or worktree or both, C<$file>
+will also have a corresponding entry C<"index"> and/or C<"worktree">, containing
+the previous filename C<"old_file">.
 
 Example:
 
@@ -348,17 +350,17 @@ of 2 objects should be provided.
 
 =head2 merge_analysis( $reference )
 
-Analyzes the given C<$reference> and determines the opportunities for
-merging them into the HEAD of the repository. This function returns an
-array reference with optional members C<"normal">, C<"up_to_date">,
-C<"fast_forward"> and/or C<"unborn">.
+Analyzes the given C<$reference> and determines the opportunities for merging
+them into the HEAD of the repository. This function returns an array reference
+with optional members C<"normal">, C<"up_to_date">, C<"fast_forward"> and/or
+C<"unborn">.
 
 =over 4
 
 =item * "normal"
 
-A "normal" merge. Both HEAD and the given merge input have diverged
-from their common ancestor. The divergent commits must be merged.
+A "normal" merge. Both HEAD and the given merge input have diverged from their
+common ancestor. The divergent commits must be merged.
 
 =item * "up_to_date"
 
@@ -419,12 +421,16 @@ Example:
 
     my $branch = Git::Raw::Branch -> lookup($repo, 'branch', 1);
     my $analysis = $repo -> merge_analysis($branch);
-    $repo -> merge($branch1, {
-      'favor' => 'theirs'
-    }, {
+    $repo -> merge($branch1,
+     {
+        'favor' => 'theirs'
+     },
+
+     {
       'checkout_strategy' => {
         'force' => 1
       }
+     }
     );
 
 =head2 ignore( $rules )
