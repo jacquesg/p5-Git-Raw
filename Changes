@@ -35,6 +35,7 @@ Revision history for Git-Raw
    (incompatible change) (GH#71).
    The order of 'url' and 'fetchspec' has also been reversed to bring it
    inline with the upstream changes.
+ - Update libgit2 to bcc6229
 
 0.32      2014-03-16 15:02:47+01:00 Europe/Rome
 
