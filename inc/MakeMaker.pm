@@ -125,7 +125,7 @@ override _build_WriteMakefile_args => sub {
 	my $def = '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 
 	my $bits = $Config{longsize} == 4 ? '-m32' : '';
-	my $ccflags = "$bits -Wall -Wno-unused-variable";
+	my $ccflags = "$bits -Wall -Wno-unused-variable -Wdeclaration-after-statement";
 
 	if ($^O eq 'darwin') {
 		$ccflags .= ' -Wno-deprecated-declarations'
