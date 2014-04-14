@@ -31,11 +31,11 @@ create(class, repo, name, url)
 	OUTPUT: RETVAL
 
 SV *
-create_inmemory(class, repo, fetch, url)
+create_anonymous(class, repo, url, fetch)
 	SV *class
 	SV *repo
-	SV *fetch
 	SV *url
+	SV *fetch
 
 	PREINIT:
 		int rc;
@@ -49,9 +49,9 @@ create_inmemory(class, repo, fetch, url)
 		if (SvOK(fetch))
 			f = SvPVbyte_nolen(fetch);
 
-		rc = git_remote_create_inmemory(
+		rc = git_remote_create_anonymous(
 			&r, GIT_SV_TO_PTR(Repository, repo),
-			f, SvPVbyte_nolen(url)
+			SvPVbyte_nolen(url), f
 		);
 		git_check_error(rc);
 

@@ -876,12 +876,14 @@ static int handle_unmatched_new_item(
 			 DIFF_FLAG_IS_SET(diff, GIT_DIFF_RECURSE_IGNORED_DIRS));
 
 		/* do not advance into directories that contain a .git file */
-		if (recurse_into_dir) {
+		if (recurse_into_dir && !contains_oitem) {
 			git_buf *full = NULL;
 			if (git_iterator_current_workdir_path(&full, info->new_iter) < 0)
 				return -1;
-			if (full && git_path_contains_dir(full, DOT_GIT))
+			if (full && git_path_contains(full, DOT_GIT)) {
+				/* TODO: warning if not a valid git repository */
 				recurse_into_dir = false;
+			}
 		}
 
 		/* still have to look into untracked directories to match core git -
@@ -967,6 +969,16 @@ static int handle_unmatched_new_item(
 		if (git_submodule_lookup(NULL, info->repo, nitem->path) != 0) {
 			giterr_clear();
 			delta_type = GIT_DELTA_IGNORED;
+
+			/* if this contains a tracked item, treat as normal TREE */
+			if (contains_oitem) {
+				error = git_iterator_advance_into(&info->nitem, info->new_iter);
+				if (error != GIT_ENOTFOUND)
+					return error;
+
+				giterr_clear();
+				return git_iterator_advance(&info->nitem, info->new_iter);
+			}
 		}
 	}
 
