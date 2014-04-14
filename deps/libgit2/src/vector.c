@@ -54,7 +54,7 @@ int git_vector_dup(git_vector *v, const git_vector *src, git_vector_cmp cmp)
 	bytes = src->length * sizeof(void *);
 
 	v->_alloc_size = src->length;
-	v->_cmp = cmp;
+	v->_cmp = cmp ? cmp : src->_cmp;
 	v->length = src->length;
 	v->flags  = src->flags;
 	if (cmp != src->_cmp)
@@ -327,8 +327,10 @@ int git_vector_resize_to(git_vector *v, size_t new_length)
 
 int git_vector_set(void **old, git_vector *v, size_t position, void *value)
 {
-	if (git_vector_resize_to(v, position + 1) < 0)
-		return -1;
+	if (position + 1 > v->length) {
+		if (git_vector_resize_to(v, position + 1) < 0)
+			return -1;
+	}
 
 	if (old != NULL)
 		*old = v->contents[position];
