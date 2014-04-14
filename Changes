@@ -31,6 +31,10 @@ Revision history for Git-Raw
  - Added new Tree method (#GH70):
     + Tree -> merge()
  - Index -> add() now either takes a path or a Index::Entry (GH#70)
+ - Remote->create_inmemory() has been replaced by Remote->create_anonymous()
+   (incompatible change) (GH#71).
+   The order of 'url' and 'fetchspec' has also been reversed to bring it
+   inline with the upstream changes.
 
 0.32      2014-03-16 15:02:47+01:00 Europe/Rome
 
