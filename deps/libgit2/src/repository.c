@@ -93,6 +93,7 @@ void git_repository__cleanup(git_repository *repo)
 
 	git_cache_clear(&repo->objects);
 	git_attr_cache_flush(repo);
+	git_submodule_cache_free(repo);
 
 	set_config(repo, NULL);
 	set_index(repo, NULL);
@@ -108,7 +109,6 @@ void git_repository_free(git_repository *repo)
 	git_repository__cleanup(repo);
 
 	git_cache_free(&repo->objects);
-	git_submodule_config_free(repo);
 
 	git_diff_driver_registry_free(repo->diff_drivers);
 	repo->diff_drivers = NULL;
@@ -1955,24 +1955,32 @@ int git_repository_state(git_repository *repo)
 	return state;
 }
 
-int git_repository__cleanup_files(git_repository *repo, const char *files[], size_t files_len)
+int git_repository__cleanup_files(
+	git_repository *repo, const char *files[], size_t files_len)
 {
-	git_buf path = GIT_BUF_INIT;
+	git_buf buf = GIT_BUF_INIT;
 	size_t i;
-	int error = 0;
+	int error;
 
-	for (i = 0; i < files_len; ++i) {
-		git_buf_clear(&path);
+	for (error = 0, i = 0; !error && i < files_len; ++i) {
+		const char *path;
 
-		if ((error = git_buf_joinpath(&path, repo->path_repository, files[i])) < 0 ||
-			(git_path_isfile(git_buf_cstr(&path)) &&
-			(error = p_unlink(git_buf_cstr(&path))) < 0))
-			goto done;
+		if (git_buf_joinpath(&buf, repo->path_repository, files[i]) < 0)
+			return -1;
+
+		path = git_buf_cstr(&buf);
+
+		if (git_path_isfile(path)) {
+			error = p_unlink(path);
+		} else if (git_path_isdir(path)) {
+			error = git_futils_rmdir_r(path, NULL,
+				GIT_RMDIR_REMOVE_FILES | GIT_RMDIR_REMOVE_BLOCKERS);
+		}
+
+		git_buf_clear(&buf);
 	}
 
-done:
-	git_buf_free(&path);
-
+	git_buf_free(&buf);
 	return error;
 }
 
@@ -1982,6 +1990,9 @@ static const char *state_files[] = {
 	GIT_MERGE_MSG_FILE,
 	GIT_REVERT_HEAD_FILE,
 	GIT_CHERRY_PICK_HEAD_FILE,
+	GIT_BISECT_LOG_FILE,
+	GIT_REBASE_MERGE_DIR,
+	GIT_REBASE_APPLY_DIR,
 };
 
 int git_repository_state_cleanup(git_repository *repo)
