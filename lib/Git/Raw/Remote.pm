@@ -39,8 +39,8 @@ Git::Raw::Remote - Git remote class
     $remote -> disconnect;
 
     my $empty_repo = Git::Raw::Repository -> new;
-    my $inmem_remote = Git::Raw::Remote -> create_inmemory($repo, undef, $url);
-    my $list = $inmem_remote -> ls;
+    my $anonymous_remote = Git::Raw::Remote -> create_anonymous($repo, $url, undef);
+    my $list = $anonymous_remote -> ls;
 
 =head1 DESCRIPTION
 
@@ -56,9 +56,9 @@ B<WARNING>: The API of this module is unstable and may change without warning
 Create a remote with the default fetch refspec and add it to the repository's
 configuration.
 
-=head2 create_inmemory( $repo, $fetch_refspec, $url )
+=head2 create_anonymous( $repo, $url, $fetch_refspec )
 
-Create a remote in memory.
+Create a remote in memory (anonymous).
 
 =head2 load( $repo, $name )
 
