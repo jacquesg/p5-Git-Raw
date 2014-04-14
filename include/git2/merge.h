@@ -177,13 +177,13 @@ typedef struct {
 	 * The path that the resultant merge file should use, or NULL if a
 	 * filename conflict would occur.
 	 */
-	char *path;
+	const char *path;
 
 	/** The mode that the resultant merge file should use.  */
 	unsigned int mode;
 
 	/** The contents of the merge. */
-	unsigned char *ptr;
+	const char *ptr;
 
 	/** The length of the merge contents. */
 	size_t len;
@@ -341,7 +341,7 @@ GIT_EXTERN(int) git_merge_base_octopus(
 GIT_EXTERN(int) git_merge_head_from_ref(
 	git_merge_head **out,
 	git_repository *repo,
-	git_reference *ref);
+	const git_reference *ref);
 
 /**
  * Creates a `git_merge_head` from the given fetch head data.  The resulting
@@ -374,6 +374,15 @@ GIT_EXTERN(int) git_merge_head_from_id(
 	git_merge_head **out,
 	git_repository *repo,
 	const git_oid *id);
+
+/**
+ * Gets the commit ID that the given `git_merge_head` refers to.
+ *
+ * @param id pointer to commit id to be filled in
+ * @param head the given merge head
+ */
+GIT_EXTERN(const git_oid *) git_merge_head_id(
+	const git_merge_head *head);
 
 /**
  * Frees a `git_merge_head`.
