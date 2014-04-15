@@ -695,6 +695,10 @@ Repository is applying patches or rebasing.
 Remove all the metadata associated with an ongoing command like merge, revert,
 cherry-pick, etc.
 
+=head2 message( )
+
+Retrieve the content of git's prepared message i.e. L<".git/MERGE_MSG">.
+
 =head2 is_empty( )
 
 Check if the repository is empty.
