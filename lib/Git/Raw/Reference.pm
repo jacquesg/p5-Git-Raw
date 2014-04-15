@@ -39,6 +39,12 @@ afterwards.
 
 Retrieve the name of the reference.
 
+=head2 shorthand( )
+
+Get the reference's short name. This will transform the reference name into a
+"human-readable" version. If no shortname is appropriate, it will return the
+full name.
+
 =head2 type( )
 
 Retrieve the type of the reference. Can be either C<"direct"> or C<"symbolic">.
@@ -75,6 +81,14 @@ Check if the reference is a branch.
 =head2 is_remote( )
 
 Check if the reference is remote.
+
+=head2 is_tag( )
+
+Check if the reference lives in the L<"refs/tags"> namespace.
+
+=head2 is_note( )
+
+Check if the reference lives in the L<"refs/notes"> namespace.
 
 =head1 AUTHOR
 

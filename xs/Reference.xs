@@ -210,6 +210,15 @@ target(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+shorthand(self)
+	Reference self
+
+	CODE:
+		RETVAL = newSVpv(git_reference_shorthand(self), 0);
+
+	OUTPUT: RETVAL
+
+SV *
 is_branch(self)
 	Reference self
 
@@ -224,6 +233,30 @@ is_remote(self)
 
 	CODE:
 		RETVAL = newSViv(git_reference_is_remote(self));
+
+	OUTPUT: RETVAL
+
+SV *
+is_tag(self)
+	Reference self
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_reference_is_tag(self);
+		git_check_error(rc);
+
+		RETVAL = newSViv(rc);
+
+	OUTPUT: RETVAL
+
+SV *
+is_note(self)
+	Reference self
+
+	CODE:
+		RETVAL = newSViv(git_reference_is_note(self));
 
 	OUTPUT: RETVAL
 

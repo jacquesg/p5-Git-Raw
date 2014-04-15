@@ -22,6 +22,7 @@ my $branch = $repo -> branch($branch_name, $commit);
 
 is $branch -> type, 'direct';
 is $branch -> name, "refs/heads/$branch_name";
+is $branch -> shorthand, $branch_name;
 
 ok !$branch -> is_head;
 ok $branch -> is_branch;
@@ -66,9 +67,11 @@ my $branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
 
 is $branches -> [0] -> type, 'direct';
 is $branches -> [0] -> name, 'refs/heads/master';
+is $branches -> [0] -> shorthand, 'master';
 
 is $branches -> [1] -> type, 'direct';
 is $branches -> [1] -> name, 'refs/heads/some_branch';
+is $branches -> [1] -> shorthand, 'some_branch';
 
 if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	is scalar(@$branches), 5;

@@ -20,6 +20,8 @@ is $ref -> type, 'direct';
 is $ref -> name, 'refs/heads/master';
 ok $ref -> is_branch;
 ok !$ref -> is_remote;
+ok !$ref -> is_note;
+ok !$ref -> is_tag;
 
 $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
@@ -39,8 +41,11 @@ isa_ok $ref, 'Git::Raw::Reference';
 is $ref -> type, 'direct';
 is $ref -> target -> id, $head -> id;
 is $ref -> name, 'refs/test-ref';
+is $ref -> shorthand, 'test-ref';
 ok !$ref -> is_branch;
 ok !$ref -> is_remote;
+ok !$ref -> is_note;
+ok !$ref -> is_tag;
 
 eval {
 	Git::Raw::Reference -> create('refs/test-ref', $repo, $head);
@@ -60,6 +65,8 @@ is $ref -> target -> id, $empty_blob -> id;
 is $ref -> name, 'refs/test-ref';
 ok !$ref -> is_branch;
 ok !$ref -> is_remote;
+ok !$ref -> is_note;
+ok !$ref -> is_tag;
 
 my $tree = $head -> tree();
 $ref = Git::Raw::Reference -> create('refs/test-ref', $repo, $tree, 1);
@@ -69,6 +76,8 @@ is $ref -> target -> id, $tree -> id;
 is $ref -> name, 'refs/test-ref';
 ok !$ref -> is_branch;
 ok !$ref -> is_remote;
+ok !$ref -> is_note;
+ok !$ref -> is_tag;
 
 $ref -> delete;
 
