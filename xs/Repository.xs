@@ -1009,6 +1009,26 @@ state_cleanup(self)
 		git_check_error(rc);
 
 SV *
+message(self)
+	Repository self
+
+	PREINIT:
+		int rc;
+
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		rc = git_repository_message(&buf, self);
+		if (rc != GIT_OK)
+			git_buf_free(&buf);
+		git_check_error(rc);
+
+		RETVAL = newSVpv(buf.ptr, 0);
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
+SV *
 is_bare(self)
 	Repository self
 
