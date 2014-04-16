@@ -2,6 +2,12 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Add Repository -> message() method (GH#72) (thanks, @jacquesg!)
+ - Add Reference methods (GH#73) (thanks, @jacquesg!):
+    + Reference -> shorthand()
+    + Reference -> is_tag()
+    + Reference -> is_note()
+
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
  - Fix segfaults caused by invalid object creation (GH#66) (thanks, @pipcet!)
