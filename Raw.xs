@@ -1092,6 +1092,9 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
+BOOT:
+	git_threads_init();
+
 INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs
 INCLUDE: xs/Blob.xs
