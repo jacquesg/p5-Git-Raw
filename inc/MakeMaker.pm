@@ -11,6 +11,7 @@ override _build_MakeFile_PL_template => sub {
 	my $template = <<'TEMPLATE';
 use strict;
 use warnings;
+use Config;
 
 use Devel::CheckLib;
 
@@ -59,6 +60,21 @@ if (check_lib(lib => 'ssh2')) {
 	print "SSH support disabled\n";
 }
 
+if ($Config{usethreads}) {
+	if (check_lib(lib => 'pthread')) {
+		$def .= ' -DGIT_THREADS';
+		$lib .= ' -lpthread';
+
+		print "Threads support enabled\n";
+	} else {
+		if ($^O eq 'MSWin32') {
+			$def .= ' -DGIT_THREADS';
+		} else {
+			print "Threads support disabled\n";
+		}
+	}
+}
+
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
 push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
@@ -68,7 +84,7 @@ if ($^O eq 'MSWin32') {
 	push @srcs, 'deps/libgit2/deps/regex/regex.c';
 
 	$inc .= ' -Ideps/libgit2/deps/regex';
-	$def .= ' -DWIN32 -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
+	$def .= ' -DWIN32 -D_WIN32_WINNT=0x0501 -DGIT_WIN32 -D__USE_MINGW_ANSI_STDIO=1';
 } else {
 	push @srcs, glob 'deps/libgit2/src/unix/*.c'
 }
