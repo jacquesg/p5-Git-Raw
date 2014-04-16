@@ -1,19 +1,31 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Push
 
-Push
+SV *
 new(class, remote)
 	SV *class
-	Remote remote
+	SV *remote
 
 	PREINIT:
 		int rc;
-		Push push;
+
+		git_push *p = NULL;
+		Push push = NULL;
+
+		Remote r = NULL;
 
 	CODE:
-		rc = git_push_new(&push, remote -> remote);
+		r = GIT_SV_TO_PTR(Remote, remote);
+
+		rc = git_push_new(&p, r -> remote);
 		git_check_error(rc);
 
-		RETVAL = push;
+		Newx(push, 1, git_raw_push);
+		git_init_push_callbacks(&push -> callbacks);
+		push -> push = p;
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), push, SvRV(remote)
+		);
 
 	OUTPUT: RETVAL
 
@@ -26,7 +38,7 @@ add_refspec(self, refspec)
 		int rc;
 
 	CODE:
-		rc = git_push_add_refspec(self, SvPVbyte_nolen(refspec));
+		rc = git_push_add_refspec(self -> push, SvPVbyte_nolen(refspec));
 		git_check_error(rc);
 
 void
@@ -37,21 +49,76 @@ finish(self)
 		int rc;
 
 	CODE:
-		rc = git_push_finish(self);
+		rc = git_push_finish(self -> push);
 		git_check_error(rc);
 
-bool
+		if (self -> callbacks.status != NULL) {
+			rc = git_push_status_foreach(
+				self -> push,
+				git_push_status_cbb,
+				&self -> callbacks);
+			git_check_error(rc);
+		}
+
+SV *
 unpack_ok(self)
 	Push self
 
 	CODE:
-		RETVAL = git_push_unpack_ok(self);
+		RETVAL = newSViv(git_push_unpack_ok(self -> push));
 
 	OUTPUT: RETVAL
 
 void
-DESTROY(self)
-	Push self
+callbacks(self, callbacks)
+	SV *self
+	HV *callbacks
+
+	PREINIT:
+		int rc;
+
+		Push push;
+
+		git_packbuilder_progress pack_progress = NULL;
+		git_push_transfer_progress transfer_progress = NULL;
 
 	CODE:
-		git_push_free(self);
+		push = GIT_SV_TO_PTR(Push, self);
+
+		git_clean_push_callbacks(&push -> callbacks);
+
+		if ((push -> callbacks.transfer_progress =
+			get_callback_option(callbacks, "transfer_progress"))) {
+
+			transfer_progress = git_push_transfer_progress_cbb;
+		}
+
+		if ((push -> callbacks.packbuilder_progress =
+			get_callback_option(callbacks, "pack_progress"))) {
+
+			pack_progress = git_packbuilder_progress_cbb;
+		}
+
+		push -> callbacks.status = get_callback_option(callbacks, "status");
+
+		rc = git_push_set_callbacks(
+			push -> push,
+			pack_progress,
+			&push -> callbacks,
+			transfer_progress,
+			&push -> callbacks);
+		git_check_error(rc);
+
+void
+DESTROY(self)
+	SV *self
+
+	PREINIT:
+		Push push;
+
+	CODE:
+		push = GIT_SV_TO_PTR(Push, self);
+		git_push_free(push -> push);
+		git_clean_push_callbacks(&push -> callbacks);
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		Safefree(push);
