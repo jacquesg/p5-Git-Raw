@@ -267,9 +267,9 @@ void test_revwalk_basic__multiple_push_1(void)
 }
 
 /*
-* Difference between test_revwalk_basic__multiple_push_1 and
+* Difference between test_revwalk_basic__multiple_push_1 and 
 * test_revwalk_basic__multiple_push_2 is in the order reference
-* refs/heads/packed-test and commit 5b5b02 are pushed.
+* refs/heads/packed-test and commit 5b5b02 are pushed. 
 * revwalk should return same commits in both the tests.
 
 * $ git rev-list 5b5b02 HEAD ^refs/heads/packed-test
