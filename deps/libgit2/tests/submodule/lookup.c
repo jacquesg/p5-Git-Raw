@@ -268,3 +268,4 @@ void test_submodule_lookup__just_added(void)
 
 	refute_submodule_exists(g_repo, "sm_just_added_head", GIT_EEXISTS);
 }
+

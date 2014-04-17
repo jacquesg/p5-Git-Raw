@@ -1976,7 +1976,7 @@ int git_repository__cleanup_files(
 			error = git_futils_rmdir_r(path, NULL,
 				GIT_RMDIR_REMOVE_FILES | GIT_RMDIR_REMOVE_BLOCKERS);
 		}
-
+			
 		git_buf_clear(&buf);
 	}
 

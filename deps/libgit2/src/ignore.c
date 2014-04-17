@@ -14,8 +14,7 @@ static int parse_ignore_file(
 {
 	int error = 0;
 	git_attr_fnmatch *match = NULL;
-	const char *scan = NULL;
-	char *context = NULL;
+	const char *scan = NULL, *context = NULL;
 	int ignore_case = false;
 
 	/* Prefer to have the caller pass in a git_ignores as the parsedata
@@ -25,10 +24,10 @@ static int parse_ignore_file(
 	else if (git_repository__cvar(&ignore_case, repo, GIT_CVAR_IGNORECASE) < 0)
 		return error;
 
-	if (ignores->key && git__suffixcmp(ignores->key, "/" GIT_IGNORE_FILE) == 0) {
+	if (ignores->key &&
+		git_path_root(ignores->key + 2) < 0 &&
+		git__suffixcmp(ignores->key, "/" GIT_IGNORE_FILE) == 0)
 		context = ignores->key + 2;
-		context[strlen(context) - strlen(GIT_IGNORE_FILE)] = '\0';
-	}
 
 	scan = buffer;
 
@@ -64,9 +63,6 @@ static int parse_ignore_file(
 	}
 
 	git__free(match);
-	/* restore file path used for context */
-	if (context)
-		context[strlen(context)] = '.'; /* first char of GIT_IGNORE_FILE */
 
 	return error;
 }
@@ -77,6 +73,8 @@ static int parse_ignore_file(
 static int push_one_ignore(void *payload, git_buf *path)
 {
 	git_ignores *ign = payload;
+
+	ign->depth++;
 
 	return push_ignore_file(
 		ign->repo, ign, &ign->ign_path, path->ptr, GIT_IGNORE_FILE);
@@ -108,6 +106,7 @@ int git_ignore__for_path(
 	ignores->repo = repo;
 	git_buf_init(&ignores->dir, 0);
 	ignores->ign_internal = NULL;
+	ignores->depth = 0;
 
 	/* Read the ignore_case flag */
 	if ((error = git_repository__cvar(
@@ -163,6 +162,8 @@ int git_ignore__push_dir(git_ignores *ign, const char *dir)
 	if (git_buf_joinpath(&ign->dir, ign->dir.ptr, dir) < 0)
 		return -1;
 
+	ign->depth++;
+
 	return push_ignore_file(
 		ign->repo, ign, &ign->ign_path, ign->dir.ptr, GIT_IGNORE_FILE);
 }
@@ -174,7 +175,7 @@ int git_ignore__pop_dir(git_ignores *ign)
 		const char *start, *end, *scan;
 		size_t keylen;
 
-		/* - ign->dir looks something like "a/b" (or "a/b/c/d")
+		/* - ign->dir looks something like "a/b/" (or "a/b/c/d/")
 		 * - file->key looks something like "0#a/b/.gitignore
 		 *
 		 * We are popping the last directory off ign->dir.  We also want to
@@ -191,9 +192,13 @@ int git_ignore__pop_dir(git_ignores *ign)
 		if (ign->dir.size >= keylen &&
 			!memcmp(ign->dir.ptr + ign->dir.size - keylen, start, keylen))
 			git_vector_pop(&ign->ign_path);
-
-		git_buf_rtruncate_at_char(&ign->dir, '/');
 	}
+
+	if (--ign->depth > 0) {
+		git_buf_rtruncate_at_char(&ign->dir, '/');
+		git_path_to_dir(&ign->dir);
+	}
+
 	return 0;
 }
 

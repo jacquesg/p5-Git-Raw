@@ -119,7 +119,7 @@ $index -> add('test1');
 $index -> write;
 
 my $merge_msg = $repo -> message();
-is $merge_msg, "Merge branch 'branch2'\n";
+is $merge_msg, "Merge branch 'branch2'\n\nConflicts:\n\ttest1\n";
 
 $commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit2],
 	$repo -> lookup($index -> write_tree));

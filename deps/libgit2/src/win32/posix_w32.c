@@ -473,7 +473,7 @@ int p_rename(const char *from, const char *to)
 
 	git_win32_path_from_c(wfrom, from);
 	git_win32_path_from_c(wto, to);
-
+	
 	/* wait up to 50ms if file is locked by another thread or process */
 	rename_tries = 0;
 	rename_succeeded = 0;
@@ -482,7 +482,7 @@ int p_rename(const char *from, const char *to)
 			rename_succeeded = 1;
 			break;
 		}
-
+		
 		error = GetLastError();
 		if (error == ERROR_SHARING_VIOLATION || error == ERROR_ACCESS_DENIED) {
 			Sleep(5);
@@ -490,7 +490,7 @@ int p_rename(const char *from, const char *to)
 		} else
 			break;
 	}
-
+	
 	return rename_succeeded ? 0 : -1;
 }
 

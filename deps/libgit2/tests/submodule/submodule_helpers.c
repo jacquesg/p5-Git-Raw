@@ -175,3 +175,4 @@ void dump_submodules(git_repository *repo)
 {
 	git_submodule_foreach(repo, print_submodules, NULL);
 }
+

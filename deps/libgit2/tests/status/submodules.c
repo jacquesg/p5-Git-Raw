@@ -475,3 +475,4 @@ void test_status_submodules__broken_stuff_that_git_allows(void)
 		g_repo, &opts, cb_status__match, &counts));
 	cl_assert_equal_i(7, counts.entry_count);
 }
+
