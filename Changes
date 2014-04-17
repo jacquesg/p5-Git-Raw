@@ -8,6 +8,8 @@ Revision history for Git-Raw
     + Reference -> is_tag()
     + Reference -> is_note()
  - Enable libgit2 threading support (GH#74) (thanks, @jacquesg!)
+ - Add support for push callbacks (GH#75) (thanks, @jacquesg!)
+ - Update to libgit2 c5cacc4 (GH#76) (thanks, @jacquesg!)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
