@@ -31,9 +31,31 @@ Git::Raw::Push - Git push class
     # add a refspec
     my $spec = "refs/heads/master:refs/heads/master";
     $push -> add_refspec($spec);
+    $push -> callbacks({
+      'status' => sub {
+        my ($ref, $msg) = @_;
 
-    # actually push and disconnect the remote
+        if (!defined($msg)) {
+		   print "Updated $ref", "\n";
+		} else {
+		   print STDERR "Update failed: $ref: $msg", "\n";
+		}
+	  },
+      'pack_progress' => sub {
+        my ($stage, $current, $total) = @_;
+        print "Packed $current objects\r";
+      }
+	});
+
+    # actually perform the push
     $push -> finish;
+	if ($push -> update_ok) {
+      print "References updated successfully", "\n";
+	} else {
+      print STDERR "Not all references updated", "\n";
+	}
+
+	# disconnect the remote
     $remote -> disconnect;
 
     # now fetch from the remote
@@ -58,6 +80,32 @@ Create a new push object.
 =head2 add_refspec( $spec )
 
 Add the C<$spec> refspec to the push object. Note that C<$spec> is a string.
+
+=head2 callbacks( \%callbacks )
+
+=over 4
+
+=item * "transfer_progress"
+
+During the upload of new data, this will reguarly be called with the transfer
+progress. The callback receives the following integers:
+C<current>, C<total> and C<bytes>.
+
+=item * "pack_progress"
+
+During the packing of new data, this will reguarly be called with the progress
+of the pack operation. Be aware that this is called inline with pack
+building operations, so performance may be affected. The callback receives the
+following integers:
+C<stage>, C<current> and C<total>.
+
+=item * "status"
+
+For each of the updated references, this will be called with a status report
+for the reference. The callback receives C<ref> and C<msg> as strings. If
+C<msg> is defined, the reference mentioned in C<ref> has not been updated.
+
+=back
 
 =head2 finish( )
 
