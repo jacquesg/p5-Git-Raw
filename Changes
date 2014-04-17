@@ -7,6 +7,7 @@ Revision history for Git-Raw
     + Reference -> shorthand()
     + Reference -> is_tag()
     + Reference -> is_note()
+ - Enable libgit2 threading support (GH#74) (thanks, @jacquesg!)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
