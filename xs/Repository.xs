@@ -775,9 +775,7 @@ branches(self)
 	PPCODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 
-		rc = git_branch_iterator_new(
-			&itr, repo, GIT_BRANCH_LOCAL | GIT_BRANCH_REMOTE
-		);
+		rc = git_branch_iterator_new(&itr, repo, GIT_BRANCH_ALL);
 		git_check_error(rc);
 
 		while ((rc = git_branch_next(&branch, &type, itr)) == 0) {
