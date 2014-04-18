@@ -520,9 +520,6 @@ diff(self, ...)
 		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
 
 	CODE:
-		if (items > 2)
-			Perl_croak(aTHX_ "Wrong number of arguments");
-
 		rc = git_repository_index(&index, self);
 		git_check_error(rc);
 
@@ -531,7 +528,7 @@ diff(self, ...)
 			HV *opts;
 
 			if (!SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
+				Perl_croak(aTHX_ "Invalid type for 'options'");
 
 			opts = (HV *) SvRV(ST(1));
 			if ((opt = hv_fetchs(opts, "tree", 0))) {
