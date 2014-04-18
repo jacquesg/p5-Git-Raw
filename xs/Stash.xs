@@ -13,31 +13,34 @@ save(class, repo, stasher, msg, ...)
 		int rc;
 
 		git_oid oid;
-		unsigned int flags = GIT_STASH_DEFAULT;
+		unsigned int stash_flags = GIT_STASH_DEFAULT;
 
 	CODE:
 		if (items == 5) {
+			AV *flags;
 			SV **flag;
-			size_t count = 0;
+			size_t i = 0, count = 0;
 
-			if (!SvROK(ST(4)) || SvTYPE(SvRV(ST(4))) != SVt_PVAV)
-				Perl_croak(aTHX_ "Invalid type");
+			flags = git_ensure_av(ST(4), "opts");
 
-			while ((flag = av_fetch((AV *) SvRV(ST(4)), count++, 0))) {
-				if (SvPOK(*flag)) {
-					const char *opt = SvPVbyte_nolen(*flag);
+			while ((flag = av_fetch(flags, i++, 0))) {
+				const char *opt = NULL;
+				if (!SvPOK(*flag))
+					continue;
 
-					if (strcmp(opt, "keep_index") == 0)
-						flags |= GIT_STASH_KEEP_INDEX;
-					else if (strcmp(opt, "include_untracked") == 0)
-						flags |= GIT_STASH_INCLUDE_UNTRACKED;
-					else if (strcmp(opt, "include_ignored") == 0)
-						flags |= GIT_STASH_INCLUDE_IGNORED;
-				}
+				opt = SvPVbyte_nolen(*flag);
+
+				if (strcmp(opt, "keep_index") == 0)
+					stash_flags |= GIT_STASH_KEEP_INDEX;
+				else if (strcmp(opt, "include_untracked") == 0)
+					stash_flags |= GIT_STASH_INCLUDE_UNTRACKED;
+				else if (strcmp(opt, "include_ignored") == 0)
+					stash_flags |= GIT_STASH_INCLUDE_IGNORED;
+				++count;
 			}
 		}
 
-		rc = git_stash_save(&oid, repo, stasher, SvPVbyte_nolen(msg), flags);
+		rc = git_stash_save(&oid, repo, stasher, SvPVbyte_nolen(msg), stash_flags);
 		git_check_error(rc);
 
 void

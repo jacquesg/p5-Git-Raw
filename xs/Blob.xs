@@ -92,12 +92,8 @@ SV *
 id(self)
 	Blob self
 
-	PREINIT:
-		const git_oid *oid;
-
 	CODE:
-		oid = git_blob_id(self);
-		RETVAL = git_oid_to_sv((git_oid *) oid);
+		RETVAL = git_oid_to_sv(git_blob_id(self));
 
 	OUTPUT: RETVAL
 
