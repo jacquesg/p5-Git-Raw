@@ -472,6 +472,10 @@ Reverse the sides of the diff.
 
 Include ignored files in the diff.
 
+=item * "include_typechange"
+
+Enable the generation of typechange delta records.
+
 =item * "recurse_ignored_dirs"
 
 Even if C<"include_ignored"> is specified, an entire ignored directory
@@ -492,6 +496,10 @@ This flag adds all files under untracked directories as untracked entries, too.
 
 Ignore file mode changes.
 
+=item * "ignore_case"
+
+Use case insensitive filename comparisons.
+
 =item * "ignore_submodules"
 
 Treat all submodules as unmodified.
@@ -507,6 +515,27 @@ Ignore changes in amount of whitespace.
 =item * "ignore_whitespace_eol"
 
 Ignore whitespace at end of line.
+
+=item * "skip_binary_check"
+
+Disable updating of the binary flag in delta records.
+
+=item * "enable_fast_untracked_dirs"
+
+When diff finds an untracked directory, to match the behavior of core git, it
+scans the contents for ignored and untracked files. If all contents are ignore,
+then the directory is ignored. If any contents are not ignored, then the
+directory is untracked.  This is extra work that may not matter in many cases.
+This flag turns off that scan and immediately labels an untracked directory
+as untracked (changing the behavior to not match core git).
+
+=item * "show_untracked_content"
+
+Include the content of untracked files. This implies L<"include_untracked">.
+
+=item * "show_unmodified"
+
+Include the names of unmodified files.
 
 =item * "patience"
 

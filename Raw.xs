@@ -367,6 +367,12 @@ STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 
 	git_flag_opt(flags, "include_ignored", GIT_DIFF_INCLUDE_IGNORED, &out);
 
+	git_flag_opt(flags, "include_typechange", GIT_DIFF_INCLUDE_TYPECHANGE, &out);
+
+	git_flag_opt(
+		flags, "include_typechange_trees",
+		GIT_DIFF_INCLUDE_TYPECHANGE_TREES, &out);
+
 	git_flag_opt(
 		flags, "recurse_ignored_dirs",
 		GIT_DIFF_RECURSE_IGNORED_DIRS, &out
@@ -383,6 +389,8 @@ STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 	);
 
 	git_flag_opt(flags, "ignore_filemode", GIT_DIFF_IGNORE_FILEMODE, &out);
+
+	git_flag_opt(flags, "ignore_case", GIT_DIFF_IGNORE_CASE, &out);
 
 	git_flag_opt(
 		flags, "ignore_submodules",
@@ -402,6 +410,26 @@ STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 	git_flag_opt(
 		flags, "ignore_whitespace_eol",
 		GIT_DIFF_IGNORE_WHITESPACE_EOL, &out
+	);
+
+	git_flag_opt(
+		flags, "skip_binary_check",
+		GIT_DIFF_SKIP_BINARY_CHECK, &out
+	);
+
+	git_flag_opt(
+		flags, "enable_fast_untracked_dirs",
+		GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS, &out
+	);
+
+	git_flag_opt(
+		flags, "show_untracked_content",
+		GIT_DIFF_SHOW_UNTRACKED_CONTENT, &out
+	);
+
+	git_flag_opt(
+		flags, "show_unmodified",
+		GIT_DIFF_SHOW_UNMODIFIED, &out
 	);
 
 	git_flag_opt(flags, "patience", GIT_DIFF_PATIENCE, &out);
