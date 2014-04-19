@@ -20,6 +20,12 @@ my $lib = '';
 my $inc = '';
 
 my %os_specific = (
+	'darwin' => {
+		'ssh2' => {
+			'inc' => ['/opt/local/include'],
+			'lib' => ['/opt/local/lib']
+		}
+	},
 	'freebsd' => {
 		'ssh2' => {
 			'inc' => ['/usr/local/include'],
@@ -27,6 +33,15 @@ my %os_specific = (
 		}
 	}
 );
+
+my $ssh2_libpath;
+my $ssh2_incpath;
+if (my $os_params = $os_specific{$^O}) {
+	if (my $ssh2 = $os_params -> {'ssh2'}) {
+		$ssh2_libpath = $ssh2 -> {'lib'};
+		$ssh2_incpath = $ssh2 -> {'inc'};
+	}
+}
 
 if (check_lib(lib => 'ssl')) {
 	$def .= ' -DGIT_SSL';
@@ -37,19 +52,12 @@ if (check_lib(lib => 'ssl')) {
 	print "SSL support disabled\n";
 }
 
-if (check_lib(lib => 'ssh2')) {
-	my $os = $^O;
-
-	if (my $os_params = $os_specific{$os}) {
-		if (my $ssh2 = $os_params -> {'ssh2'}) {
-			if (my $ssh2inc = $ssh2 -> {'inc'}) {
-				$inc .= ' -I'.join (' -I', @$ssh2inc);
-			}
-
-			if (my $ssh2lib = $ssh2 -> {'lib'}) {
-				$lib .= ' -L'.join (' -L', @$ssh2lib);
-			}
-		}
+if (check_lib(lib => 'ssh2', libpath => $ssh2_libpath, incpath => $ssh2_incpath)) {
+	if ($ssh2_libpath) {
+		$lib .= ' -L'.join (' -L', @$ssh2_libpath);
+	}
+	if ($ssh2_incpath) {
+		$inc .= ' -I'.join (' -I', @$ssh2_incpath);
 	}
 
 	$def .= ' -DGIT_SSH';
