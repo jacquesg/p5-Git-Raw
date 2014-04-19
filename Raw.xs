@@ -874,7 +874,7 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	return 0;
 }
 
-int git_filter_init_cbb(git_filter *filter)
+STATIC int git_filter_init_cbb(git_filter *filter)
 {
 	dSP;
 
@@ -903,7 +903,7 @@ int git_filter_init_cbb(git_filter *filter)
 	return rv;
 }
 
-void git_filter_shutdown_cbb(git_filter *filter)
+STATIC void git_filter_shutdown_cbb(git_filter *filter)
 {
 	dSP;
 
@@ -921,7 +921,7 @@ void git_filter_shutdown_cbb(git_filter *filter)
 	LEAVE;
 }
 
-int git_filter_check_cbb(git_filter *filter, void **payload,
+STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 	const git_filter_source *src, const char **attr_values)
 {
 	dSP;
@@ -959,7 +959,7 @@ int git_filter_check_cbb(git_filter *filter, void **payload,
 	return rv;
 }
 
-int git_filter_apply_cbb(git_filter *filter, void **payload,
+STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 	git_buf *to, const git_buf *from, const git_filter_source *src)
 {
 	dSP;
@@ -1008,7 +1008,7 @@ int git_filter_apply_cbb(git_filter *filter, void **payload,
 	return rv;
 }
 
-void git_filter_cleanup_cbb(git_filter *filter, void *payload)
+STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 {
 	dSP;
 
