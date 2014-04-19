@@ -152,7 +152,7 @@ override _build_WriteMakefile_args => sub {
 	my $ccflags = "$bits -Wall -Wno-unused-variable -Wdeclaration-after-statement";
 
 	if ($^O eq 'darwin') {
-		$ccflags .= ' -Wno-deprecated-declarations'
+		$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function'
 	}
 
 	return +{
