@@ -64,7 +64,7 @@ clone(class, url, path, opts)
 			callbacks = (HV *) SvRV(*opt);
 
 			if ((cbs.credentials =
-				get_callback_option(opts, "credentials")))
+				get_callback_option(callbacks, "credentials")))
 				clone_opts.remote_callbacks.credentials =
 					git_credentials_cbb;
 
