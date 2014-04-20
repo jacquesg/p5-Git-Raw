@@ -70,6 +70,31 @@ unpack_ok(self)
 	OUTPUT: RETVAL
 
 void
+update_tips(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		SV *remote;
+
+		Push push;
+		Remote remote_ptr;
+		Signature sig;
+
+	CODE:
+		push = GIT_SV_TO_PTR(Push, self);
+		remote = GIT_SV_TO_MAGIC(self);
+		remote_ptr = INT2PTR(Remote, SvIV((SV *) remote));
+
+		rc = git_signature_default(&sig, git_remote_owner(remote_ptr -> remote));
+		git_check_error(rc);
+
+		rc = git_push_update_tips(push -> push, sig, NULL);
+		git_signature_free(sig);
+		git_check_error(rc);
+
+void
 callbacks(self, callbacks)
 	SV *self
 	HV *callbacks

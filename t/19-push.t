@@ -75,6 +75,8 @@ is $push -> unpack_ok, 1;
 ok ($total_packed > 0);
 is $updated_ref, "refs/heads/master";
 
+$push -> update_tips;
+
 remove_tree $local_path;
 ok ! -e $local_path;
 
