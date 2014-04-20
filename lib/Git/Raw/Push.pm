@@ -36,26 +36,28 @@ Git::Raw::Push - Git push class
         my ($ref, $msg) = @_;
 
         if (!defined($msg)) {
-		   print "Updated $ref", "\n";
-		} else {
-		   print STDERR "Update failed: $ref: $msg", "\n";
-		}
-	  },
+          print "Updated $ref", "\n";
+        } else {
+          print STDERR "Update failed: $ref: $msg", "\n";
+        }
+      },
       'pack_progress' => sub {
         my ($stage, $current, $total) = @_;
         print "Packed $current objects\r";
       }
-	});
+    });
 
     # actually perform the push
     $push -> finish;
-	if ($push -> update_ok) {
+    if ($push -> update_ok) {
       print "References updated successfully", "\n";
-	} else {
+    } else {
       print STDERR "Not all references updated", "\n";
-	}
+    }
 
-	# disconnect the remote
+    $push -> update_tips;
+
+    # disconnect the remote
     $remote -> disconnect;
 
     # now fetch from the remote
@@ -114,6 +116,10 @@ Actually push.
 =head2 unpack_ok( )
 
 Check if the remote successfully unpacked.
+
+=head2 update_tips( )
+
+Update the tips to the new status.
 
 =head1 AUTHOR
 
