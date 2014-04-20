@@ -32,9 +32,36 @@ Create a new credential object used for querying an ssh-agent. If the SSH
 support has not been enabled at build-time, this method will always return
 C<undef>.
 
+=head2 sshinteractive( $user, $callback )
+
+Create a new credential object based on interactive authentication. The
+callback C<$callback> will be invoked when the remote-side issues a challenge.
+It receives the following parameters: C<$name>, C<$instruction> and
+C<@prompts>. Any of the parameters passed to the callback may be undefined.
+Each C<$prompt> entry in C<@prompts> is a hash reference that may contain:
+
+=over 4
+
+=item * "text"
+
+Text for the prompt.
+
+=item * "echo"
+
+Parameter indicating whether the response of the challenge is safe
+to be echoed.
+
+=back
+
+The callback should return a list of responses, one for each prompt.
+If the SSH support has not been enabled at build-time, this method will always
+return C<undef>.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

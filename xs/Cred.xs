@@ -72,3 +72,33 @@ sshagent(class, user)
 		RETVAL = out;
 
 	OUTPUT: RETVAL
+
+Cred
+sshinteractive(class, user, callback)
+	SV *class
+	SV *user
+	SV *callback
+
+	PREINIT:
+		int rc;
+
+		Cred out;
+		const char *username;
+
+	CODE:
+		username = SvPVbyte_nolen(user);
+
+		if (SvTYPE(SvRV(callback)) != SVt_PVCV)
+			Perl_croak(aTHX_ "Expected a subroutine for callback");
+
+		SvREFCNT_inc(callback);
+		rc = git_cred_ssh_interactive_new(
+			&out,
+			username,
+			(git_cred_ssh_interactive_callback) git_ssh_interactive_cbb,
+			callback);
+		git_check_error(rc);
+
+		RETVAL = out;
+
+	OUTPUT: RETVAL
