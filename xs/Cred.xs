@@ -10,15 +10,18 @@ userpass(class, user, pass)
 		int rc;
 
 		Cred out;
+		git_cred *cred;
 		const char *usr, *pwd;
 
 	CODE:
 		usr = SvPVbyte_nolen(user);
 		pwd = SvPVbyte_nolen(pass);
 
-		rc = git_cred_userpass_plaintext_new(&out, usr, pwd);
+		rc = git_cred_userpass_plaintext_new(&cred, usr, pwd);
 		git_check_error(rc);
 
+		Newxz(out, 1, git_raw_cred);
+		out -> cred = cred;
 		RETVAL = out;
 
 	OUTPUT: RETVAL
@@ -35,6 +38,7 @@ sshkey(class, user, public, private, pass)
 		int rc;
 
 		Cred out;
+		git_cred *cred;
 		const char *username, *publickey, *privatekey, *passphrase;
 
 	CODE:
@@ -44,10 +48,12 @@ sshkey(class, user, public, private, pass)
 		passphrase = SvPVbyte_nolen(pass);
 
 		rc = git_cred_ssh_key_new(
-			&out, username, publickey, privatekey, passphrase
+			&cred, username, publickey, privatekey, passphrase
 		);
 		git_check_error(rc);
 
+		Newxz(out, 1, git_raw_cred);
+		out -> cred = cred;
 		RETVAL = out;
 
 	OUTPUT: RETVAL
@@ -61,14 +67,65 @@ sshagent(class, user)
 		int rc;
 
 		Cred out;
+		git_cred *cred;
 		const char *username;
 
 	CODE:
 		username = SvPVbyte_nolen(user);
 
-		rc = git_cred_ssh_key_from_agent(&out, username);
+		rc = git_cred_ssh_key_from_agent(&cred, username);
 		git_check_error(rc);
+
+		Newxz(out, 1, git_raw_cred);
+		out -> cred = cred;
+		RETVAL = out;
+
+	OUTPUT: RETVAL
+
+Cred
+sshinteractive(class, user, callback)
+	SV *class
+	SV *user
+	SV *callback
+
+	PREINIT:
+		int rc;
+
+		Cred out;
+		git_cred *cred;
+		const char *username;
+
+	CODE:
+		username = SvPVbyte_nolen(user);
+
+		if (SvTYPE(SvRV(callback)) != SVt_PVCV)
+			Perl_croak(aTHX_ "Expected a subroutine for callback");
+
+		rc = git_cred_ssh_interactive_new(
+			&cred,
+			username,
+			(git_cred_ssh_interactive_callback) git_ssh_interactive_cbb,
+			callback);
+		git_check_error(rc);
+
+		Newxz(out, 1, git_raw_cred);
+		out -> cred = cred;
+		out -> callback = callback;
+		SvREFCNT_inc(out -> callback);
 
 		RETVAL = out;
 
 	OUTPUT: RETVAL
+
+void
+DESTROY(self)
+	SV *self
+
+	PREINIT:
+		Cred cred;
+
+	CODE:
+		cred = GIT_SV_TO_PTR(Cred, self);
+
+		SvREFCNT_dec(cred -> callback);
+		Safefree(cred);
