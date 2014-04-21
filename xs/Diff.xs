@@ -92,6 +92,25 @@ find_similar(self, ...)
 		rc = git_diff_find_similar(self, &find_opts);
 		git_check_error(rc);
 
+SV *
+stats(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		Diff_Stats stats;
+
+	CODE:
+		rc = git_diff_get_stats(&stats, GIT_SV_TO_PTR(Diff, self));
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Diff::Stats", stats, SvRV(self)
+		);
+
+	OUTPUT: RETVAL
+
 void
 patches(self)
 	SV *self

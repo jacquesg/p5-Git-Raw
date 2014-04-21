@@ -158,9 +158,15 @@ Like C<git diff --name-status>.
 
 =back
 
+=head2 stats( )
+
+Accumlated diff statistics for all patches in the diff.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

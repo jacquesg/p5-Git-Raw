@@ -44,6 +44,7 @@ typedef git_diff * Diff;
 typedef git_diff_delta * Diff_Delta;
 typedef git_diff_file * Diff_File;
 typedef git_diff_hunk * Diff_Hunk;
+typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
 typedef git_patch * Patch;
@@ -1468,6 +1469,7 @@ INCLUDE: xs/Diff.xs
 INCLUDE: xs/Diff/Delta.xs
 INCLUDE: xs/Diff/File.xs
 INCLUDE: xs/Diff/Hunk.xs
+INCLUDE: xs/Diff/Stats.xs
 INCLUDE: xs/Filter.xs
 INCLUDE: xs/Filter/Source.xs
 INCLUDE: xs/Graph.xs

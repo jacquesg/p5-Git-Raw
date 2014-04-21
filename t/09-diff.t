@@ -267,6 +267,42 @@ EOS
 
 is $patches[1] -> buffer, $expected;
 
+my $stats = $tree_diff -> stats;
+isa_ok $stats, 'Git::Raw::Diff::Stats';
+is $stats -> insertions, 1;
+is $stats -> deletions, 1;
+is $stats -> files_changed, 2;
+
+$expected = <<'EOS';
+ diff       | 1 -
+ diff.moved | 1 +
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ delete mode 100644 diff
+ create mode 100644 diff.moved
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'full'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
+
+$expected = <<'EOS';
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ delete mode 100644 diff
+ create mode 100644 diff.moved
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'short'    => 1,
+		'summary'  => 1,
+	}
+}), $expected;
+
 $tree_diff -> find_similar;
 is $tree_diff -> delta_count, 1;
 @patches = $tree_diff -> patches;
@@ -280,6 +316,36 @@ EOS
 
 is $patches[0] -> buffer, $expected;
 
+$stats = $tree_diff -> stats;
+isa_ok $stats, 'Git::Raw::Diff::Stats';
+is $stats -> insertions, 0;
+is $stats -> deletions, 0;
+is $stats -> files_changed, 1;
+
+$expected = <<'EOS';
+ diff => diff.moved | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'full'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
+
+$expected = <<'EOS';
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'short'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
 
 my $content = <<'EOS';
 AAAAAAAAAA
