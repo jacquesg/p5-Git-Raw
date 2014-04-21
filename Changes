@@ -9,7 +9,10 @@ Revision history for Git-Raw
     + Reference -> is_note()
  - Enable libgit2 threading support (GH#74) (thanks, @jacquesg!)
  - Add support for push callbacks (GH#75) (thanks, @jacquesg!)
- - Update to libgit2 c5cacc4 (GH#76) (thanks, @jacquesg!)
+ - Update to libgit2 bfc50f8 (GH#76) (GH#78) (thanks, @jacquesg!)
+ - Add support for SSH interactive login (GH#78) (thanks, @jacquesg!)
+ - Add Push -> update_tips() method (GH#79) (thanks, @jacquesg!)
+ - Make clone tests more robust (GH#79) (thanks, @jacquesg!)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
