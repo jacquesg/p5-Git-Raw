@@ -40,7 +40,6 @@ typedef git_blob * Blob;
 typedef git_reference * Branch;
 typedef git_commit * Commit;
 typedef git_config * Config;
-typedef git_cred * Cred;
 typedef git_diff * Diff;
 typedef git_diff_delta * Diff_Delta;
 typedef git_diff_file * Diff_File;
@@ -85,6 +84,13 @@ typedef struct {
 } git_raw_push;
 
 typedef git_raw_push * Push;
+
+typedef struct {
+	git_cred *cred;
+	SV *callback;
+} git_raw_cred;
+
+typedef git_raw_cred * Cred;
 
 #ifndef GIT_SSH
 /* Reduces further conditional compile problems */
