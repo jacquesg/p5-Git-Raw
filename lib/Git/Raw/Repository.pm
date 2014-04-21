@@ -21,7 +21,7 @@ Git::Raw::Repository - Git repository class
           my ($total_objects, $received_objects, $local_objects, $total_deltas,
             $indexed_deltas, $received_bytes) = @_;
 
-          print "Objects: $received_objects/$total_objecs", "\n";
+          print "Objects: $received_objects/$total_objects", "\n";
           print "Received: ", int($received_bytes/1024), "KB", "\n";
         }
       }
