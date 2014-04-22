@@ -13,6 +13,7 @@ Revision history for Git-Raw
  - Add support for SSH interactive login (GH#78) (thanks, @jacquesg!)
  - Add Push -> update_tips() method (GH#79) (thanks, @jacquesg!)
  - Make clone tests more robust (GH#79) (thanks, @jacquesg!)
+ - Add Repository -> is_head_detached() (GH#83) (thanks, @jacquesg!)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
