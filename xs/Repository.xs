@@ -308,13 +308,13 @@ reset(self, target, opts)
 		if ((opt = hv_fetchs(opts, "paths", 0))) {
 			SV **path;
 
-			size_t count = 0;
+			size_t i = 0, count = 0;
 			git_strarray paths = {0, 0};
 
 			if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
 				Perl_croak(aTHX_ "Expected a list of 'paths'");
 
-			while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
+			while ((path = av_fetch((AV *) SvRV(*opt), i++, 0))) {
 				if (SvOK(*path)) {
 					Renew(paths.strings, count + 1, char *);
 					paths.strings[count++] = SvPVbyte_nolen(*path);
@@ -580,12 +580,12 @@ diff(self, ...)
 
 			if ((opt = hv_fetchs(opts, "paths", 0))) {
 				SV **path;
-				size_t count = 0;
+				size_t i = 0, count = 0;
 
 				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
 					Perl_croak(aTHX_ "Expected a list of 'paths'");
 
-				while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
+				while ((path = av_fetch((AV *) SvRV(*opt), i++, 0))) {
 					if (SvOK(*path)) {
 						Renew(paths, count + 1, char *);
 						paths[count++] = SvPVbyte_nolen(*path);
