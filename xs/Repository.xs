@@ -664,6 +664,10 @@ merge_base(self, ...)
 					Perl_croak(aTHX_ "Expected a 'Git::Raw::Commit' "
 						"or 'Git::Raw::Reference'");
 				}
+			} else {
+				Safefree(oids);
+				Perl_croak(aTHX_ "Expected a 'Git::Raw::Commit' "
+					"or 'Git::Raw::Reference'");
 			}
 		}
 
