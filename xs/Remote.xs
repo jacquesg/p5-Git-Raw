@@ -106,6 +106,9 @@ name(self, ...)
 
 	CODE:
 		if (items == 2) {
+			if (!SvPOK(ST(1)))
+				Perl_croak(aTHX_ "Expected a string for 'name'");
+
 			name = SvPVbyte_nolen(ST(1));
 
 			rc = git_remote_rename(self -> remote, name, NULL, NULL);
@@ -130,6 +133,9 @@ url(self, ...)
 
 	CODE:
 		if (items == 2) {
+			if (!SvPOK(ST(1)))
+				Perl_croak(aTHX_ "Expected a string for 'url'");
+
 			url = SvPVbyte_nolen(ST(1));
 
 			rc = git_remote_set_url(self -> remote, url);
@@ -142,6 +148,36 @@ url(self, ...)
 		url = git_remote_url(self -> remote);
 
 		RETVAL = newSVpv(url, 0);
+
+	OUTPUT: RETVAL
+
+SV *
+pushurl(self, ...)
+	Remote self
+
+	PROTOTYPE: $;$
+
+	PREINIT:
+		int rc;
+		const char *pushurl;
+
+	CODE:
+		if (items == 2) {
+			if (!SvPOK(ST(1)))
+				Perl_croak(aTHX_ "Expected a string for 'url'");
+
+			pushurl = SvPVbyte_nolen(ST(1));
+
+			rc = git_remote_set_pushurl(self -> remote, pushurl);
+			git_check_error(rc);
+
+			rc = git_remote_save(self -> remote);
+			git_check_error(rc);
+		}
+
+		pushurl = git_remote_pushurl(self -> remote);
+
+		RETVAL = newSVpv(pushurl, 0);
 
 	OUTPUT: RETVAL
 
@@ -167,6 +203,84 @@ add_push(self, spec)
 
 	CODE:
 		rc = git_remote_add_push(self -> remote, SvPVbyte_nolen(spec));
+		git_check_error(rc);
+
+void
+clear_refspecs(self)
+	Remote self
+
+	CODE:
+		git_remote_clear_refspecs(self -> remote);
+
+void
+refspecs(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+		size_t i, count;
+
+		Remote remote_ptr;
+
+	PPCODE:
+		remote_ptr = GIT_SV_TO_PTR(Remote, self);
+
+		count = git_remote_refspec_count(remote_ptr -> remote);
+		EXTEND(SP, count);
+
+		for (i = 0; i < count; ++i) {
+			const git_refspec *refspec;
+			SV *tmp;
+
+			refspec = git_remote_get_refspec(
+				remote_ptr -> remote,
+				i
+			);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				tmp, "Git::Raw::RefSpec", (git_refspec *) refspec, SvRV(self)
+			);
+
+			PUSHs(sv_2mortal(tmp));
+		}
+
+		XSRETURN(count);
+
+SV *
+refspec_count(self)
+	Remote self
+
+	CODE:
+		RETVAL = newSVuv(git_remote_refspec_count(self -> remote));
+
+	OUTPUT: RETVAL
+
+void
+check_cert(self, value)
+	Remote self
+	SV *value
+
+	CODE:
+		if (!SvIOK(value))
+			Perl_croak(aTHX_ "Expected an integer for 'value'");
+
+		git_remote_check_cert(self -> remote, SvIV(value));
+
+void
+fetch(self)
+	Remote self
+
+	PREINIT:
+		int rc;
+
+		Signature sig;
+
+	CODE:
+		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
+		git_check_error(rc);
+
+		rc = git_remote_fetch(self -> remote, sig, NULL);
+		git_signature_free(sig);
 		git_check_error(rc);
 
 void

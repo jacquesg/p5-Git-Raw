@@ -74,6 +74,15 @@ be updated and returned.
 Retrieve the URL of the remote. If C<$url> is passed, the remote's URL will be
 updated and returned.
 
+=head2 pushurl( [ $url ] )
+
+Retrieve the push URL for the remote. If C<$url> is passed, teh rmeote's push
+URL will be updated and returned.
+
+=head2 check_cert( $value )
+
+Set whether to check the server's certificate (applies to HTTPS only).
+
 =head2 add_fetch( $spec )
 
 Add a fetch spec to the remote.
@@ -81,6 +90,18 @@ Add a fetch spec to the remote.
 =head2 add_push( $spec )
 
 Add a push spec to the remote.
+
+=head2 clear_refspecs( )
+
+Clear the remote's refspecs.
+
+=head2 refspec_count( )
+
+Retrieve the refspec count.
+
+=head2 refspecs( )
+
+Retrieve the remote's refspecs. Returns a list of C<Git::Raw::RefSpec> objects.
 
 =head2 ls( )
 
@@ -139,6 +160,11 @@ information about it. The callback receives a string containing the name of the
 reference that was updated, and the two OID's C<a> before and after C<b> the update.
 
 =back
+
+=head2 fetch( )
+
+Download new data and update tips. Convenience function to connect to a remote,
+download the data, disconnect and update the remote-tracking branches.
 
 =head2 connect( $direction )
 
