@@ -571,7 +571,7 @@ sub branch { return Git::Raw::Branch -> create(@_) }
 Retrieve a list of L<Git::Raw::Branch> objects. Possible values for C<$type>
 include L<"local">, L<"remote"> or L<"all">.
 
-=head2 commit( $msg, $author, $committer, [@parents], $tree [, $update_ref ] )
+=head2 commit( $msg, $author, $committer, \@parents, $tree [, $update_ref ] )
 
 Create a new L<Git::Raw::Commit>. Shortcut for C<Git::Raw::Commit-E<gt>create()>.
 
