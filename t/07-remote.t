@@ -17,6 +17,22 @@ my $github = Git::Raw::Remote -> create($repo, $name, $url);
 
 is $github -> name, $name;
 is $github -> url, $url;
+is $github -> pushurl, undef;
+is $github -> refspec_count, 1;
+my @refspecs = $github -> refspecs;
+is scalar(@refspecs), 1;
+
+my $refspec = shift @refspecs;
+is $refspec -> src, "refs/heads/*";
+is $refspec -> dst, "refs/remotes/github/*";
+is $refspec -> direction, "fetch";
+is $refspec -> string, "+refs/heads/*:refs/remotes/github/*";
+is $refspec -> is_force, 1;
+is $refspec -> transform ('refs/heads/master'), "refs/remotes/github/master";
+is $refspec -> src_matches('refs/heads/master'), 1;
+is $refspec -> rtransform ('refs/remotes/github/master'), "refs/heads/master";
+is $refspec -> dst_matches('refs/remotes/github/master'), 1;
+is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
 
 my @remotes = $repo -> remotes;
 
