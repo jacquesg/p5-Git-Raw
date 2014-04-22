@@ -711,6 +711,11 @@ Check if the repository is bare.
 
 Check if the repository is a shallow clone.
 
+=head2 is_head_detached( )
+
+Check if the repository's HEAD is detached, that is, it points directly to
+a commit.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
