@@ -82,6 +82,7 @@ $config -> foreach(sub {
 });
 
 is $repo -> state, "none";
+is $repo -> is_head_detached, 0;
 
 my $commit_msg_file = File::Spec->catfile($repo -> path, 'MERGE_MSG');
 

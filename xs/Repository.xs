@@ -1057,6 +1057,15 @@ is_shallow(self)
 
 	OUTPUT: RETVAL
 
+SV *
+is_head_detached(self)
+	Repository self
+
+	CODE:
+		RETVAL = newSViv(git_repository_head_detached(self));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	Repository self
