@@ -48,6 +48,16 @@ object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 Retrieve the reference supporting the remote tracking branch, given the local
 branch.
 
+=head2 upstream_name( )
+
+Return the name of the reference supporting the remote tracking branch, given
+the the local branch.
+
+=head2 remote_name( )
+
+Return the name of remote that the remote tracking branch belongs to, given
+the local branch.
+
 =head2 is_head( )
 
 Check if the current local branch is pointed at by HEAD.

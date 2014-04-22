@@ -117,6 +117,73 @@ upstream(self)
 	OUTPUT: RETVAL
 
 SV *
+upstream_name(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		Reference ref;
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		ref = GIT_SV_TO_PTR(Reference, self);
+
+		rc = git_branch_upstream_name(
+				&buf,
+				git_reference_owner(ref),
+				git_reference_name(ref)
+		);
+		if (rc != GIT_OK)
+			git_buf_free(&buf);
+		git_check_error(rc);
+
+		RETVAL = newSVpv(buf.ptr, buf.size);
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
+SV *
+remote_name(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		Reference ref;
+		git_buf upstream = GIT_BUF_INIT_CONST(NULL, 0);
+		git_buf remote = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		ref = GIT_SV_TO_PTR(Reference, self);
+
+		rc = git_branch_upstream_name(
+				&upstream,
+				git_reference_owner(ref),
+				git_reference_name(ref)
+		);
+		if (rc != GIT_OK)
+			git_buf_free(&upstream);
+		git_check_error(rc);
+
+		rc = git_branch_remote_name(
+				&remote,
+				git_reference_owner(ref),
+				upstream.ptr);
+		if (rc != GIT_OK) {
+			git_buf_free(&upstream);
+			git_buf_free(&remote);
+		}
+		git_check_error(rc);
+
+		RETVAL = newSVpv(remote.ptr, remote.size);
+
+		git_buf_free(&upstream);
+		git_buf_free(&remote);
+
+	OUTPUT: RETVAL
+
+SV *
 is_head(self)
 	Branch self
 
