@@ -99,20 +99,28 @@ move(self, name, force)
 		git_signature_free(sig);
 		git_check_error(rc);
 
-Reference
+SV *
 upstream(self)
-	Branch self
+	SV *self
 
 	PREINIT:
 		int rc;
 
+		SV *repo;
+		Repository repo_ptr;
 		Reference ref;
 
 	CODE:
-		rc = git_branch_upstream(&ref, self);
-		git_check_error(rc);
+		rc = git_branch_upstream(&ref, GIT_SV_TO_PTR(Branch, self));
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
 
-		RETVAL = ref;
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
+			);
+		}
 
 	OUTPUT: RETVAL
 

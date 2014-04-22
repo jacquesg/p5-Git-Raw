@@ -46,7 +46,8 @@ object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 =head2 upstream( )
 
 Retrieve the reference supporting the remote tracking branch, given the local
-branch.
+branch. If there is no corresponding supporting reference, this function will
+return C<undef>.
 
 =head2 upstream_name( )
 
