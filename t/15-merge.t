@@ -50,6 +50,7 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
+ok (!eval {$repo -> merge_base("refs/heads/master", $commit1 -> id)});
 is $master -> target -> id, $repo -> merge_base($master, $commit1);
 
 my $r = $repo -> merge_analysis($branch1);
