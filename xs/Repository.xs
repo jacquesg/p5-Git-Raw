@@ -922,9 +922,14 @@ workdir(self, ...)
 
 	CODE:
 		if (items == 2) {
-			const char *new_path = SvPVbyte_nolen(ST(1));
+			const char *new_dir = NULL;
 
-			rc = git_repository_set_workdir(self, new_path, 1);
+			if (!SvPOK(ST(1)))
+				Perl_croak(aTHX_ "Expected a string for 'new_dir'");
+
+			new_dir = SvPVbyte_nolen(ST(1));
+
+			rc = git_repository_set_workdir(self, new_dir, 1);
 			git_check_error(rc);
 		}
 
