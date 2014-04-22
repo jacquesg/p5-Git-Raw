@@ -758,9 +758,10 @@ merge(self, ref, ...)
 		git_check_error(rc);
 
 void
-branches(self)
+branches(self, ...)
 	SV *self
 
+	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
 
@@ -773,9 +774,28 @@ branches(self)
 		Repository repo;
 
 	PPCODE:
+		type = GIT_BRANCH_ALL;
+
+		if (items == 2) {
+			const char *type_str = NULL;
+
+			if (!SvPOK(ST(1)))
+				Perl_croak(aTHX_ "Expected a string for 'type'");
+
+			type_str = SvPVbyte_nolen(ST(1));
+			if (strcmp(type_str, "local") == 0)
+				type = GIT_BRANCH_LOCAL;
+			else if (strcmp(type_str, "remote") == 0)
+				type = GIT_BRANCH_REMOTE;
+			else if (strcmp(type_str, "all") == 0)
+				type = GIT_BRANCH_ALL;
+			else
+				Perl_croak(aTHX_ "Unknown branch type '%s'", type_str);
+		}
+
 		repo = GIT_SV_TO_PTR(Repository, self);
 
-		rc = git_branch_iterator_new(&itr, repo, GIT_BRANCH_ALL);
+		rc = git_branch_iterator_new(&itr, repo, type);
 		git_check_error(rc);
 
 		while ((rc = git_branch_next(&branch, &type, itr)) == 0) {
