@@ -535,7 +535,9 @@ diff(self, ...)
 
 			opts = (HV *) SvRV(ST(1));
 			if ((opt = hv_fetchs(opts, "tree", 0))) {
-				tree = GIT_SV_TO_PTR(Tree, *opt);
+				/* tree may be undefined */
+				if (SvOK(*opt))
+					tree = GIT_SV_TO_PTR(Tree, *opt);
 			}
 
 			if ((opt = hv_fetchs(opts, "flags", 0))) {
