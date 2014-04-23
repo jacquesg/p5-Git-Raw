@@ -449,6 +449,32 @@ is_connected(self)
 
 	OUTPUT: RETVAL
 
+SV *
+is_url_valid(class, url)
+	SV *class
+	SV *url
+
+	CODE:
+		if (!SvPOK(url))
+			Perl_croak(aTHX_ "Expected a string for 'url'");
+
+		RETVAL = newSViv(git_remote_valid_url(SvPVbyte_nolen(url)));
+
+	OUTPUT: RETVAL
+
+SV *
+is_url_supported(class, url)
+	SV *class
+	SV *url
+
+	CODE:
+		if (!SvPOK(url))
+			Perl_croak(aTHX_ "Expected a string for 'url'");
+
+		RETVAL = newSViv(git_remote_supported_url(SvPVbyte_nolen(url)));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self

@@ -190,6 +190,15 @@ Update the tips to the new status.
 
 Check if the remote is connected.
 
+=head2 is_url_valid( $url )
+
+Check whether C<$url> is a valid remote URL.
+
+=head2 is_url_supported( $url )
+
+Check whether C<$url> the passed URL is supported by this version of the
+library.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
