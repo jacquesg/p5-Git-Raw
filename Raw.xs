@@ -251,6 +251,72 @@ STATIC SV *git_oid_to_sv(const git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
+STATIC git_oid *git_sv_to_commitish(Repository repo, SV *sv, git_oid *oid) {
+	git_oid *result = NULL;
+	git_reference *ref = NULL;
+	git_object *obj = NULL;
+
+	if (sv_isobject(sv)) {
+		if (sv_derived_from(sv, "Git::Raw::Reference")) {
+			int rc = git_reference_peel(&obj,
+				GIT_SV_TO_PTR(Reference, sv),
+				GIT_OBJ_COMMIT
+			);
+			git_check_error(rc);
+
+			git_oid_cpy(oid, git_object_id(obj));
+		} else if (sv_derived_from(sv, "Git::Raw::Commit")) {
+			git_oid_cpy(oid, git_commit_id(GIT_SV_TO_PTR(Commit, sv)));
+		} else
+			goto on_error;
+	} else {
+		STRLEN len;
+		const char *commitish_name = NULL;
+
+		/* substr() may return a SVt_PVLV, need to perform some
+		 * force majeur */
+		if (SvPOK(sv)) {
+			commitish_name = SvPVbyte(sv, len);
+		} else if (SvTYPE(sv) == SVt_PVLV) {
+			commitish_name = SvPVbyte_force(sv, len);
+		}
+
+		if (commitish_name) {
+			/* first try and see if its a commit id, otherwise see if its
+			 * a reference */
+			if (git_oid_fromstrn(oid, commitish_name, len) >= 0) {
+				if (len < GIT_OID_MINPREFIXLEN)
+					goto on_error;
+
+				if (len != GIT_OID_HEXSZ) {
+					if (git_object_lookup_prefix(&obj, repo, oid,
+						len, GIT_OBJ_COMMIT) < 0)
+						goto on_error;
+
+					git_oid_cpy(oid, git_object_id(obj));
+				}
+			} else {
+				if (git_reference_lookup(&ref, repo, commitish_name) < 0 &&
+					git_reference_dwim(&ref, repo, commitish_name) < 0)
+						goto on_error;
+
+				if (git_reference_peel(&obj, ref, GIT_OBJ_COMMIT) < 0)
+					goto on_error;
+
+				git_oid_cpy(oid, git_object_id(obj));
+			}
+		} else
+			goto on_error;
+	}
+
+	result = oid;
+
+on_error:
+	git_object_free(obj);
+	git_reference_free(ref);
+	return result;
+}
+
 STATIC SV *get_callback_option(HV *callbacks, const char *name) {
 	SV **opt;
 
