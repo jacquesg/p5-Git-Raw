@@ -125,9 +125,18 @@ my $commit2 = $repo -> commit(
 	"second commit\n", $me, $me, [$repo -> head -> target], $tree
 );
 
+is $commit2 -> ancestor(0) -> id, $commit2 -> id;
+is $commit2 -> ancestor(1) -> id, $commit -> id;
+
 my $head = $repo -> head -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
+
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit2, $commit), 1);
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit2 -> id, $commit -> id), 1);
+
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $commit2), 0);
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $commit2 -> id), 0);
 
 is $head -> message, "second commit\n";
 is $head -> summary, "second commit";
@@ -162,6 +171,19 @@ $tree    = $repo -> lookup($tree_id);
 my $commit3 = $repo -> commit(
 	"third commit\n", $me, $me, [$repo -> head -> target], $tree
 );
+
+is $commit3 -> ancestor(0) -> id, $commit3 -> id;
+is $commit3 -> ancestor(1) -> id, $commit2 -> id;
+is $commit3 -> ancestor(2) -> id, $commit -> id;
+ok (!eval { $commit3 -> ancestor(3) });
+
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit3, $commit), 1);
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit3 -> id, $commit -> id), 1);
+is (Git::Raw::Graph -> is_descendant_of($repo, substr($commit3 -> id, 0, 7), $commit -> id), 1);
+
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $commit3), 0);
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $commit3 -> id), 0);
+is (Git::Raw::Graph -> is_descendant_of($repo, substr($commit -> id, 0, 7), $commit3 -> id), 0);
 
 $head = $repo -> head -> target;
 

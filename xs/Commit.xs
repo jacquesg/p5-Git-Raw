@@ -301,6 +301,33 @@ merge(self, commit, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+ancestor(self, gen)
+	SV *self
+	unsigned int gen
+
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Commit anc;
+
+	CODE:
+		repo = GIT_SV_TO_MAGIC(self);
+
+		rc = git_commit_nth_gen_ancestor(
+				&anc,
+				GIT_SV_TO_PTR(Commit, self),
+				gen
+		);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Commit", anc, repo
+		);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self

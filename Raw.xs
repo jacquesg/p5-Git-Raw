@@ -1373,6 +1373,7 @@ INCLUDE: xs/Diff/File.xs
 INCLUDE: xs/Diff/Hunk.xs
 INCLUDE: xs/Filter.xs
 INCLUDE: xs/Filter/Source.xs
+INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Patch.xs
