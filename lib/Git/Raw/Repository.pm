@@ -344,9 +344,10 @@ Example:
 
 =head2 merge_base( @objects )
 
-Find the merge base between C<@objects>. Each element in C<@objects> should
-either be a C<Git::Raw::Reference> or a C<Git::Raw::Commit>. A minimum
-of 2 objects should be provided.
+Find the merge base between C<@objects>. Each element in C<@objects> should be
+peelable to a C<Git::Raw::Commit> object, that is, it should be a
+C<Git::Raw::Commit> or C<Git::Raw::Reference> object, or alternatively a commit
+id or commit id prefix.
 
 =head2 merge_analysis( $reference )
 
@@ -749,6 +750,8 @@ a commit.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -638,38 +638,9 @@ merge_base(self, ...)
 		count = items - 1;
 		Renew(oids, count, git_oid);
 		for (i = 0; i < count; ++i) {
-			SV *item = ST(i + 1);
-
-			if (sv_isobject(item)) {
-				if (sv_derived_from(item, "Git::Raw::Reference")) {
-					git_object *obj = NULL;
-
-					rc = git_reference_peel(&obj,
-						GIT_SV_TO_PTR(Reference, item),
-						GIT_OBJ_COMMIT);
-
-					/* Need to ensure we don't leak, git_check_error()
-					 * may croak */
-					if (rc != GIT_OK)
-						Safefree(oids);
-					git_check_error(rc);
-
-					git_oid_cpy(oids + i, git_object_id(obj));
-					git_object_free(obj);
-
-				} else if (sv_derived_from(item, "Git::Raw::Commit")) {
-					const git_oid *commit_id =
-						git_commit_id(GIT_SV_TO_PTR(Commit, item));
-					git_oid_cpy(oids + i, commit_id);
-				} else {
-					Safefree(oids);
-					Perl_croak(aTHX_ "Expected a 'Git::Raw::Commit' "
-						"or 'Git::Raw::Reference'");
-				}
-			} else {
+			if (git_sv_to_commitish(self, ST(i + 1), oids + i) == NULL) {
 				Safefree(oids);
-				Perl_croak(aTHX_ "Expected a 'Git::Raw::Commit' "
-					"or 'Git::Raw::Reference'");
+				Perl_croak(aTHX_ "Could not resolve 'object' to a commit id");
 			}
 		}
 
