@@ -9,7 +9,7 @@ Revision history for Git-Raw
     + Reference -> is_note()
  - Enable libgit2 threading support (GH#74) (thanks, @jacquesg!)
  - Add support for push callbacks (GH#75) (thanks, @jacquesg!)
- - Update to libgit2 bfc50f8 (GH#76) (GH#78) (thanks, @jacquesg!)
+ - Update to libgit2 a32d684 (GH#76) (GH#78) (GH#85) (thanks, @jacquesg!)
  - Add support for SSH interactive login (GH#78) (thanks, @jacquesg!)
  - Add Push -> update_tips() method (GH#79) (thanks, @jacquesg!)
  - Make clone tests more robust (GH#79) (thanks, @jacquesg!)
@@ -24,6 +24,8 @@ Revision history for Git-Raw
     + enable_fast_untracked_dirs
     + show_untracked_content
     + show_unmodified
+ - Repository -> branches() now takes an optional branch
+    type argument (GH#85)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
