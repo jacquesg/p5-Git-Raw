@@ -16,6 +16,14 @@ Revision history for Git-Raw
  - Add Repository -> is_head_detached() (GH#83) (thanks, @jacquesg!)
  - Allow "tree" parameter to be undef in Repository -> tree()
    (GH#81) (thanks, @jacquesg!)
+ - Added additional diff flags (GH#86)
+    + include_typechange
+    + include_typechange_trees
+    + ignore_case
+    + skip_binary_check
+    + enable_fast_untracked_dirs
+    + show_untracked_content
+    + show_unmodified
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
