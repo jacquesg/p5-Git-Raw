@@ -3,6 +3,7 @@
 use Test::More;
 
 use Git::Raw;
+use File::Copy;
 use File::Slurp;
 use Cwd qw(abs_path);
 use Capture::Tiny 'capture_stdout';
@@ -224,5 +225,205 @@ is scalar(@patches), 1;
 $delta = $patches[0] -> delta;
 is $delta -> old_file -> id, '0' x 40;
 is substr($delta -> new_file -> id, 0, 7), 'c7eaef2';
+
+
+$index -> add('diff');
+$index -> add('diff2');
+my $index_tree1 = $repo -> lookup($index -> write_tree);
+
+move($file, $file.'.moved');
+$index -> remove('diff');
+$index -> add('diff.moved');
+my $index_tree2 = $repo -> lookup($index -> write_tree);
+
+my $tree_diff = $index_tree1 -> diff({
+	'tree'   => $index_tree2
+});
+
+is $tree_diff -> delta_count, 2;
+@patches = $tree_diff -> patches;
+
+$expected = <<'EOS';
+diff --git a/diff b/diff
+deleted file mode 100644
+index 6afc8a6..0000000
+--- a/diff
++++ /dev/null
+@@ -1 +0,0 @@
+-diff me, biatch
+EOS
+
+is $patches[0] -> buffer, $expected;
+
+$expected = <<'EOS';
+diff --git a/diff.moved b/diff.moved
+new file mode 100644
+index 0000000..6afc8a6
+--- /dev/null
++++ b/diff.moved
+@@ -0,0 +1 @@
++diff me, biatch
+EOS
+
+is $patches[1] -> buffer, $expected;
+
+my $stats = $tree_diff -> stats;
+isa_ok $stats, 'Git::Raw::Diff::Stats';
+is $stats -> insertions, 1;
+is $stats -> deletions, 1;
+is $stats -> files_changed, 2;
+
+$expected = <<'EOS';
+ diff       | 1 -
+ diff.moved | 1 +
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ delete mode 100644 diff
+ create mode 100644 diff.moved
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'full'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
+
+$expected = <<'EOS';
+ 2 files changed, 1 insertions(+), 1 deletions(-)
+ delete mode 100644 diff
+ create mode 100644 diff.moved
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'short'    => 1,
+		'summary'  => 1,
+	}
+}), $expected;
+
+$tree_diff -> find_similar;
+is $tree_diff -> delta_count, 1;
+@patches = $tree_diff -> patches;
+
+$expected = <<'EOS';
+diff --git a/diff b/diff.moved
+index 6afc8a6..6afc8a6 100644
+--- a/diff
++++ b/diff.moved
+EOS
+
+is $patches[0] -> buffer, $expected;
+
+$stats = $tree_diff -> stats;
+isa_ok $stats, 'Git::Raw::Diff::Stats';
+is $stats -> insertions, 0;
+is $stats -> deletions, 0;
+is $stats -> files_changed, 1;
+
+$expected = <<'EOS';
+ diff => diff.moved | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'full'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
+
+$expected = <<'EOS';
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+EOS
+
+is $stats -> buffer({
+	'flags' => {
+		'short'    => 1,
+		'summary' => 1,
+	}
+}), $expected;
+
+my $content = <<'EOS';
+AAAAAAAAAA
+AAAAAAAAAA
+AAAAAAAAAA
+AAAAAAAAAA
+AAAAAAAAAA
+EOS
+
+write_file("$file.moved", $content);
+$index -> add('diff.moved');
+$index_tree1 = $repo -> lookup($index -> write_tree);
+
+move($file.'.moved', $file);
+$index -> remove('diff.moved');
+
+$content = <<'EOS';
+AAAAAAAAAA
+AAAAAAAAAA
+AAAAZZAAAA
+AAAAAAAAAA
+AAAAAAAAAA
+EOS
+
+write_file($file, $content);
+$index -> add('diff');
+$index_tree2 = $repo -> lookup($index -> write_tree);
+
+$tree_diff = $index_tree1 -> diff({
+	'tree'   => $index_tree2,
+	'flags'  => {
+		'all' => 1
+	}
+});
+
+is $tree_diff -> delta_count, 2;
+$tree_diff -> find_similar;
+is $tree_diff -> delta_count, 1;
+@patches = $tree_diff -> patches;
+
+$expected = <<'EOS';
+diff --git a/diff.moved b/diff
+index 5b96873..f97fd8f 100644
+--- a/diff.moved
++++ b/diff
+@@ -1,5 +1,5 @@
+ AAAAAAAAAA
+ AAAAAAAAAA
+-AAAAAAAAAA
++AAAAZZAAAA
+ AAAAAAAAAA
+ AAAAAAAAAA
+EOS
+
+is $patches[0] -> buffer, $expected;
+
+$content = <<'EOS';
+ AAAAAAAAAA
+AAAAAAAAAA
+AAAAZZAAAA
+AAAAAAAAAA
+ AAAAAAAAAA
+EOS
+
+write_file($file, $content);
+$index -> add('diff');
+$index_tree2 = $repo -> lookup($index -> write_tree);
+
+$tree_diff = $index_tree1 -> diff({
+	'tree'   => $index_tree2,
+	'flags'  => {
+		'all' => 1
+	}
+});
+
+is $tree_diff -> delta_count, 2;
+$tree_diff -> find_similar;
+is $tree_diff -> delta_count, 1;
+@patches = $tree_diff -> patches;
 
 done_testing;

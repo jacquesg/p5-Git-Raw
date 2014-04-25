@@ -8,8 +8,8 @@ perl:
  - "5.18"
 
 install:
- - sudo apt-get update
- - sudo apt-get install libssl-dev libssh2-1-dev
+ - sudo apt-get -qq update
+ - sudo apt-get -qq install libssl-dev libssh2-1-dev openssh-client openssh-server
  - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - dzil listdeps --missing | cpanm --notest
 

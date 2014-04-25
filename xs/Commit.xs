@@ -105,12 +105,8 @@ SV *
 id(self)
 	Commit self
 
-	PREINIT:
-		const git_oid *oid;
-
 	CODE:
-		oid = git_commit_id(self);
-		RETVAL = git_oid_to_sv((git_oid *) oid);
+		RETVAL = git_oid_to_sv(git_commit_id(self));
 
 	OUTPUT: RETVAL
 
@@ -120,6 +116,7 @@ message(self)
 
 	PREINIT:
 		const char *msg;
+
 	CODE:
 		msg = git_commit_message(self);
 		RETVAL = newSVpv(msg, 0);
@@ -279,13 +276,8 @@ merge(self, commit, ...)
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 		if (items == 3) {
-			SV *opts = ST(2);
-
-			if (!SvROK(opts) || SvTYPE(SvRV(opts)) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type for 'merge_opts'");
-
-			git_hv_to_merge_opts((HV *) SvRV(opts),
-				&merge_opts);
+			HV *opts = git_ensure_hv(ST(2), "merge_opts");
+			git_hv_to_merge_opts(opts, &merge_opts);
 		}
 
 		rc = git_merge_commits(

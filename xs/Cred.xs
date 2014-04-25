@@ -98,14 +98,11 @@ sshinteractive(class, user, callback)
 	CODE:
 		username = SvPVbyte_nolen(user);
 
-		if (SvTYPE(SvRV(callback)) != SVt_PVCV)
-			Perl_croak(aTHX_ "Expected a subroutine for callback");
-
 		rc = git_cred_ssh_interactive_new(
 			&cred,
 			username,
 			(git_cred_ssh_interactive_callback) git_ssh_interactive_cbb,
-			callback);
+			git_ensure_cv(callback, "callback"));
 		git_check_error(rc);
 
 		Newxz(out, 1, git_raw_cred);

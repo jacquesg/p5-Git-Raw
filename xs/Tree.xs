@@ -39,12 +39,8 @@ SV *
 id(self)
 	Tree self
 
-	PREINIT:
-		const git_oid *oid;
-
 	CODE:
-		oid = git_tree_id(self);
-		RETVAL = git_oid_to_sv((git_oid *) oid);
+		RETVAL = git_oid_to_sv(git_tree_id(self));
 
 	OUTPUT: RETVAL
 
@@ -162,73 +158,47 @@ diff(self, ...)
 		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
 
 	CODE:
-		if (items > 2)
-			Perl_croak(aTHX_ "Wrong number of arguments");
-
 		if (items == 2) {
-			SV **opt;
+			SV *opt;
+			AV *lopt;
+			HV *hopt;
+
 			HV *opts;
 
-			if (!SvROK(ST(1)) || SvTYPE(SvRV(ST(1))) != SVt_PVHV)
-				Perl_croak(aTHX_ "Invalid type");
+			opts = git_ensure_hv(ST(1), "options");
 
-			opts = (HV *) SvRV(ST(1));
-			if ((opt = hv_fetchs(opts, "tree", 0))) {
-				tree = GIT_SV_TO_PTR(Tree, *opt);
+			if ((opt = git_hv_sv_entry(opts, "tree")))
+				tree = GIT_SV_TO_PTR(Tree, opt);
+
+			if ((hopt = git_hv_hash_entry(opts, "flags")))
+				diff_opts.flags |= git_hv_to_diff_flag(hopt);
+
+			if ((hopt = git_hv_hash_entry(opts, "prefix"))) {
+				SV *ab;
+
+				if ((ab = git_hv_string_entry(hopt, "a")))
+					diff_opts.old_prefix = SvPVbyte_nolen(ab);
+
+				if ((ab = git_hv_string_entry(hopt, "b")))
+					diff_opts.new_prefix = SvPVbyte_nolen(ab);
 			}
 
-			if ((opt = hv_fetchs(opts, "flags", 0))) {
-				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-					Perl_croak(aTHX_ "Expected a list of 'flags'");
+			if ((opt = git_hv_int_entry(opts, "context_lines")))
+				diff_opts.context_lines = (uint16_t) SvIV(opt);
 
-				diff_opts.flags |=
-					git_hv_to_diff_flag((HV *) SvRV(*opt));
-			}
+			if ((opt = git_hv_int_entry(opts, "interhunk_lines")))
+				diff_opts.interhunk_lines = (uint16_t) SvIV(opt);
 
-			if ((opt = hv_fetchs(opts, "prefix", 0))) {
-				SV **ab;
-
-				if ((ab = hv_fetchs((HV *) SvRV(*opt), "a", 0))) {
-					if (!SvPOK(*ab))
-						Perl_croak(aTHX_ "Expected a string for prefix");
-
-					diff_opts.old_prefix = SvPVbyte_nolen(*ab);
-				}
-
-				if ((ab = hv_fetchs((HV *) SvRV(*opt), "b", 0))) {
-					if (!SvPOK(*ab))
-						Perl_croak(aTHX_ "Expected a string for prefix");
-
-					diff_opts.new_prefix = SvPVbyte_nolen(*ab);
-				}
-			}
-
-			if ((opt = hv_fetchs(opts, "context_lines", 0))) {
-				if (!SvIOK(*opt))
-					Perl_croak(aTHX_ "Expected an integer for 'context_lines'");
-
-				diff_opts.context_lines = (uint16_t) SvIV(*opt);
-			}
-
-			if ((opt = hv_fetchs(opts, "interhunk_lines", 0))) {
-				if (!SvIOK(*opt))
-					Perl_croak(aTHX_ "Expected an integer for 'interhunk_lines'");
-
-				diff_opts.interhunk_lines = (uint16_t) SvIV(*opt);
-			}
-
-			if ((opt = hv_fetchs(opts, "paths", 0))) {
+			if ((lopt = git_hv_list_entry(opts, "paths"))) {
 				SV **path;
 				size_t i = 0, count = 0;
 
-				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-					Perl_croak(aTHX_ "Expected a list of 'paths'");
+				while ((path = av_fetch(lopt, i++, 0))) {
+					if (!SvOK(*path))
+						continue;
 
-				while ((path = av_fetch((AV *) SvRV(*opt), i++, 0))) {
-					if (SvOK(*path)) {
-						Renew(paths, count + 1, char *);
-						paths[count++] = SvPVbyte_nolen(*path);
-					}
+					Renew(paths, count + 1, char *);
+					paths[count++] = SvPVbyte_nolen(*path);
 				}
 
 				if (count > 0) {
@@ -276,7 +246,8 @@ merge(self, ancestor_tree, their_tree, ...)
 
 	CODE:
 		if (items == 4) {
-			git_hv_to_merge_opts((HV *) SvRV(ST(3)), &merge_opts);
+			HV *opts = git_ensure_hv(ST(3), "options");
+			git_hv_to_merge_opts(opts, &merge_opts);
 		}
 
 		if (SvOK(ancestor_tree))

@@ -53,6 +53,65 @@ delta_count(self)
 	OUTPUT: RETVAL
 
 void
+find_similar(self, ...)
+	Diff self
+
+	PROTOTYPE: $;$
+	PREINIT:
+		int rc;
+
+		git_diff_find_options find_opts = GIT_DIFF_FIND_OPTIONS_INIT;
+
+	CODE:
+		if (items == 2) {
+			SV *opt;
+			HV *hopt;
+			HV *opts;
+
+			opts = git_ensure_hv(ST(1), "options");
+
+			if ((hopt = git_hv_hash_entry(opts, "flags")))
+				find_opts.flags |= git_hv_to_diff_find_flag(hopt);
+
+			if ((opt = git_hv_int_entry(opts, "rename_threshold")))
+				find_opts.rename_threshold = SvIV(opt);
+
+			if ((opt = git_hv_int_entry(opts, "rename_from_rewrite_threshold")))
+				find_opts.rename_from_rewrite_threshold = SvIV(opt);
+
+			if ((opt = git_hv_int_entry(opts, "copy_threshold")))
+				find_opts.copy_threshold = SvIV(opt);
+
+			if ((opt = git_hv_int_entry(opts, "break_rewrite_threshold")))
+				find_opts.break_rewrite_threshold = SvIV(opt);
+
+			if ((opt = git_hv_int_entry(opts, "rename_limit")))
+				find_opts.rename_limit = SvIV(opt);
+		}
+
+		rc = git_diff_find_similar(self, &find_opts);
+		git_check_error(rc);
+
+SV *
+stats(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		Diff_Stats stats;
+
+	CODE:
+		rc = git_diff_get_stats(&stats, GIT_SV_TO_PTR(Diff, self));
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Diff::Stats", stats, SvRV(self)
+		);
+
+	OUTPUT: RETVAL
+
+void
 patches(self)
 	SV *self
 

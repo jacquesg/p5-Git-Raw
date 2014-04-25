@@ -44,6 +44,7 @@ typedef git_diff * Diff;
 typedef git_diff_delta * Diff_Delta;
 typedef git_diff_file * Diff_File;
 typedef git_diff_hunk * Diff_Hunk;
+typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
 typedef git_patch * Patch;
@@ -317,23 +318,6 @@ on_error:
 	return result;
 }
 
-STATIC SV *get_callback_option(HV *callbacks, const char *name) {
-	SV **opt;
-
-	if ((opt = hv_fetch(callbacks, name, strlen(name), 0))) {
-		SV *cb = *opt;
-
-		if (SvTYPE(SvRV(cb)) != SVt_PVCV)
-			Perl_croak(aTHX_ "Expected a subroutine for '%s' callback", name);
-
-		SvREFCNT_inc(cb);
-
-		return cb;
-	}
-
-	return NULL;
-}
-
 STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	cbs -> credentials = NULL;
 	cbs -> progress = NULL;
@@ -419,11 +403,103 @@ STATIC void git_clean_filter_callbacks(git_filter_callbacks *cbs) {
 	}
 }
 
-STATIC void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
+STATIC SV *git_hv_sv_entry(HV *hv, const char *name) {
 	SV **opt;
 
-	if ((opt = hv_fetch(value, name, strlen(name), 0)) && SvIV(*opt))
+	if ((opt = hv_fetch(hv, name, strlen(name), 0)))
+		return *opt;
+
+	return NULL;
+}
+
+STATIC SV *git_hv_int_entry(HV *hv, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(hv, name, strlen(name), 0))) {
+		if (!SvIOK(*opt))
+			Perl_croak(aTHX_ "Expected an integer for '%s'", name);
+
+		return *opt;
+	}
+
+	return NULL;
+}
+
+STATIC SV *git_hv_string_entry(HV *hv, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(hv, name, strlen(name), 0))) {
+		if (!SvPOK(*opt))
+			Perl_croak(aTHX_ "Expected a string for '%s'", name);
+
+		return *opt;
+	}
+
+	return NULL;
+}
+
+STATIC AV *git_ensure_av(SV *sv, const char *identifier) {
+	if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVAV)
+		Perl_croak(aTHX_ "Invalid type for '%s', expected a list", identifier);
+
+	return (AV *) SvRV(sv);
+}
+
+STATIC HV *git_ensure_hv(SV *sv, const char *identifier) {
+	if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
+		Perl_croak(aTHX_ "Invalid type for '%s', expected a hash", identifier);
+
+	return (HV *) SvRV(sv);
+}
+
+STATIC SV *git_ensure_cv(SV *sv, const char *identifier) {
+	if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVCV)
+		Perl_croak(aTHX_ "Invalid type for '%s', expected a code reference", identifier);
+
+	return sv;
+}
+
+STATIC SV *git_hv_code_entry(HV *hv, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(hv, name, strlen(name), 0)))
+		return git_ensure_cv(*opt, name);
+
+	return NULL;
+}
+
+STATIC HV *git_hv_hash_entry(HV *hv, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(hv, name, strlen(name), 0)))
+		return git_ensure_hv(*opt, name);
+
+	return NULL;
+}
+
+STATIC AV *git_hv_list_entry(HV *hv, const char *name) {
+	SV **opt;
+
+	if ((opt = hv_fetch(hv, name, strlen(name), 0)))
+		return git_ensure_av(*opt, name);
+
+	return NULL;
+}
+
+STATIC void git_flag_opt(HV *value, const char *name, int mask, unsigned *out) {
+	SV *opt;
+
+	if ((opt = git_hv_int_entry(value, name)) && SvIV(opt))
 		*out |= mask;
+}
+
+STATIC SV *get_callback_option(HV *callbacks, const char *name) {
+	SV *cb = NULL;
+
+	if ((cb = git_hv_code_entry(callbacks, name)))
+		SvREFCNT_inc(cb);
+
+	return cb;
 }
 
 STATIC unsigned git_hv_to_diff_flag(HV *flags) {
@@ -501,6 +577,69 @@ STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 	git_flag_opt(flags, "patience", GIT_DIFF_PATIENCE, &out);
 
 	git_flag_opt(flags, "minimal", GIT_DIFF_MINIMAL, &out);
+
+	return out;
+}
+
+STATIC unsigned git_hv_to_diff_find_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "renames", GIT_DIFF_FIND_RENAMES, &out);
+
+	git_flag_opt(
+		flags,
+		"renames_from_rewrites",
+		GIT_DIFF_FIND_RENAMES_FROM_REWRITES, &out
+	);
+
+	git_flag_opt(flags, "copies", GIT_DIFF_FIND_COPIES, &out);
+
+	git_flag_opt(
+		flags,
+		"copies_from_unmodified",
+		GIT_DIFF_FIND_COPIES_FROM_UNMODIFIED, &out
+	);
+
+	git_flag_opt(flags, "rewrites", GIT_DIFF_FIND_REWRITES, &out);
+
+	git_flag_opt(flags, "break_rewrites", GIT_DIFF_BREAK_REWRITES, &out);
+
+	git_flag_opt(flags, "untracked", GIT_DIFF_FIND_FOR_UNTRACKED, &out);
+
+	git_flag_opt(flags, "all", GIT_DIFF_FIND_ALL, &out);
+
+	git_flag_opt(
+		flags,
+		"ignore_leading_whitespace",
+		GIT_DIFF_FIND_IGNORE_LEADING_WHITESPACE, &out
+	);
+
+	git_flag_opt(
+		flags,
+		"ignore_whitespace",
+		GIT_DIFF_FIND_IGNORE_WHITESPACE, &out
+	);
+
+	git_flag_opt(
+		flags,
+		"dont_ignore_whitespace", GIT_DIFF_FIND_DONT_IGNORE_WHITESPACE, &out
+	);
+
+	git_flag_opt(
+		flags,
+		"exact_match_only", GIT_DIFF_FIND_EXACT_MATCH_ONLY, &out
+	);
+
+	git_flag_opt(
+		flags,
+		"break_rewrites_for_renames_only", GIT_DIFF_BREAK_REWRITES_FOR_RENAMES_ONLY,
+		&out
+	);
+
+	git_flag_opt(flags,
+		"remove_unmodified", GIT_DIFF_FIND_REMOVE_UNMODIFIED,
+		&out
+	);
 
 	return out;
 }
@@ -1191,26 +1330,24 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 
 STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opts) {
 	char **paths = NULL;
-	SV **opt;
+	SV *opt;
+	HV *hopt;
+	AV *lopt;
 
-	if ((opt = hv_fetchs(opts, "checkout_strategy", 0)))
+	if ((hopt = git_hv_hash_entry(opts, "checkout_strategy")))
 		checkout_opts -> checkout_strategy =
-			git_hv_to_checkout_strategy(
-				(HV *) SvRV(*opt)
-			);
+			git_hv_to_checkout_strategy(hopt);
 
-	if ((opt = hv_fetchs(opts, "paths", 0))) {
+	if ((lopt = git_hv_list_entry(opts, "paths"))) {
 		SV **path;
 		size_t count = 0;
 
-		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-			Perl_croak(aTHX_ "Invalid type for 'paths'");
+		while ((path = av_fetch(lopt, count, 0))) {
+			if (!SvOK(*path))
+				continue;
 
-		while ((path = av_fetch((AV *) SvRV(*opt), count, 0))) {
-			if (SvOK(*path)) {
-				Renew(paths, count+1, char *);
-				paths[count++] = SvPVbyte_nolen(*path);
-			}
+			Renew(paths, count+1, char *);
+			paths[count++] = SvPVbyte_nolen(*path);
 		}
 
 		if (count > 0) {
@@ -1219,58 +1356,32 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 		}
 	}
 
-	if ((opt = hv_fetchs(opts, "target_directory", 0))) {
-		if (!SvPOK(*opt))
-			Perl_croak(aTHX_ "Invalid type for 'target_directory'");
+	if ((opt = git_hv_string_entry(opts, "target_directory")))
+		checkout_opts -> target_directory = SvPVbyte_nolen(opt);
 
-		checkout_opts -> target_directory = SvPVbyte_nolen(*opt);
-	}
+	if ((opt = git_hv_string_entry(opts, "ancestor_label")))
+		checkout_opts -> ancestor_label = SvPVbyte_nolen(opt);
 
-	if ((opt = hv_fetchs(opts, "ancestor_label", 0))) {
-		if (!SvPOK(*opt))
-			Perl_croak(aTHX_ "Invalid type for 'ancestor_label'");
+	if ((opt = git_hv_string_entry(opts, "our_label")))
+		checkout_opts -> our_label = SvPVbyte_nolen(opt);
 
-		checkout_opts -> ancestor_label = SvPVbyte_nolen(*opt);
-	}
+	if ((opt = git_hv_string_entry(opts, "their_label")))
+		checkout_opts -> their_label = SvPVbyte_nolen(opt);
 
-	if ((opt = hv_fetchs(opts, "our_label", 0))) {
-		if (!SvPOK(*opt))
-			Perl_croak(aTHX_ "Invalid type for 'our_label'");
-
-		checkout_opts -> our_label = SvPVbyte_nolen(*opt);
-	}
-
-	if ((opt = hv_fetchs(opts, "their_label", 0))) {
-		if (!SvPOK(*opt))
-			Perl_croak(aTHX_ "Invalid type for 'their_label'");
-
-		checkout_opts -> their_label = SvPVbyte_nolen(*opt);
-	}
-
-	if ((opt = hv_fetchs(opts, "callbacks", 0))) {
-		HV *callbacks;
-
-		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVHV)
-			Perl_croak(aTHX_ "Invalid type for 'callbacks'");
-
-		callbacks = (HV *) SvRV(*opt);
-
+	if ((hopt = git_hv_hash_entry(opts, "callbacks"))) {
 		if ((checkout_opts -> progress_payload =
-				get_callback_option(callbacks, "progress")))
+				get_callback_option(hopt, "progress")))
 			checkout_opts -> progress_cb = git_checkout_progress_cbb;
 
 		if ((checkout_opts -> notify_payload =
-				get_callback_option(callbacks, "notify"))) {
+				get_callback_option(hopt, "notify"))) {
 			checkout_opts -> notify_cb      = git_checkout_notify_cbb;
 
-			if ((opt = hv_fetchs(opts, "notify", 0))) {
+			if ((lopt = git_hv_list_entry(opts, "notify"))) {
 				size_t count = 0;
 				SV **flag;
 
-				if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-					Perl_croak(aTHX_ "Invalid type for 'notify'");
-
-				while ((flag = av_fetch((AV *) SvRV(*opt), count++, 0))) {
+				while ((flag = av_fetch(lopt, count++, 0))) {
 					if (SvPOK(*flag)) {
 						const char *f = SvPVbyte_nolen(*flag);
 
@@ -1300,16 +1411,14 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 }
 
 STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
-	SV **opt;
+	AV *lopt;
+	SV *opt;
 
-	if ((opt = hv_fetchs(opts, "flags", 0))) {
+	if ((lopt = git_hv_list_entry(opts, "flags"))) {
 		size_t count = 0;
 		SV **flag;
 
-		if (!SvROK(*opt) || SvTYPE(SvRV(*opt)) != SVt_PVAV)
-			Perl_croak(aTHX_ "Invalid type for 'flags'");
-
-		while ((flag = av_fetch((AV *) SvRV(*opt), count++, 0))) {
+		while ((flag = av_fetch(lopt, count++, 0))) {
 			if (SvPOK(*flag)) {
 				const char *f = SvPVbyte_nolen(*flag);
 
@@ -1322,37 +1431,26 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 		}
 	}
 
-	if ((opt = hv_fetchs(opts, "favor", 0))) {
-		if (SvPOK(*opt)) {
-			const char *favor = SvPVbyte_nolen(*opt);
-			if (strcmp(favor, "ours") == 0)
-				merge_options -> file_favor =
-					GIT_MERGE_FILE_FAVOR_OURS;
-			else if (strcmp(favor, "theirs") == 0)
-				merge_options -> file_favor =
-					GIT_MERGE_FILE_FAVOR_THEIRS;
-			else if (strcmp(favor, "union") == 0)
-				merge_options -> file_favor =
-					GIT_MERGE_FILE_FAVOR_UNION;
-			else
-				Perl_croak(aTHX_ "Invalid 'favor' value");
-		} else
-			Perl_croak(aTHX_ "Invalid type for 'favor' value");
+	if ((opt = git_hv_string_entry(opts, "favor"))) {
+		const char *favor = SvPVbyte_nolen(opt);
+		if (strcmp(favor, "ours") == 0)
+			merge_options -> file_favor =
+				GIT_MERGE_FILE_FAVOR_OURS;
+		else if (strcmp(favor, "theirs") == 0)
+			merge_options -> file_favor =
+				GIT_MERGE_FILE_FAVOR_THEIRS;
+		else if (strcmp(favor, "union") == 0)
+			merge_options -> file_favor =
+				GIT_MERGE_FILE_FAVOR_UNION;
+		else
+			Perl_croak(aTHX_ "Invalid 'favor' value");
 	}
 
-	if ((opt = hv_fetchs(opts, "rename_threshold", 0))) {
-		if (!SvIOK(*opt) || SvIV(*opt) < 0)
-			Perl_croak(aTHX_ "Invalid type");
+	if ((opt = git_hv_int_entry(opts, "rename_threshold")))
+		merge_options -> rename_threshold = SvIV(opt);
 
-		merge_options -> rename_threshold = SvIV(*opt);
-	}
-
-	if ((opt = hv_fetchs(opts, "target_limit", 0))) {
-		if (!SvIOK(*opt) || SvIV(*opt) < 0)
-			Perl_croak(aTHX_ "Invalid type");
-
-		merge_options -> target_limit = SvIV(*opt);
-	}
+	if ((opt = git_hv_int_entry(opts, "target_limit")))
+		merge_options -> target_limit = SvIV(opt);
 }
 
 MODULE = Git::Raw			PACKAGE = Git::Raw
@@ -1371,6 +1469,7 @@ INCLUDE: xs/Diff.xs
 INCLUDE: xs/Diff/Delta.xs
 INCLUDE: xs/Diff/File.xs
 INCLUDE: xs/Diff/Hunk.xs
+INCLUDE: xs/Diff/Stats.xs
 INCLUDE: xs/Filter.xs
 INCLUDE: xs/Filter/Source.xs
 INCLUDE: xs/Graph.xs
