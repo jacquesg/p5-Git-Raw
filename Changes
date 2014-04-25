@@ -16,7 +16,7 @@ Revision history for Git-Raw
  - Add Repository -> is_head_detached() (GH#83) (thanks, @jacquesg!)
  - Allow "tree" parameter to be undef in Repository -> tree()
    (GH#81) (thanks, @jacquesg!)
- - Added additional diff flags (GH#86)
+ - Added additional diff flags (GH#86):
     + include_typechange
     + include_typechange_trees
     + ignore_case
@@ -26,7 +26,7 @@ Revision history for Git-Raw
     + show_unmodified
  - Repository -> branches() now takes an optional branch
     type argument (GH#85)
- - Add Remote methods (GH#87)
+ - Add Remote methods (GH#87):
     + Remote -> pushurl()
     + Remote -> check_cert()
     + Remote -> clear_refspecs()
@@ -35,7 +35,7 @@ Revision history for Git-Raw
     + Remote -> fetch()
     + Remote -> is_url_valid()
     + Remote -> is_url_supported()
- - Add RefSpec methods (GH#87)
+ - Add RefSpec methods (GH#87):
     + RefSpec -> dst_matches()
     + RefSpec -> src_matches()
     + RefSpec -> string()
@@ -43,6 +43,12 @@ Revision history for Git-Raw
     + RefSpec -> transform()
     + RefSpec -> rtransform()
     + RefSpec -> is_force()
+ - Add Branch methods (GH#84):
+    + Branch -> remote_name()
+    + Branch -> upstream_name()
+ - The Reference returned by Branch -> remote() now has enough information
+    to be used as a real Reference. Previously it didn't capture the owning
+    Repository. (GH#84)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
