@@ -6,6 +6,30 @@ use Git::Raw;
 use Cwd qw(abs_path);
 use File::Path qw(make_path rmtree);
 
+is (Git::Raw::Remote -> is_url_valid('/somewhere/on/filesystem'), 0);
+is (Git::Raw::Remote -> is_url_valid('somewhere/on/filesystem'), 0);
+is (Git::Raw::Remote -> is_url_valid('file:///somewhere/on/filesystem'), 1);
+is (Git::Raw::Remote -> is_url_valid('git://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('https://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('http://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('ssh://me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('ssh://me@somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('ssh://somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('ssh://somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:/somerepo.git'), 1);
+
+is (Git::Raw::Remote -> is_url_supported('file:///somewhere/on/filesystem'), 1);
+is (Git::Raw::Remote -> is_url_supported('git://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('https://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('http://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
+
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
@@ -17,6 +41,22 @@ my $github = Git::Raw::Remote -> create($repo, $name, $url);
 
 is $github -> name, $name;
 is $github -> url, $url;
+is $github -> pushurl, undef;
+is $github -> refspec_count, 1;
+my @refspecs = $github -> refspecs;
+is scalar(@refspecs), 1;
+
+my $refspec = shift @refspecs;
+is $refspec -> src, "refs/heads/*";
+is $refspec -> dst, "refs/remotes/github/*";
+is $refspec -> direction, "fetch";
+is $refspec -> string, "+refs/heads/*:refs/remotes/github/*";
+is $refspec -> is_force, 1;
+is $refspec -> transform ('refs/heads/master'), "refs/remotes/github/master";
+is $refspec -> src_matches('refs/heads/master'), 1;
+is $refspec -> rtransform ('refs/remotes/github/master'), "refs/heads/master";
+is $refspec -> dst_matches('refs/remotes/github/master'), 1;
+is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
 
 my @remotes = $repo -> remotes;
 
