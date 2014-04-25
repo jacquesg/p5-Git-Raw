@@ -26,6 +26,12 @@ Revision history for Git-Raw
     + show_unmodified
  - Repository -> branches() now takes an optional branch
     type argument (GH#85)
+ - Add Branch methods (GH#84):
+    + Branch -> remote_name()
+    + Branch -> upstream_name()
+ - The Reference returned by Branch -> remote() now has enough information
+    to be used as a real Reference. Previously it didn't capture the owning
+    Repository. (GH#84)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
