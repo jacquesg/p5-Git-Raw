@@ -49,6 +49,11 @@ Revision history for Git-Raw
  - The Reference returned by Branch -> remote() now has enough information
     to be used as a real Reference. Previously it didn't capture the owning
     Repository. (GH#84)
+ - Add Commit methods (GH#88):
+    + Commit -> ancestor()
+ - Add Graph methods (GH#88):
+    + Graph -> is_ancestor_of()
+ - Repository -> merge_base() now accepts a "commitish" (GH#88)
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
