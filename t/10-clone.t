@@ -41,6 +41,8 @@ is $remotes[1], undef;
 my $ref = Git::Raw::Branch -> lookup($repo, 'master', 1);
 
 is $ref -> upstream -> name, 'refs/remotes/origin/master';
+is $ref -> upstream_name, 'refs/remotes/origin/master';
+is $ref -> remote_name, 'origin';
 is $ref -> type, 'direct';
 
 my $head = $ref -> target;
