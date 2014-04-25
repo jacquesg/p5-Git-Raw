@@ -99,20 +99,95 @@ move(self, name, force)
 		git_signature_free(sig);
 		git_check_error(rc);
 
-Reference
+SV *
 upstream(self)
-	Branch self
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+		Reference ref;
+
+	CODE:
+		rc = git_branch_upstream(&ref, GIT_SV_TO_PTR(Branch, self));
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
+			);
+		}
+
+	OUTPUT: RETVAL
+
+SV *
+upstream_name(self)
+	SV *self
 
 	PREINIT:
 		int rc;
 
 		Reference ref;
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
-		rc = git_branch_upstream(&ref, self);
+		ref = GIT_SV_TO_PTR(Reference, self);
+
+		rc = git_branch_upstream_name(
+				&buf,
+				git_reference_owner(ref),
+				git_reference_name(ref)
+		);
+		if (rc != GIT_OK)
+			git_buf_free(&buf);
 		git_check_error(rc);
 
-		RETVAL = ref;
+		RETVAL = newSVpv(buf.ptr, buf.size);
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
+SV *
+remote_name(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		Reference ref;
+		git_buf upstream = GIT_BUF_INIT_CONST(NULL, 0);
+		git_buf remote = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		ref = GIT_SV_TO_PTR(Reference, self);
+
+		rc = git_branch_upstream_name(
+				&upstream,
+				git_reference_owner(ref),
+				git_reference_name(ref)
+		);
+		if (rc != GIT_OK)
+			git_buf_free(&upstream);
+		git_check_error(rc);
+
+		rc = git_branch_remote_name(
+				&remote,
+				git_reference_owner(ref),
+				upstream.ptr);
+		if (rc != GIT_OK) {
+			git_buf_free(&upstream);
+			git_buf_free(&remote);
+		}
+		git_check_error(rc);
+
+		RETVAL = newSVpv(remote.ptr, remote.size);
+
+		git_buf_free(&upstream);
+		git_buf_free(&remote);
 
 	OUTPUT: RETVAL
 
