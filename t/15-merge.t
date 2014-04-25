@@ -31,9 +31,10 @@ my $me = Git::Raw::Signature -> default($repo);
 my $commit = $repo -> commit("initial commit\n", $me, $me, [],
 	$repo -> lookup($index -> write_tree));
 
-my $branch1 = $repo -> branch('branch1', $repo -> head -> target);
-my $branch2 = $repo -> branch('branch2', $repo -> head -> target);
-my $branch3 = $repo -> branch('branch3', $repo -> head -> target);
+my $initial_head = $repo -> head;
+my $branch1 = $repo -> branch('branch1', $initial_head -> target);
+my $branch2 = $repo -> branch('branch2', $initial_head -> target);
+my $branch3 = $repo -> branch('branch3', $initial_head -> target);
 
 $repo -> head($branch1);
 write_file($file1, 'this is file1 on branch1');
@@ -50,8 +51,11 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-ok (!eval {$repo -> merge_base("refs/heads/master", $commit1 -> id)});
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1 -> id);
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1);
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 7));
 is $master -> target -> id, $repo -> merge_base($master, $commit1);
+is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1');
 
 my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
@@ -95,6 +99,9 @@ is $commit -> id, $repo -> merge_base($commit1, $commit2);
 $r = $repo ->merge_analysis($branch2);
 is_deeply $r, ['normal'];
 
+Git::Raw::Graph -> is_descendant_of($repo, $branch1, $branch2), 0;
+Git::Raw::Graph -> is_descendant_of($repo, $branch2, $branch1), 0;
+
 $repo -> merge($branch2);
 is $index -> has_conflicts, 1;
 
@@ -114,7 +121,6 @@ ok $conflict -> {'ancestor'} -> id ne $conflict -> {'ours'} -> id;
 ok $conflict -> {'ancestor'} -> id ne $conflict -> {'theirs'} -> id;
 ok $conflict -> {'ours'} -> id ne $conflict -> {'theirs'} -> id;
 
-
 write_file($file1, 'this is file1 on branch1 and branch2');
 $index -> add('test1');
 $index -> write;
@@ -122,8 +128,16 @@ $index -> write;
 my $merge_msg = $repo -> message();
 is $merge_msg, "Merge branch 'branch2'\n\nConflicts:\n\ttest1\n";
 
-$commit = $repo -> commit("Merge commit!", $me, $me, [$master -> target, $commit2],
+my $target = $master -> target;
+$commit = $repo -> commit("Merge commit!", $me, $me, [$target, $commit2],
 	$repo -> lookup($index -> write_tree));
+
+Git::Raw::Graph -> is_descendant_of($repo, $commit, $target), 1;
+Git::Raw::Graph -> is_descendant_of($repo, $commit, $commit2), 1;
+Git::Raw::Graph -> is_descendant_of($repo, $commit, 'refs/heads/branch2'), 1;
+Git::Raw::Graph -> is_descendant_of($repo, $commit, 'branch2'), 1;
+Git::Raw::Graph -> is_descendant_of($repo, $target, $commit), 0;
+Git::Raw::Graph -> is_descendant_of($repo, $commit2, $commit), 0;
 
 is $repo -> state, "merge";
 $repo -> state_cleanup;
@@ -144,6 +158,9 @@ $index -> write;
 
 $commit = $repo -> commit("commit on branch3\n", $me, $me, [$branch3 -> target],
 	$repo -> lookup($index -> write_tree));
+
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $initial_head), 1);
+is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $initial_head), 1);
 
 $repo -> checkout($repo -> head($master), {
 	checkout_strategy => {

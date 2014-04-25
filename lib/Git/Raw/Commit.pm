@@ -104,9 +104,16 @@ Merge C<$commit> into this commit. See C<Git::Raw::Repository-E<gt>merge()>
 for valid C<%merge_opts> values. Returns a C<Git::Raw::Index> object
 containing the merge result.
 
+=head2 ancestor( $gen )
+
+Retrieve the C<Git::Raw::Commit> object that is the C<$gen>'th generation
+ancestor of this commit, following only the first parents.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 
