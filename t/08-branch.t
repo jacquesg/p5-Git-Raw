@@ -63,7 +63,10 @@ is $entries[1] -> {'committer'} -> time, $signature -> time;
 is $entries[1] -> {'committer'} -> offset, $signature -> offset;
 ok $entries[1] -> {'message'} =~ /^Branch: created/i;
 
-my $branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
+my $branches = [ $repo -> branches('local') ];
+is scalar(@$branches), 2;
+
+$branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
 
 is $branches -> [0] -> type, 'direct';
 is $branches -> [0] -> name, 'refs/heads/master';
@@ -78,6 +81,9 @@ if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	is $branches -> [3] -> type, 'direct';
 	is $branches -> [3] -> name, 'refs/remotes/github/master';
 	ok $branches -> [3] -> is_remote;
+
+	$branches = [ $repo -> branches('remote') ];
+	is scalar(@$branches), 3;
 }
 
 done_testing;
