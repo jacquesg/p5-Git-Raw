@@ -38,9 +38,12 @@ is $walk -> next -> message, "initial commit\n";
 is $walk -> next, undef;
 
 $walk -> push_ref('refs/heads/master');
-is $walk -> next -> message, "third commit\n";
+my $end = $walk -> next;
+is $end -> message, "third commit\n";
 is $walk -> next -> message, "second commit\n";
-is $walk -> next -> message, "initial commit\n";
+
+my $start = $walk -> next;
+is $start -> message, "initial commit\n";
 is $walk -> next, undef;
 
 $walk -> push_head;
@@ -50,5 +53,21 @@ isnt $commit, undef;
 is   $commit -> message, "third commit\n";
 isnt $commit -> tree, undef;
 isnt $commit -> parents, undef;
+
+$walk -> reset;
+$walk -> push_range($start, $end);
+is $walk -> next -> message, "third commit\n";
+is $walk -> next -> message, "second commit\n";
+is $walk -> next, undef;
+
+$walk -> reset;
+$walk -> push_range($start -> id . ".." . $end -> id);
+is $walk -> next -> message, "third commit\n";
+is $walk -> next -> message, "second commit\n";
+is $walk -> next, undef;
+
+ok (!eval { $walk -> push_range(); });
+ok (!eval { $walk -> push_range($start -> id . "." . $end -> id) });
+ok (!eval { $walk -> push_range($start -> id . "..." . $end -> id) });
 
 done_testing;
