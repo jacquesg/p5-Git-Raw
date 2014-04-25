@@ -54,6 +54,14 @@ Revision history for Git-Raw
  - Add Graph methods (GH#88):
     + Graph -> is_ancestor_of()
  - Repository -> merge_base() now accepts a "commitish" (GH#88)
+ - Add Diff methods (GH#77):
+    + Diff -> find_similar()
+    + Diff -> stats()
+ - Add Diff::Stats methods (GH#77):
+    + Diff::Stats -> insertions()
+    + Diff::Stats -> deletions()
+    + Diff::Stats -> files_changed()
+    + Diff::Stats -> buffer()
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
