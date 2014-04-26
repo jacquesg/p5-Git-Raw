@@ -11,13 +11,13 @@ userpass(class, user, pass)
 
 		Cred out;
 		git_cred *cred;
-		const char *usr, *pwd;
 
 	CODE:
-		usr = SvPVbyte_nolen(user);
-		pwd = SvPVbyte_nolen(pass);
-
-		rc = git_cred_userpass_plaintext_new(&cred, usr, pwd);
+		rc = git_cred_userpass_plaintext_new(
+			&cred,
+			git_ensure_pv(user, "user"),
+			git_ensure_pv(pass, "pass")
+		);
 		git_check_error(rc);
 
 		Newxz(out, 1, git_raw_cred);
@@ -39,19 +39,18 @@ sshkey(class, user, public, private, ...)
 
 		Cred out;
 		git_cred *cred;
-		const char *username, *publickey, *privatekey, *passphrase = NULL;
+		const char *passphrase = NULL;
 
 	CODE:
-		if (items == 5) {
-			passphrase = SvPVbyte_nolen(ST(4));
-		}
-
-		username   = SvPVbyte_nolen(user);
-		publickey  = SvPVbyte_nolen(public);
-		privatekey = SvPVbyte_nolen(private);
+		if (items == 5)
+			passphrase = git_ensure_pv(ST(4), "pass");
 
 		rc = git_cred_ssh_key_new(
-			&cred, username, publickey, privatekey, passphrase
+			&cred,
+			git_ensure_pv(user, "user"),
+			git_ensure_pv(public, "public"),
+			git_ensure_pv(private, "private"),
+			passphrase
 		);
 		git_check_error(rc);
 
@@ -71,12 +70,12 @@ sshagent(class, user)
 
 		Cred out;
 		git_cred *cred;
-		const char *username;
 
 	CODE:
-		username = SvPVbyte_nolen(user);
-
-		rc = git_cred_ssh_key_from_agent(&cred, username);
+		rc = git_cred_ssh_key_from_agent(
+			&cred,
+			git_ensure_pv(user, "user")
+		);
 		git_check_error(rc);
 
 		Newxz(out, 1, git_raw_cred);
@@ -96,14 +95,11 @@ sshinteractive(class, user, callback)
 
 		Cred out;
 		git_cred *cred;
-		const char *username;
 
 	CODE:
-		username = SvPVbyte_nolen(user);
-
 		rc = git_cred_ssh_interactive_new(
 			&cred,
-			username,
+			git_ensure_pv(user, "user"),
 			(git_cred_ssh_interactive_callback) git_ssh_interactive_cbb,
 			git_ensure_cv(callback, "callback"));
 		git_check_error(rc);
