@@ -62,6 +62,14 @@ Revision history for Git-Raw
     + Diff::Stats -> deletions()
     + Diff::Stats -> files_changed()
     + Diff::Stats -> buffer()
+ - Add PathSpec methods (GH#89):
+    + PathSpec -> new()
+    + PathSpec -> match()
+ - Add PathSpec::MatchList methods (GH#89):
+    + PathSpec::MatchList -> count()
+    + PathSpec::MatchList -> entries()
+    + PathSpec::MatchList -> failed_count()
+    + PathSpec::MatchList -> failed_entries()
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
