@@ -461,6 +461,20 @@ STATIC SV *git_ensure_cv(SV *sv, const char *identifier) {
 	return sv;
 }
 
+STATIC const char *git_ensure_pv(SV *sv, const char *identifier) {
+	const char *pv = NULL;
+
+	if (SvPOK(sv)) {
+		pv = SvPVbyte_nolen(sv);
+	} else if (SvTYPE(sv) == SVt_PVLV) {
+		STRLEN len;
+		pv = SvPVbyte_force(sv, len);
+	} else
+		Perl_croak(aTHX_ "Invalid type for '%s', expected a string", identifier);
+
+	return pv;
+}
+
 STATIC SV *git_hv_code_entry(HV *hv, const char *name) {
 	SV **opt;
 
