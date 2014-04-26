@@ -1108,22 +1108,22 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
-	SV *creds;
+	Cred creds;
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
 	PUSHs(newSVpv(url, 0));
+	PUSHs(newSVpv(usr_from_url, 0));
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_SCALAR);
 
 	SPAGAIN;
 
-	creds = POPs;
-
-	*cred = GIT_SV_TO_PTR(Cred, creds);
+	creds = GIT_SV_TO_PTR(Cred, POPs);
+	*cred = creds -> cred;
 
 	FREETMPS;
 	LEAVE;
