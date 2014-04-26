@@ -82,7 +82,7 @@ The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string containing the URL of the
 remote, and it must return a L<Git::Raw::Cred> object.
 
-=item * "progress"
+=item * "sideband_progress"
 
 Textual progress from the remote. Text send over the progress side-band will be
 passed to this function (this is the 'counting objects' output). The callback

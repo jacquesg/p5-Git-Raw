@@ -82,7 +82,7 @@ my $states = [];
 $path = File::Spec -> rel2abs('t/test_repo_clone_callbacks');
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
-		'progress' => sub {
+		'sideband_progress' => sub {
 			my $description = shift;
 
 			if (!defined ($state)) {

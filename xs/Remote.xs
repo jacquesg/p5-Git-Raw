@@ -374,8 +374,8 @@ callbacks(self, callbacks)
 			rcallbacks.credentials = git_credentials_cbb;
 
 		if ((remote -> callbacks.progress =
-			get_callback_option(callbacks, "progress")))
-			rcallbacks.progress = git_progress_cbb;
+			get_callback_option(callbacks, "sideband_progress")))
+			rcallbacks.sideband_progress = git_progress_cbb;
 
 		if ((remote -> callbacks.completion =
 			get_callback_option(callbacks, "completion")))

@@ -63,8 +63,8 @@ clone(class, url, path, opts)
 					git_credentials_cbb;
 
 			if ((cbs.progress =
-				get_callback_option(callbacks, "progress")))
-				clone_opts.remote_callbacks.progress =
+				get_callback_option(callbacks, "sideband_progress")))
+				clone_opts.remote_callbacks.sideband_progress =
 					git_progress_cbb;
 
 			if ((cbs.completion =

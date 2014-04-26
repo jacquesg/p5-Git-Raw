@@ -119,10 +119,10 @@ $repo = Git::Raw::Repository -> init ($path, 0);
 
 $github = Git::Raw::Remote -> create($repo, $name, $url);
 
-my ($progress, $transfer_progress, $update_tips);
+my ($sideband_progress, $transfer_progress, $update_tips);
 $github -> callbacks({
-	'progress' => sub {
-		$progress = 1;
+	'sideband_progress' => sub {
+		$sideband_progress = 1;
 	},
 	'transfer_progress' => sub {
 		$transfer_progress = 1;
@@ -141,7 +141,7 @@ $github -> connect('fetch');
 is $github -> is_connected, 1;
 
 $github -> download;
-ok $progress;
+ok $sideband_progress;
 ok $transfer_progress;
 
 my $config = $repo -> config;
