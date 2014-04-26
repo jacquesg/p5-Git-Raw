@@ -154,6 +154,38 @@ rmtree abs_path('t/test_repo_remote_name');
 my $remote_path = File::Spec -> rel2abs('t/test_repo');
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
+
+# Die'ing inside the callback
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub { die "Shouldn't break!" }
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
+# Returning undef inside the callback
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub { return undef; }
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
+# Invalid key files
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user) = @_;
+					return Git::Raw::Cred -> sshkey(
+						$user, 'invalid', 'invalid');
+			}
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
 $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 	'callbacks' => {
 		'credentials' => sub {
