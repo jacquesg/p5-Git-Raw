@@ -276,10 +276,9 @@ is $stats -> files_changed, 2;
 $expected = <<'EOS';
  diff       | 1 -
  diff.moved | 1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
+ 2 files changed, 1 insertion(+), 1 deletion(-)
  delete mode 100644 diff
  create mode 100644 diff.moved
-
 EOS
 
 is $stats -> buffer({
@@ -290,10 +289,9 @@ is $stats -> buffer({
 }), $expected;
 
 $expected = <<'EOS';
- 2 files changed, 1 insertions(+), 1 deletions(-)
+ 2 files changed, 1 insertion(+), 1 deletion(-)
  delete mode 100644 diff
  create mode 100644 diff.moved
-
 EOS
 
 is $stats -> buffer({
@@ -325,7 +323,6 @@ is $stats -> files_changed, 1;
 $expected = <<'EOS';
  diff => diff.moved | 0
  1 file changed, 0 insertions(+), 0 deletions(-)
-
 EOS
 
 is $stats -> buffer({
@@ -337,7 +334,6 @@ is $stats -> buffer({
 
 $expected = <<'EOS';
  1 file changed, 0 insertions(+), 0 deletions(-)
-
 EOS
 
 is $stats -> buffer({

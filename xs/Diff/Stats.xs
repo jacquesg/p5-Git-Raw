@@ -34,6 +34,7 @@ buffer(self, ...)
 	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
+		size_t width = 0;
 
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
@@ -56,7 +57,7 @@ buffer(self, ...)
 			}
 		}
 
-		rc = git_diff_stats_to_buf(&buf, self, format);
+		rc = git_diff_stats_to_buf(&buf, self, format, width);
 		git_check_error(rc);
 
 		RETVAL = newSVpv(buf.ptr, buf.size);

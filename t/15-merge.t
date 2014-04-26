@@ -172,6 +172,10 @@ is_deeply $r, ['normal'];
 
 $repo -> merge($branch3, {
 	'favor' => 'theirs',
+	}, {
+	checkout_strategy => {
+		'safe_create' => 1
+	}
 });
 
 is $index -> has_conflicts, 0;
