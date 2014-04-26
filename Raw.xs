@@ -775,15 +775,15 @@ typedef struct {
 
 STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
 	dSP;
-	int rv;
+	int rv = 0;
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(entry -> name, 0));
-	PUSHs(newSVpv(entry -> value, 0));
-	PUSHs(newSVuv(entry -> level));
+	mXPUSHs(newSVpv(entry -> name, 0));
+	mXPUSHs(newSVpv(entry -> value, 0));
+	mXPUSHs(newSVuv(entry -> level));
 	PUTBACK;
 
 	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
@@ -800,15 +800,15 @@ STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) 
 
 STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
 	dSP;
-	int rv;
+	int rv = 0;
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVuv(i));
-	PUSHs(newSVpv(msg, 0));
-	PUSHs(git_oid_to_sv((git_oid *) oid));
+	mXPUSHs(newSVuv(i));
+	mXPUSHs(newSVpv(msg, 0));
+	mXPUSHs(git_oid_to_sv((git_oid *) oid));
 	PUTBACK;
 
 	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
@@ -825,7 +825,7 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 
 STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	dSP;
-	int rv;
+	int rv = 0;
 	git_object *tag;
 
 	SV *repo, *cb_arg;
@@ -850,7 +850,7 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	xs_object_magic_attach_struct(aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(repo));
 
 	PUSHMARK(SP);
-	PUSHs(cb_arg);
+	XPUSHs(cb_arg);
 	PUTBACK;
 
 	call_sv(pl -> cb, G_SCALAR);
@@ -869,7 +869,7 @@ STATIC int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, 
 	const git_diff_file *target, const git_diff_file *workdir, void *payload) {
 	dSP;
 
-	int rv;
+	int rv = 0;
 	AV *w = newAV();
 
 	if (why & GIT_CHECKOUT_NOTIFY_NONE)
@@ -894,8 +894,8 @@ STATIC int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, 
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(path, 0));
-	PUSHs(sv_2mortal(newRV_noinc((SV *) w)));
+	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(newRV_noinc((SV *) w));
 	PUTBACK;
 
 	call_sv(payload, G_SCALAR);
@@ -920,9 +920,9 @@ STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(path, 0));
-	PUSHs(newSViv(completed_steps));
-	PUSHs(newSViv(total_steps));
+	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(newSViv(completed_steps));
+	mXPUSHs(newSViv(total_steps));
 	PUTBACK;
 
 	call_sv(coderef, G_DISCARD);
@@ -940,7 +940,7 @@ STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(str, len));
+	mXPUSHs(newSVpv(str, len));
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> progress, G_DISCARD);
@@ -979,7 +979,7 @@ STATIC int git_completion_cbb(git_remote_completion_type type, void *cbs) {
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(ct);
+	mXPUSHs(ct);
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> completion, G_DISCARD);
@@ -999,12 +999,12 @@ STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *c
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSViv(stats -> total_objects));
-	PUSHs(newSViv(stats -> received_objects));
-	PUSHs(newSViv(stats -> local_objects));
-	PUSHs(newSViv(stats -> total_deltas));
-	PUSHs(newSViv(stats -> indexed_deltas));
-	PUSHs(newSVuv(stats -> received_bytes));
+	mXPUSHs(newSViv(stats -> total_objects));
+	mXPUSHs(newSViv(stats -> received_objects));
+	mXPUSHs(newSViv(stats -> local_objects));
+	mXPUSHs(newSViv(stats -> total_deltas));
+	mXPUSHs(newSViv(stats -> indexed_deltas));
+	mXPUSHs(newSVuv(stats -> received_bytes));
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> transfer_progress, G_DISCARD);
@@ -1024,9 +1024,9 @@ STATIC int git_push_transfer_progress_cbb(unsigned int current, unsigned int tot
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVuv(current));
-	PUSHs(newSVuv(total));
-	PUSHs(newSVuv(bytes));
+	mXPUSHs(newSVuv(current));
+	mXPUSHs(newSVuv(total));
+	mXPUSHs(newSVuv(bytes));
 	PUTBACK;
 
 	call_sv(((git_raw_push_callbacks *) cbs) -> transfer_progress, G_DISCARD);
@@ -1046,9 +1046,9 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSViv(stage));
-	PUSHs(newSVuv(current));
-	PUSHs(newSVuv(total));
+	mXPUSHs(newSViv(stage));
+	mXPUSHs(newSVuv(current));
+	mXPUSHs(newSVuv(total));
 	PUTBACK;
 
 	call_sv(((git_raw_push_callbacks *) cbs) -> packbuilder_progress, G_DISCARD);
@@ -1068,8 +1068,8 @@ STATIC int git_push_status_cbb(const char *ref, const char *msg, void *cbs) {
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(ref, 0));
-	PUSHs(newSVpv(msg, 0));
+	mXPUSHs(newSVpv(ref, 0));
+	mXPUSHs(newSVpv(msg, 0));
 	PUTBACK;
 
 	call_sv(((git_raw_push_callbacks *) cbs) -> status, G_DISCARD);
@@ -1090,9 +1090,9 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(name, 0));
-	PUSHs(a != NULL ? git_oid_to_sv(a) : &PL_sv_undef);
-	PUSHs(b != NULL ? git_oid_to_sv(b) : &PL_sv_undef);
+	mXPUSHs(newSVpv(name, 0));
+	XPUSHs(a != NULL ? sv_2mortal(git_oid_to_sv(a)) : &PL_sv_undef);
+	XPUSHs(b != NULL ? sv_2mortal(git_oid_to_sv(b)) : &PL_sv_undef);
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> update_tips, G_DISCARD);
@@ -1115,8 +1115,8 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(url, 0));
-	PUSHs(newSVpv(usr_from_url, 0));
+	mXPUSHs(newSVpv(url, 0));
+	mXPUSHs(newSVpv(usr_from_url, 0));
 	PUTBACK;
 
 	count = call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
@@ -1153,13 +1153,13 @@ STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(newSVpv(name, name_len));
-	PUSHs(newSVpv(instruction, instruction_len));
+	mXPUSHs(newSVpv(name, name_len));
+	mXPUSHs(newSVpv(instruction, instruction_len));
 	for (i = 0; i < num_prompts; ++i) {
 		HV *prompt = newHV();
 		hv_stores(prompt, "text", newSVpvn(prompts[i].text, prompts[i].length));
 		hv_stores(prompt, "echo", newSViv(prompts[i].echo));
-		PUSHs(sv_2mortal(newRV_noinc((SV*)prompt)));
+		mXPUSHs(newRV_noinc((SV*)prompt));
 	}
 	PUTBACK;
 
@@ -1189,7 +1189,7 @@ STATIC int git_filter_init_cbb(git_filter *filter)
 {
 	dSP;
 
-	int rv;
+	int rv = 0;
 
 	ENTER;
 	SAVETMPS;
@@ -1237,7 +1237,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 {
 	dSP;
 
-	int rv;
+	int rv = 0;
 	SV *filter_source = NULL;
 
 	GIT_NEW_OBJ(
@@ -1248,7 +1248,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(filter_source);
+	mXPUSHs(filter_source);
 	PUTBACK;
 
 	call_sv(((git_raw_filter *) filter) -> callbacks.check, G_EVAL|G_SCALAR);
@@ -1264,8 +1264,6 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 
 	FREETMPS;
 	LEAVE;
-
-	SvREFCNT_dec(filter_source);
 
 	return rv;
 }
@@ -1287,9 +1285,9 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	PUSHs(filter_source);
-	PUSHs(newSVpv(from -> ptr, from -> size));
-	PUSHs(newRV_noinc(result));
+	mXPUSHs(filter_source);
+	mXPUSHs(newSVpv(from -> ptr, from -> size));
+	mXPUSHs(newRV_noinc(result));
 	PUTBACK;
 
 	call_sv(((git_raw_filter *) filter) -> callbacks.apply, G_EVAL|G_SCALAR);
@@ -1303,9 +1301,6 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 		rv = POPi;
 	}
 
-	FREETMPS;
-	LEAVE;
-
 	if (rv == GIT_OK) {
 		STRLEN len;
 		const char *ptr = SvPV(result, len);
@@ -1313,8 +1308,8 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 		git_buf_set(to, ptr, len);
 	}
 
-	SvREFCNT_dec(result);
-	SvREFCNT_dec(filter_source);
+	FREETMPS;
+	LEAVE;
 
 	return rv;
 }
