@@ -48,6 +48,8 @@ typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
 typedef git_patch * Patch;
+typedef git_pathspec * PathSpec;
+typedef git_pathspec_match_list * PathSpec_MatchList;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
 typedef git_refspec * RefSpec;
@@ -1476,6 +1478,8 @@ INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Patch.xs
+INCLUDE: xs/PathSpec.xs
+INCLUDE: xs/PathSpec/MatchList.xs
 INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/Reflog.xs
