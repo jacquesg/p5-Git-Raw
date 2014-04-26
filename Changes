@@ -70,6 +70,9 @@ Revision history for Git-Raw
     + PathSpec::MatchList -> entries()
     + PathSpec::MatchList -> failed_count()
     + PathSpec::MatchList -> failed_entries()
+ - Fixed branch test cases:
+    There may be a 1-2 second difference in time between commiting and
+	comparing against the current signature.
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
