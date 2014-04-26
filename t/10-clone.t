@@ -151,4 +151,75 @@ rmtree abs_path('t/test_repo_clone_callbacks');
 rmtree abs_path('t/test_repo_disable_checkout');
 rmtree abs_path('t/test_repo_remote_name');
 
+my $remote_path = File::Spec -> rel2abs('t/test_repo');
+my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
+$path = File::Spec -> rel2abs('t/test_repo_ssh');
+
+# Die'ing inside the callback
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub { die "Shouldn't break!" }
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
+# Returning undef inside the callback
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub { return undef; }
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
+# Invalid key files
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user) = @_;
+					return Git::Raw::Cred -> sshkey(
+						$user, 'invalid', 'invalid');
+			}
+		}
+	});
+});
+rmtree abs_path('t/test_repo_ssh');
+
+$repo = Git::Raw::Repository -> clone($remote_url, $path, {
+	'callbacks' => {
+		'credentials' => sub {
+			my ($url, $user) = @_;
+
+			my $ssh_dir = File::Spec -> catfile($ENV{HOME}, '.ssh');
+			ok -e $ssh_dir;
+
+			my $public_key = File::Spec -> catfile($ssh_dir, 'id_rsa.pub');
+			my $private_key = File::Spec -> catfile($ssh_dir, 'id_rsa');
+			ok -f $public_key;
+			ok -f $private_key;
+
+			is $user, $ENV{USER};
+			is $url, $remote_url;
+
+			return Git::Raw::Cred -> sshkey(
+				$user,
+				$public_key,
+				$private_key
+			);
+		}
+	}
+});
+
+ok !$repo -> is_empty;
+@remotes = $repo -> remotes;
+
+is $remotes[0] -> name, 'origin';
+is $remotes[0] -> url, $remote_url;
+
+@remotes = ();
+$repo = undef;
+
+rmtree abs_path('t/test_repo_ssh');
+
 done_testing;
