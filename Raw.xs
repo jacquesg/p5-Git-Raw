@@ -1108,6 +1108,7 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
+	int count, rv = 0;
 	Cred creds;
 
 	ENTER;
@@ -1118,17 +1119,24 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	PUSHs(newSVpv(usr_from_url, 0));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_SCALAR);
+	count = call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
-	creds = GIT_SV_TO_PTR(Cred, POPs);
-	*cred = creds -> cred;
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else if (count == 0) {
+		rv = -1;
+	} else {
+		creds = GIT_SV_TO_PTR(Cred, POPs);
+		*cred = creds -> cred;
+	}
 
 	FREETMPS;
 	LEAVE;
 
-	return 0;
+	return rv;
 }
 
 STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *instruction, int instruction_len,
