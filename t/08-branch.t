@@ -50,17 +50,23 @@ my $reflog = $look -> reflog;
 my @entries = $reflog -> entries;
 is scalar(@entries), 2;
 
+# The time of the commit may be off by a second or two, as
+# Git::Raw::Signature -> default() uses the current system time,
+# and the commits referenced here may have been created
+# a second or two ago.
 my $signature = Git::Raw::Signature -> default($repo);
 
 is $entries[0] -> {'committer'} -> name, $signature -> name;
 is $entries[0] -> {'committer'} -> email, $signature -> email;
-is $entries[0] -> {'committer'} -> time, $signature -> time;
+ok $entries[0] -> {'committer'} -> time <= $signature -> time;
+ok $entries[0] -> {'committer'} -> time >= $signature -> time - 2;
 is $entries[0] -> {'committer'} -> offset, $signature -> offset;
 ok $entries[0] -> {'message'} =~ /^Branch: renamed/i;
 
 is $entries[1] -> {'committer'} -> name, $signature -> name;
 is $entries[1] -> {'committer'} -> email, $signature -> email;
-is $entries[1] -> {'committer'} -> time, $signature -> time;
+ok $entries[1] -> {'committer'} -> time <= $signature -> time;
+ok $entries[1] -> {'committer'} -> time >= $signature -> time - 2;
 is $entries[1] -> {'committer'} -> offset, $signature -> offset;
 ok $entries[1] -> {'message'} =~ /^Branch: created/i;
 
