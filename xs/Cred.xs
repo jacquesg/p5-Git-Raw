@@ -27,25 +27,28 @@ userpass(class, user, pass)
 	OUTPUT: RETVAL
 
 Cred
-sshkey(class, user, public, private, pass)
+sshkey(class, user, public, private, ...)
 	SV *class
 	SV *user
 	SV *public
 	SV *private
-	SV *pass
 
+	PROTOTYPE: $$$$;$
 	PREINIT:
 		int rc;
 
 		Cred out;
 		git_cred *cred;
-		const char *username, *publickey, *privatekey, *passphrase;
+		const char *username, *publickey, *privatekey, *passphrase = NULL;
 
 	CODE:
+		if (items == 5) {
+			passphrase = SvPVbyte_nolen(ST(4));
+		}
+
 		username   = SvPVbyte_nolen(user);
 		publickey  = SvPVbyte_nolen(public);
 		privatekey = SvPVbyte_nolen(private);
-		passphrase = SvPVbyte_nolen(pass);
 
 		rc = git_cred_ssh_key_new(
 			&cred, username, publickey, privatekey, passphrase
