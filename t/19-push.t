@@ -9,7 +9,7 @@ use Cwd qw(abs_path);
 use File::Path 2.07 qw(make_path remove_tree);
 use Time::Local;
 
-my $local_path = abs_path('t/local_bare_repo');
+my $local_path = abs_path('t').'/local_bare_repo';
 my $local_repo = Git::Raw::Repository -> init($local_path, 1);
 is $local_repo -> is_bare, 1;
 
@@ -44,8 +44,14 @@ $local_repo = undef;
 remove_tree $local_path;
 ok ! -e $local_path;
 
+my $local_url;
+if ($^O eq 'MSWin32') {
+	$local_url = "file:///$local_path";
+} else {
+	$local_url = "file://$local_path";
+}
 $local_repo = Git::Raw::Repository -> init($local_path, 1);
-$remote = Git::Raw::Remote -> create_anonymous($repo, "file://$local_path", undef);
+$remote = Git::Raw::Remote -> create_anonymous($repo, $local_url, undef);
 
 my $updated_ref;
 
