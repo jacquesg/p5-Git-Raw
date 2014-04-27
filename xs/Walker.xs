@@ -98,7 +98,7 @@ push_range(self, ...)
 			strncpy(range + GIT_OID_HEXSZ, "..", 2);
 			git_oid_tostr(range + GIT_OID_HEXSZ + 2, GIT_OID_HEXSZ + 1, &end);
 		} else if (items == 2) {
-			range = git_ensure_pv(ST(1), "range");
+			range = (char *) git_ensure_pv(ST(1), "range");
 		} else
 			Perl_croak(aTHX_ "'range' not provided");
 

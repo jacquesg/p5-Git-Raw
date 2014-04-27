@@ -18,10 +18,7 @@ dst_matches(self, ref)
 		const char *ref_name;
 
 	CODE:
-		if (!SvPOK(ref))
-			Perl_croak(aTHX_ "Expected a string for 'name'");
-
-		ref_name = SvPVbyte_nolen(ref);
+		ref_name = git_ensure_pv(ref, "name");
 
 		RETVAL = newSViv(git_refspec_dst_matches(self, ref_name));
 
@@ -45,10 +42,7 @@ src_matches(self, ref)
 		const char *ref_name;
 
 	CODE:
-		if (!SvPOK(ref))
-			Perl_croak(aTHX_ "Expected a string for 'name'");
-
-		ref_name = SvPVbyte_nolen(ref);
+		ref_name = git_ensure_pv(ref, "name");
 
 		RETVAL = newSViv(git_refspec_src_matches(self, ref_name));
 
@@ -93,10 +87,7 @@ transform(self, ref)
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
-		if (!SvPOK(ref))
-			Perl_croak(aTHX_ "Expected a string for 'name'");
-
-		ref_name = SvPVbyte_nolen(ref);
+		ref_name = git_ensure_pv(ref, "name");
 
 		rc = git_refspec_transform(&buf, self, ref_name);
 		if (rc != GIT_OK)
@@ -120,10 +111,7 @@ rtransform(self, ref)
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
-		if (!SvPOK(ref))
-			Perl_croak(aTHX_ "Expected a string for 'name'");
-
-		ref_name = SvPVbyte_nolen(ref);
+		ref_name = git_ensure_pv(ref, "name");
 
 		rc = git_refspec_rtransform(&buf, self, ref_name);
 		if (rc != GIT_OK)

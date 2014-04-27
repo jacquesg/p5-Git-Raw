@@ -18,7 +18,8 @@ lookup(class, repo, id)
 		Repository repo_ptr;
 
 	INIT:
-		id_str = SvPVbyte(id, len);
+		len = 0;
+		id_str = git_ensure_pv_with_len(id, "id", &len);
 
 	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);
@@ -90,16 +91,12 @@ entry_byname(self, name)
 	PREINIT:
 		int rc;
 
-		STRLEN len;
-		const char *name_str;
-
 		Tree_Entry tmp_entry, entry;
 
 	CODE:
-		name_str = SvPVbyte(name, len);
-
 		tmp_entry = (Tree_Entry) git_tree_entry_byname(
-			GIT_SV_TO_PTR(Tree, self), name_str
+			GIT_SV_TO_PTR(Tree, self),
+			git_ensure_pv(name, "name")
 		);
 
 		if (!tmp_entry) Perl_croak(aTHX_ "Invalid name");
@@ -122,16 +119,12 @@ entry_bypath(self, path)
 	PREINIT:
 		int rc;
 
-		STRLEN len;
-		const char *path_str;
-
 		Tree_Entry entry;
 
 	CODE:
-		path_str = SvPVbyte(path, len);
-
 		rc = git_tree_entry_bypath(
-			&entry, GIT_SV_TO_PTR(Tree, self), path_str
+			&entry, GIT_SV_TO_PTR(Tree, self),
+			git_ensure_pv(path, "path")
 		);
 		git_check_error(rc);
 

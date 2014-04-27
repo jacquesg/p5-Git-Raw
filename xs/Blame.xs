@@ -64,11 +64,13 @@ buffer(self, buffer)
 
 		Blame blame;
 
+		const char *text;
 		STRLEN len;
 
-	CODE:
-		const char *text = SvPVbyte(buffer, len);
+	PREINIT:
+		text = git_ensure_pv_with_len(buffer, "buffer", &len);
 
+	CODE:
 		rc = git_blame_buffer(
 			&blame, GIT_SV_TO_PTR(Blame, self),
 			text, len);
