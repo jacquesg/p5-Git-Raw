@@ -18,6 +18,7 @@ use Devel::CheckLib;
 my $def = '';
 my $lib = '';
 my $inc = '';
+my $ccflags = '';
 
 my %os_specific = (
 	'darwin' => {
@@ -83,6 +84,11 @@ if ($Config{usethreads}) {
 	}
 }
 
+# building with a 32-bit perl on a 64-bit OS may require this
+if ($Config{longsize} == 4) {
+	$ccflags .= ' -m32';
+}
+
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
 push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
@@ -95,6 +101,15 @@ if ($^O eq 'MSWin32') {
 	$def .= ' -DWIN32 -D_WIN32_WINNT=0x0501 -DGIT_WIN32 -D__USE_MINGW_ANSI_STDIO=1';
 } else {
 	push @srcs, glob 'deps/libgit2/src/unix/*.c'
+}
+
+if ($^O eq 'darwin') {
+	$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
+}
+
+# real-time library is required for Solaris and Linux
+if ($^O =~ /sun/ || $^O =~ /solaris/ || $^O eq 'linux') {
+	$lib .= ' -lrt';
 }
 
 my @objs = map { substr ($_, 0, -1) . 'o' } (@deps, @srcs);
@@ -115,10 +130,11 @@ use ExtUtils::MakeMaker {{ $eumm_version }};
 {{ $share_dir_block[0] }}
 my {{ $WriteMakefileArgs }}
 
-$WriteMakefileArgs{DEFINE} .= $def;
-$WriteMakefileArgs{LIBS}   .= $lib;
-$WriteMakefileArgs{INC}    .= $inc;
-$WriteMakefileArgs{OBJECT} .= ' ' . join ' ', @objs;
+$WriteMakefileArgs{DEFINE}  .= $def;
+$WriteMakefileArgs{LIBS}    .= $lib;
+$WriteMakefileArgs{INC}     .= $inc;
+$WriteMakefileArgs{CCFLAGS} .= $ccflags;
+$WriteMakefileArgs{OBJECT}  .= ' ' . join ' ', @objs;
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
 	my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
@@ -145,22 +161,11 @@ TEMPLATE
 };
 
 override _build_WriteMakefile_args => sub {
-	my $inc = '-Ideps/libgit2 -Ideps/libgit2/src -Ideps/libgit2/include -Ideps/libgit2/deps/http-parser -Ideps/libgit2/deps/zlib';
-	my $def = '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
-
-	my $bits = $Config{longsize} == 4 ? '-m32' : '';
-	my $ccflags = "$bits -Wall -Wno-unused-variable -Wdeclaration-after-statement";
-
-	if ($^O eq 'darwin') {
-		$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function'
-	}
-
 	return +{
 		%{ super() },
-		INC	=> "-I. $inc",
-		LIBS	=> "-lrt",
-		DEFINE	=> $def,
-		CCFLAGS	=> $ccflags,
+		INC	    => '-I. -Ideps/libgit2 -Ideps/libgit2/src -Ideps/libgit2/include -Ideps/libgit2/deps/http-parser -Ideps/libgit2/deps/zlib',
+		DEFINE	=> '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE',
+		CCFLAGS	=> '-Wall -Wno-unused-variable -Wdeclaration-after-statement',
 		OBJECT	=> '$(O_FILES)',
 	}
 };
