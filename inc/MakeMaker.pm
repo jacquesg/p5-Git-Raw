@@ -85,7 +85,7 @@ if ($Config{usethreads}) {
 }
 
 # building with a 32-bit perl on a 64-bit OS may require this
-if ($Config{longsize} == 4) {
+if ($Config{ptrsize} == 4) {
 	$ccflags .= ' -m32';
 }
 
