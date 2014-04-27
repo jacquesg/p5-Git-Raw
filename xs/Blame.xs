@@ -67,10 +67,9 @@ buffer(self, buffer)
 		const char *text;
 		STRLEN len;
 
-	PREINIT:
+	CODE:
 		text = git_ensure_pv_with_len(buffer, "buffer", &len);
 
-	CODE:
 		rc = git_blame_buffer(
 			&blame, GIT_SV_TO_PTR(Blame, self),
 			text, len);
