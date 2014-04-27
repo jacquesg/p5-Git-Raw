@@ -79,6 +79,8 @@ Revision history for Git-Raw
     has been renamed to 'sideband_progress' (incompatible change).
  - Add Walker methods (GH#91):
     + Walker -> push_range()
+ - Compiler options should be determined in Makefile.PL context (GH#91)
+    Fixes problems building a 32-bit perl on a 64-bit system
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
