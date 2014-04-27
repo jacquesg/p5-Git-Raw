@@ -12,6 +12,8 @@ my $head_id = $repo -> head -> target -> id;
 
 my $head = $repo -> lookup($head_id);
 ok $head -> tree -> entries -> [0] -> object;
+$head = $repo -> lookup(substr($head_id, 0, 7));
+ok $head -> tree -> entries -> [0] -> object;
 
 $head = $repo -> head -> target;
 
@@ -19,6 +21,11 @@ $tree = $head -> tree;
 
 ok $tree -> is_tree;
 ok !$tree -> is_blob;
+
+my $lookup_tree = Git::Raw::Tree -> lookup($repo, $tree -> id);
+isa_ok $lookup_tree, 'Git::Raw::Tree';
+$lookup_tree = Git::Raw::Tree -> lookup($repo, substr($tree -> id, 0, 7));
+isa_ok $lookup_tree, 'Git::Raw::Tree';
 
 my $entries = $tree -> entries;
 

@@ -102,22 +102,17 @@ name(self, ...)
 
 	PREINIT:
 		int rc;
-		char *name;
+		const char *name;
 
 	CODE:
 		if (items == 2) {
-			if (!SvPOK(ST(1)))
-				Perl_croak(aTHX_ "Expected a string for 'name'");
-
-			name = SvPVbyte_nolen(ST(1));
+			name = git_ensure_pv(ST(1), "name");
 
 			rc = git_remote_rename(self -> remote, name, NULL, NULL);
 			git_check_error(rc);
 		}
 
-		name = (char *) git_remote_name(self -> remote);
-
-		RETVAL = newSVpv(name, 0);
+		RETVAL = newSVpv(git_remote_name(self -> remote), 0);
 
 	OUTPUT: RETVAL
 
@@ -133,10 +128,7 @@ url(self, ...)
 
 	CODE:
 		if (items == 2) {
-			if (!SvPOK(ST(1)))
-				Perl_croak(aTHX_ "Expected a string for 'url'");
-
-			url = SvPVbyte_nolen(ST(1));
+			url = git_ensure_pv(ST(1), "url");
 
 			rc = git_remote_set_url(self -> remote, url);
 			git_check_error(rc);
@@ -145,9 +137,7 @@ url(self, ...)
 			git_check_error(rc);
 		}
 
-		url = git_remote_url(self -> remote);
-
-		RETVAL = newSVpv(url, 0);
+		RETVAL = newSVpv(git_remote_url(self -> remote), 0);
 
 	OUTPUT: RETVAL
 
@@ -163,10 +153,7 @@ pushurl(self, ...)
 
 	CODE:
 		if (items == 2) {
-			if (!SvPOK(ST(1)))
-				Perl_croak(aTHX_ "Expected a string for 'url'");
-
-			pushurl = SvPVbyte_nolen(ST(1));
+			pushurl = git_ensure_pv(ST(1), "pushurl");
 
 			rc = git_remote_set_pushurl(self -> remote, pushurl);
 			git_check_error(rc);
@@ -175,9 +162,7 @@ pushurl(self, ...)
 			git_check_error(rc);
 		}
 
-		pushurl = git_remote_pushurl(self -> remote);
-
-		RETVAL = newSVpv(pushurl, 0);
+		RETVAL = newSVpv(git_remote_pushurl(self -> remote), 0);
 
 	OUTPUT: RETVAL
 
@@ -454,11 +439,12 @@ is_url_valid(class, url)
 	SV *class
 	SV *url
 
-	CODE:
-		if (!SvPOK(url))
-			Perl_croak(aTHX_ "Expected a string for 'url'");
+	PREINIT:
+		int r;
 
-		RETVAL = newSViv(git_remote_valid_url(SvPVbyte_nolen(url)));
+	CODE:
+		r = git_remote_valid_url(git_ensure_pv(url, "url"));
+		RETVAL = newSViv(r);
 
 	OUTPUT: RETVAL
 
@@ -467,11 +453,12 @@ is_url_supported(class, url)
 	SV *class
 	SV *url
 
-	CODE:
-		if (!SvPOK(url))
-			Perl_croak(aTHX_ "Expected a string for 'url'");
+	PREINIT:
+		int r;
 
-		RETVAL = newSViv(git_remote_supported_url(SvPVbyte_nolen(url)));
+	CODE:
+		r = git_remote_supported_url(git_ensure_pv(url, "url"));
+		RETVAL = newSViv(r);
 
 	OUTPUT: RETVAL
 

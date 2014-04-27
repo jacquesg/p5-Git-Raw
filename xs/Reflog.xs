@@ -144,8 +144,7 @@ entries(self)
 			hv_stores(entry, "new_id", git_oid_to_sv(git_reflog_entry_id_new(e)));
 			hv_stores(entry, "old_id", git_oid_to_sv(git_reflog_entry_id_old(e)));
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(newRV_noinc((SV *) entry)));
+			mXPUSHs(newRV_noinc((SV *) entry));
 		}
 
 		XSRETURN(entry_count);

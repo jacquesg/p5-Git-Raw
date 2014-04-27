@@ -17,10 +17,12 @@ create(class, repo, buffer)
 
 		Repository repo_ptr;
 
+	PREINIT:
+		buffer_str = git_ensure_pv_with_len(buffer, "buffer", &len);
+
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
-		buffer_str = SvPVbyte(buffer, len);
 		rc = git_blob_create_frombuffer(&oid, repo_ptr, buffer_str, len);
 		git_check_error(rc);
 
@@ -48,8 +50,10 @@ lookup(class, repo, id)
 		STRLEN len;
 		const char *id_str;
 
+	PREINIT:
+		id_str = git_ensure_pv_with_len(id, "id", &len);
+
 	CODE:
-		id_str = SvPVbyte(id, len);
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
@@ -79,12 +83,8 @@ SV *
 size(self)
 	Blob self
 
-	PREINIT:
-		git_off_t len;
-
 	CODE:
-		len = git_blob_rawsize(self);
-		RETVAL = newSViv((IV) len);
+		RETVAL = newSVuv(git_blob_rawsize(self));
 
 	OUTPUT: RETVAL
 

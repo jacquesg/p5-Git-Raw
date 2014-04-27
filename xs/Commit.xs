@@ -27,7 +27,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 			SV *sv_update_ref = ST(7);
 
 			if (SvOK(sv_update_ref))
-				update_ref = SvPVbyte_nolen(sv_update_ref);
+				update_ref = git_ensure_pv(sv_update_ref, "update_ref");
 			else
 				update_ref = NULL;
 		}
@@ -51,7 +51,7 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 
 		rc = git_commit_create(
 			&oid, repo_ptr, update_ref, author, committer, NULL,
-			SvPVbyte_nolen(msg), tree, count,
+			git_ensure_pv(msg, "msg"), tree, count,
 			(const git_commit **) commit_parents
 		);
 
@@ -85,7 +85,7 @@ lookup(class, repo, id)
 		const char *id_str;
 
 	INIT:
-		id_str = SvPVbyte(id, len);
+		id_str = git_ensure_pv_with_len(id, "id", &len);
 
 	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);

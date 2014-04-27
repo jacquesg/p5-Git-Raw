@@ -461,18 +461,25 @@ STATIC SV *git_ensure_cv(SV *sv, const char *identifier) {
 	return sv;
 }
 
-STATIC const char *git_ensure_pv(SV *sv, const char *identifier) {
+STATIC const char *git_ensure_pv_with_len(SV *sv, const char *identifier, STRLEN *len) {
 	const char *pv = NULL;
+	STRLEN real_len;
 
 	if (SvPOK(sv)) {
-		pv = SvPVbyte_nolen(sv);
+		pv = SvPVbyte(sv, real_len);
 	} else if (SvTYPE(sv) == SVt_PVLV) {
-		STRLEN len;
-		pv = SvPVbyte_force(sv, len);
+		pv = SvPVbyte_force(sv, real_len);
 	} else
 		Perl_croak(aTHX_ "Invalid type for '%s', expected a string", identifier);
 
+	if (len)
+		*len = real_len;
+
 	return pv;
+}
+
+STATIC const char *git_ensure_pv(SV *sv, const char *identifier) {
+	return git_ensure_pv_with_len(sv, identifier, NULL);
 }
 
 STATIC SV *git_hv_code_entry(HV *hv, const char *name) {
