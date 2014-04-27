@@ -77,6 +77,8 @@ Revision history for Git-Raw
  - Cred -> sshkey() now doesn't require a passphrase (GH#90)
  - 'progress' callback for Repository -> clone() and Remote -> set_callbacks()
     has been renamed to 'sideband_progress' (incompatible change).
+ - Add Walker methods (GH#91):
+    + Walker -> push_range()
 
 0.33      2014-04-14 12:28:23+02:00 Europe/Rome
 
