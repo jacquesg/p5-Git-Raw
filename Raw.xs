@@ -111,6 +111,15 @@ typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
 } LIBSSH2_USERAUTH_KBDINT_RESPONSE;
 #endif
 
+/* printf format specifier for size_t */
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#  define PRIuZ "Iu"
+#  define PRIxZ "Ix"
+#else
+# define PRIuZ "zu"
+# define PRIxZ "zx"
+#endif
+
 STATIC MGVTBL null_mg_vtbl = {
 	NULL, /* get */
 	NULL, /* set */

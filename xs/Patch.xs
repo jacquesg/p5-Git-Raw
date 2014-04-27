@@ -48,7 +48,7 @@ hunks(self, ...)
 
 			start = SvUV(index);
 			if (start >= num_hunks)
-				Perl_croak(aTHX_ "index %lu out of range", start);
+				Perl_croak(aTHX_ "index %" PRIuZ " out of range", start);
 
 			num_hunks = 1;
 		}
