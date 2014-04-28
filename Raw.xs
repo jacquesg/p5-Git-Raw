@@ -12,6 +12,10 @@
 #include <git2/sys/filter.h>
 #include <git2/sys/repository.h>
 
+#ifdef _MSC_VER
+#pragma warning (disable : 4244 4267 )
+#endif
+
 typedef struct {
 	SV *progress;
 	SV *completion;
