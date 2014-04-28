@@ -2,6 +2,18 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added support for building with compilers other than gcc/clang (GH #93):
+    + Windows: MSVC
+    + Solaris: SunPro
+ - Silenced a number of warnings (GH #93)
+ - libgit2 is now built with the correct bits setting when building a 32-bit
+    version on a 64-bit system (GH #93)
+ - Remote -> is_url_supported() test cases only run when network testing
+    is enabled. (GH #93)
+ - Set core.autocrlf to "true" in the test repository for diff tests. This
+    fixes test cases failures on Windows (GH #93)
+ - Use file:/// on Windows for local push tests. (GH #93)
+
 0.34      2014-04-27 12:38:41SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
  - Add Repository -> message() method (GH#72) (thanks, @jacquesg!)
