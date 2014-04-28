@@ -19,6 +19,7 @@ Revision history for Git-Raw
     + --with-openssl-libs
     + --with-libssh2-include
     + --with-libssh2-lib
+ - Improve reliability of time-dependent tests
 
 0.34      2014-04-27 12:38:41SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
