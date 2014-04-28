@@ -12,7 +12,7 @@ init(class, path, is_bare)
 
 	CODE:
 		rc = git_repository_init(
-			&repo, SvPVbyte_nolen(path), is_bare
+			&repo, git_ensure_pv(path, "path"), is_bare
 		);
 		git_check_error(rc);
 
@@ -30,7 +30,7 @@ clone(class, url, path, opts)
 	PREINIT:
 		int rc;
 
-		SV **opt;
+		SV *opt;
 		HV *callbacks;
 		Repository repo;
 
@@ -40,19 +40,19 @@ clone(class, url, path, opts)
 	CODE:
 		clone_opts.remote_callbacks.payload = &cbs;
 
-		if ((opt = hv_fetchs(opts, "bare", 0)) && SvIV(*opt) != 0)
+		if ((opt = git_hv_int_entry(opts, "bare")) && SvIV(opt))
 			clone_opts.bare = 1;
 
-		if ((opt = hv_fetchs(opts, "ignore_cert_errors", 0)) && SvIV(*opt) != 0)
+		if ((opt = git_hv_int_entry(opts, "ignore_cert_errors")) && SvIV(opt))
 			clone_opts.ignore_cert_errors = 1;
 
-		if ((opt = hv_fetchs(opts, "remote_name", 0)))
-			clone_opts.remote_name = SvPVbyte_nolen(*opt);
+		if ((opt = git_hv_string_entry(opts, "remote_name")))
+			clone_opts.remote_name = git_ensure_pv(opt, "remote_name");
 
-		if ((opt = hv_fetchs(opts, "checkout_branch", 0)))
-			clone_opts.checkout_branch = SvPVbyte_nolen(*opt);
+		if ((opt = git_hv_string_entry(opts, "checkout_branch")))
+			clone_opts.checkout_branch = git_ensure_pv(opt, "checkout_branch");
 
-		if ((opt = hv_fetchs(opts, "disable_checkout", 0)) && SvIV(*opt) != 0)
+		if ((opt = git_hv_int_entry(opts, "disable_checkout")) && SvIV(opt))
 			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 
 		/* Callbacks */
@@ -84,7 +84,7 @@ clone(class, url, path, opts)
 		}
 
 		rc = git_clone(
-			&repo, SvPVbyte_nolen(url), SvPVbyte_nolen(path),
+			&repo, git_ensure_pv(url, "url"), git_ensure_pv(path, "path"),
 			&clone_opts
 		);
 
@@ -106,7 +106,7 @@ open(class, path)
 		Repository repo;
 
 	CODE:
-		rc = git_repository_open(&repo, SvPVbyte_nolen(path));
+		rc = git_repository_open(&repo, git_ensure_pv(path, "path"));
 		git_check_error(rc);
 
 		RETVAL = repo;
@@ -130,7 +130,7 @@ discover(class, path)
 		git_check_error(rc);
 
 		rc = git_repository_discover(
-			&buf, SvPVbyte_nolen(path), 1, NULL
+			&buf, git_ensure_pv(path, "path"), 1, NULL
 		);
 
 		if (rc != GIT_OK)
@@ -249,10 +249,9 @@ lookup(self, id)
 		STRLEN len;
 		const char *id_str;
 
-	INIT:
-		id_str = SvPVbyte(id, len);
-
 	CODE:
+		id_str = git_ensure_pv_with_len(id, "id", &len);
+
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
@@ -490,7 +489,7 @@ ignore(self, rules)
 		int rc;
 
 	CODE:
-		rc = git_ignore_add_rule(self, SvPVbyte_nolen(rules));
+		rc = git_ignore_add_rule(self, git_ensure_pv(rules, "rules"));
 		git_check_error(rc);
 
 Diff
@@ -661,8 +660,6 @@ merge(self, ref, ...)
 
 		git_merge_head *merge_head;
 
-		SV **opt;
-
 		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
 		git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
 
@@ -708,12 +705,8 @@ branches(self, ...)
 		type = GIT_BRANCH_ALL;
 
 		if (items == 2) {
-			const char *type_str = NULL;
+			const char *type_str = git_ensure_pv(ST(1), "type");
 
-			if (!SvPOK(ST(1)))
-				Perl_croak(aTHX_ "Expected a string for 'type'");
-
-			type_str = SvPVbyte_nolen(ST(1));
 			if (strcmp(type_str, "local") == 0)
 				type = GIT_BRANCH_LOCAL;
 			else if (strcmp(type_str, "remote") == 0)
@@ -853,12 +846,7 @@ workdir(self, ...)
 
 	CODE:
 		if (items == 2) {
-			const char *new_dir = NULL;
-
-			if (!SvPOK(ST(1)))
-				Perl_croak(aTHX_ "Expected a string for 'new_dir'");
-
-			new_dir = SvPVbyte_nolen(ST(1));
+			const char *new_dir = git_ensure_pv(ST(1), "new_dir");
 
 			rc = git_repository_set_workdir(self, new_dir, 1);
 			git_check_error(rc);

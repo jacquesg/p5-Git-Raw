@@ -16,7 +16,7 @@ create(class, repo, name, url)
 	CODE:
 		rc = git_remote_create(
 			&r, GIT_SV_TO_PTR(Repository, repo),
-			SvPVbyte_nolen(name), SvPVbyte_nolen(url)
+			git_ensure_pv(name, "name"), git_ensure_pv(url, "url")
 		);
 		git_check_error(rc);
 
@@ -47,11 +47,11 @@ create_anonymous(class, repo, url, fetch)
 
 	CODE:
 		if (SvOK(fetch))
-			f = SvPVbyte_nolen(fetch);
+			f = git_ensure_pv(fetch, "fetch");
 
 		rc = git_remote_create_anonymous(
 			&r, GIT_SV_TO_PTR(Repository, repo),
-			SvPVbyte_nolen(url), f
+			git_ensure_pv(url, "url"), f
 		);
 		git_check_error(rc);
 
@@ -81,7 +81,7 @@ load(class, repo, name)
 
 		rc = git_remote_load(
 			&r, GIT_SV_TO_PTR(Repository, repo),
-			SvPVbyte_nolen(name));
+			git_ensure_pv(name, "name"));
 		git_check_error(rc);
 
 		Newx(remote, 1, git_raw_remote);
@@ -137,7 +137,10 @@ url(self, ...)
 			git_check_error(rc);
 		}
 
-		RETVAL = newSVpv(git_remote_url(self -> remote), 0);
+		if ((url = git_remote_url(self -> remote)))
+			RETVAL = newSVpv(url, 0);
+		else
+			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
@@ -162,7 +165,10 @@ pushurl(self, ...)
 			git_check_error(rc);
 		}
 
-		RETVAL = newSVpv(git_remote_pushurl(self -> remote), 0);
+		if ((pushurl = git_remote_pushurl(self -> remote)))
+			RETVAL = newSVpv(pushurl, 0);
+		else
+			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
@@ -175,7 +181,7 @@ add_fetch(self, spec)
 		int rc;
 
 	CODE:
-		rc = git_remote_add_fetch(self -> remote, SvPVbyte_nolen(spec));
+		rc = git_remote_add_fetch(self -> remote, git_ensure_pv(spec, "spec"));
 		git_check_error(rc);
 
 void
@@ -187,7 +193,7 @@ add_push(self, spec)
 		int rc;
 
 	CODE:
-		rc = git_remote_add_push(self -> remote, SvPVbyte_nolen(spec));
+		rc = git_remote_add_push(self -> remote, git_ensure_pv(spec, "spec"));
 		git_check_error(rc);
 
 void
@@ -202,7 +208,6 @@ refspecs(self)
 	SV *self
 
 	PREINIT:
-		int rc;
 		size_t i, count;
 
 		Remote remote_ptr;
@@ -246,10 +251,7 @@ check_cert(self, value)
 	SV *value
 
 	CODE:
-		if (!SvIOK(value))
-			Perl_croak(aTHX_ "Expected an integer for 'value'");
-
-		git_remote_check_cert(self -> remote, SvIV(value));
+		git_remote_check_cert(self -> remote, git_ensure_iv(value, "value"));
 
 void
 fetch(self)
@@ -280,7 +282,7 @@ connect(self, direction)
 		git_direction direct;
 
 	CODE:
-		dir = SvPVbyte_nolen(direction);
+		dir = git_ensure_pv(direction, "direction");
 
 		if (strcmp(dir, "fetch") == 0)
 			direct = GIT_DIRECTION_FETCH;

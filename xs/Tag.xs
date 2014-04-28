@@ -26,8 +26,8 @@ create(class, repo, name, msg, tagger, target)
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		rc = git_tag_create(
-			&oid, repo_ptr, SvPVbyte_nolen(name),
-			obj, tagger, SvPVbyte_nolen(msg), 0
+			&oid, repo_ptr, git_ensure_pv(name, "name"),
+			obj, tagger, git_ensure_pv(msg, "msg"), 0
 		);
 		git_check_error(rc);
 
@@ -56,7 +56,7 @@ lookup(class, repo, id)
 		const char *id_str;
 
 	CODE:
-		id_str = SvPVbyte(id, len);
+		id_str = git_ensure_pv_with_len(id, "id", &len);
 
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);

@@ -12,6 +12,10 @@
 #include <git2/sys/filter.h>
 #include <git2/sys/repository.h>
 
+#ifdef _MSC_VER
+#pragma warning (disable : 4244 4267 )
+#endif
+
 typedef struct {
 	SV *progress;
 	SV *completion;
@@ -109,6 +113,15 @@ typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
 	char* text;
 	unsigned int length;
 } LIBSSH2_USERAUTH_KBDINT_RESPONSE;
+#endif
+
+/* printf format specifier for size_t */
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#  define PRIuZ "Iu"
+#  define PRIxZ "Ix"
+#else
+# define PRIuZ "zu"
+# define PRIxZ "zx"
 #endif
 
 STATIC MGVTBL null_mg_vtbl = {
@@ -459,6 +472,13 @@ STATIC SV *git_ensure_cv(SV *sv, const char *identifier) {
 		Perl_croak(aTHX_ "Invalid type for '%s', expected a code reference", identifier);
 
 	return sv;
+}
+
+STATIC I32 git_ensure_iv(SV *sv, const char *identifier) {
+	if (!SvIOK(sv))
+		Perl_croak(aTHX_ "Invalid type for '%s', expected an integer", identifier);
+
+	return SvIV(sv);
 }
 
 STATIC const char *git_ensure_pv_with_len(SV *sv, const char *identifier, STRLEN *len) {
@@ -941,7 +961,7 @@ STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(path ? newSVpv(path, 0) : &PL_sv_undef);
 	mXPUSHs(newSViv(completed_steps));
 	mXPUSHs(newSViv(total_steps));
 	PUTBACK;

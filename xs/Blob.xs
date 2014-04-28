@@ -17,10 +17,8 @@ create(class, repo, buffer)
 
 		Repository repo_ptr;
 
-	PREINIT:
-		buffer_str = git_ensure_pv_with_len(buffer, "buffer", &len);
-
 	CODE:
+		buffer_str = git_ensure_pv_with_len(buffer, "buffer", &len);
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		rc = git_blob_create_frombuffer(&oid, repo_ptr, buffer_str, len);
@@ -50,10 +48,9 @@ lookup(class, repo, id)
 		STRLEN len;
 		const char *id_str;
 
-	PREINIT:
+	CODE:
 		id_str = git_ensure_pv_with_len(id, "id", &len);
 
-	CODE:
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 

@@ -106,8 +106,6 @@ upstream(self)
 	PREINIT:
 		int rc;
 
-		SV *repo;
-		Repository repo_ptr;
 		Reference ref;
 
 	CODE:

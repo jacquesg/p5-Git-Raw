@@ -19,17 +19,6 @@ is (Git::Raw::Remote -> is_url_valid('ssh://somewhere.com:/somerepo.git'), 1);
 is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:somerepo.git'), 1);
 is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:/somerepo.git'), 1);
 
-is (Git::Raw::Remote -> is_url_supported('file:///somewhere/on/filesystem'), 1);
-is (Git::Raw::Remote -> is_url_supported('git://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('https://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('http://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
-
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
@@ -78,6 +67,17 @@ unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	done_testing;
 	exit;
 }
+
+is (Git::Raw::Remote -> is_url_supported('file:///somewhere/on/filesystem'), 1);
+is (Git::Raw::Remote -> is_url_supported('git://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('https://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('http://somewhere.com/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:/somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:somerepo.git'), 1);
+is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
 
 $github = Git::Raw::Remote -> load($repo, 'github');
 

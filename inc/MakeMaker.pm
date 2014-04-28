@@ -15,6 +15,17 @@ use Config;
 
 use Devel::CheckLib;
 
+# compiler detection
+my $is_gcc = length($Config{gccversion});
+my $is_msvc = $Config{cc} eq 'cl' ? 1 : 0;
+my $is_sunpro = (length($Config{ccversion}) && !$is_msvc) ? 1 : 0;
+
+# os detection
+my $is_solaris = ($^O =~ /(sun|solaris)/i) ? 1 : 0;
+my $is_windows = ($^O =~ /MSWin32/i) ? 1 : 0;
+my $is_linux = ($^O =~ /linux/i) ? 1 : 0;
+my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
+
 my $def = '';
 my $lib = '';
 my $inc = '';
@@ -44,29 +55,88 @@ if (my $os_params = $os_specific{$^O}) {
 	}
 }
 
-if (check_lib(lib => 'ssl')) {
-	$def .= ' -DGIT_SSL';
-	$lib .= ' -lssl -lcrypto';
+my %library_tests = (
+	'ssl' => {
+		'lib'     => 'ssl',
+		'header'  => 'openssl/opensslconf.h',
+	},
+	'ssh2' => {
+		'lib'     => 'ssh2',
+		'libpath' => $ssh2_libpath,
+		'incpath' => $ssh2_incpath,
+		'header'  => 'libssh2.h',
+	}
+);
 
-	print "SSL support enabled\n";
-} else {
-	print "SSL support disabled\n";
+my %library_opts = (
+	'ssl' => {
+		'defines' => ' -DGIT_SSL',
+		'libs'    => ' -lssl -lcrypto',
+	},
+	'ssh2' => {
+		'defines' => ' -DGIT_SSH',
+		'libs'    => ' -lssh2',
+	}
+);
+
+# check for optional libraries
+while (my ($library, $test) = each %library_tests) {
+	if (check_lib(%$test)) {
+		if (exists($test->{'incpath'})) {
+			if (my $incpath = $test->{'incpath'}) {
+				$inc .= ' -I'.join (' -I', @$incpath);
+			}
+		}
+
+		if (exists($test->{'libpath'})) {
+			if (my $libpath = $test->{'libpath'}) {
+				$lib .= ' -L'.join (' -L', @$libpath);
+			}
+		}
+
+		my $opts = $library_opts{$library};
+		$def .= $opts->{'defines'};
+		$lib .= $opts->{'libs'};
+
+		print uc($library), " support enabled", "\n";
+	} else {
+		print uc($library), " support disabled", "\n";
+	}
 }
 
-if (check_lib(lib => 'ssh2', libpath => $ssh2_libpath, incpath => $ssh2_incpath)) {
-	if ($ssh2_libpath) {
-		$lib .= ' -L'.join (' -L', @$ssh2_libpath);
-	}
-	if ($ssh2_incpath) {
-		$inc .= ' -I'.join (' -I', @$ssh2_incpath);
+# universally supported
+$def .= ' -DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
+
+# supported on Solaris
+if ($is_solaris) {
+	$def .= ' -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS';
+}
+
+if ($is_gcc) {
+	# gcc-like compiler
+	$ccflags .= ' -Wall -Wno-unused-variable -Wdeclaration-after-statement';
+
+	# clang compiler is pedantic!
+	if ($is_osx) {
+		$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
 	}
 
-	$def .= ' -DGIT_SSH';
-	$lib .= ' -lssh2';
+	if ($is_solaris) {
+		$ccflags .= ' -std=c99';
+	}
+} elsif ($is_sunpro) {
+	# probably the SunPro compiler
+	$def .= ' -D_STDC_C99';
 
-	print "SSH support enabled\n";
-} else {
-	print "SSH support disabled\n";
+	$ccflags .= ' -errtags=yes -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_ZERO_OR_NEGATIVE_SUBSCRIPT';
+	$ccflags .= ' -erroff=E_EMPTY_DECLARATION -erroff=E_STATEMENT_NOT_REACHED';
+}
+
+# building with a 32-bit perl on a 64-bit OS may require this (supported by cc and gcc-like compilers)
+if ($Config{gccversion} || $Config{gccversion}) {
+	if ($Config{ptrsize} == 4) {
+		$ccflags .= ' -m32';
+	}
 }
 
 if ($Config{usethreads}) {
@@ -76,7 +146,7 @@ if ($Config{usethreads}) {
 
 		print "Threads support enabled\n";
 	} else {
-		if ($^O eq 'MSWin32') {
+		if ($is_windows) {
 			$def .= ' -DGIT_THREADS';
 		} else {
 			print "Threads support disabled\n";
@@ -84,41 +154,51 @@ if ($Config{usethreads}) {
 	}
 }
 
-# building with a 32-bit perl on a 64-bit OS may require this
-if ($Config{longsize} == 4) {
-	$ccflags .= ' -m32';
-}
-
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
 push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
 
-if ($^O eq 'MSWin32') {
-	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
+# the system regex is broken on Solaris, not available on Windows
+if ($is_windows || $is_solaris) {
 	push @srcs, 'deps/libgit2/deps/regex/regex.c';
-
 	$inc .= ' -Ideps/libgit2/deps/regex';
-	$def .= ' -DWIN32 -D_WIN32_WINNT=0x0501 -DGIT_WIN32 -D__USE_MINGW_ANSI_STDIO=1';
+}
+
+if ($is_windows) {
+	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
+
+	$def .= ' -DWIN32 -DGIT_WIN32';
+
+	if ($is_msvc) {
+		# visual studio compiler
+		$def .= ' -D_CRT_SECURE_NO_WARNINGS';
+	} else {
+		# mingw/cygwin
+		$def .= ' -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
+	}
 } else {
 	push @srcs, glob 'deps/libgit2/src/unix/*.c'
 }
 
-if ($^O eq 'darwin') {
-	$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
-}
-
 # real-time library is required for Solaris and Linux
-if ($^O =~ /sun/ || $^O =~ /solaris/ || $^O eq 'linux') {
+if ($is_linux || $is_solaris) {
 	$lib .= ' -lrt';
 }
 
 my @objs = map { substr ($_, 0, -1) . 'o' } (@deps, @srcs);
 
 sub MY::c_o {
-	return <<'EOS'
-.c$(OBJ_EXT):
-	$(CCCMD) $(CCCDLFLAGS) "-I$(PERL_INC)" $(PASTHRU_DEFINE) $(DEFINE) $*.c -o $@
-EOS
+	my $out_switch = '-o ';
+
+	if ($is_msvc) {
+		$out_switch = '/Fo';
+	}
+
+	my $line = qq{
+.c\$(OBJ_EXT):
+	\$(CCCMD) \$(CCCDLFLAGS) "-I\$(PERL_INC)" \$(PASTHRU_DEFINE) \$(DEFINE) \$*.c $out_switch\$@
+};
+	return $line;
 }
 
 # This Makefile.PL for {{ $distname }} was generated by Dist::Zilla.
@@ -164,8 +244,6 @@ override _build_WriteMakefile_args => sub {
 	return +{
 		%{ super() },
 		INC	    => '-I. -Ideps/libgit2 -Ideps/libgit2/src -Ideps/libgit2/include -Ideps/libgit2/deps/http-parser -Ideps/libgit2/deps/zlib',
-		DEFINE	=> '-DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE',
-		CCFLAGS	=> '-Wall -Wno-unused-variable -Wdeclaration-after-statement',
 		OBJECT	=> '$(O_FILES)',
 	}
 };
