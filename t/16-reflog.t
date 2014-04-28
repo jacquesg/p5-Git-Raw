@@ -33,7 +33,7 @@ is $entries[0] -> {'new_id'}, $entries[0] -> {'old_id'};
 is $entries[0] -> {'old_id'}, $entries[1] -> {'new_id'};
 is $entries[0] -> {'committer'} -> name, $entries[1] -> {'committer'} -> name;
 is $entries[0] -> {'committer'} -> email, $entries[1] -> {'committer'} -> email;
-is $entries[0] -> {'committer'} -> time, $entries[1] -> {'committer'} -> time;
+ok ($entries[0] -> {'committer'} -> time >= $entries[1] -> {'committer'} -> time);
 is $entries[0] -> {'committer'} -> offset, $entries[1] -> {'committer'} -> offset;
 
 my $name  = 'Committer';
@@ -49,7 +49,8 @@ $reflog -> write;
 is scalar(@entries), 3;
 is $entries[0] -> {'committer'} -> name, $name;
 is $entries[0] -> {'committer'} -> email, $email;
-is $entries[0] -> {'committer'} -> time, $time;
+ok ($entries[0] -> {'committer'} -> time <= $time);
+ok ($entries[0] -> {'committer'} -> time >= $time - 2);
 is $entries[0] -> {'committer'} -> offset, $off;
 
 $reflog -> drop (1);
