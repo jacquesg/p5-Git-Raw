@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.35      2014-04-28 18:43:14SAST+0200 Africa/Johannesburg
+
  - Added support for building with compilers other than gcc/clang (GH #93):
     + Windows: MSVC
     + Solaris: SunPro
