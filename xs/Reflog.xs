@@ -60,9 +60,6 @@ append(self, message, ...)
 		Repository ref_owner;
 
 	CODE:
-		if (items > 3)
-			Perl_croak(aTHX_ "Wrong number of arguments");
-
 		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));
 		ref_owner = git_reference_owner(ref);
 

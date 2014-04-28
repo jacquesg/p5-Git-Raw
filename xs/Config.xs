@@ -27,7 +27,7 @@ add_file(self, path, level)
 
 	CODE:
 		rc = git_config_add_file_ondisk(
-			self, SvPVbyte_nolen(path), level, 0
+			self, git_ensure_pv(path, "path"), level, 0
 		);
 		git_check_error(rc);
 
@@ -41,10 +41,14 @@ bool(self, name, ...)
 	PREINIT:
 		int rc, value;
 
+		const char *id = NULL;
+
 	CODE:
+		id = git_ensure_pv(name, "name");
+
 		switch (items) {
 			case 2: {
-				rc = git_config_get_bool(&value, self, SvPVbyte_nolen(name));
+				rc = git_config_get_bool(&value, self, id);
 
 				if (rc != GIT_ENOTFOUND)
 					git_check_error(rc);
@@ -53,9 +57,9 @@ bool(self, name, ...)
 			}
 
 			case 3: {
-				value = SvIV(ST(2));
+				value = git_ensure_iv(ST(2), "value");
 
-				rc = git_config_set_bool(self, SvPVbyte_nolen(name), value);
+				rc = git_config_set_bool(self, id, value);
 				git_check_error(rc);
 
 				break;
@@ -80,10 +84,14 @@ int(self, name, ...)
 	PREINIT:
 		int rc, value;
 
+		const char *id = NULL;
+
 	CODE:
+		id = git_ensure_pv(name, "name");
+
 		switch (items) {
 			case 2: {
-				rc = git_config_get_int32(&value, self, SvPVbyte_nolen(name));
+				rc = git_config_get_int32(&value, self, id);
 
 				if (rc != GIT_ENOTFOUND)
 					git_check_error(rc);
@@ -92,9 +100,9 @@ int(self, name, ...)
 			}
 
 			case 3: {
-				value = SvIV(ST(2));
+				value = git_ensure_iv(ST(2), "value");
 
-				rc = git_config_set_int32(self, SvPVbyte_nolen(name), value);
+				rc = git_config_set_int32(self, id, value);
 				git_check_error(rc);
 
 				break;
@@ -120,10 +128,13 @@ str(self, name, ...)
 		int rc;
 		const char *value;
 
+		const char *id = NULL;
 	CODE:
+		id = git_ensure_pv(name, "name");
+
 		switch (items) {
 			case 2: {
-				rc = git_config_get_string(&value, self, SvPVbyte_nolen(name));
+				rc = git_config_get_string(&value, self, id);
 
 				if (rc != GIT_ENOTFOUND)
 					git_check_error(rc);
@@ -132,9 +143,9 @@ str(self, name, ...)
 			}
 
 			case 3: {
-				value = SvPVbyte_nolen(ST(2));
+				value = git_ensure_pv(ST(2), "value");
 
-				rc = git_config_set_string(self, SvPVbyte_nolen(name), value);
+				rc = git_config_set_string(self, id, value);
 				git_check_error(rc);
 
 				break;
@@ -205,7 +216,7 @@ delete(self, name)
 		int rc;
 
 	CODE:
-		rc = git_config_delete_entry(self, SvPVbyte_nolen(name));
+		rc = git_config_delete_entry(self, git_ensure_pv(name, "name"));
 		git_check_error(rc);
 
 void

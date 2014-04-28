@@ -40,7 +40,7 @@ save(class, repo, stasher, msg, ...)
 			}
 		}
 
-		rc = git_stash_save(&oid, repo, stasher, SvPVbyte_nolen(msg), stash_flags);
+		rc = git_stash_save(&oid, repo, stasher, git_ensure_pv(msg, "msg"), stash_flags);
 		git_check_error(rc);
 
 void

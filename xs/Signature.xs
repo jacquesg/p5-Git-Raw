@@ -18,8 +18,8 @@ new(class, name, email, time, off)
 		sscanf(SvPVbyte_nolen(time), "%" PRId64, &git_time);
 
 		rc = git_signature_new(
-			&sig, SvPVbyte_nolen(name),
-			SvPVbyte_nolen(email), git_time, off
+			&sig, git_ensure_pv(name, "name"),
+			git_ensure_pv(email, "email"), git_time, off
 		);
 		git_check_error(rc);
 
@@ -39,7 +39,7 @@ now(class, name, email)
 
 	CODE:
 		rc = git_signature_now(
-			&sig, SvPVbyte_nolen(name), SvPVbyte_nolen(email)
+			&sig, git_ensure_pv(name, "name"), git_ensure_pv(email, "email")
 		);
 		git_check_error(rc);
 
