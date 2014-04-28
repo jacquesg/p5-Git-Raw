@@ -137,7 +137,10 @@ url(self, ...)
 			git_check_error(rc);
 		}
 
-		RETVAL = newSVpv(git_remote_url(self -> remote), 0);
+		if ((url = git_remote_url(self -> remote)))
+			RETVAL = newSVpv(url, 0);
+		else
+			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
@@ -162,7 +165,10 @@ pushurl(self, ...)
 			git_check_error(rc);
 		}
 
-		RETVAL = newSVpv(git_remote_pushurl(self -> remote), 0);
+		if ((pushurl = git_remote_pushurl(self -> remote)))
+			RETVAL = newSVpv(pushurl, 0);
+		else
+			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 

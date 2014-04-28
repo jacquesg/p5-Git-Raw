@@ -950,7 +950,7 @@ STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(path ? newSVpv(path, 0) : &PL_sv_undef);
 	mXPUSHs(newSViv(completed_steps));
 	mXPUSHs(newSViv(total_steps));
 	PUTBACK;
