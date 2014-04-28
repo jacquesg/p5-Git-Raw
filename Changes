@@ -13,6 +13,12 @@ Revision history for Git-Raw
  - Set core.autocrlf to "true" in the test repository for diff tests. This
     fixes test cases failures on Windows (GH #93)
  - Use file:/// on Windows for local push tests. (GH #93)
+ - Users can now specify the OpenSSL and/or libssh2 to use as argument
+    to Makefile.PL (GH #94):
+    + --with-openssl-include
+    + --with-openssl-libs
+    + --with-libssh2-include
+    + --with-libssh2-lib
 
 0.34      2014-04-27 12:38:41SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
