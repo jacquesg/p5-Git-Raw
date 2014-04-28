@@ -470,6 +470,13 @@ STATIC SV *git_ensure_cv(SV *sv, const char *identifier) {
 	return sv;
 }
 
+STATIC I32 git_ensure_iv(SV *sv, const char *identifier) {
+	if (!SvIOK(sv))
+		Perl_croak(aTHX_ "Invalid type for '%s', expected an integer", identifier);
+
+	return SvIV(sv);
+}
+
 STATIC const char *git_ensure_pv_with_len(SV *sv, const char *identifier, STRLEN *len) {
 	const char *pv = NULL;
 	STRLEN real_len;
