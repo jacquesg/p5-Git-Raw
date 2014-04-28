@@ -12,6 +12,8 @@ override _build_MakeFile_PL_template => sub {
 use strict;
 use warnings;
 use Config;
+use Getopt::Long;
+use File::Basename qw(basename dirname);
 
 use Devel::CheckLib;
 
@@ -25,6 +27,17 @@ my $is_solaris = ($^O =~ /(sun|solaris)/i) ? 1 : 0;
 my $is_windows = ($^O =~ /MSWin32/i) ? 1 : 0;
 my $is_linux = ($^O =~ /linux/i) ? 1 : 0;
 my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
+
+# allow the user to override/specify the locations of OpenSSL and libssh2
+our $opt = {};
+
+Getopt::Long::GetOptions(
+	"help" => \&usage,
+	'with-openssl-include=s' => \$opt->{'ssl'}->{'incdir'},
+	'with-openssl-libs=s@'   => \$opt->{'ssl'}->{'libs'},
+	'with-libssh2-include=s' => \$opt->{'ssh2'}->{'incdir'},
+	'with-libssh2-lib=s@'    => \$opt->{'ssh2'}->{'libs'},
+) || die &usage();
 
 my $def = '';
 my $lib = '';
@@ -81,7 +94,30 @@ my %library_opts = (
 
 # check for optional libraries
 while (my ($library, $test) = each %library_tests) {
-	if (check_lib(%$test)) {
+	my $user_library_opt = $opt->{$library};
+	my $user_incpath = $user_library_opt->{'incdir'};
+	my $user_libs = $user_library_opt->{'libs'};
+
+	if ($user_incpath && $user_libs) {
+		$inc .= " -I$user_incpath";
+
+		# perform some magic
+		foreach my $user_lib (@$user_libs) {
+			my ($link_dir, $link_lib) = (dirname($user_lib), basename($user_lib));
+
+			if (!$is_msvc) {
+				my @tokens = grep { $_ } split(/(lib|.)/, $link_lib);
+				shift @tokens if ($tokens[0] eq 'lib');
+				$link_lib = shift @tokens;
+			}
+			$lib .= " -L$link_dir -l$link_lib";
+		}
+
+		my $opts = $library_opts{$library};
+		$def .= $opts->{'defines'};
+
+		print uc($library), " support enabled (user provided)", "\n";
+	} elsif (check_lib(%$test)) {
 		if (exists($test->{'incpath'})) {
 			if (my $incpath = $test->{'incpath'}) {
 				$inc .= ' -I'.join (' -I', @$incpath);
@@ -234,6 +270,22 @@ delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
 	unless eval { ExtUtils::MakeMaker -> VERSION(6.52) };
 
 WriteMakefile(%WriteMakefileArgs);
+exit(0);
+
+sub usage {
+	print STDERR << "USAGE";
+Usage: perl $0 [options]
+
+Possible options are:
+  --with-openssl-include=<path>    Specify <path> for the root of the OpenSSL installation.
+  --with-openssl-libs=<libs>       Specify <libs> for the OpenSSL libraries.
+  --with-libssh2-include=<path>    Specify <path> for the root of the libssh2 installation.
+  --with-libssh2-lib=<lib>         Specify <lib> for the libssh2 library.
+USAGE
+
+	exit(1);
+}
+
 {{ $share_dir_block[1] }}
 TEMPLATE
 
