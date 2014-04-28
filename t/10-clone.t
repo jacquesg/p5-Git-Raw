@@ -151,6 +151,12 @@ rmtree abs_path('t/test_repo_clone_callbacks');
 rmtree abs_path('t/test_repo_disable_checkout');
 rmtree abs_path('t/test_repo_remote_name');
 
+if ($^O eq 'MSWin32') {
+	diag("Windows doesn't have a SSH server, skipping SSH clone tests");
+	done_testing;
+	exit;
+}
+
 my $remote_path = File::Spec -> rel2abs('t/test_repo');
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
