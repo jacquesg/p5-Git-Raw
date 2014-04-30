@@ -175,7 +175,9 @@ if ($Config{gccversion} || $Config{gccversion}) {
 	}
 }
 
-if ($Config{usethreads}) {
+# there are no atomic primitives for the Sun Pro compiler in libgit2, so even if pthreads is available
+# and perl has been built with threads support, libgit2 cannot use threads under said compiler
+if ($Config{usethreads} && !$is_sunpro) {
 	if (check_lib(lib => 'pthread')) {
 		$def .= ' -DGIT_THREADS';
 		$lib .= ' -lpthread';
@@ -185,9 +187,13 @@ if ($Config{usethreads}) {
 		if ($is_windows) {
 			$def .= ' -DGIT_THREADS';
 		} else {
-			print "Threads support disabled\n";
+			print "Threads support disabled (pthreads not found)\n";
 		}
 	}
+} elsif ($is_sunpro) {
+	print "Thread support disabled (SunPro compiler detected)\n"
+} else {
+	print "Thread support disabled (perl wasn't built with thread support)\n"
 }
 
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
