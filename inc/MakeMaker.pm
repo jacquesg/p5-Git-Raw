@@ -249,7 +249,7 @@ my {{ $WriteMakefileArgs }}
 $WriteMakefileArgs{DEFINE}  .= $def;
 $WriteMakefileArgs{LIBS}    .= $lib;
 $WriteMakefileArgs{INC}     .= $inc;
-$WriteMakefileArgs{CCFLAGS} .= $ccflags;
+$WriteMakefileArgs{CCFLAGS} .= $Config{ccflags} . ' '. $ccflags;
 $WriteMakefileArgs{OBJECT}  .= ' ' . join ' ', @objs;
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
