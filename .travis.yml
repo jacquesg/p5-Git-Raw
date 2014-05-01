@@ -8,17 +8,24 @@ perl:
  - "5.18"
  - "5.19"
 
+env:
+ - RELEASE_TESTING=1 NETWORK_TESTING=1 AUTOMATED_TESTING=1
+
+cache:
+ - apt
+
 install:
  - sudo apt-get -qq update
  - sudo apt-get -qq install libssl-dev libssh2-1-dev openssh-client openssh-server
- - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
+ - cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
+ - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
  - dzil listdeps --missing | cpanm --notest
 
 script:
  - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
  - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
- - dzil smoke --release
+ - dzil cover -ignore_re ^deps -test -report coveralls
 
 notifications:
   recipient:
