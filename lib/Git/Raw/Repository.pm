@@ -88,11 +88,6 @@ Textual progress from the remote. Text send over the progress side-band will be
 passed to this function (this is the 'counting objects' output). The callback
 receives a string containing progress information.
 
-=item * "completion"
-
-Completion is called when different parts of the download process are done
-(currently unused).
-
 =item * "transfer_progress"
 
 During the download of new data, this will be regularly called with the current

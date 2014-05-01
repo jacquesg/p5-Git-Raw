@@ -18,7 +18,6 @@
 
 typedef struct {
 	SV *progress;
-	SV *completion;
 	SV *credentials;
 	SV *transfer_progress;
 	SV *update_tips;
@@ -336,7 +335,6 @@ on_error:
 STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	cbs -> credentials = NULL;
 	cbs -> progress = NULL;
-	cbs -> completion = NULL;
 	cbs -> transfer_progress = NULL;
 	cbs -> update_tips = NULL;
 }
@@ -350,11 +348,6 @@ STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	if (cbs -> progress) {
 		SvREFCNT_dec(cbs -> progress);
 		cbs -> progress = NULL;
-	}
-
-	if (cbs -> completion) {
-		SvREFCNT_dec(cbs -> completion);
-		cbs -> completion = NULL;
 	}
 
 	if (cbs -> transfer_progress) {
@@ -985,45 +978,6 @@ STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> progress, G_DISCARD);
-
-	SPAGAIN;
-
-	FREETMPS;
-	LEAVE;
-
-	return 0;
-}
-
-STATIC int git_completion_cbb(git_remote_completion_type type, void *cbs) {
-	dSP;
-	SV* ct;
-
-	switch (type) {
-		case GIT_REMOTE_COMPLETION_DOWNLOAD:
-			ct = newSVpv("download", 0);
-			break;
-
-		case GIT_REMOTE_COMPLETION_INDEXING:
-			ct = newSVpv("indexing", 0);
-			break;
-
-		case GIT_REMOTE_COMPLETION_ERROR:
-			ct = newSVpv("error", 0);
-			break;
-
-		default:
-			Perl_croak(aTHX_ "Unhandled completion type");
-			break;
-	}
-
-	ENTER;
-	SAVETMPS;
-
-	PUSHMARK(SP);
-	mXPUSHs(ct);
-	PUTBACK;
-
-	call_sv(((git_raw_remote_callbacks *) cbs) -> completion, G_DISCARD);
 
 	SPAGAIN;
 

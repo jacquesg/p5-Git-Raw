@@ -34,7 +34,7 @@ clone(class, url, path, opts)
 		HV *callbacks;
 		Repository repo;
 
-		git_raw_remote_callbacks cbs = {0, 0, 0, 0, 0};
+		git_raw_remote_callbacks cbs = {0, 0, 0, 0};
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
 	CODE:
@@ -66,11 +66,6 @@ clone(class, url, path, opts)
 				get_callback_option(callbacks, "sideband_progress")))
 				clone_opts.remote_callbacks.sideband_progress =
 					git_progress_cbb;
-
-			if ((cbs.completion =
-				get_callback_option(callbacks, "completion")))
-				clone_opts.remote_callbacks.completion =
-					git_completion_cbb;
 
 			if ((cbs.transfer_progress =
 				get_callback_option(callbacks, "transfer_progress")))

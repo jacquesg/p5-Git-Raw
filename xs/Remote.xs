@@ -363,10 +363,6 @@ callbacks(self, callbacks)
 			get_callback_option(callbacks, "sideband_progress")))
 			rcallbacks.sideband_progress = git_progress_cbb;
 
-		if ((remote -> callbacks.completion =
-			get_callback_option(callbacks, "completion")))
-			rcallbacks.completion = git_completion_cbb;
-
 		if ((remote -> callbacks.transfer_progress =
 			get_callback_option(callbacks, "transfer_progress")))
 			rcallbacks.transfer_progress = git_transfer_progress_cbb;
