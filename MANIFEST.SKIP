@@ -8,3 +8,6 @@ t/callbacks_repo
 .*\.a
 .*\.pc$
 deps/libgit2/tests/resources/status/这
+cover_db/
+.*\.gcda
+.*\.gcno
