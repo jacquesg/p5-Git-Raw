@@ -51,20 +51,40 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
+ok (!eval { $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 2)) });
+ok (!eval { $repo -> merge_base("refs/heads/master", sub {}) });
 is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1 -> id);
 is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1);
 is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 7));
 is $master -> target -> id, $repo -> merge_base($master, $commit1);
 is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1');
 
+ok (!eval { $repo -> merge_base($master) });
+ok (!eval { $repo -> merge_base($master, 'refs/heads/unknown_branch') });
+
 my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
 
-$repo -> merge($branch1, {}, {
-	'checkout_strategy' => {
-		'force' => 1
+ok (!eval { $repo -> merge($branch1, {
+	'flags' => [
+		undef,
+		'bogus_flag'
+	]
+})});
+
+ok (!eval { $repo -> merge($branch1, {
+	'favor' => 'bogus',
+})});
+
+$repo -> merge($branch1, {
+		'rename_threshold' => 50,
+		'target_limit'     => 200,
+	}, {
+		'checkout_strategy' => {
+			'force' => 1
+		}
 	}
-});
+);
 
 is $repo -> index -> has_conflicts, 0;
 is_deeply $repo -> status -> {'test1'}, {'flags' => ['index_modified']};
@@ -109,17 +129,31 @@ my @conflicts = $index -> conflicts;
 is scalar(@conflicts), 1;
 
 my $conflict = shift @conflicts;
-is $conflict -> {'ancestor'} -> path, 'test1';
-is $conflict -> {'ours'} -> path, 'test1';
-is $conflict -> {'theirs'} -> path, 'test1';
+my $ancestor_entry = $conflict -> {'ancestor'};
+my $our_entry = $conflict -> {'ours'};
+my $their_entry = $conflict -> {'theirs'};
 
-is length($conflict -> {'ancestor'} -> id), 40;
-is length($conflict -> {'ours'} -> id), 40;
-is length($conflict -> {'theirs'} -> id), 40;
+is $ancestor_entry -> path, 'test1';
+is $our_entry -> path, 'test1';
+is $their_entry -> path, 'test1';
 
-ok $conflict -> {'ancestor'} -> id ne $conflict -> {'ours'} -> id;
-ok $conflict -> {'ancestor'} -> id ne $conflict -> {'theirs'} -> id;
-ok $conflict -> {'ours'} -> id ne $conflict -> {'theirs'} -> id;
+is length($ancestor_entry -> id), 40;
+is length($our_entry -> id), 40;
+is length($their_entry -> id), 40;
+
+ok $ancestor_entry -> id ne $our_entry -> id;
+ok $ancestor_entry -> id ne $their_entry -> id;
+ok $our_entry -> id ne $their_entry -> id;
+
+$index -> remove_conflict('test1');
+is $index -> has_conflicts, 0;
+
+$index -> conflict_cleanup;
+write_file($file1, 'this is file1 on branch1');
+$index -> add('test1');
+
+$repo -> merge($branch2);
+is $index -> has_conflicts, 1;
 
 write_file($file1, 'this is file1 on branch1 and branch2');
 $index -> add('test1');
@@ -226,15 +260,23 @@ $index -> write;
 my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$merge_commit1],
 	$repo -> lookup($index -> write_tree));
 
-my $merged_index = $merge_commit1 -> merge($merge_commit2);
-
-isa_ok $merged_index, 'Git::Raw::Index';
-is $merged_index -> has_conflicts, 0;
-
 my $squashed_commit = $repo -> commit ("squashed_commit\n", $me, $me, [$head_commit],
 	$repo -> lookup($index -> write_tree ($repo)));
 
 is $repo -> head -> target -> id, $squashed_commit -> id;
+
+my $merged_index = $merge_commit1 -> merge($merge_commit2, {});
+isa_ok $merged_index, 'Git::Raw::Index';
+is $merged_index -> has_conflicts, 0;
+my @merged_index_entries = $merged_index -> entries;
+ok (scalar(@merged_index_entries) > 0);
+$merged_index -> clear;
+@merged_index_entries = $merged_index -> entries;
+is scalar(@merged_index_entries), 0;
+
+$merged_index = $merge_commit1 -> tree -> merge($head_commit -> tree, $merge_commit2 -> tree, {});
+isa_ok $merged_index, 'Git::Raw::Index';
+is $merged_index -> has_conflicts, 1;
 
 $repo = undef;
 rmtree $path;

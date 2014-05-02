@@ -19,13 +19,13 @@ install:
  - sudo apt-get -qq install libssl-dev libssh2-1-dev openssh-client openssh-server
  - cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
- - dzil listdeps --missing | cpanm --notest
+ - dzil listdeps --missing | cpanm --quiet --notest
 
 script:
  - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
  - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
- - dzil cover -ignore_re ^deps -test -report coveralls
+ - dzil cover -ignore_re ^deps -ignore_re CORE -test -report coveralls
 
 notifications:
   recipient:

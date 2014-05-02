@@ -73,6 +73,7 @@ ok $entries[1] -> {'message'} =~ /^Branch: created/i;
 my $branches = [ $repo -> branches('local') ];
 is scalar(@$branches), 2;
 
+ok (!eval { $repo -> branches('invalid_type') });
 $branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
 
 is $branches -> [0] -> type, 'direct';
@@ -89,6 +90,8 @@ if ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	is $branches -> [3] -> name, 'refs/remotes/github/master';
 	ok $branches -> [3] -> is_remote;
 
+	$branches = [ $repo -> branches('all') ];
+	is scalar(@$branches), 5;
 	$branches = [ $repo -> branches('remote') ];
 	is scalar(@$branches), 3;
 }

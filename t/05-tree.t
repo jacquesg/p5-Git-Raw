@@ -33,14 +33,25 @@ is $entries -> [0] -> name, 'test';
 is $entries -> [1] -> name, 'test2';
 is $entries -> [2] -> name, 'test3';
 
+is length($entries -> [0] -> id), 40;
+is length($entries -> [1] -> id), 40;
+is length($entries -> [2] -> id), 40;
+
 is $entries -> [0] -> file_mode, 0100644;
 is $entries -> [2] -> file_mode, 0040000;
 
 my $obj0 = $entries -> [0] -> object;
 
 isa_ok $obj0, 'Git::Raw::Blob';
+is $obj0 -> is_blob, 1;
 is $obj0 -> content, 'this is a test';
 is $obj0 -> size, '14';
+
+my $blob_obj0 = Git::Raw::Blob -> lookup($repo, $obj0 -> id);
+isa_ok $blob_obj0, 'Git::Raw::Blob';
+is $blob_obj0 -> is_blob, 1;
+is $obj0 -> content, $blob_obj0 -> content;
+is $obj0 -> size, $blob_obj0 -> size;
 
 my $obj1 = $entries -> [1] -> object;
 

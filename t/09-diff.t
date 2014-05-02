@@ -38,8 +38,15 @@ my $printer = sub {
 my $diff = $repo -> diff({
 	'tree'   => $tree,
 	'prefix' => { 'a' => 'aaa', 'b' => 'bbb' },
-	'paths'  => [ 'diff' ]
+	'context_lines'   => 3,
+	'interhunk_lines' => 0,
+	'paths'  => [
+		undef,
+		'diff'
+	],
 });
+
+ok (!eval { $diff -> print('invalid_format', sub {}) });
 
 my $expected = <<'EOS';
 file => diff --git aaa/diff bbb/diff
@@ -120,12 +127,46 @@ EOS
 $output = capture_stdout { $diff -> print("name_status", $printer) };
 is $output, $expected;
 
+$expected = <<'EOS';
+file => diff
+file => diff2
+EOS
+
+$output = capture_stdout { $diff -> print("name_only", $printer) };
+is $output, $expected;
+
+$expected = <<'EOS';
+file => :000000 100644 0000000... 6afc8a6... A	diff
+file => :000000 100644 0000000... e6ada20... A	diff2
+EOS
+
+$output = capture_stdout { $diff -> print("raw", $printer) };
+is $output, $expected;
+
+$expected = <<'EOS';
+file => diff --git a/diff b/diff
+new file mode 100644
+index 0000000..6afc8a6
+--- /dev/null
++++ b/diff
+file => diff --git a/diff2 b/diff2
+new file mode 100644
+index 0000000..e6ada20
+--- /dev/null
++++ b/diff2
+EOS
+
+$output = capture_stdout { $diff -> print("patch_header", $printer) };
+is $output, $expected;
+
 is $diff -> delta_count, 2;
 my @patches = $diff -> patches;
 is scalar(@patches), 2;
 
 foreach my $patch (@patches) {
 	my @hunks = $patch -> hunks;
+	ok (!eval { $patch -> hunks(1) });
+	ok (!eval { $patch -> hunks($diff) });
 	is $patch -> hunk_count, 1;
 	is scalar(@hunks), 1;
 
@@ -314,6 +355,11 @@ index 6afc8a6..6afc8a6 100644
 EOS
 
 is $patches[0] -> buffer, $expected;
+my $delta = $patches[0] -> delta;
+isa_ok $delta, 'Git::Raw::Diff::Delta';
+is $delta -> status, 'renamed';
+is $delta -> similarity, 100;
+is $delta -> new_file -> size, 16;
 
 $stats = $tree_diff -> stats;
 isa_ok $stats, 'Git::Raw::Diff::Stats';
@@ -375,11 +421,32 @@ $tree_diff = $index_tree1 -> diff({
 	'tree'   => $index_tree2,
 	'flags'  => {
 		'all' => 1
-	}
+	},
+	'context_lines'   => 3,
+	'interhunk_lines' => 0,
+	'paths' => [
+		undef,
+		'diff',
+		'diff.moved'
+	]
 });
 
 is $tree_diff -> delta_count, 2;
-$tree_diff -> find_similar;
+ok (!eval { $tree_diff -> find_similar([]) });
+$tree_diff -> find_similar({
+	'flags' => {
+		'renames'                   => 1,
+		'ignore_whitespace'         => 1,
+		'ignore_leading_whitespace' => 1,
+		'break_rewrites'            => 1,
+	},
+	'rename_threshold'              => 50,
+	'rename_from_rewrite_threshold' => 50,
+	'copy_threshold'                => 50,
+	'break_rewrite_threshold'       => 60,
+	'rename_limit'                  => 200,
+});
+
 is $tree_diff -> delta_count, 1;
 @patches = $tree_diff -> patches;
 

@@ -34,7 +34,7 @@ clone(class, url, path, opts)
 		HV *callbacks;
 		Repository repo;
 
-		git_raw_remote_callbacks cbs = {0, 0, 0, 0, 0};
+		git_raw_remote_callbacks cbs = {0, 0, 0, 0};
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
 	CODE:
@@ -66,11 +66,6 @@ clone(class, url, path, opts)
 				get_callback_option(callbacks, "sideband_progress")))
 				clone_opts.remote_callbacks.sideband_progress =
 					git_progress_cbb;
-
-			if ((cbs.completion =
-				get_callback_option(callbacks, "completion")))
-				clone_opts.remote_callbacks.completion =
-					git_completion_cbb;
 
 			if ((cbs.transfer_progress =
 				get_callback_option(callbacks, "transfer_progress")))
@@ -326,6 +321,8 @@ reset(self, target, opts)
 				reset = GIT_RESET_SOFT;
 			else if (strcmp(type_str, "mixed") == 0)
 				reset = GIT_RESET_MIXED;
+			else if (strcmp(type_str, "hard") == 0)
+				reset = GIT_RESET_HARD;
 			else
 				Perl_croak(aTHX_ "Invalid type");
 
@@ -729,8 +726,7 @@ branches(self, ...)
 				perl_ref, "Git::Raw::Branch", branch, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_branches++;
 		}
@@ -776,8 +772,7 @@ remotes(self)
 				perl_ref, "Git::Raw::Remote", remote, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_remotes++;
 		}
@@ -809,8 +804,7 @@ refs(self)
 				perl_ref, "Git::Raw::Reference", ref, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_refs++;
 		}

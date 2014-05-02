@@ -216,7 +216,6 @@ refspecs(self)
 		remote_ptr = GIT_SV_TO_PTR(Remote, self);
 
 		count = git_remote_refspec_count(remote_ptr -> remote);
-		EXTEND(SP, count);
 
 		for (i = 0; i < count; ++i) {
 			const git_refspec *refspec;
@@ -231,7 +230,7 @@ refspecs(self)
 				tmp, "Git::Raw::RefSpec", (git_refspec *) refspec, SvRV(self)
 			);
 
-			PUSHs(sv_2mortal(tmp));
+			mXPUSHs(tmp);
 		}
 
 		XSRETURN(count);
@@ -363,10 +362,6 @@ callbacks(self, callbacks)
 		if ((remote -> callbacks.progress =
 			get_callback_option(callbacks, "sideband_progress")))
 			rcallbacks.sideband_progress = git_progress_cbb;
-
-		if ((remote -> callbacks.completion =
-			get_callback_option(callbacks, "completion")))
-			rcallbacks.completion = git_completion_cbb;
 
 		if ((remote -> callbacks.transfer_progress =
 			get_callback_option(callbacks, "transfer_progress")))

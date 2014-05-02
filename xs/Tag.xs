@@ -119,12 +119,8 @@ SV *
 id(self)
 	Tag self
 
-	PREINIT:
-		const git_oid *oid;
-
 	CODE:
-		oid = git_tag_id(self);
-		RETVAL = git_oid_to_sv((git_oid *) oid);
+		RETVAL = git_oid_to_sv(git_tag_id(self));
 
 	OUTPUT: RETVAL
 
@@ -132,12 +128,8 @@ SV *
 name(self)
 	Tag self
 
-	PREINIT:
-		const char *name;
-
 	CODE:
-		name = git_tag_name(self);
-		RETVAL = newSVpv(name, 0);
+		RETVAL = newSVpv(git_tag_name(self), 0);
 
 	OUTPUT: RETVAL
 
@@ -145,12 +137,8 @@ SV *
 message(self)
 	Tag self
 
-	PREINIT:
-		const char *msg;
-
 	CODE:
-		msg = git_tag_message(self);
-		RETVAL = newSVpv(msg, 0);
+		RETVAL = newSVpv(git_tag_message(self), 0);
 
 	OUTPUT: RETVAL
 

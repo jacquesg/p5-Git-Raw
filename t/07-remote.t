@@ -31,6 +31,7 @@ my $github = Git::Raw::Remote -> create($repo, $name, $url);
 is $github -> name, $name;
 is $github -> url, $url;
 is $github -> pushurl, undef;
+is $github -> pushurl($url), $url;
 is $github -> refspec_count, 1;
 my @refspecs = $github -> refspecs;
 is scalar(@refspecs), 1;
@@ -47,12 +48,25 @@ is $refspec -> rtransform ('refs/remotes/github/master'), "refs/heads/master";
 is $refspec -> dst_matches('refs/remotes/github/master'), 1;
 is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
 
+my $rename = Git::Raw::Remote -> create($repo, 'pre_rename', $url);
+is $rename -> name, 'pre_rename';
+is $rename -> name('post_rename'), 'post_rename';
+is $rename -> name, 'post_rename';
+
+@refspecs = $rename -> refspecs;
+is scalar(@refspecs), 1;
+$rename -> clear_refspecs;
+@refspecs = $rename -> refspecs;
+is scalar(@refspecs), 0;
+
+$rename = undef;
+
 my @remotes = $repo -> remotes;
 
 is $remotes[0] -> name, $name;
 is $remotes[0] -> url, $url;
 
-is $remotes[1], undef;
+is $remotes[1] -> name, 'post_rename';
 @remotes = ();
 
 $name = 'github';
@@ -81,11 +95,18 @@ is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
 
 $github = Git::Raw::Remote -> load($repo, 'github');
 
+ok (!eval { $github -> connect('invalid_direction') });
 $github -> connect('fetch');
 is $github -> is_connected, 1;
 
 $github -> download;
 $github -> update_tips;
+
+$github -> disconnect;
+is $github -> is_connected, 0;
+
+$github -> fetch;
+is $github -> is_connected, 0;
 
 my $ref = Git::Raw::Reference -> lookup('refs/remotes/github/master', $repo);
 is $ref -> type, 'direct';
@@ -105,6 +126,9 @@ is $entries[0] -> {'new_id'}, $ref -> target -> id;
 
 $repo = Git::Raw::Repository -> new();
 $github = Git::Raw::Remote -> create_anonymous($repo, $url, undef);
+ok (!eval { $github -> save }, "can't save an anonymous remote");
+
+ok (!eval { Git::Raw::Remote -> create_anonymous($repo, $url, $ref) }, "fetch should be a 'string'");
 
 $github -> connect('fetch');
 is $github -> is_connected, 1;

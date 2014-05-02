@@ -13,11 +13,14 @@ my $repo = Git::Raw::Repository -> open($path);
 
 my @status = $repo->status();
 
+ok (!eval { Git::Raw::PathSpec -> new });
+ok (!eval { Git::Raw::PathSpec -> new($repo) });
 my $spec = Git::Raw::PathSpec -> new('blah');
 isa_ok $spec, 'Git::Raw::PathSpec';
 
 my $list;
 
+ok (!eval { $spec -> match('') });
 ok (!eval { $list = $spec -> match($repo, {
 	'flags' => {
 		'no_match_error' => 1

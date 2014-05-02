@@ -18,11 +18,10 @@ entries(self)
 
 	PPCODE:
 		count = git_pathspec_match_list_entrycount(self);
-		EXTEND(SP, count);
 
 		for (i = 0; i < count; ++i) {
 			SV *path = newSVpv(git_pathspec_match_list_entry(self, i), 0);
-			PUSHs(sv_2mortal(path));
+			mXPUSHs(path);
 		}
 
 		XSRETURN(count);
@@ -45,11 +44,10 @@ failed_entries(self)
 
 	PPCODE:
 		count = git_pathspec_match_list_failed_entrycount(self);
-		EXTEND(SP, count);
 
 		for (i = 0; i < count; ++i) {
 			SV *path = newSVpv(git_pathspec_match_list_failed_entry(self, i), 0);
-			PUSHs(sv_2mortal(path));
+			mXPUSHs(path);
 		}
 
 		XSRETURN(count);

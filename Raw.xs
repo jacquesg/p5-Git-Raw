@@ -18,7 +18,6 @@
 
 typedef struct {
 	SV *progress;
-	SV *completion;
 	SV *credentials;
 	SV *transfer_progress;
 	SV *update_tips;
@@ -336,7 +335,6 @@ on_error:
 STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	cbs -> credentials = NULL;
 	cbs -> progress = NULL;
-	cbs -> completion = NULL;
 	cbs -> transfer_progress = NULL;
 	cbs -> update_tips = NULL;
 }
@@ -350,11 +348,6 @@ STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	if (cbs -> progress) {
 		SvREFCNT_dec(cbs -> progress);
 		cbs -> progress = NULL;
-	}
-
-	if (cbs -> completion) {
-		SvREFCNT_dec(cbs -> completion);
-		cbs -> completion = NULL;
 	}
 
 	if (cbs -> transfer_progress) {
@@ -994,45 +987,6 @@ STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
 	return 0;
 }
 
-STATIC int git_completion_cbb(git_remote_completion_type type, void *cbs) {
-	dSP;
-	SV* ct;
-
-	switch (type) {
-		case GIT_REMOTE_COMPLETION_DOWNLOAD:
-			ct = newSVpv("download", 0);
-			break;
-
-		case GIT_REMOTE_COMPLETION_INDEXING:
-			ct = newSVpv("indexing", 0);
-			break;
-
-		case GIT_REMOTE_COMPLETION_ERROR:
-			ct = newSVpv("error", 0);
-			break;
-
-		default:
-			Perl_croak(aTHX_ "Unhandled completion type");
-			break;
-	}
-
-	ENTER;
-	SAVETMPS;
-
-	PUSHMARK(SP);
-	mXPUSHs(ct);
-	PUTBACK;
-
-	call_sv(((git_raw_remote_callbacks *) cbs) -> completion, G_DISCARD);
-
-	SPAGAIN;
-
-	FREETMPS;
-	LEAVE;
-
-	return 0;
-}
-
 STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
 	dSP;
 
@@ -1386,9 +1340,9 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 
 	if ((lopt = git_hv_list_entry(opts, "paths"))) {
 		SV **path;
-		size_t count = 0;
+		size_t i = 0, count = 0;
 
-		while ((path = av_fetch(lopt, count, 0))) {
+		while ((path = av_fetch(lopt, i++, 0))) {
 			if (!SvOK(*path))
 				continue;
 
@@ -1461,19 +1415,21 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 	SV *opt;
 
 	if ((lopt = git_hv_list_entry(opts, "flags"))) {
-		size_t count = 0;
+		size_t i = 0, count = 0;
 		SV **flag;
 
-		while ((flag = av_fetch(lopt, count++, 0))) {
-			if (SvPOK(*flag)) {
-				const char *f = SvPVbyte_nolen(*flag);
+		while ((flag = av_fetch(lopt, i++, 0))) {
+			const char *value = NULL;
 
-				if (strcmp(f, "find_renames") == 0)
-					merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
-				else
-					Perl_croak(aTHX_ "Invalid 'flags' value");
-			} else
-				Perl_croak(aTHX_ "Invalid type for 'flag'");
+			if (!SvOK(*flag))
+				continue;
+
+			value = git_ensure_pv(*flag, "flag");
+
+			if (strcmp(value, "find_renames") == 0)
+				merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
+			else
+				Perl_croak(aTHX_ "Invalid 'flags' value");
 		}
 	}
 

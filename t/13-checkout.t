@@ -12,7 +12,11 @@ my $repo = Git::Raw::Repository -> open($path);
 my $fst = $repo -> head -> target -> parents -> [0];
 is $fst -> message, "second commit\n";
 
-$repo -> checkout($fst, {});
+$repo -> checkout($fst, {
+	'ancestor_label' => 'ancestor',
+	'our_label'      => 'ours',
+	'their_label'    => 'theirs',
+});
 
 is_deeply $repo -> status -> {'test3/under/the/tree/test3'}, undef;
 
@@ -29,14 +33,16 @@ $repo -> checkout($repo -> head, {});
 my $file  = $repo -> workdir . 'test';
 write_file($file, 'this is a checkout test');
 
-$file  = $repo -> workdir . 'test2';
-write_file($file, 'this is a checkout test');
+my $file2 = $repo -> workdir . 'test2';
+write_file($file2, 'this is a checkout test');
 
-$repo -> index -> add('test');
-$repo -> index -> add('test2');
-$repo -> index -> write;
+my $index = $repo -> index;
+$index -> add('test');
+$index -> add('test2');
+$index -> write;
+$index -> read;
 
-my $tree = $repo -> lookup($repo -> index -> write_tree);
+my $tree = $repo -> lookup($index -> write_tree);
 
 my $name   = $repo -> config -> str('user.name');
 my $email  = $repo -> config -> str('user.email');
@@ -46,8 +52,19 @@ my $commit = $repo -> commit(
 	"checkout commit\n", $me, $me, [$repo -> head -> target], $tree
 );
 
-is read_file($repo -> workdir . 'test'),  'this is a checkout test';
-is read_file($repo -> workdir . 'test2'), 'this is a checkout test';
+# checkout index
+write_file($file, 'this is a checkout test with modifications');
+is read_file($file), 'this is a checkout test with modifications';
+
+$index -> checkout({
+	'checkout_strategy' => { 'force' => 1 },
+	'paths'     => [
+		'test'
+	],
+});
+
+is read_file($file),  'this is a checkout test';
+is read_file($file2), 'this is a checkout test';
 
 my $untracked_file = $repo -> workdir . 'untracked_file';
 write_file($untracked_file, 'this is a checkout test');
@@ -56,8 +73,18 @@ my $files_expected = [ 'test2', 'untracked_file' ];
 my $files_checked_out = [];
 $repo -> checkout($fst, {
 	'checkout_strategy' => { 'safe' => 1, 'remove_untracked' => 1 },
-	'paths'     => $files_expected,
-	'notify'    => [ 'all' ],
+	'paths'     => [
+		undef,
+		@$files_expected
+	],
+	'notify'    => [
+		'conflict',
+		'dirty',
+		'updated',
+		'untracked',
+		'ignored',
+		'all'
+	],
 	'callbacks' => {
 		'notify' => sub {
 			my ($path, $flags) = @_;
@@ -88,7 +115,7 @@ $repo -> checkout($fst, {
 
 is_deeply $files_checked_out, $files_expected;
 
-is read_file($repo -> workdir . 'test'),  'this is a checkout test';
-is read_file($repo -> workdir . 'test2'), 'this is a second test';
+is read_file($file),  'this is a checkout test';
+is read_file($file2), 'this is a second test';
 
 done_testing;
