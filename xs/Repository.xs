@@ -731,8 +731,7 @@ branches(self, ...)
 				perl_ref, "Git::Raw::Branch", branch, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_branches++;
 		}
@@ -778,8 +777,7 @@ remotes(self)
 				perl_ref, "Git::Raw::Remote", remote, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_remotes++;
 		}
@@ -811,8 +809,7 @@ refs(self)
 				perl_ref, "Git::Raw::Reference", ref, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(perl_ref));
+			mXPUSHs(perl_ref);
 
 			num_refs++;
 		}

@@ -11,7 +11,7 @@ add(self, entry)
 	CODE:
 		if (SvPOK(entry))
 			rc = git_index_add_bypath(self, SvPVbyte_nolen(entry));
-		else if (SvROK(entry))
+		else
 			rc = git_index_add(self, GIT_SV_TO_PTR(Index::Entry, entry));
 
 		git_check_error(rc);
@@ -127,8 +127,6 @@ entries(self)
 	PREINIT:
 		size_t i, count;
 
-		SV *repo;
-
 		Index index_ptr = NULL;
 
 	PPCODE:
@@ -136,9 +134,7 @@ entries(self)
 		count = git_index_entrycount(index_ptr);
 
 		if (count > 0) {
-			EXTEND(SP, count);
-
-			repo = GIT_SV_TO_MAGIC(self);
+			SV *repo = GIT_SV_TO_MAGIC(self);
 
 			for (i = 0; i < count; ++i) {
 				const git_index_entry *e =
@@ -150,7 +146,7 @@ entries(self)
 						entry, "Git::Raw::Index::Entry",
 						(Index_Entry) e, repo
 					);
-					PUSHs(sv_2mortal(entry));
+					mXPUSHs(entry);
 				}
 			}
 		}
@@ -271,8 +267,7 @@ conflicts(self)
 
 			num_conflicts++;
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(newRV_noinc((SV *) entries)));
+			mXPUSHs(newRV_noinc((SV *) entries));
 		}
 
 		git_index_conflict_iterator_free(iter);

@@ -216,7 +216,6 @@ refspecs(self)
 		remote_ptr = GIT_SV_TO_PTR(Remote, self);
 
 		count = git_remote_refspec_count(remote_ptr -> remote);
-		EXTEND(SP, count);
 
 		for (i = 0; i < count; ++i) {
 			const git_refspec *refspec;
@@ -231,7 +230,7 @@ refspecs(self)
 				tmp, "Git::Raw::RefSpec", (git_refspec *) refspec, SvRV(self)
 			);
 
-			PUSHs(sv_2mortal(tmp));
+			mXPUSHs(tmp);
 		}
 
 		XSRETURN(count);
