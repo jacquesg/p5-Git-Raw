@@ -326,6 +326,8 @@ reset(self, target, opts)
 				reset = GIT_RESET_SOFT;
 			else if (strcmp(type_str, "mixed") == 0)
 				reset = GIT_RESET_MIXED;
+			else if (strcmp(type_str, "hard") == 0)
+				reset = GIT_RESET_HARD;
 			else
 				Perl_croak(aTHX_ "Invalid type");
 
