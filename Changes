@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.36      2014-05-02 15:59:18SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
+
  - Repository -> reset() now understands a 'hard' reset (GH #96)
  - Removed the unused/unimplemented 'completion' callback type from Repository
    and Remote (GH #96)
