@@ -55,6 +55,30 @@ isnt $commit -> tree, undef;
 isnt $commit -> parents, undef;
 
 $walk -> reset;
+$walk -> push_head;
+$walk -> hide_head;
+is $walk -> next, undef;
+
+$walk -> reset;
+$walk -> push_head;
+$walk -> hide_ref('refs/heads/master');
+is $walk -> next, undef;
+
+$walk -> reset;
+$walk -> push_head;
+$walk -> hide_ref('refs/heads/master');
+is $walk -> next, undef;
+
+$walk -> reset;
+$walk -> push_head;
+$walk -> hide_glob('refs/heads/notmaster');
+isnt $walk -> next, undef;
+
+$walk -> reset;
+ok (!eval { $walk -> push_range('zzz', $end) });
+ok (!eval { $walk -> push_range($start, 'zzz') });
+
+$walk -> reset;
 $walk -> push_range($start, $end);
 is $walk -> next -> message, "third commit\n";
 is $walk -> next -> message, "second commit\n";
@@ -62,6 +86,12 @@ is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_range($start -> id . ".." . $end -> id);
+is $walk -> next -> message, "third commit\n";
+is $walk -> next -> message, "second commit\n";
+is $walk -> next, undef;
+
+$walk -> reset;
+$walk -> push_range(substr($start -> id, 0, 8), substr($end -> id, 0, 8));
 is $walk -> next -> message, "third commit\n";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next, undef;

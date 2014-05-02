@@ -14,7 +14,11 @@ is $head -> type, 'direct';
 is $head -> name, 'refs/heads/master';
 ok $head -> is_branch;
 
-my $ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
+my $ref = Git::Raw::Reference -> lookup('HEAD', $repo);
+is $ref -> type, 'symbolic';
+isa_ok $ref -> target, 'Git::Raw::Reference';
+
+$ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
 
 is $ref -> type, 'direct';
 is $ref -> name, 'refs/heads/master';

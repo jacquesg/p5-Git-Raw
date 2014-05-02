@@ -19,6 +19,7 @@ write_file($file, 'this is a test');
 is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_new']};
 
 my $index = $repo -> index;
+ok (!eval { $index -> add($index) });
 $index -> add('test');
 $index -> write;
 
@@ -77,6 +78,12 @@ is $commit -> committer -> offset, $off;
 is $commit -> time, $time;
 is $commit -> offset, $off;
 
+write_file($file, 'this is a test....');
+is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified'] };
+ok (!eval { $repo -> reset($commit, {'type' => 'invalid_type'}) });
+$repo -> reset($commit, {'type' => 'hard'});
+is $repo -> status -> {'test'}, undef;
+
 move($file, $file.'.moved');
 $index -> remove('test');
 $index -> add('test.moved');
@@ -94,7 +101,7 @@ $index -> add('test');
 $index -> write;
 is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
 
-$repo -> reset($commit, {'paths' => ['test']});
+$repo -> reset($commit, {'paths' => [undef, 'test']});
 is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
 
 $index -> add('test');
@@ -138,6 +145,9 @@ is (Git::Raw::Graph -> is_descendant_of($repo, $commit2 -> id, $commit -> id), 1
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $commit2), 0);
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $commit2 -> id), 0);
 
+ok (!eval { Git::Raw::Graph -> is_descendant_of($repo, $commit, '12341234') });
+ok (!eval { Git::Raw::Graph -> is_descendant_of($repo, '12341234', $commit) });
+
 is $head -> message, "second commit\n";
 is $head -> summary, "second commit";
 
@@ -167,6 +177,10 @@ $index -> write;
 
 $tree_id = $index -> write_tree;
 $tree    = $repo -> lookup($tree_id);
+
+$index -> read_tree($tree);
+my @entries = $index -> entries();
+is scalar(@entries), 3;
 
 my $commit3 = $repo -> commit(
 	"third commit\n", $me, $me, [$repo -> head -> target], $tree

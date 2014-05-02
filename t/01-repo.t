@@ -5,6 +5,7 @@ use Test::More;
 use Git::Raw;
 use File::Spec;
 use File::Slurp;
+use File::Path qw(make_path);
 use Cwd qw(abs_path);
 
 my $path = abs_path('t').'/test_repo';
@@ -53,15 +54,17 @@ my $config = $repo -> config;
 my $name  = 'Git::Raw author';
 my $email = 'git-xs@example.com';
 
-is $config -> bool('some.bool'), undef;
+is undef, $config -> bool('some.bool');
+ok (!eval { $config -> bool('some.bool', 1, 1) });
+ok (!eval { $config -> bool('some.bool', 'zzzz') });
 ok $config -> bool('some.bool', 1);
 ok $config -> bool('some.bool');
 
-is $config -> int('some.int'), undef;
+is undef, $config -> int('some.int');
 is $config -> int('some.int', 42), 42;
 is $config -> int('some.int'), 42;
 
-is $config -> str('some.str'), undef;
+is undef, $config -> str('some.str');
 is $config -> str('some.str', 'hello'), 'hello';
 is $config -> str('some.str'), 'hello';
 
@@ -81,15 +84,121 @@ $config -> foreach(sub {
 	0
 });
 
+$config -> delete('some.bool');
+is undef, $config -> bool('some.bool');
+ok $config -> bool('some.bool', 1);
+ok $config -> bool('some.bool');
+
+my $detached_config1 = Git::Raw::Config -> new;
+isa_ok $detached_config1, 'Git::Raw::Config';
+$detached_config1 -> add_file('.testconfig', 5);
+
+my $detached_config2 = Git::Raw::Config -> new;
+isa_ok $detached_config2, 'Git::Raw::Config';
+$detached_config2 -> add_file('.testconfig', 5);
+
+$detached_config1 -> str('some.str', 'hello');
+is 'hello', $detached_config1 -> str('some.str');
+is undef, $detached_config2 -> str('some.str');
+
+$detached_config2 -> refresh;
+is 'hello', $detached_config2 -> str('some.str');
+
+$detached_config1 = undef;
+$detached_config2 = undef;
+unlink '.testconfig';
+isnt -f '.testconfig', 1;
+
 is $repo -> state, "none";
 is $repo -> is_head_detached, 0;
 
 my $commit_msg_file = File::Spec->catfile($repo -> path, 'MERGE_MSG');
-
 ok (open HANDLE, ">$commit_msg_file");
 ok (close HANDLE);
 
 $repo -> state_cleanup;
 isnt -f $commit_msg_file, 1;
+is $repo -> state, "none";
+
+my $revert_head_file = File::Spec->catfile($repo -> path, 'REVERT_HEAD');
+ok (open HANDLE, ">$revert_head_file");
+ok (close HANDLE);
+
+is $repo -> state, "revert";
+$repo -> state_cleanup;
+isnt -f $revert_head_file, 1;
+is $repo -> state, "none";
+
+my $merge_head_file = File::Spec->catfile($repo -> path, 'MERGE_HEAD');
+ok (open HANDLE, ">$merge_head_file");
+ok (close HANDLE);
+
+is $repo -> state, "merge";
+$repo -> state_cleanup;
+isnt -f $merge_head_file, 1;
+is $repo -> state, "none";
+
+my $cherry_pick_head_file = File::Spec->catfile($repo -> path, 'CHERRY_PICK_HEAD');
+ok (open HANDLE, ">$cherry_pick_head_file");
+ok (close HANDLE);
+
+is $repo -> state, "cherry_pick";
+$repo -> state_cleanup;
+isnt -f $cherry_pick_head_file, 1;
+is $repo -> state, "none";
+
+my $bisect_log_file = File::Spec->catfile($repo -> path, 'BISECT_LOG');
+ok (open HANDLE, ">$bisect_log_file");
+ok (close HANDLE);
+
+is $repo -> state, "bisect";
+$repo -> state_cleanup;
+isnt -f $bisect_log_file, 1;
+is $repo -> state, "none";
+
+my $rebase_merge_dir = File::Spec->catfile($repo -> path, 'rebase-merge');
+my $rebase_apply_dir = File::Spec->catfile($repo -> path, 'rebase-apply');
+
+make_path($rebase_merge_dir);
+is $repo -> state, "rebase_merge";
+$repo -> state_cleanup;
+isnt -e $rebase_merge_dir, 1;
+is $repo -> state, "none";
+
+make_path($rebase_apply_dir);
+is $repo -> state, "mailbox_or_rebase";
+$repo -> state_cleanup;
+isnt -e $rebase_apply_dir, 1;
+is $repo -> state, "none";
+
+my $rebase_rebasing_file = File::Spec->catfile($rebase_apply_dir, 'rebasing');
+make_path($rebase_apply_dir);
+ok (open HANDLE, ">$rebase_rebasing_file");
+ok (close HANDLE);
+
+is $repo -> state, "rebase";
+$repo -> state_cleanup;
+isnt -f $rebase_rebasing_file, 1;
+is $repo -> state, "none";
+
+my $rebase_applying_file = File::Spec->catfile($rebase_apply_dir, 'applying');
+make_path($rebase_apply_dir);
+ok (open HANDLE, ">$rebase_applying_file");
+ok (close HANDLE);
+
+is $repo -> state, "apply_mailbox";
+$repo -> state_cleanup;
+isnt -f $rebase_applying_file, 1;
+is $repo -> state, "none";
+
+my $rebase_interactive_file = File::Spec->catfile($rebase_merge_dir, 'interactive');
+make_path($rebase_merge_dir);
+ok (open HANDLE, ">$rebase_interactive_file");
+ok (close HANDLE);
+
+is $repo -> state, "rebase_interactive";
+$repo -> state_cleanup;
+isnt -f $rebase_interactive_file, 1;
+is $repo -> state, "none";
 
 done_testing;

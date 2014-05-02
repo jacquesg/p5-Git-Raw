@@ -28,6 +28,11 @@ my $tag = $repo -> tag($tag_name, $tag_msg, $me, $commit);
 is $tag -> name, $tag_name;
 is $tag -> message, $tag_msg;
 
+is length ($tag -> id), 40;
+my $lookup_tag = Git::Raw::Tag -> lookup($repo, $tag -> id);
+isa_ok $lookup_tag, 'Git::Raw::Tag';
+is $lookup_tag -> id, $tag -> id;
+
 is $tag -> tagger -> name, $name;
 is $tag -> tagger -> email, $email;
 is $tag -> tagger -> time, $time;

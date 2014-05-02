@@ -55,6 +55,9 @@ is $blame -> hunk_count, 3;
 
 my @hunks = $blame -> hunks;
 is scalar(@hunks), 3;
+ok (!eval { $blame -> hunks("zzz") });
+ok (!eval { $blame -> hunks(3) });
+ok (!eval { $blame -> line(99999) });
 
 my $hunk1 = shift @hunks;
 is $hunk1 -> lines_in_hunk, 2;

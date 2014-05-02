@@ -29,6 +29,7 @@ my $repo = Git::Raw::Repository -> clone($url, $path, { });
 
 ok !$repo -> is_bare;
 ok !$repo -> is_empty;
+ok !$repo -> is_shallow;
 
 is_deeply $repo -> status -> {'master.txt'}, undef;
 
@@ -161,6 +162,16 @@ my $remote_path = File::Spec -> rel2abs('t/test_repo');
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
 
+# Not a CV for callback
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => 'blah'
+		}
+	});
+});
+rmtree $path;
+ok ! -e $path;
+
 # Die'ing inside the callback
 ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 		'callbacks' => {
@@ -168,7 +179,8 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 		}
 	});
 });
-rmtree abs_path('t/test_repo_ssh');
+rmtree $path;
+ok ! -e $path;
 
 # Returning undef inside the callback
 ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
@@ -177,7 +189,8 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 		}
 	});
 });
-rmtree abs_path('t/test_repo_ssh');
+rmtree $path;
+ok ! -e $path;
 
 # Invalid key files
 ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
@@ -190,9 +203,56 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 		}
 	});
 });
-rmtree abs_path('t/test_repo_ssh');
+rmtree $path;
+ok ! -e $path;
 
+# Incorrect authentication type (username and password)
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user) = @_;
+					return Git::Raw::Cred -> userpass(
+						$user, 'password');
+			}
+		}
+	});
+});
+rmtree $path;
+ok ! -e $path;
+
+# Incorrect authentication type (SSH agent)
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user) = @_;
+					return Git::Raw::Cred -> sshagent($user);
+			}
+		}
+	});
+});
+rmtree $path;
+ok ! -e $path;
+
+# Incorrect authentication type (SSH interactive)
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user) = @_;
+					return Git::Raw::Cred -> sshinteractive(
+						'metheunknownuser', sub {
+							return ('badpassword');
+						});
+			}
+		}
+	});
+});
+rmtree $path;
+ok ! -e $path;
+
+my ($credentials_fired, $update_tips_fired) = (0, 0);
 $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+	'ignore_cert_errors' => 1,
+	'checkout_branch' => 'master',
 	'callbacks' => {
 		'credentials' => sub {
 			my ($url, $user) = @_;
@@ -208,16 +268,25 @@ $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 			is $user, $ENV{USER};
 			is $url, $remote_url;
 
+			$credentials_fired = 1;
 			return Git::Raw::Cred -> sshkey(
 				$user,
 				$public_key,
 				$private_key
 			);
+		},
+		'update_tips' => sub {
+			my ($ref, $msg) = @_;
+			like $ref, qr/refs/;
+			is $msg, '0' x 40;
+			$update_tips_fired = 1;
 		}
 	}
 });
 
 ok !$repo -> is_empty;
+is $credentials_fired, 1;
+is $update_tips_fired, 1;
 @remotes = $repo -> remotes;
 
 is $remotes[0] -> name, 'origin';
@@ -226,6 +295,7 @@ is $remotes[0] -> url, $remote_url;
 @remotes = ();
 $repo = undef;
 
-rmtree abs_path('t/test_repo_ssh');
+rmtree $path;
+ok ! -e $path;
 
 done_testing;
