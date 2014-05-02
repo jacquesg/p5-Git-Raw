@@ -46,31 +46,17 @@ bool(self, name, ...)
 	CODE:
 		id = git_ensure_pv(name, "name");
 
-		switch (items) {
-			case 2: {
-				rc = git_config_get_bool(&value, self, id);
+		if (items == 3) {
+			value = git_ensure_iv(ST(2), "value");
 
-				if (rc != GIT_ENOTFOUND)
-					git_check_error(rc);
-
-				break;
-			}
-
-			case 3: {
-				value = git_ensure_iv(ST(2), "value");
-
-				rc = git_config_set_bool(self, id, value);
-				git_check_error(rc);
-
-				break;
-			}
-
-			default:
-				rc = GIT_ENOTFOUND;
-				break;
+			rc = git_config_set_bool(self, id, value);
+		} else {
+			if ((rc = git_config_get_bool(&value, self, id)) == GIT_ENOTFOUND)
+				XSRETURN_UNDEF;
 		}
 
-		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
+		git_check_error(rc);
+		RETVAL = newSViv(value);
 
 	OUTPUT: RETVAL
 
@@ -89,31 +75,17 @@ int(self, name, ...)
 	CODE:
 		id = git_ensure_pv(name, "name");
 
-		switch (items) {
-			case 2: {
-				rc = git_config_get_int32(&value, self, id);
+		if (items == 3) {
+			value = git_ensure_iv(ST(2), "value");
 
-				if (rc != GIT_ENOTFOUND)
-					git_check_error(rc);
-
-				break;
-			}
-
-			case 3: {
-				value = git_ensure_iv(ST(2), "value");
-
-				rc = git_config_set_int32(self, id, value);
-				git_check_error(rc);
-
-				break;
-			}
-
-			default:
-				rc = GIT_ENOTFOUND;
-				break;
+			rc = git_config_set_int32(self, id, value);
+		} else {
+			if ((rc = git_config_get_int32(&value, self, id)) == GIT_ENOTFOUND)
+				XSRETURN_UNDEF;
 		}
 
-		RETVAL = (rc != GIT_ENOTFOUND) ? newSViv(value) : &PL_sv_undef;
+		git_check_error(rc);
+		RETVAL = newSViv(value);
 
 	OUTPUT: RETVAL
 
@@ -132,31 +104,17 @@ str(self, name, ...)
 	CODE:
 		id = git_ensure_pv(name, "name");
 
-		switch (items) {
-			case 2: {
-				rc = git_config_get_string(&value, self, id);
+		if (items == 3) {
+			value = git_ensure_pv(ST(2), "value");
 
-				if (rc != GIT_ENOTFOUND)
-					git_check_error(rc);
-
-				break;
-			}
-
-			case 3: {
-				value = git_ensure_pv(ST(2), "value");
-
-				rc = git_config_set_string(self, id, value);
-				git_check_error(rc);
-
-				break;
-			}
-
-			default:
-				rc = GIT_ENOTFOUND;
-				break;
+			rc = git_config_set_string(self, id, value);
+		} else {
+			if ((rc = git_config_get_string(&value, self, id)) == GIT_ENOTFOUND)
+				XSRETURN_UNDEF;
 		}
 
-		RETVAL = (rc != GIT_ENOTFOUND) ? newSVpv(value, 0) : &PL_sv_undef;
+		git_check_error(rc);
+		RETVAL = newSVpv(value, 0);
 
 	OUTPUT: RETVAL
 
