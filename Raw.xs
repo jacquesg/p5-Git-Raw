@@ -1386,9 +1386,9 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 
 	if ((lopt = git_hv_list_entry(opts, "paths"))) {
 		SV **path;
-		size_t count = 0;
+		size_t i = 0, count = 0;
 
-		while ((path = av_fetch(lopt, count, 0))) {
+		while ((path = av_fetch(lopt, i++, 0))) {
 			if (!SvOK(*path))
 				continue;
 
@@ -1461,19 +1461,21 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 	SV *opt;
 
 	if ((lopt = git_hv_list_entry(opts, "flags"))) {
-		size_t count = 0;
+		size_t i = 0, count = 0;
 		SV **flag;
 
-		while ((flag = av_fetch(lopt, count++, 0))) {
-			if (SvPOK(*flag)) {
-				const char *f = SvPVbyte_nolen(*flag);
+		while ((flag = av_fetch(lopt, i++, 0))) {
+			const char *value = NULL;
 
-				if (strcmp(f, "find_renames") == 0)
-					merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
-				else
-					Perl_croak(aTHX_ "Invalid 'flags' value");
-			} else
-				Perl_croak(aTHX_ "Invalid type for 'flag'");
+			if (!SvOK(*flag))
+				continue;
+
+			value = git_ensure_pv(*flag, "flag");
+
+			if (strcmp(value, "find_renames") == 0)
+				merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
+			else
+				Perl_croak(aTHX_ "Invalid 'flags' value");
 		}
 	}
 
