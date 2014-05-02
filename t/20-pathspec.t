@@ -117,9 +117,9 @@ is_deeply [ @entries ], ['test', 'test2', 'test3/under/the/tree/test3'];
 
 $spec = Git::Raw::PathSpec -> new('**/test*');
 $list = $spec -> match($commit -> tree);
-is $list -> count, 1;
+is $list -> count, 3;
 
 @entries = $list -> entries;
-is_deeply [ @entries ], ['test3/under/the/tree/test3'];
+is_deeply [ @entries ], ['test', 'test2', 'test3/under/the/tree/test3'];
 
 done_testing;
