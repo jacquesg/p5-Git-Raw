@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Repository -> reset() now understands a 'hard' reset (GH #96)
+ - Removed the unused/unimplemented 'completion' callback type from Repository
+   and Remote (GH #96)
+
 0.35      2014-04-28 18:43:14SAST+0200 Africa/Johannesburg
 
  - Added support for building with compilers other than gcc/clang (GH #93):
