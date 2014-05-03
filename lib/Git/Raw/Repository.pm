@@ -668,6 +668,20 @@ working directory of the repository will be set to the directory.
 
 Retrieve blame information for C<$path>. Returns a C<Git::Raw::Blame> object.
 
+=head2 cherry_pick( $commit, [\%merge_opts, \%checkout_opts, $mainline] )
+
+Cherry-pick the given C<$commit>, producing changes in the index and working
+directory. See C<Git::Raw::Repository-E<gt>merge()> for valid C<%merge_opts>
+and C<%checkout_opts> values. For merge commits C<$mainline> specifies the
+parent.
+
+=head2 revert( $commit, [\%merge_opts, \%checkout_opts, $mainline] )
+
+Revert the given C<$commit>, producing changes in the index and working
+directory. See C<Git::Raw::Repository-E<gt>merge()> for valid C<%merge_opts>
+and C<%checkout_opts> values. For merge commits C<$mainline> specifies the
+parent.
+
 =head2 state( )
 
 Determine the state of the repository. One of the following values is returned:
