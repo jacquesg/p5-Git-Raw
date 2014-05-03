@@ -1486,6 +1486,25 @@ MODULE = Git::Raw			PACKAGE = Git::Raw
 BOOT:
 	git_threads_init();
 
+void
+features(class)
+	SV *class
+
+	PREINIT:
+		int features;
+
+	PPCODE:
+		features = git_libgit2_features();
+
+		mXPUSHs(newSVpv("threads", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_THREADS) ? 1 : 0));
+		mXPUSHs(newSVpv("https", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_HTTPS) ? 1 : 0));
+		mXPUSHs(newSVpv("ssh", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_SSH) ? 1 : 0));
+
+		XSRETURN(6);
+
 INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs
 INCLUDE: xs/Blob.xs
