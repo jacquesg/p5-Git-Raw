@@ -1180,8 +1180,7 @@ STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *
 	LEAVE;
 }
 
-STATIC int git_filter_init_cbb(git_filter *filter)
-{
+STATIC int git_filter_init_cbb(git_filter *filter) {
 	dSP;
 
 	int rv = 0;
@@ -1209,8 +1208,7 @@ STATIC int git_filter_init_cbb(git_filter *filter)
 	return rv;
 }
 
-STATIC void git_filter_shutdown_cbb(git_filter *filter)
-{
+STATIC void git_filter_shutdown_cbb(git_filter *filter) {
 	dSP;
 
 	ENTER;
@@ -1228,8 +1226,7 @@ STATIC void git_filter_shutdown_cbb(git_filter *filter)
 }
 
 STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
-	const git_filter_source *src, const char **attr_values)
-{
+	const git_filter_source *src, const char **attr_values) {
 	dSP;
 
 	int rv = 0;
@@ -1264,8 +1261,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 }
 
 STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
-	git_buf *to, const git_buf *from, const git_filter_source *src)
-{
+	git_buf *to, const git_buf *from, const git_filter_source *src) {
 	dSP;
 
 	int rv;
@@ -1309,8 +1305,7 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 	return rv;
 }
 
-STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
-{
+STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload) {
 	dSP;
 
 	ENTER;
@@ -1325,6 +1320,39 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 
 	FREETMPS;
 	LEAVE;
+}
+
+STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, void *payload) {
+	dSP;
+
+	int count, rv = 0;
+	SV *callback = (SV *) payload;
+
+	if (callback == NULL)
+		return rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(pathspec ? newSVpv(pathspec, 0) : &PL_sv_undef);
+	PUTBACK;
+
+	call_sv(callback, G_SCALAR|G_EVAL);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else
+		rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
 }
 
 

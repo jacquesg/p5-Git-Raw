@@ -24,14 +24,18 @@ clear(self)
 		git_index_clear(self);
 
 void
-read(self)
+read(self, ...)
 	Index self
 
+	PROTOTYPE: $;$
 	PREINIT:
-		int rc;
+		int rc, force = 0;
 
 	CODE:
-		rc = git_index_read(self, 0);
+		if (items == 2)
+			force = git_ensure_iv(ST(1), "force");
+
+		rc = git_index_read(self, force);
 		git_check_error(rc);
 
 void
@@ -154,31 +158,6 @@ entries(self)
 		XSRETURN(count);
 
 void
-add_conflict(self, ancestor, ours, theirs)
-	Index self
-	SV *ancestor
-	SV *ours
-	SV *theirs
-
-	PREINIT:
-		int rc;
-
-		Index_Entry a = NULL, o = NULL, t = NULL;
-
-	CODE:
-		if (SvOK(ancestor))
-			a = GIT_SV_TO_PTR(Index::Entry, ancestor);
-
-		if (SvOK(ours))
-			o = GIT_SV_TO_PTR(Index::Entry, ours);
-
-		if (SvOK(theirs))
-			t = GIT_SV_TO_PTR(Index::Entry, theirs);
-
-		rc = git_index_conflict_add(self, a, o, t);
-		git_check_error(rc);
-
-void
 remove_conflict(self, path)
 	Index self
 	SV *path
@@ -276,6 +255,44 @@ conflicts(self)
 			git_check_error(rc);
 
 		XSRETURN(num_conflicts);
+
+void
+update_all(self, opts)
+	Index self
+	HV *opts
+
+	PREINIT:
+		int rc;
+
+		SV *callback;
+		AV *lopt;
+		git_strarray paths = {0, 0};
+
+	CODE:
+		if ((lopt = git_hv_list_entry(opts, "paths"))) {
+			size_t i = 0, count = 0;
+			SV **path;
+
+			while ((path = av_fetch(lopt, i++, 0))) {
+				if (!SvOK(*path))
+					continue;
+
+				Renew(paths.strings, count + 1, char *);
+				paths.strings[count++] = SvPVbyte_nolen(*path);
+			}
+
+			paths.count = count;
+		}
+
+		callback = get_callback_option(opts, "notification");
+
+		rc = git_index_update_all(
+			self,
+			&paths,
+			git_index_matched_path_cbb,
+			callback);
+		Safefree(paths.strings);
+		git_check_error(rc);
 
 void
 DESTROY(self)
