@@ -36,7 +36,6 @@ hunks(self, ...)
 
 		end = start + num_hunks;
 
-		EXTEND(SP, num_hunks);
 		for (; start < end; ++start) {
 			SV *hunk;
 
@@ -49,7 +48,7 @@ hunks(self, ...)
 				(Blame_Hunk) h, SvRV(self)
 			);
 
-			PUSHs(sv_2mortal(hunk));
+			mXPUSHs(hunk);
 		}
 
 		XSRETURN(num_hunks);

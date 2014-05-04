@@ -250,9 +250,7 @@ conflicts(self)
 		}
 
 		git_index_conflict_iterator_free(iter);
-
-		if (rc != GIT_ITEROVER)
-			git_check_error(rc);
+		git_check_error(rc);
 
 		XSRETURN(num_conflicts);
 

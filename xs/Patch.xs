@@ -69,8 +69,7 @@ hunks(self, ...)
 				(Diff_Hunk) h, SvRV(self)
 			);
 
-			EXTEND(SP, 1);
-			PUSHs(sv_2mortal(hunk));
+			mXPUSHs(hunk);
 		}
 
 		XSRETURN(num_hunks);

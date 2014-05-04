@@ -38,7 +38,7 @@ Git::Raw::Stash -> foreach($repo, sub { die 'This should not be called' });
 my $untracked_file  = $repo -> workdir . 'untracked';
 write_file($untracked_file, 'this is an untracked file');
 
-$repo -> stash($me, 'stash untracked files', ['include_untracked']);
+$repo -> stash($me, 'stash untracked files', [undef, 'include_untracked']);
 
 my @stashes;
 Git::Raw::Stash -> foreach($repo, sub {

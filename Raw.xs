@@ -181,13 +181,13 @@ STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 STATIC void git_check_error(int err) {
 	const git_error *error;
 
-	if (err == GIT_OK)
+	if (err == GIT_OK || err == GIT_ITEROVER)
 		return;
 
 	error = giterr_last();
 
 	if (error)
-		Perl_croak(aTHX_ "%s", error -> message);
+		Perl_croak(aTHX_ "%d: %s", error -> klass, error -> message);
 
 	if (SvTRUE(ERRSV))
 		Perl_croak (aTHX_ "%s", SvPVbyte_nolen(ERRSV));
@@ -1103,7 +1103,7 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
-	int count, rv = 0;
+	int rv = 0;
 	Cred creds;
 
 	ENTER;
@@ -1114,15 +1114,13 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	mXPUSHs(newSVpv(usr_from_url, 0));
 	PUTBACK;
 
-	count = call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
 		(void) POPs;
-	} else if (count == 0) {
-		rv = -1;
 	} else {
 		creds = GIT_SV_TO_PTR(Cred, POPs);
 		*cred = creds -> cred;
@@ -1325,7 +1323,7 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload) {
 STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, void *payload) {
 	dSP;
 
-	int count, rv = 0;
+	int rv = 0;
 	SV *callback = (SV *) payload;
 
 	if (callback == NULL)

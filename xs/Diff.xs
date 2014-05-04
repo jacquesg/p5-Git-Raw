@@ -139,9 +139,7 @@ patches(self)
 					p, "Git::Raw::Patch", patch, SvRV(self)
 				);
 
-				EXTEND(SP, 1);
-				PUSHs(sv_2mortal(p));
-
+				mXPUSHs(p);
 				++num_patches;
 			}
 		}
