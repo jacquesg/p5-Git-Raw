@@ -2,6 +2,14 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Removed Index -> add_conflict() (Incompatible change) (GH#97)
+ - Index -> read() now takes an optional force argument (GH#97)
+ - Added Raw -> features() method. This may be used to query the features
+    built into libgit2 (and thus Git::Raw).
+ - Added Repository methods (GH#97):
+    + Repository -> cherry_pick()
+    + Repository -> revert()
+
 0.36      2014-05-02 15:59:18SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
  - Repository -> reset() now understands a 'hard' reset (GH #96)
