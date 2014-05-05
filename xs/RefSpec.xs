@@ -87,15 +87,16 @@ transform(self, ref)
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		ref_name = git_ensure_pv(ref, "name");
 
 		rc = git_refspec_transform(&buf, self, ref_name);
-		if (rc != GIT_OK)
-			git_buf_free(&buf);
-		git_check_error(rc);
+		if (rc == GIT_OK)
+			RETVAL = newSVpv(buf.ptr, buf.size);
 
-		RETVAL = newSVpv(buf.ptr, buf.size);
 		git_buf_free(&buf);
+		git_check_error(rc);
 
 	OUTPUT: RETVAL
 
@@ -111,15 +112,16 @@ rtransform(self, ref)
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		ref_name = git_ensure_pv(ref, "name");
 
 		rc = git_refspec_rtransform(&buf, self, ref_name);
-		if (rc != GIT_OK)
-			git_buf_free(&buf);
-		git_check_error(rc);
+		if (rc == GIT_OK)
+			RETVAL = newSVpv(buf.ptr, buf.size);
 
-		RETVAL = newSVpv(buf.ptr, buf.size);
 		git_buf_free(&buf);
+		git_check_error(rc);
 
 	OUTPUT: RETVAL
 

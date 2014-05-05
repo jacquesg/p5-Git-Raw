@@ -181,13 +181,13 @@ STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 STATIC void git_check_error(int err) {
 	const git_error *error;
 
-	if (err == GIT_OK)
+	if (err == GIT_OK || err == GIT_ITEROVER)
 		return;
 
 	error = giterr_last();
 
 	if (error)
-		Perl_croak(aTHX_ "%s", error -> message);
+		Perl_croak(aTHX_ "%d: %s", error -> klass, error -> message);
 
 	if (SvTRUE(ERRSV))
 		Perl_croak (aTHX_ "%s", SvPVbyte_nolen(ERRSV));
@@ -1103,7 +1103,7 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
-	int count, rv = 0;
+	int rv = 0;
 	Cred creds;
 
 	ENTER;
@@ -1114,15 +1114,13 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	mXPUSHs(newSVpv(usr_from_url, 0));
 	PUTBACK;
 
-	count = call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
 		(void) POPs;
-	} else if (count == 0) {
-		rv = -1;
 	} else {
 		creds = GIT_SV_TO_PTR(Cred, POPs);
 		*cred = creds -> cred;
@@ -1180,8 +1178,7 @@ STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *
 	LEAVE;
 }
 
-STATIC int git_filter_init_cbb(git_filter *filter)
-{
+STATIC int git_filter_init_cbb(git_filter *filter) {
 	dSP;
 
 	int rv = 0;
@@ -1209,8 +1206,7 @@ STATIC int git_filter_init_cbb(git_filter *filter)
 	return rv;
 }
 
-STATIC void git_filter_shutdown_cbb(git_filter *filter)
-{
+STATIC void git_filter_shutdown_cbb(git_filter *filter) {
 	dSP;
 
 	ENTER;
@@ -1228,8 +1224,7 @@ STATIC void git_filter_shutdown_cbb(git_filter *filter)
 }
 
 STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
-	const git_filter_source *src, const char **attr_values)
-{
+	const git_filter_source *src, const char **attr_values) {
 	dSP;
 
 	int rv = 0;
@@ -1264,8 +1259,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 }
 
 STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
-	git_buf *to, const git_buf *from, const git_filter_source *src)
-{
+	git_buf *to, const git_buf *from, const git_filter_source *src) {
 	dSP;
 
 	int rv;
@@ -1309,8 +1303,7 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 	return rv;
 }
 
-STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
-{
+STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload) {
 	dSP;
 
 	ENTER;
@@ -1325,6 +1318,39 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload)
 
 	FREETMPS;
 	LEAVE;
+}
+
+STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, void *payload) {
+	dSP;
+
+	int rv = 0;
+	SV *callback = (SV *) payload;
+
+	if (callback == NULL)
+		return rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(newSVpv(path, 0));
+	mXPUSHs(pathspec ? newSVpv(pathspec, 0) : &PL_sv_undef);
+	PUTBACK;
+
+	call_sv(callback, G_SCALAR|G_EVAL);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else
+		rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
 }
 
 
@@ -1459,6 +1485,25 @@ MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
 	git_threads_init();
+
+void
+features(class)
+	SV *class
+
+	PREINIT:
+		int features;
+
+	PPCODE:
+		features = git_libgit2_features();
+
+		mXPUSHs(newSVpv("threads", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_THREADS) ? 1 : 0));
+		mXPUSHs(newSVpv("https", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_HTTPS) ? 1 : 0));
+		mXPUSHs(newSVpv("ssh", 0));
+		mXPUSHs(newSViv((features & GIT_FEATURE_SSH) ? 1 : 0));
+
+		XSRETURN(6);
 
 INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs

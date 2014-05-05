@@ -33,6 +33,11 @@ API.
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
+=head2 features( )
+
+List of (optional) compiled in features. Git::Raw may be built with support
+for threads, HTTPS and SSH.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

@@ -110,15 +110,14 @@ upstream(self)
 
 	CODE:
 		rc = git_branch_upstream(&ref, GIT_SV_TO_PTR(Branch, self));
-		if (rc == GIT_ENOTFOUND) {
-			RETVAL = &PL_sv_undef;
-		} else {
-			git_check_error(rc);
+		if (rc == GIT_ENOTFOUND)
+			XSRETURN_UNDEF;
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
-			);
-		}
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
+		);
 
 	OUTPUT: RETVAL
 
@@ -133,6 +132,8 @@ upstream_name(self)
 		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		ref = GIT_SV_TO_PTR(Reference, self);
 
 		rc = git_branch_upstream_name(
@@ -140,12 +141,12 @@ upstream_name(self)
 				git_reference_owner(ref),
 				git_reference_name(ref)
 		);
-		if (rc != GIT_OK)
-			git_buf_free(&buf);
-		git_check_error(rc);
 
-		RETVAL = newSVpv(buf.ptr, buf.size);
+		if (rc == GIT_OK)
+			RETVAL = newSVpv(buf.ptr, buf.size);
+
 		git_buf_free(&buf);
+		git_check_error(rc);
 
 	OUTPUT: RETVAL
 
@@ -161,6 +162,8 @@ remote_name(self)
 		git_buf remote = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		ref = GIT_SV_TO_PTR(Reference, self);
 
 		rc = git_branch_upstream_name(
@@ -168,24 +171,20 @@ remote_name(self)
 				git_reference_owner(ref),
 				git_reference_name(ref)
 		);
-		if (rc != GIT_OK)
-			git_buf_free(&upstream);
-		git_check_error(rc);
 
-		rc = git_branch_remote_name(
-				&remote,
-				git_reference_owner(ref),
-				upstream.ptr);
-		if (rc != GIT_OK) {
-			git_buf_free(&upstream);
-			git_buf_free(&remote);
+		if (rc == GIT_OK) {
+			rc = git_branch_remote_name(
+					&remote,
+					git_reference_owner(ref),
+					upstream.ptr);
+
+			if (rc == GIT_OK)
+				RETVAL = newSVpv(remote.ptr, remote.size);
 		}
-		git_check_error(rc);
-
-		RETVAL = newSVpv(remote.ptr, remote.size);
 
 		git_buf_free(&upstream);
 		git_buf_free(&remote);
+		git_check_error(rc);
 
 	OUTPUT: RETVAL
 

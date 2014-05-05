@@ -165,6 +165,7 @@ is scalar(@patches), 2;
 
 foreach my $patch (@patches) {
 	my @hunks = $patch -> hunks;
+	ok (eval { $patch -> hunks(0) });
 	ok (!eval { $patch -> hunks(1) });
 	ok (!eval { $patch -> hunks($diff) });
 	is $patch -> hunk_count, 1;

@@ -31,7 +31,7 @@ Remove C<$path> from the index.
 
 Clear the index.
 
-=head2 read( )
+=head2 read( [$force] )
 
 Update the index reading it from disk.
 
@@ -58,12 +58,6 @@ C<%checkout_opts> values.
 
 Retrieve index entries. Returns a list of C<Git::Raw::Index::Entry> objects.
 
-=head2 add_conflict( $ancestor, $ours, $theirs )
-
-Add or update index entries to represent a conflict. C<$ancestor>,
-C<$ours> and C<$theirs> should be C<Git::Raw::Index::Entry> objects, or
-be L<undef>.
-
 =head2 remove_conflict( $file )
 
 Remove C<$file> from the index.
@@ -81,9 +75,30 @@ Remove all conflicts in the index (entries with a stage greater than 0).
 Retrieve index entries that represent a conflict. Returns a list of
 C<Git::Raw::Index::Entry> objects.
 
+=head2 update_all( \%opts )
+
+Update all index entries to match the working directory. Valid fields for the
+C<%opts> hash are:
+
+=over 4
+
+=item * "paths"
+
+List of path patterns to add.
+
+=item * "notification"
+
+The callback to be called for each updated item. Receives the C<$path> and
+matching C<$pathspec>. This callback should return L<0> if the file should be
+added to the index, L<E<gt>0> if it should be skipped or L<E<lt>0> to abort.
+
+=back
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -31,7 +31,11 @@ is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
 write_file($file, 'this is a test with more content');
 is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new', 'worktree_modified']};
 
-$index -> add('test');
+$index -> update_all({
+	'paths' => [
+		'test'
+	]
+});
 $index -> write;
 
 is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
@@ -104,7 +108,35 @@ is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
 $repo -> reset($commit, {'paths' => [undef, 'test']});
 is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
 
-$index -> add('test');
+ok (!eval { $index -> update_all({
+	'paths' => [ 'test' ],
+	'notification' => sub { die "Bad!"; }
+})});
+
+is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+
+$index -> update_all({
+	'paths' => [ 'test' ],
+	'notification' => sub { return 1; }
+});
+
+is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+
+$index -> update_all({
+	'paths' => [
+		undef,
+		'test'
+	],
+	'notification' => sub {
+		my ($path, $pathspec) = @_;
+
+		is $path, 'test';
+		is $path, $pathspec;
+
+		return 0;
+	}
+});
+
 $index -> write;
 is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
 

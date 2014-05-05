@@ -198,7 +198,7 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 			'credentials' => sub {
 				my ($url, $user) = @_;
 					return Git::Raw::Cred -> sshkey(
-						$user, 'invalid', 'invalid');
+						$user, 'invalid', 'invalid', 'invalid');
 			}
 		}
 	});
