@@ -27,6 +27,7 @@ my $is_solaris = ($^O =~ /(sun|solaris)/i) ? 1 : 0;
 my $is_windows = ($^O =~ /MSWin32/i) ? 1 : 0;
 my $is_linux = ($^O =~ /linux/i) ? 1 : 0;
 my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
+my $is_gkfreebsd = ($^O =~ /gnukfreebsd/i) ? 1 : 0;
 
 # allow the user to override/specify the locations of OpenSSL and libssh2
 our $opt = {};
@@ -223,7 +224,7 @@ if ($is_windows) {
 }
 
 # real-time library is required for Solaris and Linux
-if ($is_linux || $is_solaris) {
+if ($is_linux || $is_solaris || $is_gkfreebsd) {
 	$lib .= ' -lrt';
 }
 
