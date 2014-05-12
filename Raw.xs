@@ -1351,6 +1351,21 @@ STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, vo
 	return rv;
 }
 
+STATIC void git_list_to_paths(AV *list, git_strarray *paths) {
+	size_t i = 0, count = 0;
+	SV **path;
+
+	while ((path = av_fetch(list, i++, 0))) {
+		if (!path || !SvOK(*path))
+			continue;
+
+		Renew(paths->strings, count + 1, char *);
+		paths->strings[count++] = SvPVbyte_nolen(*path);
+	}
+
+	paths->count = count;
+}
+
 
 STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opts) {
 	char **paths = NULL;
@@ -1489,19 +1504,27 @@ features(class)
 	SV *class
 
 	PREINIT:
-		int features;
+		int ctx = GIMME_V;
 
 	PPCODE:
-		features = git_libgit2_features();
+		if (ctx != G_VOID) {
+			if (ctx == G_ARRAY) {
+				int features = git_libgit2_features();
 
-		mXPUSHs(newSVpv("threads", 0));
-		mXPUSHs(newSViv((features & GIT_FEATURE_THREADS) ? 1 : 0));
-		mXPUSHs(newSVpv("https", 0));
-		mXPUSHs(newSViv((features & GIT_FEATURE_HTTPS) ? 1 : 0));
-		mXPUSHs(newSVpv("ssh", 0));
-		mXPUSHs(newSViv((features & GIT_FEATURE_SSH) ? 1 : 0));
+				mXPUSHs(newSVpv("threads", 0));
+				mXPUSHs(newSViv((features & GIT_FEATURE_THREADS) ? 1 : 0));
+				mXPUSHs(newSVpv("https", 0));
+				mXPUSHs(newSViv((features & GIT_FEATURE_HTTPS) ? 1 : 0));
+				mXPUSHs(newSVpv("ssh", 0));
+				mXPUSHs(newSViv((features & GIT_FEATURE_SSH) ? 1 : 0));
 
-		XSRETURN(6);
+				XSRETURN(6);
+			} else {
+				mXPUSHs(newSViv(3));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
 
 INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs

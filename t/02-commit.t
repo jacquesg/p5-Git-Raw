@@ -5,6 +5,7 @@ use Test::More;
 use Git::Raw;
 use File::Copy;
 use File::Slurp;
+use File::Spec::Functions;
 use Cwd qw(abs_path);
 use File::Path 2.07 qw(make_path remove_tree);
 use Time::Local;
@@ -19,8 +20,13 @@ write_file($file, 'this is a test');
 is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_new']};
 
 my $index = $repo -> index;
+is $index -> path, catfile($path, '.git/index');
 ok (!eval { $index -> add($index) });
-$index -> add('test');
+$index -> add_all({
+	'paths' => [
+		'test'
+	]
+});
 $index -> write;
 
 my $tree_id = $index -> write_tree;

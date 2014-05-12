@@ -17,6 +17,42 @@ add(self, entry)
 		git_check_error(rc);
 
 void
+add_all(self, opts)
+	Index self
+	HV *opts
+
+	PREINIT:
+		int rc;
+
+		SV *callback;
+		AV *lopt;
+		HV *hopt;
+		git_strarray paths = {0, 0};
+
+		unsigned int flags = GIT_INDEX_ADD_DEFAULT;
+
+	CODE:
+		if ((lopt = git_hv_list_entry(opts, "paths")))
+			git_list_to_paths(lopt, &paths);
+
+		if ((hopt = git_hv_hash_entry(opts, "flags"))) {
+			git_flag_opt(hopt, "force", GIT_INDEX_ADD_FORCE, &flags);
+			git_flag_opt(hopt, "disable_pathspec_match", GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH, &flags);
+			git_flag_opt(hopt, "check_pathspec", GIT_INDEX_ADD_CHECK_PATHSPEC, &flags);
+		}
+
+		callback = get_callback_option(opts, "notification");
+
+		rc = git_index_add_all(
+			self,
+			&paths,
+			flags,
+			git_index_matched_path_cbb,
+			callback);
+		Safefree(paths.strings);
+		git_check_error(rc);
+
+void
 clear(self)
 	Index self
 
@@ -93,8 +129,49 @@ remove(self, path)
 		int rc;
 
 	CODE:
-		rc = git_index_remove(self, SvPVbyte_nolen(path), 0);
+		rc = git_index_remove_bypath(self, SvPVbyte_nolen(path));
 		git_check_error(rc);
+
+void
+remove_all(self, opts)
+	Index self
+	HV *opts
+
+	PREINIT:
+		int rc;
+
+		SV *callback;
+		AV *lopt;
+		git_strarray paths = {0, 0};
+
+	CODE:
+		if ((lopt = git_hv_list_entry(opts, "paths")))
+			git_list_to_paths(lopt, &paths);
+
+		callback = get_callback_option(opts, "notification");
+
+		rc = git_index_remove_all(
+			self,
+			&paths,
+			git_index_matched_path_cbb,
+			callback);
+		Safefree(paths.strings);
+		git_check_error(rc);
+
+SV *
+path(self)
+	Index self
+
+	PREINIT:
+		const char *path = NULL;
+
+	CODE:
+		if ((path = git_index_path(self)) == NULL)
+			XSRETURN_UNDEF;
+
+		RETVAL = newSVpv(path, 0);
+
+	OUTPUT: RETVAL
 
 void
 checkout(self, ...)
@@ -267,20 +344,8 @@ update_all(self, opts)
 		git_strarray paths = {0, 0};
 
 	CODE:
-		if ((lopt = git_hv_list_entry(opts, "paths"))) {
-			size_t i = 0, count = 0;
-			SV **path;
-
-			while ((path = av_fetch(lopt, i++, 0))) {
-				if (!SvOK(*path))
-					continue;
-
-				Renew(paths.strings, count + 1, char *);
-				paths.strings[count++] = SvPVbyte_nolen(*path);
-			}
-
-			paths.count = count;
-		}
+		if ((lopt = git_hv_list_entry(opts, "paths")))
+			git_list_to_paths(lopt, &paths);
 
 		callback = get_callback_option(opts, "notification");
 
@@ -291,6 +356,33 @@ update_all(self, opts)
 			callback);
 		Safefree(paths.strings);
 		git_check_error(rc);
+
+void
+capabilities(self)
+	Index self
+
+	PREINIT:
+		int ctx = GIMME_V;
+
+	PPCODE:
+		if (ctx != G_VOID) {
+			if (ctx == G_ARRAY) {
+				int caps = git_index_caps(self);
+
+				mXPUSHs(newSVpv("ignore_case", 0));
+				mXPUSHs(newSViv((caps & GIT_INDEXCAP_IGNORE_CASE) ? 1 : 0));
+				mXPUSHs(newSVpv("no_filemode", 0));
+				mXPUSHs(newSViv((caps & GIT_INDEXCAP_NO_FILEMODE) ? 1 : 0));
+				mXPUSHs(newSVpv("no_symlinks", 0));
+				mXPUSHs(newSViv((caps & GIT_INDEXCAP_NO_SYMLINKS) ? 1 : 0));
+
+				XSRETURN(6);
+			} else {
+				mXPUSHs(newSViv(3));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
 
 void
 DESTROY(self)

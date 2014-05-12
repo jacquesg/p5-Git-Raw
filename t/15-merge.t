@@ -262,6 +262,7 @@ my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$mer
 
 my $merged_index = $merge_commit1 -> merge($merge_commit2, {});
 isa_ok $merged_index, 'Git::Raw::Index';
+is $merged_index -> path, undef;
 is $merged_index -> has_conflicts, 0;
 my @merged_index_entries = $merged_index -> entries;
 ok (scalar(@merged_index_entries) > 0);

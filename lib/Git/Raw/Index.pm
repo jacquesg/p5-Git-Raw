@@ -23,9 +23,57 @@ B<WARNING>: The API of this module is unstable and may change without warning
 Add C<$entry> to the index. C<$entry> should either be the path of a file
 or alternatively a C<Git::Raw::Index::Entry>.
 
+=head2 add_all( \%opts )
+
+Add or update all index entries to match the working directory. Valid fields for
+the C<%opts> hash are:
+
+=over 4
+
+=item * "paths"
+
+List of path patterns to add.
+
+=item * "flags"
+
+Valid fields for the C<%flags> member:
+
+=over 8
+
+=item * "force"
+
+Forced addition of files (even if they are ignored).
+
+=item * "disable_pathspec_match"
+
+Disable pathspec pattern matching against entries in C<$paths>.
+
+=item * "check_pathspec"
+
+Enable pathspec pattern matching against entries in C<$paths> (default).
+
+=back
+
+=item * "notification"
+
+The callback to be called for each added or updated item. Receives the C<$path>
+and matching C<$pathspec>. This callback should return L<0> if the file should
+be added to the index, L<E<gt>0> if it should be skipped or L<E<lt>0> to abort.
+
+=back
+
 =head2 remove( $path )
 
 Remove C<$path> from the index.
+
+=head2 remove_all( \%opts )
+
+Remove all matching index entries. See C<Git::Raw::Index-E<gt>update_all()> for
+valid C<%opts> values.
+
+=head2 path( )
+
+Retrieve the full path to the index file on disk.
 
 =head2 clear( )
 
@@ -93,6 +141,12 @@ matching C<$pathspec>. This callback should return L<0> if the file should be
 added to the index, L<E<gt>0> if it should be skipped or L<E<lt>0> to abort.
 
 =back
+
+=head2 capabilities( )
+
+Retrieve the index's capabilities. Returns a hash with members L<"ignore_case">,
+L<"no_filemode"> and L<"no_symlinks">, each indicating if the C<Git::Raw::Index>
+supports the capability.
 
 =head1 AUTHOR
 
