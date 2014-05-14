@@ -87,9 +87,9 @@ push_range(self, ...)
 			git_oid start, end;
 
 			if (git_sv_to_commitish(repo, ST(1), &start) == NULL)
-				Perl_croak(aTHX_ "Could not resolve 'start' to a commit id");
+				croak_resolve("Could not resolve 'start' to a commit id");
 			if (git_sv_to_commitish(repo, ST(2), &end) == NULL)
-				Perl_croak(aTHX_ "Could not resolve 'end' to a commit id");
+				croak_resolve("Could not resolve 'end' to a commit id");
 
 			Newx(range, 2 * GIT_OID_HEXSZ + 2 + 1, char);
 			free_buffer = 1;
@@ -100,7 +100,7 @@ push_range(self, ...)
 		} else if (items == 2) {
 			range = (char *) git_ensure_pv(ST(1), "range");
 		} else
-			Perl_croak(aTHX_ "'range' not provided");
+			croak_usage("'range' not provided");
 
 		rc = git_revwalk_push_range(walk, range);
 		if (free_buffer)

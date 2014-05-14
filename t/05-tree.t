@@ -65,6 +65,7 @@ isa_ok $obj2, 'Git::Raw::Tree';
 
 is $entries -> [3], undef;
 
+ok (!eval { $tree -> entry_byname('unknownfile') });
 my $entry = $tree -> entry_byname('test3');
 
 isa_ok $entry, 'Git::Raw::Tree::Entry';

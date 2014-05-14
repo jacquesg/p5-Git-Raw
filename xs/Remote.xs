@@ -278,7 +278,7 @@ connect(self, direction)
 		int rc;
 
 		const char *dir;
-		git_direction direct;
+		git_direction direct = GIT_DIRECTION_FETCH;
 
 	CODE:
 		dir = git_ensure_pv(direction, "direction");
@@ -288,7 +288,8 @@ connect(self, direction)
 		else if (strcmp(dir, "push") == 0)
 			direct = GIT_DIRECTION_PUSH;
 		else
-			Perl_croak(aTHX_ "Invalid direction");
+			croak_usage("Invalid direction '%s'. "
+				"Valid values: 'fetch' or 'push'", dir);
 
 		rc = git_remote_connect(self -> remote, direct);
 		git_check_error(rc);

@@ -99,7 +99,8 @@ entry_byname(self, name)
 			git_ensure_pv(name, "name")
 		);
 
-		if (!tmp_entry) Perl_croak(aTHX_ "Invalid name");
+		if (!tmp_entry)
+			croak_usage("Invalid name");
 
 		rc = git_tree_entry_dup(&entry, tmp_entry);
 		git_check_error(rc);

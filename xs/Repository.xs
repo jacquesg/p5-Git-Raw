@@ -311,7 +311,7 @@ reset(self, target, opts)
 			Safefree(paths.strings);
 			git_check_error(rc);
 		} else if ((opt = git_hv_string_entry(opts, "type"))) {
-			git_reset_t reset;
+			git_reset_t reset = GIT_RESET_SOFT;
 			const char *type_str = SvPVbyte_nolen(opt);
 
 			if (strcmp(type_str, "soft") == 0)
@@ -321,7 +321,9 @@ reset(self, target, opts)
 			else if (strcmp(type_str, "hard") == 0)
 				reset = GIT_RESET_HARD;
 			else
-				Perl_croak(aTHX_ "Invalid type");
+				croak_usage("Invalid type '%s'. "
+					"Valid values: 'soft', 'mixed' or 'hard'",
+					type_str);
 
 			rc = git_signature_default(&sig, self);
 			git_check_error(rc);
@@ -586,14 +588,14 @@ merge_base(self, ...)
 
 	CODE:
 		if (items < 3)
-			Perl_croak(aTHX_ "At least 2 arguments needed");
+			croak_usage("At least 2 arguments needed");
 
 		count = items - 1;
 		Renew(oids, count, git_oid);
 		for (i = 0; i < count; ++i) {
 			if (git_sv_to_commitish(self, ST(i + 1), oids + i) == NULL) {
 				Safefree(oids);
-				Perl_croak(aTHX_ "Could not resolve 'object' to a commit id");
+				croak_resolve("Could not resolve 'object' to a commit id");
 			}
 		}
 
@@ -706,7 +708,9 @@ branches(self, ...)
 			else if (strcmp(type_str, "all") == 0)
 				type = GIT_BRANCH_ALL;
 			else
-				Perl_croak(aTHX_ "Unknown branch type '%s'", type_str);
+				croak_usage("Invalid branch type '%s'. ",
+					"Valid values: 'local', 'remote' or 'all'",
+					type_str);
 		}
 
 		repo = GIT_SV_TO_PTR(Repository, self);
@@ -893,7 +897,7 @@ cherry_pick(self, commit, ...)
 			int mainline = git_ensure_iv(ST(4), "mainline");
 
 			if (mainline < 0 || mainline > (int) git_commit_parentcount(commit) - 1)
-				Perl_croak(aTHX_ "'mainline' out of range, should be between 0 and %d",
+				croak_usage("'mainline' out of range, should be between 0 and %d",
 					(int) parents - 1);
 
 			opts.mainline = (unsigned int) mainline;
@@ -933,7 +937,7 @@ revert(self, commit, ...)
 			int mainline = git_ensure_iv(ST(4), "mainline");
 
 			if (mainline < 0 || mainline > (int) git_commit_parentcount(commit) - 1)
-				Perl_croak(aTHX_ "'mainline' out of range, should be between 0 and %d",
+				croak_usage("'mainline' out of range, should be between 0 and %d",
 					(int) parents - 1);
 
 			opts.mainline = (unsigned int) mainline;
@@ -952,7 +956,7 @@ state(self)
 
 	PREINIT:
 		int rc;
-		const char *s;
+		const char *s = NULL;
 
 	CODE:
 		rc = git_repository_state(self);
@@ -999,7 +1003,7 @@ state(self)
 				break;
 
 			default:
-				Perl_croak(aTHX_ "Unhandle state: %i", rc);
+				croak_assert("Unknown state: %i", rc);
 		}
 
 		RETVAL = newSVpv(s, 0);

@@ -22,7 +22,7 @@ print(self, format, callback)
 		int rc;
 
 		const char *fmt_str;
-		git_diff_format_t fmt;
+		git_diff_format_t fmt = GIT_DIFF_FORMAT_PATCH;
 
 	CODE:
 		fmt_str = SvPVbyte_nolen(format);
@@ -38,7 +38,7 @@ print(self, format, callback)
 		else if (!strcmp(fmt_str, "name_status"))
 			fmt = GIT_DIFF_FORMAT_NAME_STATUS;
 		else
-			Perl_croak(aTHX_ "Invalid format");
+			croak_usage("Invalid format");
 
 		rc = git_diff_print(self, fmt, git_diff_cb, callback);
 		git_check_error(rc);

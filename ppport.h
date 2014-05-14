@@ -7253,6 +7253,14 @@ DPPP_(my_pv_display)(pTHX_ SV *dsv, const char *pv, STRLEN cur, STRLEN len, STRL
 #endif
 #endif
 
+#ifndef croak_sv
+#  define croak_sv(sv)                \
+	   STMT_START {                   \
+			sv_setsv(ERRSV, sv);      \
+			Perl_croak(aTHX_ Nullch); \
+	   } STMT_END
+#endif
+
 #endif /* _P_P_PORTABILITY_H_ */
 
 /* End of File ppport.h */

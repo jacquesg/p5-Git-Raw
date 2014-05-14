@@ -95,10 +95,13 @@ type(self)
 	Reference self
 
 	PREINIT:
-		SV *type;
+		SV *type = NULL;
+		git_ref_t rt;
 
 	CODE:
-		switch (git_reference_type(self)) {
+		rt = git_reference_type(self);
+
+		switch (rt) {
 			case GIT_REF_OID:
 				type = newSVpv("direct", 0);
 				break;
@@ -108,7 +111,7 @@ type(self)
 				break;
 
 			default:
-				Perl_croak(aTHX_ "Invalid reference type");
+				croak_assert("Invalid reference type: %d", (int) rt);
 				break;
 		}
 
@@ -121,15 +124,17 @@ owner(self)
 	SV *self
 
 	PREINIT:
-		SV *ref;
+		Reference ref;
+		SV *repo;
 
 	CODE:
-		if (!SvROK(self)) Perl_croak(aTHX_ "Not a reference");
+		ref = GIT_SV_TO_PTR(Reference, self);
+		repo = GIT_SV_TO_MAGIC(self);
 
-		ref = GIT_SV_TO_MAGIC(self);
-		if (!ref) Perl_croak(aTHX_ "Invalid object");
+		if (!repo)
+			croak_assert("No owner attached");
 
-		RETVAL = newRV_inc(ref);
+		RETVAL = newRV_inc(repo);
 
 	OUTPUT: RETVAL
 
@@ -164,7 +169,8 @@ target(self, ...)
 				new_ref, GIT_SV_TO_MAGIC(self)
 			);
 		} else {
-			switch (git_reference_type(ref)) {
+			git_ref_t rt = git_reference_type(ref);
+			switch (rt) {
 				case GIT_REF_OID: {
 					git_object *obj;
 					const git_oid *oid;
@@ -203,7 +209,9 @@ target(self, ...)
 					break;
 				}
 
-				default: Perl_croak(aTHX_ "Invalid reference type");
+				default:
+					RETVAL = &PL_sv_undef;
+					croak_assert("Invalid reference type: %d", (int) rt);
 			}
 		}
 

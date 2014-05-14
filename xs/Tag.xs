@@ -21,7 +21,7 @@ create(class, repo, name, msg, tagger, target)
 		obj = git_sv_to_obj(target);
 
 		if (obj == NULL)
-			Perl_croak(aTHX_ "Target is not of a valid type");
+			croak_usage("Invalid type for '%s', expected a commitish", "target");
 
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 

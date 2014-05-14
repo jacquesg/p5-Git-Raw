@@ -14,14 +14,14 @@ new(class, ...)
 
 	CODE:
 		if (items == 1)
-			Perl_croak(aTHX_ "No 'paths' provided");
+			croak_usage("No 'paths' provided");
 
 		count = items - 1;
 		Newxz(paths.strings, count, char *);
 		for (i = 0; i < count; ++i) {
 			if (!SvPOK(ST(i + 1))) {
 				Safefree(paths.strings);
-				Perl_croak(aTHX_ "Expected a string for 'path'");
+				croak_usage("Expected a string for 'path'");
 			}
 			paths.strings[i] = SvPVbyte_nolen(ST(i + 1));
 		}
@@ -91,7 +91,7 @@ match(self, obj, ...)
 		}
 
 		if (list == NULL)
-			Perl_croak(aTHX_ "Expected a 'Git::Raw::Repository', 'Git::Raw::Index', "
+			croak_usage("Expected a 'Git::Raw::Repository', 'Git::Raw::Index', "
 				"'Git::Raw::Tree' or 'Git::Raw::Diff' object");
 
 		GIT_NEW_OBJ(

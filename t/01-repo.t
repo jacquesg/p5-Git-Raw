@@ -131,6 +131,14 @@ my $email = 'git-xs@example.com';
 is undef, $config -> bool('some.bool');
 ok (!eval { $config -> bool('some.bool', 1, 1) });
 ok (!eval { $config -> bool('some.bool', 'zzzz') });
+
+my $error = $@;
+ok ($error);
+isa_ok($error, 'Git::Raw::Error');
+is $error -> code, Git::Raw::Error -> USAGE;
+like $error, qr/Invalid type/;
+is $error -> category, Git::Raw::Error::Category -> INTERNAL;
+
 ok $config -> bool('some.bool', 1);
 ok $config -> bool('some.bool');
 

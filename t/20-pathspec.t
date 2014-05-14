@@ -14,13 +14,26 @@ my $repo = Git::Raw::Repository -> open($path);
 my @status = $repo->status();
 
 ok (!eval { Git::Raw::PathSpec -> new });
+my $error = $@;
+isa_ok $error, 'Git::Raw::Error';
+is $error -> code, Git::Raw::Error -> USAGE;
+is $error -> category, Git::Raw::Error::Category -> INTERNAL;
+
 ok (!eval { Git::Raw::PathSpec -> new($repo) });
+$error = $@;
+isa_ok $error, 'Git::Raw::Error';
+
 my $spec = Git::Raw::PathSpec -> new('blah');
 isa_ok $spec, 'Git::Raw::PathSpec';
 
 my $list;
 
 ok (!eval { $spec -> match('') });
+$error = $@;
+isa_ok $error, 'Git::Raw::Error';
+is $error -> code, Git::Raw::Error -> USAGE;
+is $error -> category, Git::Raw::Error::Category -> INTERNAL;
+
 ok (!eval { $list = $spec -> match($repo, {
 	'flags' => {
 		'no_match_error' => 1
