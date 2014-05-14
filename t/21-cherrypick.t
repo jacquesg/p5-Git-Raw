@@ -51,7 +51,7 @@ $repo -> checkout($repo -> head($cherry_pick_branch), {
 	}
 });
 
-isnt -f $file, 1;
+isnt -f $file1, 1;
 is $repo -> status -> {'cherry_file'}, undef;
 
 $repo -> cherry_pick($commit1);
