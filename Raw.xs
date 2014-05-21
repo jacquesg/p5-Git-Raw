@@ -151,9 +151,9 @@ STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 		MAGIC *tmp;
 
 		for (tmp = SvMAGIC(sv); tmp;
-		     tmp = tmp -> mg_moremagic) {
+			tmp = tmp -> mg_moremagic) {
 			if ((tmp -> mg_type == PERL_MAGIC_ext) &&
-			    (tmp -> mg_virtual == &null_mg_vtbl))
+				(tmp -> mg_virtual == &null_mg_vtbl))
 				mg = tmp;
 		}
 	}
@@ -288,8 +288,7 @@ STATIC git_oid *git_sv_to_commitish(Repository repo, SV *sv, git_oid *oid) {
 		STRLEN len;
 		const char *commitish_name = NULL;
 
-		/* substr() may return a SVt_PVLV, need to perform some
-		 * force majeur */
+		/* substr() may return a SVt_PVLV, need to perform some force majeur */
 		if (SvPOK(sv)) {
 			commitish_name = SvPVbyte(sv, len);
 		} else if (SvTYPE(sv) == SVt_PVLV) {
@@ -297,8 +296,7 @@ STATIC git_oid *git_sv_to_commitish(Repository repo, SV *sv, git_oid *oid) {
 		}
 
 		if (commitish_name) {
-			/* first try and see if its a commit id, otherwise see if its
-			 * a reference */
+			/* first try and see if its a commit id, or if its a reference */
 			if (git_oid_fromstrn(oid, commitish_name, len) >= 0) {
 				if (len < GIT_OID_MINPREFIXLEN)
 					goto on_error;
