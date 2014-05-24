@@ -501,14 +501,13 @@ struct git_remote_callbacks {
  * Initializes a `git_remote_callbacks` with default values. Equivalent to
  * creating an instance with GIT_REMOTE_CALLBACKS_INIT.
  *
- * @param opts the `git_remote_callbacks` instance to initialize.
- * @param version the version of the struct; you should pass
- *        `GIT_REMOTE_CALLBACKS_VERSION` here.
+ * @param opts the `git_remote_callbacks` struct to initialize
+ * @param version Version of struct; pass `GIT_REMOTE_CALLBACKS_VERSION`
  * @return Zero on success; -1 on failure.
  */
 GIT_EXTERN(int) git_remote_init_callbacks(
-	git_remote_callbacks* opts,
-	int version);
+	git_remote_callbacks *opts,
+	unsigned int version);
 
 /**
  * Set the callbacks for a remote
@@ -610,6 +609,37 @@ GIT_EXTERN(void) git_remote_set_update_fetchhead(git_remote *remote, int value);
  * @return 1 if the reference name is acceptable; 0 if it isn't
  */
 GIT_EXTERN(int) git_remote_is_valid_name(const char *remote_name);
+
+/**
+* Delete an existing persisted remote.
+*
+* All remote-tracking branches and configuration settings
+* for the remote will be removed.
+*
+* once deleted, the passed remote object will be freed and invalidated.
+*
+* @param remote A valid remote
+* @return 0 on success, or an error code.
+*/
+GIT_EXTERN(int) git_remote_delete(git_remote *remote);
+
+/**
+ * Retrieve the name of the remote's default branch
+ *
+ * The default branch of a repository is the branch which HEAD points
+ * to. If the remote does not support reporting this information
+ * directly, it performs the guess as git does; that is, if there are
+ * multiple branches which point to the same commit, the first one is
+ * chosen. If the master branch is a candidate, it wins.
+ *
+ * This function must only be called after connecting.
+ *
+ * @param out the buffern in which to store the reference name
+ * @param remote the remote
+ * @return 0, GIT_ENOTFOUND if the remote does not have any references
+ * or none of them point to HEAD's commit, or an error message.
+ */
+GIT_EXTERN(int) git_remote_default_branch(git_buf *out, git_remote *remote);
 
 /** @} */
 GIT_END_DECL
