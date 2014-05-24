@@ -23,7 +23,7 @@ static git_atomic git__n_inits;
 void git__on_shutdown(git_global_shutdown_fn callback)
 {
 	int count = git_atomic_inc(&git__n_shutdown_callbacks);
-	assert(count <= MAX_SHUTDOWN_CB);
+	assert(count <= MAX_SHUTDOWN_CB && count > 0);
 	git__shutdown_callbacks[count - 1] = callback;
 }
 
@@ -31,10 +31,12 @@ static void git__shutdown(void)
 {
 	int pos;
 
-	while ((pos = git_atomic_dec(&git__n_shutdown_callbacks)) >= 0) {
-		if (git__shutdown_callbacks[pos])
-			git__shutdown_callbacks[pos]();
+	for (pos = git_atomic_get(&git__n_shutdown_callbacks); pos > 0; pos = git_atomic_dec(&git__n_shutdown_callbacks)) {
+		git_global_shutdown_fn cb = git__swap(git__shutdown_callbacks[pos - 1], NULL);
+		if (cb != NULL)
+			cb();
 	}
+
 }
 
 /**
@@ -74,7 +76,7 @@ static void git__shutdown(void)
 #if defined(GIT_THREADS) && defined(GIT_WIN32)
 
 static DWORD _tls_index;
-static DWORD _mutex = 0;
+static volatile LONG _mutex = 0;
 
 static int synchronized_threads_init()
 {
