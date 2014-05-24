@@ -260,11 +260,6 @@ $index -> write;
 my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$merge_commit1],
 	$repo -> lookup($index -> write_tree));
 
-my $squashed_commit = $repo -> commit ("squashed_commit\n", $me, $me, [$head_commit],
-	$repo -> lookup($index -> write_tree ($repo)));
-
-is $repo -> head -> target -> id, $squashed_commit -> id;
-
 my $merged_index = $merge_commit1 -> merge($merge_commit2, {});
 isa_ok $merged_index, 'Git::Raw::Index';
 is $merged_index -> has_conflicts, 0;
