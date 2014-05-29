@@ -11,8 +11,8 @@ use Git::Raw::Reference;
 use Git::Raw::Repository;
 
 =for HTML
-<a href="https://travis-ci.org/ghedo/p5-Git-Raw">
-	<img src="https://travis-ci.org/ghedo/p5-Git-Raw.svg?branch=master" alt="Build Status" align="right" />
+<a href="https://travis-ci.org/jacquesg/p5-Git-Raw">
+	<img src="https://travis-ci.org/jacquesg/p5-Git-Raw.svg?branch=master" alt="Build Status" align="right" />
 </a>
 <a href="https://coveralls.io/r/ghedo/p5-Git-Raw">
 	<img src="https://coveralls.io/repos/ghedo/p5-Git-Raw/badge.png?branch=master" alt="Coverage Status" align="right" />
