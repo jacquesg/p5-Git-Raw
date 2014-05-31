@@ -116,8 +116,8 @@ typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
 
 /* printf format specifier for size_t */
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#  define PRIuZ "Iu"
-#  define PRIxZ "Ix"
+# define PRIuZ "Iu"
+# define PRIxZ "Ix"
 #else
 # define PRIuZ "zu"
 # define PRIxZ "zx"
