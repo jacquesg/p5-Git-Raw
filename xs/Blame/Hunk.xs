@@ -68,4 +68,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Blame::Hunk, self, dummy_free);

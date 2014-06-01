@@ -35,7 +35,7 @@ delete(self)
 		int rc;
 
 		Reference ref;
-	
+
 	CODE:
 		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));
 
@@ -151,5 +151,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_reflog_free(GIT_SV_TO_PTR(Reflog, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Reflog, self, git_reflog_free);

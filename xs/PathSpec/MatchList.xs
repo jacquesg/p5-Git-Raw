@@ -56,9 +56,5 @@ void
 DESTROY(self)
 	SV *self
 
-	PREINIT:
-		PathSpec_MatchList list;
-
 	CODE:
-		list = GIT_SV_TO_PTR(PathSpec::MatchList, self);
-		git_pathspec_match_list_free(list);
+		GIT_FREE_OBJ(PathSpec::MatchList, self, git_pathspec_match_list_free);

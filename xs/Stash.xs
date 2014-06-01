@@ -53,15 +53,10 @@ foreach(class, repo, cb)
 		int rc;
 
 	CODE:
-		git_foreach_payload payload = {
-			GIT_SV_TO_PTR(Repository, repo),
-			repo,
-			cb,
-			NULL
-		};
-
 		rc = git_stash_foreach(
-			payload.repo_ptr, git_stash_foreach_cb, &payload
+			GIT_SV_TO_PTR(Repository, repo),
+			git_stash_foreach_cb,
+			cb
 		);
 
 		git_check_error(rc);

@@ -126,13 +126,9 @@ foreach(self, cb)
 	PREINIT:
 		int rc;
 
-		git_foreach_payload payload = { NULL, NULL, NULL, NULL };
-
 	CODE:
-		payload.cb = cb;
-
 		rc = git_config_foreach(
-			self, git_config_foreach_cbb, &payload
+			self, git_config_foreach_cbb, cb
 		);
 
 		if (rc != GIT_EUSER)
@@ -179,7 +175,7 @@ delete(self, name)
 
 void
 DESTROY(self)
-	Config self
+	SV *self
 
 	CODE:
-		git_config_free(self);
+		GIT_FREE_OBJ(Config, self, git_config_free);

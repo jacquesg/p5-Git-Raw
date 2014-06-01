@@ -121,5 +121,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_patch_free(GIT_SV_TO_PTR(Patch, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Patch, self, git_patch_free);

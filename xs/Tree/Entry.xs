@@ -64,5 +64,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_tree_entry_free(GIT_SV_TO_PTR(Tree::Entry, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Tree::Entry, self, git_tree_entry_free);

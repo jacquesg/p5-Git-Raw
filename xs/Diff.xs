@@ -148,7 +148,7 @@ patches(self)
 
 void
 DESTROY(self)
-	Diff self
+	SV *self
 
 	CODE:
-		git_diff_free(self);
+		GIT_FREE_OBJ(Diff, self, git_diff_free);

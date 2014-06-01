@@ -325,5 +325,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_commit_free(GIT_SV_TO_PTR(Commit, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Commit, self, git_commit_free);

@@ -111,7 +111,7 @@ offset(self)
 	OUTPUT: RETVAL
 
 void DESTROY(self)
-	Signature self
+	SV *self
 
 	CODE:
-		git_signature_free(self);
+		GIT_FREE_OBJ(Signature, self, git_signature_free);

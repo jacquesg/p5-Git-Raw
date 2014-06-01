@@ -198,5 +198,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_revwalk_free(GIT_SV_TO_PTR(Walker, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Walker, self, git_revwalk_free);

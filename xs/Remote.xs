@@ -467,9 +467,4 @@ DESTROY(self)
 		Remote remote;
 
 	CODE:
-		remote = GIT_SV_TO_PTR(Remote, self);
-
-		git_remote_free(remote -> remote);
-		git_clean_remote_callbacks(&remote -> callbacks);
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
-		Safefree(remote);
+		GIT_FREE_OBJ(Remote, self, git_raw_remote_free);

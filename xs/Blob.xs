@@ -117,5 +117,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_blob_free(GIT_SV_TO_PTR(Blob, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Blob, self, git_blob_free);

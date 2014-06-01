@@ -389,5 +389,4 @@ DESTROY(self)
 	SV* self
 
 	CODE:
-		git_index_free(GIT_SV_TO_PTR(Index, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Index, self, git_index_free);

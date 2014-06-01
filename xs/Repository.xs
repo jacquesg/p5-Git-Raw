@@ -1076,7 +1076,10 @@ is_head_detached(self)
 
 void
 DESTROY(self)
-	Repository self
+	SV *self
+
+	PREINIT:
+		Repository repo;
 
 	CODE:
-		git_repository_free(self);
+		GIT_FREE_OBJ(Repository, self, git_repository_free);

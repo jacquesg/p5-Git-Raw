@@ -104,9 +104,5 @@ void
 DESTROY(self)
 	SV *self
 
-	PREINIT:
-		PathSpec ps;
-
 	CODE:
-		ps = GIT_SV_TO_PTR(PathSpec, self);
-		git_pathspec_free(ps);
+		GIT_FREE_OBJ(PathSpec, self, git_pathspec_free);

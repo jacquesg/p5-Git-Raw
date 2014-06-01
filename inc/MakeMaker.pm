@@ -42,7 +42,7 @@ Getopt::Long::GetOptions(
 
 my $def = '';
 my $lib = '';
-my $inc = '';
+my $inc = '-I.';
 my $ccflags = '';
 
 my %os_specific = (
@@ -197,8 +197,11 @@ if ($Config{usethreads} && !$is_sunpro) {
 	print "Thread support disabled (perl wasn't built with thread support)\n"
 }
 
-my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
-my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
+my @srcs;
+push @srcs, glob 'raw/*.c';
+push @srcs, glob 'raw/util/*.c';
+push @srcs, glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
+push @srcs, glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c}';
 push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
 
 # the system regex is broken on Solaris, not available on Windows
@@ -228,7 +231,7 @@ if ($is_linux || $is_solaris || $is_gkfreebsd) {
 	$lib .= ' -lrt';
 }
 
-my @objs = map { substr ($_, 0, -1) . 'o' } (@deps, @srcs);
+my @objs = map { substr ($_, 0, -1) . 'o' } @srcs;
 
 sub MY::c_o {
 	my $out_switch = '-o ';

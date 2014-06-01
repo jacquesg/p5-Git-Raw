@@ -80,14 +80,17 @@ foreach(class, repo, cb)
 		int rc;
 
 	CODE:
-		git_foreach_payload payload = {
-			GIT_SV_TO_PTR(Repository, repo),
+		git_tag_foreach_payload payload = {
 			repo,
 			cb,
 			SvPVbyte_nolen(class)
 		};
 
-		rc = git_tag_foreach(payload.repo_ptr, git_tag_foreach_cbb, &payload);
+		rc = git_tag_foreach(
+			GIT_SV_TO_PTR(Repository, repo),
+			git_tag_foreach_cbb,
+			&payload
+		);
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
@@ -100,16 +103,13 @@ delete(self)
 		int rc;
 
 		Tag tag_ptr;
-		Repository repo;
 
 	CODE:
 		tag_ptr = GIT_SV_TO_PTR(Tag, self);
 
-		repo = INT2PTR(
-			Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self))
-		);
-
-		rc = git_tag_delete(repo, git_tag_name(tag_ptr));
+		rc = git_tag_delete(
+			INT2PTR(Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self))),
+			git_tag_name(tag_ptr));
 		git_check_error(rc);
 
 		git_tag_free(tag_ptr);
@@ -181,5 +181,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_tag_free(GIT_SV_TO_PTR(Tag, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Tag, self, git_tag_free);

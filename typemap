@@ -32,12 +32,14 @@ Walker					T_GIT_REF
 
 OUTPUT
 T_GIT_REF
-	sv_setref_pv($arg, \"Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\", (void *) $var);
+	STMT_START {
+		const char *class = \"Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\";
+		gr_bless_into_obj_inplace(class, (void *) $var, NULL, $arg);
+	} STMT_END;
 
 INPUT
 T_GIT_REF
-	if (sv_isobject($arg) &&
-	    sv_derived_from($arg, \"Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\"))
-		$var = INT2PTR($type, SvIV((SV *) SvRV($arg)));
-	else
-		Perl_croak(aTHX_ \"$var is not of type Git::Raw::${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\");
+	STMT_START {
+		const char *short_class = \"${(my $ntt = $ntype) =~ s/_/::/g;\$ntt}\";
+		$var = git_sv_to_ptr(short_class, $arg);
+	} STMT_END;

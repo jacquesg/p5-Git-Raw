@@ -106,5 +106,4 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_blame_free(GIT_SV_TO_PTR(Blame, self));
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		GIT_FREE_OBJ(Blame, self, git_blame_free);
