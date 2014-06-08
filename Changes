@@ -15,6 +15,18 @@ Revision history for Git-Raw
     + Index -> path()
     + Index -> add_all()
     + Index -> remove_all()
+ - Improved documentation (GH#101)
+ - Improved the error model (GH#101)
+    All errors are now Git::Raw::Error objects. Extended error information
+	provided by libgit2 may be queried (code/category/message) via the
+	corresponding accessor. All existing code should continue to work as is
+	(via "" and bool overloads).
+ - Added Error methods (GH#101):
+	+ Error -> code()
+	+ Error -> category()
+	+ Error -> message()
+ - Removed constants from Filter (Incompatible change) (GH#101):
+   They are now located in the Error namespace.
 
 0.36      2014-05-02 15:59:18SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
