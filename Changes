@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.37      2014-06-08 17:25:17SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
+
  - Removed Index -> add_conflict() (Incompatible change) (GH#97)
  - Index -> read() now takes an optional force argument (GH#97)
  - Added Raw -> features() method. This may be used to query the features
