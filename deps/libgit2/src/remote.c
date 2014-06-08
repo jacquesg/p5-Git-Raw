@@ -403,6 +403,7 @@ int git_remote_load(git_remote **out, git_repository *repo, const char *name)
 
 	if (!optional_setting_found) {
 		error = GIT_ENOTFOUND;
+		giterr_set(GITERR_CONFIG, "Remote '%s' does not exist.", name);
 		goto cleanup;
 	}
 
@@ -1379,7 +1380,7 @@ static int rename_one_remote_reference(
 		goto cleanup;
 
 	error = git_reference_rename(
-		NULL, reference, git_buf_cstr(&new_name), 0,
+		NULL, reference, git_buf_cstr(&new_name), 1,
 		NULL, git_buf_cstr(&log_message));
 	git_reference_free(reference);
 
@@ -1395,18 +1396,20 @@ static int rename_remote_references(
 	const char *new_name)
 {
 	int error;
+	git_buf buf = GIT_BUF_INIT;
 	git_reference *ref;
 	git_reference_iterator *iter;
 
-	if ((error = git_reference_iterator_new(&iter, repo)) < 0)
+	if ((error = git_buf_printf(&buf, GIT_REFS_REMOTES_DIR "%s/*", old_name)) < 0)
+		return error;
+
+	error = git_reference_iterator_glob_new(&iter, repo, git_buf_cstr(&buf));
+	git_buf_free(&buf);
+
+	if (error < 0)
 		return error;
 
 	while ((error = git_reference_next(&ref, iter)) == 0) {
-		if (git__prefixcmp(ref->name, GIT_REFS_REMOTES_DIR)) {
-			git_reference_free(ref);
-			continue;
-		}
-
 		if ((error = rename_one_remote_reference(ref, old_name, new_name)) < 0)
 			break;
 	}
@@ -1809,24 +1812,50 @@ static int remove_branch_config_related_entries(
 	return error;
 }
 
-static int remove_refs(git_repository *repo, const char *glob)
+static int remove_refs(git_repository *repo, const git_refspec *spec)
 {
-	git_reference_iterator *iter;
+	git_reference_iterator *iter = NULL;
+	git_vector refs;
 	const char *name;
+	char *dup;
 	int error;
+	size_t i;
 
-	if ((error = git_reference_iterator_glob_new(&iter, repo, glob)) < 0)
+	if ((error = git_vector_init(&refs, 8, NULL)) < 0)
 		return error;
 
+	if ((error = git_reference_iterator_new(&iter, repo)) < 0)
+		goto cleanup;
+
 	while ((error = git_reference_next_name(&name, iter)) == 0) {
+		if (!git_refspec_dst_matches(spec, name))
+			continue;
+
+		dup = git__strdup(name);
+		if (!dup) {
+			error = -1;
+			goto cleanup;
+		}
+
+		if ((error = git_vector_insert(&refs, dup)) < 0)
+			goto cleanup;
+	}
+	if (error == GIT_ITEROVER)
+		error = 0;
+	if (error < 0)
+		goto cleanup;
+
+	git_vector_foreach(&refs, i, name) {
 		if ((error = git_reference_remove(repo, name)) < 0)
 			break;
 	}
+
+cleanup:
 	git_reference_iterator_free(iter);
-
-	if (error == GIT_ITEROVER)
-		error = 0;
-
+	git_vector_foreach(&refs, i, dup) {
+		git__free(dup);
+	}
+	git_vector_free(&refs);
 	return error;
 }
 
@@ -1848,7 +1877,7 @@ static int remove_remote_tracking(git_repository *repo, const char *remote_name)
 		if (refspec == NULL)
 			continue;
 
-		if ((error = remove_refs(repo, git_refspec_dst(refspec))) < 0)
+		if ((error = remove_refs(repo, refspec)) < 0)
 			break;
 	}
 
