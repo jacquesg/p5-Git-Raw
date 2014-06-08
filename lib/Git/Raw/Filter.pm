@@ -16,20 +16,6 @@ A C<Git::Raw::Filter> represents a Git filter.
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
-=head1 CONSTANTS
-
-=head2 OK
-
-The filter is able to run / has succeeded.
-
-=head2 ERROR
-
-The filter failed to run.
-
-=head2 PASSTHROUGH
-
-The filter should be skipped.
-
 =head1 METHODS
 
 =head2 create( $name, $attributes)
@@ -65,8 +51,9 @@ Optional callback that checks if filtering is needed for a given source.
 The callback receives the following parameters: The filter source, a
 C<Git::Raw::Filter::Source> object.
 
-If the filter should be applied, C<OK> should be returned. If the filter
-should be skipped, C<PASSTHROUGH> should be returned.
+If the filter should be applied, C<Git::Raw::Error-E<gt>OK> should be returned.
+If the filter should be skipped, C<Git::Raw::Error-E<gt>PASSTHROUGH> should be
+returned.
 
 =item * "apply"
 
@@ -76,9 +63,10 @@ The callback receives the following parameters: The filter source, a
 C<Git::Raw::Filter::Source> object, C<$from> the source data and C<$to>,
 a scalar reference where the output should be written to.
 
-If the filter successfully writes the output, C<OK> should be returned.
-If the filter failed, C<ERROR> should be returned. If the filter does not want
-to run, C<PASSTHROUGH> should be returned.
+If the filter successfully writes the output, C<Git::Raw::Error-E<gt>OK> should
+be returned. If the filter failed, C<Git::Raw::Error-E<gt>ERROR> should be
+returned. If the filter does not want to run, C<Git::Raw::Error-E<gt>PASSTHROUGH>
+should be returned.
 
 =item * "cleanup"
 

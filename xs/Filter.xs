@@ -1,29 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Filter
 
 SV *
-OK(class)
-	CODE:
-		RETVAL = newSViv(GIT_OK);
-
-	OUTPUT: RETVAL
-
-SV *
-ERROR(class)
-	CODE:
-		RETVAL = newSViv(GIT_ERROR);
-
-	OUTPUT: RETVAL
-
-SV *
-PASSTHROUGH(class)
-	CODE:
-		RETVAL = newSViv(GIT_PASSTHROUGH);
-
-	OUTPUT: RETVAL
-
-
-
-SV *
 create(class, name, attributes)
 	SV *class
 	const char *name
