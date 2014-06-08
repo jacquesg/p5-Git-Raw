@@ -9,7 +9,7 @@ Revision history for Git-Raw
  - Added Repository methods (GH#97):
     + Repository -> cherry_pick()
     + Repository -> revert()
- - Update libgit2 to 530594c (GH#99)
+ - Update libgit2 to df19219 (GH#99,GH#102)
  - Added Index methods (GH#100):
     + Index -> capabilities()
     + Index -> path()
