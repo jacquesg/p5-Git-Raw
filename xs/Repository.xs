@@ -617,6 +617,7 @@ merge_analysis(self, ref)
 		int rc;
 
 		git_merge_head *merge_head;
+		git_merge_preference_t pref;
 		git_merge_analysis_t analysis;
 
 		AV *result;
@@ -624,7 +625,7 @@ merge_analysis(self, ref)
 		rc = git_merge_head_from_ref(&merge_head, self, ref);
 		git_check_error(rc);
 
-		rc = git_merge_analysis(&analysis,
+		rc = git_merge_analysis(&analysis, &pref,
 			self, (const git_merge_head **) &merge_head, 1);
 		git_merge_head_free(merge_head);
 		git_check_error(rc);
