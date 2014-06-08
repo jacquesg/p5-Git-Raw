@@ -75,14 +75,14 @@ Files treated as binary data.
 
 =item * "valid_id"
 
-L<"id"> value is known correct.
+C<"id"> value is known correct.
 
 =back
 
 =head2 similarity( )
 
-Retrieve the similarity score between 0 and 100 between L<"old_file">
-and L<"new_file">.
+Retrieve the similarity score between 0 and 100 between C<"old_file">
+and C<"new_file">.
 
 =head2 file_count( )
 
@@ -90,13 +90,13 @@ Retrieve the number of files in the delta.
 
 =head2 old_file( )
 
-The L<"old_file"> represents the L<"from"> side of the diff. Returns
-a C<Git::Raw::DiffFile> object.
+The C<"old_file"> represents the C<"from"> side of the diff. Returns
+a L<Git::Raw::Diff::File> object.
 
 =head2 new_file( )
 
-The L<"new_file"> represents to L<"to"> side of the diff. Returns
-a C<Git::Raw::DiffFile> object.
+The C<"new_file"> represents to C<"to"> side of the diff. Returns
+a L<Git::Raw::Diff::File> object.
 
 =head1 AUTHOR
 

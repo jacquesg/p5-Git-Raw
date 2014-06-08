@@ -37,8 +37,8 @@ B<WARNING>: The API of this module is unstable and may change without warning
 =head2 is_descendant_of( $repo, $commitish, $ancestor )
 
 Determine if C<$commitish> is the descendant of C<$ancestor>. C<$commitish>
-and C<$ancestor> should be peelable to a C<Git::Raw::Commit> object, that is,
-it should be a C<Git::Raw::Commit> or C<Git::Raw::Reference> object, or
+and C<$ancestor> should be peelable to a L<Git::Raw::Commit> object, that is,
+it should be a L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or
 alternatively a commit id or commit id prefix.
 
 =head1 AUTHOR

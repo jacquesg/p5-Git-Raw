@@ -34,12 +34,12 @@ of the file.
 =head2 orig_commit_id( )
 
 Retrieve the id of the commit where this hunk was found. This will usually
-be the same as L<"final_commit_id">.
+be the same as C<"final_commit_id">.
 
 =head2 orig_start_line_number( )
 
-Retrieve the 1-based line number where this hunk begins in the file named by 
-L<"orig_path"> in the commit specified by L<"orig_commit_id">.
+Retrieve the 1-based line number where this hunk begins in the file named by
+C<"orig_path"> in the commit specified by C<"orig_commit_id">.
 
 =head2 orig_path( )
 

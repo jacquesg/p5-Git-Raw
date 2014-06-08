@@ -340,8 +340,8 @@ Example:
 =head2 merge_base( @objects )
 
 Find the merge base between C<@objects>. Each element in C<@objects> should be
-peelable to a C<Git::Raw::Commit> object, that is, it should be a
-C<Git::Raw::Commit> or C<Git::Raw::Reference> object, or alternatively a commit
+peelable to a L<Git::Raw::Commit> object, that is, it should be a
+L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or alternatively a commit
 id or commit id prefix.
 
 =head2 merge_analysis( $reference )
@@ -408,7 +408,7 @@ Similarity metric for considering a file renamed (default is 50).
 
 =item * "target_limit"
 
-Maximum similarity sources to examine (overrides the L<"merge.renameLimit">
+Maximum similarity sources to examine (overrides the C<"merge.renameLimit">
 configuration entry) (default is 200).
 
 =back
@@ -527,7 +527,7 @@ as untracked (changing the behavior to not match core git).
 
 =item * "show_untracked_content"
 
-Include the content of untracked files. This implies L<"include_untracked">.
+Include the content of untracked files. This implies C<"include_untracked">.
 
 =item * "show_unmodified"
 
@@ -550,12 +550,12 @@ Take extra time to find minimal diff.
 =item * "a"
 
 The virtual C<"directory"> to prefix to old file names in hunk headers.
-(Default is L"a".)
+(Default is C<"a">.)
 
 =item * "b"
 
 The virtual C<"directory"> to prefix to new file names in hunk headers.
-(Default is L"b".)
+(Default is C<"b">.)
 
 =back
 
@@ -594,7 +594,7 @@ sub branch { return Git::Raw::Branch -> create(@_) }
 =head2 branches( [$type] )
 
 Retrieve a list of L<Git::Raw::Branch> objects. Possible values for C<$type>
-include L<"local">, L<"remote"> or L<"all">.
+include C<"local">, C<"remote"> or C<"all">.
 
 =head2 commit( $msg, $author, $committer, \@parents, $tree [, $update_ref ] )
 
@@ -737,7 +737,7 @@ cherry-pick, etc.
 
 =head2 message( )
 
-Retrieve the content of git's prepared message i.e. L<".git/MERGE_MSG">.
+Retrieve the content of git's prepared message i.e. C<".git/MERGE_MSG">.
 
 =head2 is_empty( )
 
@@ -753,7 +753,7 @@ Check if the repository is a shallow clone.
 
 =head2 is_head_detached( )
 
-Check if the repository's HEAD is detached, that is, it points directly to
+Check if the repository's C<HEAD> is detached, that is, it points directly to
 a commit.
 
 =head1 AUTHOR

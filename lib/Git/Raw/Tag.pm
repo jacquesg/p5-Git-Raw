@@ -71,7 +71,7 @@ Retrieve the message of the tag.
 
 =head2 tagger( )
 
-Retrieve the C<Git::Raw::Signature> representing the tag's tagger.
+Retrieve the L<Git::Raw::Signature> representing the tag's tagger.
 
 =head2 target( )
 

@@ -36,8 +36,8 @@ The filter should be skipped.
 
 Create a filter. C<$name> is a name by which the filter can be referenced.
 C<$attributes> is a whitespace-separated list of attribute names to check for
-this filter (e.g. L<"eol crlf text">). If the attribute name is bare, it will
-be simply loaded and passed to the L<"check"> callback.  If it has a value
+this filter (e.g. C<"eol crlf text">). If the attribute name is bare, it will
+be simply loaded and passed to the C<"check"> callback.  If it has a value
 (i.e. "name=value"), the attribute must match that value for the filter to
 be applied.
 

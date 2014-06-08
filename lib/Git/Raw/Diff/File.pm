@@ -43,7 +43,7 @@ Files treated as binary data.
 
 =item * "valid_id"
 
-L<"id"> value is known correct.
+C<"id"> value is known correct.
 
 =back
 

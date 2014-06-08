@@ -21,7 +21,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 =head2 add( $entry )
 
 Add C<$entry> to the index. C<$entry> should either be the path of a file
-or alternatively a C<Git::Raw::Index::Entry>.
+or alternatively a L<Git::Raw::Index::Entry>.
 
 =head2 add_all( \%opts )
 
@@ -57,8 +57,8 @@ Enable pathspec pattern matching against entries in C<$paths> (default).
 =item * "notification"
 
 The callback to be called for each added or updated item. Receives the C<$path>
-and matching C<$pathspec>. This callback should return L<0> if the file should
-be added to the index, L<E<gt>0> if it should be skipped or L<E<lt>0> to abort.
+and matching C<$pathspec>. This callback should return C<0> if the file should
+be added to the index, C<E<gt>0> if it should be skipped or C<E<lt>0> to abort.
 
 =back
 
@@ -94,7 +94,7 @@ Replace the index contente with C<$tree>.
 =head2 write_tree( [$repo] )
 
 Create a new tree from the index and write it to disk. C<$repo> optionally
-indicates which C<Git::Raw::Repository> the tree should be written to.
+indicates which L<Git::Raw::Repository> the tree should be written to.
 
 =head2 checkout( [\%checkout_opts] )
 
@@ -104,7 +104,7 @@ C<%checkout_opts> values.
 
 =head2 entries( )
 
-Retrieve index entries. Returns a list of C<Git::Raw::Index::Entry> objects.
+Retrieve index entries. Returns a list of L<Git::Raw::Index::Entry> objects.
 
 =head2 remove_conflict( $file )
 
@@ -121,7 +121,7 @@ Remove all conflicts in the index (entries with a stage greater than 0).
 =head2 conflicts( )
 
 Retrieve index entries that represent a conflict. Returns a list of
-C<Git::Raw::Index::Entry> objects.
+L<Git::Raw::Index::Entry> objects.
 
 =head2 update_all( \%opts )
 
@@ -137,15 +137,15 @@ List of path patterns to add.
 =item * "notification"
 
 The callback to be called for each updated item. Receives the C<$path> and
-matching C<$pathspec>. This callback should return L<0> if the file should be
-added to the index, L<E<gt>0> if it should be skipped or L<E<lt>0> to abort.
+matching C<$pathspec>. This callback should return C<0> if the file should be
+added to the index, C<E<gt>0> if it should be skipped or C<E<lt>0> to abort.
 
 =back
 
 =head2 capabilities( )
 
-Retrieve the index's capabilities. Returns a hash with members L<"ignore_case">,
-L<"no_filemode"> and L<"no_symlinks">, each indicating if the C<Git::Raw::Index>
+Retrieve the index's capabilities. Returns a hash with members C<"ignore_case">,
+C<"no_filemode"> and C<"no_symlinks">, each indicating if the L<Git::Raw::Index>
 supports the capability.
 
 =head1 AUTHOR

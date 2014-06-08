@@ -42,15 +42,15 @@ Flags for generating the diff stats buffer. Valid values include:
 
 =item * "full"
 
-Full statistics similar to core git's L<--stat>.
+Full statistics similar to core git's C<--stat>.
 
 =item * "short"
 
-Short statistics similar to core git's L<--shortstat>.
+Short statistics similar to core git's C<--shortstat>.
 
 =item * "number"
 
-Number statistics similar to core git's L<--numstat>.
+Number statistics similar to core git's C<--numstat>.
 
 =item * "summary"
 
