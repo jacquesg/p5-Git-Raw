@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fixed Windows specific path comparison test case
+ - (Possibly) Fix cross-compilation issues with ARM architectures
+
 0.37      2014-06-08 17:25:17SAST+0200 Africa/Johannesburg (TRIAL RELEASE)
 
  - Removed Index -> add_conflict() (Incompatible change) (GH#97)
