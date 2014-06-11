@@ -84,11 +84,11 @@ Check if the reference is remote.
 
 =head2 is_tag( )
 
-Check if the reference lives in the L<"refs/tags"> namespace.
+Check if the reference lives in the C<refsE<sol>tags> namespace.
 
 =head2 is_note( )
 
-Check if the reference lives in the L<"refs/notes"> namespace.
+Check if the reference lives in the C<refsE<sol>notes> namespace.
 
 =head1 AUTHOR
 

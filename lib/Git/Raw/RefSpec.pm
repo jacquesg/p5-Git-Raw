@@ -40,7 +40,7 @@ Get the refspec's string.
 
 =head2 direction( )
 
-Get the refspec's direction. It is either L<"fetch"> or L<"push">.
+Get the refspec's direction. It is either C<"fetch"> or C<"push">.
 
 =head2 transform( $name )
 

@@ -20,7 +20,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 lookup( $repo, $id )
 
-Retrieve the tree corresponding to C$id>. This function is pretty much the same
+Retrieve the tree corresponding to C<$id>. This function is pretty much the same
 as C<$repo-E<gt>lookup($id)> except that it only returns trees.
 
 =head2 id( )

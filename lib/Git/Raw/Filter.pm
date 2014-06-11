@@ -49,7 +49,7 @@ called even if C<"initialize"> has never been called.
 
 Optional callback that checks if filtering is needed for a given source.
 The callback receives the following parameters: The filter source, a
-C<Git::Raw::Filter::Source> object.
+L<Git::Raw::Filter::Source> object.
 
 If the filter should be applied, C<Git::Raw::Error-E<gt>OK> should be returned.
 If the filter should be skipped, C<Git::Raw::Error-E<gt>PASSTHROUGH> should be
@@ -60,7 +60,7 @@ returned.
 Callback that actually filters data.
 
 The callback receives the following parameters: The filter source, a
-C<Git::Raw::Filter::Source> object, C<$from> the source data and C<$to>,
+L<Git::Raw::Filter::Source> object, C<$from> the source data and C<$to>,
 a scalar reference where the output should be written to.
 
 If the filter successfully writes the output, C<Git::Raw::Error-E<gt>OK> should

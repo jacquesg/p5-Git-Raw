@@ -101,7 +101,7 @@ Retrieve the refspec count.
 
 =head2 refspecs( )
 
-Retrieve the remote's refspecs. Returns a list of C<Git::Raw::RefSpec> objects.
+Retrieve the remote's refspecs. Returns a list of L<Git::Raw::RefSpec> objects.
 
 =head2 ls( )
 

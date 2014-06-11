@@ -24,18 +24,18 @@ Retrieve the number of hunks that exist in the blame structure.
 
 =head2 hunks( [$index] )
 
-Returns a list of C<Git::Raw::Blame::Hunk> objects. If C<$index> is specified
+Returns a list of L<Git::Raw::Blame::Hunk> objects. If C<$index> is specified
 only the hunk at the specified index will be returned.
 
 =head2 buffer( $buffer )
 
-Retrieve a new C<Git::Raw::Blame> object, created from this reference
-C<Git:Raw::Blame> object and C<$buffer>, a file that has been modified in
+Retrieve a new L<Git::Raw::Blame> object, created from this reference
+L<Git:Raw::Blame> object and C<$buffer>, a file that has been modified in
 memory.
 
 =head2 line( $line_no )
 
-Retrieve the C<Git::Raw::Blame::Hunk> that relates to the given line number in
+Retrieve the L<Git::Raw::Blame::Hunk> that relates to the given line number in
 the newest commit.
 
 =head1 AUTHOR

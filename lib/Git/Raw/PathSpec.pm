@@ -23,10 +23,10 @@ Compile a new pathspec. C<@match> is the list of paths to match.
 =head2 match( $object [, \%options] )
 
 Math the pathspec against C<$object>. C<$object> could be a
-C<Git::Raw::Repository> (matches against the working directory),
-C<Git::Raw::Index> (matches against the index), C<Git::Raw::Tree> (matches
-against the tree) or a C<Git::Raw::Diff> (matches against the diff). Returns
-a C<Git::Raw::PathSpec::MatchList> object. Valid fields for C<%options> are:
+L<Git::Raw::Repository> (matches against the working directory),
+L<Git::Raw::Index> (matches against the index), L<Git::Raw::Tree> (matches
+against the tree) or a L<Git::Raw::Diff> (matches against the diff). Returns
+a L<Git::Raw::PathSpec::MatchList> object. Valid fields for C<%options> are:
 
 =over 4
 

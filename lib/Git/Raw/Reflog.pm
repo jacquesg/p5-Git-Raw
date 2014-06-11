@@ -88,7 +88,7 @@ following members:
 
 =item * "committer"
 
-The committer of the entry, a C<Git::Raw::Signature> object.
+The committer of the entry, a L<Git::Raw::Signature> object.
 
 =item * "message"
 
@@ -96,11 +96,11 @@ The message for the entry.
 
 =item * "new_id"
 
-The new L<"OID"> for the entry.
+The new C<OID> for the entry.
 
 =item * "old_id"
 
-The old L<"OID"> for the entry.
+The old C<OID> for the entry.
 
 =back
 
