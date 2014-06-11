@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.38      2014-06-11 20:03:53SAST+0200 Africa/Johannesburg
+
  - Fixed Windows specific path comparison test case
  - (Possibly) Fix cross-compilation issues with ARM architectures
 
