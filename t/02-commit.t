@@ -5,7 +5,7 @@ use Test::More;
 use Git::Raw;
 use File::Copy;
 use File::Slurp;
-use File::Spec::Functions;
+use File::Spec::Functions qw(splitpath catpath catfile);
 use Cwd qw(abs_path);
 use File::Path 2.07 qw(make_path remove_tree);
 use Time::Local;
@@ -20,7 +20,9 @@ write_file($file, 'this is a test');
 is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_new']};
 
 my $index = $repo -> index;
-is $index -> path, catfile($path, '.git/index');
+is catpath (splitpath ($index -> path)),
+	catpath (splitpath (catfile($path, '.git/index')));
+
 ok (!eval { $index -> add($index) });
 $index -> add_all({
 	'paths' => [
