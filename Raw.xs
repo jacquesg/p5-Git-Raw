@@ -20,6 +20,12 @@
 /* internally generated classes */
 #define INTERNAL          -20000
 
+#ifdef _MSC_VER
+#undef ERROR
+#undef PASSTHROUGH
+#undef CALLBACK
+#endif
+
 /* remap libgit2 error enum's to defines */
 #define OK                GIT_OK
 #define ERROR             GIT_ERROR
