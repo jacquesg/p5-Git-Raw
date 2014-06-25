@@ -998,7 +998,7 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	int rv = 0;
 	git_object *tag;
 
-	SV *repo, *cb_arg;
+	SV *cb_arg = NULL;
 	git_foreach_payload *pl = payload;
 
 	int rc = git_object_lookup(&tag, pl -> repo_ptr, oid, GIT_OBJ_ANY);
@@ -1010,14 +1010,12 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 		return 0;
 	}
 
+	GIT_NEW_OBJ_WITH_MAGIC(
+		cb_arg, pl -> class, (void *) tag, SvRV(pl -> repo)
+	);
+
 	ENTER;
 	SAVETMPS;
-
-	repo = SvRV(pl -> repo);
-
-	cb_arg = sv_newmortal();
-	sv_setref_pv(cb_arg, pl -> class, (void *) tag);
-	xs_object_magic_attach_struct(aTHX_ SvRV(cb_arg), SvREFCNT_inc_NN(repo));
 
 	PUSHMARK(SP);
 	XPUSHs(cb_arg);
