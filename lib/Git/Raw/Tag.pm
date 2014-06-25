@@ -71,7 +71,8 @@ Retrieve the message of the tag.
 
 =head2 tagger( )
 
-Retrieve the L<Git::Raw::Signature> representing the tag's tagger.
+Retrieve the L<Git::Raw::Signature> representing the tag's tagger. If there
+is no tagger, C<undef> will be returned.
 
 =head2 target( )
 
@@ -80,6 +81,8 @@ Retrieve the target object of the tag.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

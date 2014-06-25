@@ -142,21 +142,24 @@ message(self)
 
 	OUTPUT: RETVAL
 
-Signature
+SV *
 tagger(self)
 	Tag self
 
 	PREINIT:
 		int rc;
-		Signature c, r;
+		Signature tagger, result;
 
 	CODE:
-		c = (Signature) git_tag_tagger(self);
+		if ((tagger = (Signature) git_tag_tagger(self)) != NULL) {
+			rc = git_signature_dup(&result, tagger);
+			git_check_error(rc);
 
-		rc = git_signature_dup(&r, c);
-		git_check_error(rc);
-
-		RETVAL = r;
+			GIT_NEW_OBJ(
+				RETVAL, "Git::Raw::Signature", result
+			);
+		} else
+			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
