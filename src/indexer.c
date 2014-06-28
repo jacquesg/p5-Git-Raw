@@ -18,6 +18,8 @@
 #include "oidmap.h"
 #include "zstream.h"
 
+extern git_mutex git__mwindow_mutex;
+
 #define UINT31_MAX (0x7FFFFFFF)
 
 struct entry {
@@ -433,6 +435,8 @@ static int write_at(git_indexer *idx, const void *data, git_off_t offset, size_t
 	git_map map;
 	int error;
 
+	assert(data && size);
+
 	/* the offset needs to be at the beginning of the a page boundary */
 	page_start = (offset / page_size) * page_size;
 	page_offset = offset - page_start;
@@ -450,6 +454,9 @@ static int write_at(git_indexer *idx, const void *data, git_off_t offset, size_t
 static int append_to_pack(git_indexer *idx, const void *data, size_t size)
 {
 	git_off_t current_size = idx->pack->mwf.size;
+
+	if (!size)
+		return 0;
 
 	/* add the extra space we need at the end */
 	if (p_ftruncate(idx->pack->mwf.fd, current_size + size) < 0) {
@@ -1044,6 +1051,11 @@ void git_indexer_free(git_indexer *idx)
 	}
 
 	git_vector_free_deep(&idx->deltas);
-	git_packfile_free(idx->pack);
+
+	if (!git_mutex_lock(&git__mwindow_mutex)) {
+		git_packfile_free(idx->pack);
+		git_mutex_unlock(&git__mwindow_mutex);
+	}
+
 	git__free(idx);
 }
