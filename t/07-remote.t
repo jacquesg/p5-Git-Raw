@@ -50,8 +50,10 @@ is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
 
 my $rename = Git::Raw::Remote -> create($repo, 'pre_rename', $url);
 is $rename -> name, 'pre_rename';
-is $rename -> name('post_rename'), 'post_rename';
+my @problems;
+is $rename -> name('post_rename', \@problems), 'post_rename';
 is $rename -> name, 'post_rename';
+is scalar(@problems), 0;
 
 @refspecs = $rename -> refspecs;
 is scalar(@refspecs), 1;

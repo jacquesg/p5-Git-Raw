@@ -98,18 +98,31 @@ SV *
 name(self, ...)
 	Remote self
 
-	PROTOTYPE: $;$
+	PROTOTYPE: $;$$
 
 	PREINIT:
 		int rc;
 		const char *name;
 
+		git_strarray problems = {NULL, 0};
+
 	CODE:
-		if (items == 2) {
+		if (items > 1) {
+			AV *p = NULL;
 			name = git_ensure_pv(ST(1), "name");
 
-			rc = git_remote_rename(self -> remote, name, NULL, NULL);
+			if (items > 2)
+				p = git_ensure_av(ST(2), "problems");
+
+			rc = git_remote_rename(&problems, self -> remote, name);
 			git_check_error(rc);
+
+			if (p != NULL && problems.count > 0) {
+				size_t i;
+				for (i = 0; i < problems.count; ++i)
+					av_push(p, newSVpv(problems.strings[i], 0));
+			}
+			git_strarray_free(&problems);
 		}
 
 		RETVAL = newSVpv(git_remote_name(self -> remote), 0);

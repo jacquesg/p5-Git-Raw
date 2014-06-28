@@ -64,10 +64,11 @@ Create a remote in memory (anonymous).
 
 Load an existing remote.
 
-=head2 name( [ $name ] )
+=head2 name( [ $name, \@problems ] )
 
 Retrieve the name of the remote. If C<$name> is passed, the remote's name will
-be updated and returned.
+be updated and returned. Non-default refspecs cannot be renamed and will be
+store in C<@problems> if provided.
 
 =head2 url( [ $url ] )
 
