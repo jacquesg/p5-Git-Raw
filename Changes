@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to 16e7596
+ - Remote -> name() now accepts an optional "problems" parameter
+
 0.40      2014-06-25 21:05:55SAST+0200 Africa/Johannesburg
 
  - Tag -> tagger() now returns undef if a tag doesn't have a tagger instead
