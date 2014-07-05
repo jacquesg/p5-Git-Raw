@@ -10,6 +10,7 @@ create(class, name, repo, object, ...)
 	PREINIT:
 		int rc, force = 0;
 
+		Repository repo_ptr;
 		Reference ref;
 		Signature sig;
 		const git_oid *oid;
@@ -27,11 +28,12 @@ create(class, name, repo, object, ...)
 		else
 			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
 
-		rc = git_signature_default(&sig, GIT_SV_TO_PTR(Repository, repo));
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_signature_default(&sig, repo_ptr -> repository);
 		git_check_error(rc);
 
 		rc = git_reference_create(
-			&ref, GIT_SV_TO_PTR(Repository, repo),
+			&ref, repo_ptr -> repository,
 			name, oid, force, sig, NULL
 		);
 		git_signature_free(sig);
@@ -49,11 +51,14 @@ lookup(class, name, repo)
 
 	PREINIT:
 		int rc;
+
+		Repository repo_ptr;
 		Reference ref;
 
 	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_reference_lookup(
-			&ref, GIT_SV_TO_PTR(Repository, repo),
+			&ref, repo_ptr -> repository,
 			SvPVbyte_nolen(name)
 		);
 		git_check_error(rc);

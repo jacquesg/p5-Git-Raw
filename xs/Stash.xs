@@ -40,7 +40,7 @@ save(class, repo, stasher, msg, ...)
 			}
 		}
 
-		rc = git_stash_save(&oid, repo, stasher, git_ensure_pv(msg, "msg"), stash_flags);
+		rc = git_stash_save(&oid, repo -> repository, stasher, git_ensure_pv(msg, "msg"), stash_flags);
 		git_check_error(rc);
 
 void
@@ -61,7 +61,7 @@ foreach(class, repo, cb)
 		};
 
 		rc = git_stash_foreach(
-			payload.repo_ptr, git_stash_foreach_cb, &payload
+			payload.repo_ptr -> repository, git_stash_foreach_cb, &payload
 		);
 
 		git_check_error(rc);
@@ -76,5 +76,5 @@ drop(class, repo, index)
 		int rc;
 
 	CODE:
-		rc = git_stash_drop(repo, index);
+		rc = git_stash_drop(repo -> repository, index);
 		git_check_error(rc);

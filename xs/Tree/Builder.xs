@@ -142,12 +142,12 @@ write(self)
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 		rc = git_treebuilder_write(
-			&oid, repo_ptr, GIT_SV_TO_PTR(Tree::Builder, self)
+			&oid, repo_ptr -> repository, GIT_SV_TO_PTR(Tree::Builder, self)
 		);
 		git_check_error(rc);
 
 		if (is_returning) {
-			rc = git_tree_lookup(&tree, repo_ptr, &oid);
+			rc = git_tree_lookup(&tree, repo_ptr -> repository, &oid);
 			git_check_error(rc);
 
 			GIT_NEW_OBJ_WITH_MAGIC(

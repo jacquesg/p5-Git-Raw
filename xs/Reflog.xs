@@ -35,7 +35,7 @@ delete(self)
 		int rc;
 
 		Reference ref;
-	
+
 	CODE:
 		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));
 
@@ -57,7 +57,7 @@ append(self, message, ...)
 		git_oid id;
 		Signature sig;
 		Reference ref;
-		Repository ref_owner;
+		git_repository *ref_owner;
 
 	CODE:
 		ref = GIT_SV_TO_PTR(Reference, GIT_SV_TO_MAGIC(self));

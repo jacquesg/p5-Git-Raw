@@ -21,14 +21,14 @@ create(class, repo, buffer)
 		buffer_str = git_ensure_pv_with_len(buffer, "buffer", &len);
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
-		rc = git_blob_create_frombuffer(&oid, repo_ptr, buffer_str, len);
+		rc = git_blob_create_frombuffer(&oid, repo_ptr -> repository, buffer_str, len);
 		git_check_error(rc);
 
-		rc = git_blob_lookup(&blob, repo_ptr, &oid);
+		rc = git_blob_lookup(&blob, repo_ptr -> repository, &oid);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), blob, repo
+			RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo)
 		);
 
 	OUTPUT: RETVAL
@@ -48,17 +48,20 @@ lookup(class, repo, id)
 		STRLEN len;
 		const char *id_str;
 
+		Repository repo_ptr;
+
 	CODE:
 		id_str = git_ensure_pv_with_len(id, "id", &len);
 
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_blob_lookup_prefix(&blob, GIT_SV_TO_PTR(Repository, repo), &oid, len);
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_blob_lookup_prefix(&blob, repo_ptr -> repository, &oid, len);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), blob, repo
+			RETVAL, SvPVbyte_nolen(class), blob, SvRV(repo)
 		);
 
 	OUTPUT: RETVAL

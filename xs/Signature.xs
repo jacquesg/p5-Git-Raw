@@ -57,7 +57,7 @@ default(class, repo)
 		Signature sig;
 
 	CODE:
-		rc = git_signature_default(&sig, repo);
+		rc = git_signature_default(&sig, repo -> repository);
 		git_check_error(rc);
 
 		RETVAL = sig;

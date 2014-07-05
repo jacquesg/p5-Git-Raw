@@ -27,7 +27,7 @@ lookup(class, repo, id)
 
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
-		rc = git_tree_lookup_prefix(&tree, repo_ptr, &oid, len);
+		rc = git_tree_lookup_prefix(&tree, repo_ptr -> repository, &oid, len);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -255,7 +255,7 @@ merge(self, ancestor_tree, their_tree, ...)
 		repo = GIT_SV_TO_MAGIC(self);
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
-		rc = git_merge_trees(&index, repo_ptr,
+		rc = git_merge_trees(&index, repo_ptr -> repository,
 			ancestor, ours, theirs, &merge_opts);
 		git_check_error(rc);
 

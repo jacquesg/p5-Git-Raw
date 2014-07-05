@@ -13,13 +13,13 @@ is_descendant_of(class, repo, commitish, ancestor)
 		git_oid commitish_id, ancestor_id;
 
 	CODE:
-		if (git_sv_to_commitish(repo, commitish, &commitish_id) == NULL)
+		if (git_sv_to_commitish(repo -> repository, commitish, &commitish_id) == NULL)
 			croak_resolve("Could not resolve 'commitish' to a commit id");
 
-		if (git_sv_to_commitish(repo, ancestor, &ancestor_id) == NULL)
+		if (git_sv_to_commitish(repo -> repository, ancestor, &ancestor_id) == NULL)
 			croak_resolve("Could not resolve 'ancestor' to a commit id");
 
-		result = git_graph_descendant_of(repo, &commitish_id, &ancestor_id);
+		result = git_graph_descendant_of(repo -> repository, &commitish_id, &ancestor_id);
 
 		RETVAL = newSViv(result);
 

@@ -67,9 +67,10 @@ match(self, obj, ...)
 			int rc = 0;
 
 			if (sv_derived_from(obj, "Git::Raw::Repository")) {
+				Repository repo = GIT_SV_TO_PTR(Repository, obj);
 				rc = git_pathspec_match_workdir(
 					&list,
-					GIT_SV_TO_PTR(Repository, obj),
+					repo -> repository,
 					flags, self);
 			} else if (sv_derived_from(obj, "Git::Raw::Index")) {
 				rc = git_pathspec_match_index(

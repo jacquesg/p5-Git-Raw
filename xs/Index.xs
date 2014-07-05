@@ -108,8 +108,9 @@ write_tree(self, ...)
 
 	CODE:
 		if (items == 2) {
+			Repository repo = GIT_SV_TO_PTR(Repository, ST(1));
 			rc = git_index_write_tree_to(
-				&oid, self, GIT_SV_TO_PTR(Repository, ST(1))
+				&oid, self, repo -> repository
 			);
 		} else {
 			rc = git_index_write_tree(&oid, self);
@@ -195,7 +196,7 @@ checkout(self, ...)
 		}
 
 		rc = git_checkout_index(
-			repo_ptr,
+			repo_ptr -> repository,
 			GIT_SV_TO_PTR(Index, self),
 			&checkout_opts
 		);

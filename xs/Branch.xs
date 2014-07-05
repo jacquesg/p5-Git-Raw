@@ -18,17 +18,19 @@ create(class, repo, name, target)
 
 		Commit obj;
 		Reference ref;
+		Repository repo_ptr;
 		Signature sig;
 
 	INIT:
 		obj = (Commit) git_sv_to_obj(target);
 
 	CODE:
-		rc = git_signature_default(&sig, GIT_SV_TO_PTR(Repository, repo));
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_signature_default(&sig, repo_ptr -> repository);
 		git_check_error(rc);
 
 		rc = git_branch_create(
-			&ref, GIT_SV_TO_PTR(Repository, repo),
+			&ref, repo_ptr -> repository,
 			SvPVbyte_nolen(name), obj, 0, sig, NULL
 		);
 
@@ -51,14 +53,16 @@ lookup(class, repo, name, is_local)
 	PREINIT:
 		int rc;
 		Reference branch;
+		Repository repo_ptr;
 
 		git_branch_t type = is_local ?
 			GIT_BRANCH_LOCAL     :
 			GIT_BRANCH_REMOTE    ;
 
 	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_branch_lookup(
-			&branch, GIT_SV_TO_PTR(Repository, repo),
+			&branch, repo_ptr -> repository,
 			SvPVbyte_nolen(name), type
 		);
 		git_check_error(rc);

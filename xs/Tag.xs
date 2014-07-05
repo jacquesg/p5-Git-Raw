@@ -26,12 +26,12 @@ create(class, repo, name, msg, tagger, target)
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		rc = git_tag_create(
-			&oid, repo_ptr, git_ensure_pv(name, "name"),
+			&oid, repo_ptr -> repository, git_ensure_pv(name, "name"),
 			obj, tagger, git_ensure_pv(msg, "msg"), 0
 		);
 		git_check_error(rc);
 
-		rc = git_tag_lookup(&tag, repo_ptr, &oid);
+		rc = git_tag_lookup(&tag, repo_ptr -> repository, &oid);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -51,6 +51,7 @@ lookup(class, repo, id)
 
 		Tag tag;
 		git_oid oid;
+		Repository repo_ptr;
 
 		STRLEN len;
 		const char *id_str;
@@ -61,7 +62,8 @@ lookup(class, repo, id)
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_tag_lookup_prefix(&tag, GIT_SV_TO_PTR(Repository, repo), &oid, len);
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_tag_lookup_prefix(&tag, repo_ptr -> repository, &oid, len);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -87,7 +89,7 @@ foreach(class, repo, cb)
 			SvPVbyte_nolen(class)
 		};
 
-		rc = git_tag_foreach(payload.repo_ptr, git_tag_foreach_cbb, &payload);
+		rc = git_tag_foreach(payload.repo_ptr -> repository, git_tag_foreach_cbb, &payload);
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
@@ -109,7 +111,7 @@ delete(self)
 			Repository, SvIV((SV *) GIT_SV_TO_MAGIC(self))
 		);
 
-		rc = git_tag_delete(repo, git_tag_name(tag_ptr));
+		rc = git_tag_delete(repo -> repository, git_tag_name(tag_ptr));
 		git_check_error(rc);
 
 		git_tag_free(tag_ptr);

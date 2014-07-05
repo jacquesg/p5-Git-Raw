@@ -126,7 +126,6 @@ typedef git_pathspec_match_list * PathSpec_MatchList;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
 typedef git_refspec * RefSpec;
-typedef git_repository * Repository;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
 typedef git_tree * Tree;
@@ -155,12 +154,17 @@ typedef git_filter_source * Filter_Source;
 typedef struct {
 	git_remote *remote;
 	git_raw_remote_callbacks callbacks;
+	int owned;
 } git_raw_remote;
 
 typedef git_raw_remote * Remote;
 
-/* This will get fixed upstream */
-typedef int (*git_push_status_cb)(const char *ref, const char *msg, void *data);
+typedef struct {
+	git_repository *repository;
+	int owned;
+} git_raw_repository;
+
+typedef git_raw_repository * Repository;
 
 typedef struct {
 	git_push *push;
@@ -408,7 +412,7 @@ STATIC SV *git_oid_to_sv(const git_oid *oid) {
 	return newSVpv(out, 0);
 }
 
-STATIC git_oid *git_sv_to_commitish(Repository repo, SV *sv, git_oid *oid) {
+STATIC git_oid *git_sv_to_commitish(git_repository *repo, SV *sv, git_oid *oid) {
 	git_oid *result = NULL;
 	git_reference *ref = NULL;
 	git_object *obj = NULL;
@@ -1005,7 +1009,7 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	SV *cb_arg = NULL;
 	git_foreach_payload *pl = payload;
 
-	int rc = git_object_lookup(&tag, pl -> repo_ptr, oid, GIT_OBJ_ANY);
+	int rc = git_object_lookup(&tag, pl -> repo_ptr -> repository, oid, GIT_OBJ_ANY);
 	git_check_error(rc);
 
 	if (git_object_type(tag) != GIT_OBJ_TAG) {
@@ -1236,6 +1240,60 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 	LEAVE;
 
 	return 0;
+}
+
+STATIC int git_remote_create_cbb(git_remote **out, git_repository *r,
+	const char *name, const char *url, void *cb) {
+	dSP;
+	int rv = 0;
+	SV *repo_sv = NULL;
+	Repository repo = NULL;
+
+	Newxz(repo, 1, git_raw_repository);
+	repo -> repository = r;
+	repo -> owned = 0;
+
+	GIT_NEW_OBJ(repo_sv,
+		"Git::Raw::Repository",
+		(void * ) repo
+	);
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(repo_sv);
+	mXPUSHs(newSVpv(name, 0));
+	mXPUSHs(newSVpv(url, 0));
+	PUTBACK;
+
+	call_sv((SV *) cb, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+
+		*out = NULL;
+	} else {
+		SV *r = POPs;
+		if (SvOK(r)) {
+			Remote remote = GIT_SV_TO_PTR(Remote, r);
+			*out = remote -> remote;
+
+			/* The remote created in the callback is owned by libgit2 */
+			remote -> owned = 0;
+		} else {
+			*out = NULL;
+			rv = -1;
+		}
+	}
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
 }
 
 STATIC int git_credentials_cbb(git_cred **cred, const char *url,

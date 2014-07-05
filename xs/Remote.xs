@@ -12,17 +12,20 @@ create(class, repo, name, url)
 
 		git_remote *r = NULL;
 		Remote remote = NULL;
+		Repository repo_ptr = NULL;
 
 	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_remote_create(
-			&r, GIT_SV_TO_PTR(Repository, repo),
+			&r, repo_ptr -> repository,
 			git_ensure_pv(name, "name"), git_ensure_pv(url, "url")
 		);
 		git_check_error(rc);
 
-		Newx(remote, 1, git_raw_remote);
+		Newxz(remote, 1, git_raw_remote);
 		git_init_remote_callbacks(&remote -> callbacks);
 		remote -> remote = r;
+		remote -> owned = 1;
 
 		GIT_NEW_OBJ_WITH_MAGIC(
 			RETVAL, SvPVbyte_nolen(class), remote, SvRV(repo)
@@ -42,6 +45,7 @@ create_anonymous(class, repo, url, fetch)
 
 		git_remote *r = NULL;
 		Remote remote = NULL;
+		Repository repo_ptr = NULL;
 
 		const char *f = NULL;
 
@@ -49,8 +53,9 @@ create_anonymous(class, repo, url, fetch)
 		if (SvOK(fetch))
 			f = git_ensure_pv(fetch, "fetch");
 
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_remote_create_anonymous(
-			&r, GIT_SV_TO_PTR(Repository, repo),
+			&r, repo_ptr -> repository,
 			git_ensure_pv(url, "url"), f
 		);
 		git_check_error(rc);
@@ -76,11 +81,12 @@ load(class, repo, name)
 
 		git_remote *r = NULL;
 		Remote remote = NULL;
+		Repository repo_ptr = NULL;
 
 	CODE:
-
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_remote_load(
-			&r, GIT_SV_TO_PTR(Repository, repo),
+			&r, repo_ptr -> repository,
 			git_ensure_pv(name, "name"));
 		git_check_error(rc);
 
@@ -483,7 +489,8 @@ DESTROY(self)
 	CODE:
 		remote = GIT_SV_TO_PTR(Remote, self);
 
-		git_remote_free(remote -> remote);
 		git_clean_remote_callbacks(&remote -> callbacks);
+		if (remote -> owned)
+			git_remote_free(remote -> remote);
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
 		Safefree(remote);

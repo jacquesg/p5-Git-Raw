@@ -7,10 +7,13 @@ create(class, repo)
 
 	PREINIT:
 		int rc;
+
+		Repository repo_ptr;
 		Walker walk;
 
 	CODE:
-		rc = git_revwalk_new(&walk, GIT_SV_TO_PTR(Repository, repo));
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_revwalk_new(&walk, repo_ptr -> repository);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -74,7 +77,7 @@ push_range(self, ...)
 	PREINIT:
 		int rc, free_buffer = 0;
 
-		Repository repo;
+		git_repository *repo;
 		Walker walk;
 
 		char *range = NULL;
