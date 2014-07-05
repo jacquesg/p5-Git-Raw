@@ -8,6 +8,10 @@
 
 #include "ppport.h"
 
+#ifdef GIT_SSH
+#include <libssh2.h>
+#endif
+
 #include <git2.h>
 #include <git2/sys/filter.h>
 #include <git2/sys/repository.h>
