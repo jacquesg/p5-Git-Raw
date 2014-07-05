@@ -149,9 +149,12 @@ $index -> remove_conflict('test1');
 is $index -> has_conflicts, 0;
 
 $index -> conflict_cleanup;
+$repo -> state_cleanup;
 write_file($file1, 'this is file1 on branch1');
 $index -> add('test1');
+$index -> write();
 
+is $index -> has_conflicts, 0;
 $repo -> merge($branch2);
 is $index -> has_conflicts, 1;
 
