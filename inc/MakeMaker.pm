@@ -151,15 +151,24 @@ if ($is_solaris) {
 
 if ($is_gcc) {
 	# gcc-like compiler
-	$ccflags .= ' -Wall -Wno-unused-variable -Wdeclaration-after-statement';
+	$ccflags .= ' -Wall -Wno-unused-variable';
 
 	# clang compiler is pedantic!
 	if ($is_osx) {
-		$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
+		# clang masquerading as gcc
+		if ($Config{gccversion} =~ /LLVM/) {
+			$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
+		}
 	}
 
 	if ($is_solaris) {
 		$ccflags .= ' -std=c99';
+	}
+
+	# building with a 32-bit perl on a 64-bit OS may require this (supported by cc and gcc-like compilers,
+	# excluding some ARM toolchains)
+	if ($Config{ptrsize} == 4 && $Config{archname} !~ /^armv/) {
+		$ccflags .= ' -m32';
 	}
 } elsif ($is_sunpro) {
 	# probably the SunPro compiler
@@ -167,14 +176,6 @@ if ($is_gcc) {
 
 	$ccflags .= ' -errtags=yes -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_ZERO_OR_NEGATIVE_SUBSCRIPT';
 	$ccflags .= ' -erroff=E_EMPTY_DECLARATION -erroff=E_STATEMENT_NOT_REACHED';
-}
-
-# building with a 32-bit perl on a 64-bit OS may require this (supported by cc and gcc-like compilers,
-# excluding some ARM toolchains)
-if ($Config{gccversion} || $Config{gccversion}) {
-	if ($Config{ptrsize} == 4 && $Config{archname} !~ /^armv/) {
-		$ccflags .= ' -m32';
-	}
 }
 
 # there are no atomic primitives for the Sun Pro compiler in libgit2, so even if pthreads is available
