@@ -56,17 +56,9 @@ are:
 
 If true (default is false) create a bare repository.
 
-=item * "remote_name"
-
-The name to be given to the "origin" remote (default is "origin").
-
 =item * "checkout_branch"
 
 The name of the branch to checkout (default is to use the remote's HEAD).
-
-=item * "ignore_cert_errors"
-
-If true (default is false) ignore errors validating the remote host's certificate.
 
 =item * "disable_checkout"
 
@@ -75,6 +67,16 @@ If true (default is false) files will not be checked out after the clone complet
 =item * "callbacks"
 
 =over 8
+
+=item * "remote_create"
+
+Remote customization callback. If a non-default remote is required, i.e. a remote
+with a remote name other than 'origin', this callback should be used. The callback
+receives a L<Git::Raw::Repository> object, a string containing the default name
+for the remote, typically 'origin', and a string containing the URL of the remote.
+This callbacks should return a L<Git::Raw::Remote> object. The returned object and
+the the repository object passed to this callback is ephemeral. Do not take any
+references to it as it may be freed internally.
 
 =item * "credentials"
 
