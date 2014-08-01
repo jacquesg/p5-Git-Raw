@@ -212,16 +212,14 @@ if ($is_windows || $is_solaris) {
 if ($is_windows) {
 	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
 
-	$def .= ' -D_WIN32_WINNT=0x0501';
-	$def .= ' -DWIN32 -DGIT_WIN32 -DGIT_WINHTTP';
-	$lib .= ' -lwinhttp -lrpcrt4';
+	$def .= ' -DWIN32 -DGIT_WIN32';
 
 	if ($is_msvc) {
 		# visual studio compiler
 		$def .= ' -D_CRT_SECURE_NO_WARNINGS';
 	} else {
 		# mingw/cygwin
-		$def .= ' -D__USE_MINGW_ANSI_STDIO=1';
+		$def .= ' -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
 	}
 } else {
 	push @srcs, glob 'deps/libgit2/src/unix/*.c'
