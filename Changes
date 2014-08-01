@@ -2,12 +2,14 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to 9b87998 (GH#105)
+ - Update libgit2 to 59e3f45 (GH#105)
  - Remote -> name() now accepts an optional "problems" parameter
  - Repository -> clone() options no longer accepts 'remote_name' and
     'ignore_cert_errors' options (Incompatible change) (GH#105)
  - Added Repository -> clone() callbacks (GH#105):
     + remote_create
+ - Diff::File -> mode() and Diff::Delta -> status() return value(s) changed:
+    - "new" to "unreadable" (Incompatible change)
 
 0.40      2014-06-25 21:05:55SAST+0200 Africa/Johannesburg
 
