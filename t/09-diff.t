@@ -206,7 +206,7 @@ isa_ok $old_file, 'Git::Raw::Diff::File';
 is $old_file -> id, '0' x 40;
 is $old_file -> path, 'diff';
 is_deeply $old_file -> flags, ['valid_id'];
-is_deeply $old_file -> mode, 'new';
+is_deeply $old_file -> mode, 'unreadable';
 
 my $new_file = $delta -> new_file;
 isa_ok $new_file, 'Git::Raw::Diff::File';

@@ -26,6 +26,8 @@ status(self)
 			status = "untracked";
 		else if (self -> status == GIT_DELTA_TYPECHANGE)
 			status = "type_change";
+		else if (self -> status == GIT_DELTA_UNREADABLE)
+			status = "unreadable";
 
 		RETVAL = newSVpv (status, 0);
 

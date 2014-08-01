@@ -60,6 +60,10 @@ The entry is an untracked item in the working directory.
 
 The type of the entry changed between the old and new versions.
 
+=item * "unreadable"
+
+The entry is unreadable.
+
 =back
 
 =head2 flags( )

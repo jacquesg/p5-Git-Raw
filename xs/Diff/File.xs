@@ -52,8 +52,8 @@ mode(self)
 		const char *mode = NULL;
 
 	CODE:
-		if (self -> mode == GIT_FILEMODE_NEW)
-			mode = "new";
+		if (self -> mode == GIT_FILEMODE_UNREADABLE)
+			mode = "unreadable";
 		else if (self -> mode == GIT_FILEMODE_TREE)
 			mode = "tree";
 		else if (self -> mode == GIT_FILEMODE_BLOB)

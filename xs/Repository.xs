@@ -451,6 +451,9 @@ status(self, ...)
 			if (entry -> status & GIT_STATUS_WT_RENAMED)
 				av_push(flags, newSVpv("worktree_renamed", 0));
 
+			if (entry -> status & GIT_STATUS_WT_UNREADABLE)
+				av_push(flags, newSVpv("worktree_unreadable", 0));
+
 			if (entry -> status & GIT_STATUS_IGNORED)
 				av_push(flags, newSVpv("ignored", 0));
 
@@ -919,7 +922,7 @@ cherry_pick(self, commit, ...)
 		int rc;
 
 		Repository repo = NULL;
-		git_cherry_pick_options opts = GIT_CHERRY_PICK_OPTIONS_INIT;
+		git_cherrypick_options opts = GIT_CHERRYPICK_OPTIONS_INIT;
 
 	CODE:
 		if (items >= 3) {
@@ -944,7 +947,7 @@ cherry_pick(self, commit, ...)
 		}
 
 		repo = GIT_SV_TO_PTR(Repository, self);
-		rc = git_cherry_pick(
+		rc = git_cherrypick(
 			repo -> repository,
 			commit,
 			&opts
@@ -961,7 +964,7 @@ revert(self, commit, ...)
 		int rc;
 
 		Repository repo = NULL;
-		git_revert_options opts = GIT_CHERRY_PICK_OPTIONS_INIT;
+		git_revert_options opts = GIT_REVERT_OPTIONS_INIT;
 
 	CODE:
 		if (items >= 3) {
@@ -1017,7 +1020,7 @@ state(self)
 				s = "revert";
 				break;
 
-			case GIT_REPOSITORY_STATE_CHERRY_PICK:
+			case GIT_REPOSITORY_STATE_CHERRYPICK:
 				s = "cherry_pick";
 				break;
 

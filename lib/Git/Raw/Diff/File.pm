@@ -53,7 +53,7 @@ Retrieve the diff file mode. Returns one of the following:
 
 =over 4
 
-=item * "new"
+=item * "unreadable"
 
 =item * "tree"
 

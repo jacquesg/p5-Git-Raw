@@ -126,8 +126,12 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 						push @$states, 'pack';
 						$state = 'count';
 					}
+				} elsif ($description =~ /Counting objects/) {
+					$state = 'count';
 				}
-			} elsif ($state eq 'count') {
+			}
+
+			if ($state eq 'count') {
 				if ($description =~ /Counting objects/) {
 					if ($description =~ /done/) {
 						push @$states, 'count';
@@ -140,6 +144,9 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 						push @$states, 'compress';
 						$state = 'total';
 					}
+				} elsif ($description =~ /Total/) {
+					push @$states, 'total';
+					$state = 'total';
 				}
 			} elsif ($state eq 'total') {
 				if ($description =~ /Total/) {
