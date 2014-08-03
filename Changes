@@ -15,6 +15,11 @@ Revision history for Git-Raw
     - Pathspec matching is no longer auto-disabled if a list of files is
 	  specified. It is up to the user to disable it via the "flags" parameter.
     - "worktree_unreadable" may now be returned as a status flag.
+ - Try to support ActiveState PPM builds
+    - Most Unices should build now
+    - Windows 32-bit will never build as the MSVC6 is too dated.
+    - Windows 64-bit should build, but will not work. As soon as
+	  https://github.com/libgit2/libgit2/pull/2471 is merged, it should work.
 
 0.40      2014-06-25 21:05:55SAST+0200 Africa/Johannesburg
 
