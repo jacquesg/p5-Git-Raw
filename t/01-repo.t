@@ -34,9 +34,13 @@ write_file($file, 'this file should be untracked');
 
 $repo -> ignore("ignore\n");
 
-is_deeply $repo -> status('ignore') -> {'ignore'}, {'flags' => ['ignored']};
-is_deeply $repo -> status('untracked') -> {'untracked'}, {'flags' => ['worktree_new']};
-is_deeply $repo -> status, {
+is_deeply $repo -> status({'flags' => {'include_ignored' => 1}}, 'ignore') -> {'ignore'},
+	{'flags' => ['ignored']};
+
+is_deeply $repo -> status({'flags' => {'include_untracked' => 1}}, 'untracked') -> {'untracked'},
+	{'flags' => ['worktree_new']};
+
+is_deeply $repo -> status({'flags' => {'include_untracked' => 1, 'include_ignored' => 1}}), {
 	'ignore'    => {'flags' => ['ignored']},
 	'untracked' => {'flags' => ['worktree_new']},
 	'subdir/'   => {'flags' => ['ignored']}};
@@ -101,7 +105,8 @@ $index -> add_all({
 });
 is $triggered_add, 1;
 
-is_deeply $repo -> status -> {'ignore'}, {'flags' => ['index_new']};
+is_deeply $repo -> status({}) -> {'ignore'},
+	{'flags' => ['index_new']};
 
 my $triggered_removed = 0;
 $index -> remove_all({
@@ -113,11 +118,13 @@ $index -> remove_all({
 });
 
 is $triggered_removed, 1;
-is_deeply $repo -> status -> {'ignore'}, {'flags' => ['ignored']};
+is_deeply $repo -> status({'flags' => {'include_ignored' => 1}}) -> {'ignore'},
+	{'flags' => ['ignored']};
 
 $file = $repo -> workdir . 'subdir/' .'untracked';
 write_file($file, 'this file should be untracked');
-is_deeply $repo -> status('subdir/') -> {'subdir/'}, {'flags' => ['worktree_new']};
+is_deeply $repo -> status({'flags' => {'include_untracked' => 1}}, 'subdir/') -> {'subdir/'},
+	{'flags' => ['worktree_new']};
 
 is $repo -> path_is_ignored('ignore'), 1;
 is $repo -> path_is_ignored('test'), 0;

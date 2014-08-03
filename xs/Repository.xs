@@ -367,51 +367,53 @@ reset(self, target, opts)
 		}
 
 HV *
-status(self, ...)
+status(self, opts, ...)
 	Repository self
+	HV *opts
 
-	PROTOTYPE: $;@
+	PROTOTYPE: $$;@
 
 	PREINIT:
 		int rc, i, count;
 
-		HV *status_hv;
+		SV *opt;
+		HV *status_hv, *hopt;
 
 		git_status_list *list;
-		git_status_options opt = GIT_STATUS_OPTIONS_INIT;
+		git_status_options status_opts = GIT_STATUS_OPTIONS_INIT;
 
 	CODE:
-		opt.flags |= GIT_STATUS_OPT_DEFAULTS |
-			GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX |
-			GIT_STATUS_OPT_RENAMES_FROM_REWRITES;
+		if ((hopt = git_hv_hash_entry(opts, "flags")))
+			status_opts.flags = git_hv_to_status_flag(hopt);
 
-		/*
-		 * Core git does not recurse untracked dirs, it merely informs
-		 * the user that the directory is untracked.
-		 */
-		opt.flags &= ~GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS;
+		if ((opt = git_hv_string_entry(opts, "show"))) {
+			const char *show_str = SvPVbyte_nolen(opt);
 
-		/*
-		 * GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR seems to be broken
-		 * if files are renamed in both the index and in the working
-		 * tree. Core git does not tell you if the file was renamed in
-		 * the worktree anyway.
-		 */
-		if (items > 1) {
-			opt.flags |= GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH;
+			if (strcmp(show_str, "index_and_worktree") == 0)
+				status_opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+			else if (strcmp(show_str, "index") == 0)
+				status_opts.show = GIT_STATUS_SHOW_INDEX_ONLY;
+			else if (strcmp(show_str, "worktree") == 0)
+				status_opts.show = GIT_STATUS_SHOW_WORKDIR_ONLY;
+			else
+				croak_usage("Invalid show value '%s'. "
+					"Valid values: 'index_and_worktree', 'index' or 'worktree'",
+					show_str);
+		}
 
-			Newx(opt.pathspec.strings, items - 1, char *);
+		if (items > 2) {
+			Newx(status_opts.pathspec.strings, items - 2, char *);
 
-			for (i = 1; i < items; i++) {
-				size_t index = (size_t) i - 1;
-				opt.pathspec.strings[index] =
+			for (i = 2; i < items; i++) {
+				size_t index = (size_t) i - 2;
+				status_opts.pathspec.strings[index] =
 					SvPVbyte_nolen(ST(i));
-				opt.pathspec.count = index;
+				status_opts.pathspec.count = index;
 			}
 		}
 
-		rc = git_status_list_new(&list, self -> repository, &opt);
-		Safefree(opt.pathspec.strings);
+		rc = git_status_list_new(&list, self -> repository, &status_opts);
+		Safefree(status_opts.pathspec.strings);
 		git_check_error(rc);
 
 		count = (int) git_status_list_entrycount(list);

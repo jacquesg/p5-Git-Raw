@@ -824,6 +824,29 @@ STATIC unsigned git_hv_to_diff_find_flag(HV *flags) {
 	return out;
 }
 
+STATIC unsigned git_hv_to_status_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "include_untracked", GIT_STATUS_OPT_INCLUDE_UNTRACKED, &out);
+	git_flag_opt(flags, "include_ignored", GIT_STATUS_OPT_INCLUDE_IGNORED, &out);
+	git_flag_opt(flags, "include_unmodified", GIT_STATUS_OPT_INCLUDE_UNMODIFIED, &out);
+	git_flag_opt(flags, "exclude_submodules", GIT_STATUS_OPT_EXCLUDE_SUBMODULES, &out);
+	git_flag_opt(flags, "recurse_untracked_dirs", GIT_STATUS_OPT_RECURSE_UNTRACKED_DIRS, &out);
+	git_flag_opt(flags, "disable_pathspec_match", GIT_STATUS_OPT_DISABLE_PATHSPEC_MATCH, &out);
+	git_flag_opt(flags, "recurse_ignored_dirs", GIT_STATUS_OPT_RECURSE_IGNORED_DIRS, &out);
+	git_flag_opt(flags, "renames_head_to_index", GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX, &out);
+	git_flag_opt(flags, "renames_index_to_workdir", GIT_STATUS_OPT_RENAMES_INDEX_TO_WORKDIR, &out);
+	git_flag_opt(flags, "sort_case_sensitively", GIT_STATUS_OPT_SORT_CASE_SENSITIVELY, &out);
+	git_flag_opt(flags, "sort_case_insensitively", GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY, &out);
+	git_flag_opt(flags, "renames_from_rewrites", GIT_STATUS_OPT_RENAMES_FROM_REWRITES, &out);
+	git_flag_opt(flags, "no_refresh", GIT_STATUS_OPT_NO_REFRESH, &out);
+	git_flag_opt(flags, "update_index", GIT_STATUS_OPT_UPDATE_INDEX, &out);
+	git_flag_opt(flags, "include_unreadable", GIT_STATUS_OPT_INCLUDE_UNREADABLE, &out);
+	git_flag_opt(flags, "include_unreadable_as_untracked", GIT_STATUS_OPT_INCLUDE_UNREADABLE_AS_UNTRACKED, &out);
+
+	return out;
+}
+
 STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	unsigned out = 0;
 

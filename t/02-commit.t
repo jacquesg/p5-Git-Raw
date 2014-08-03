@@ -17,7 +17,16 @@ my $file  = $repo -> workdir . 'test';
 my $untracked_file = $repo -> workdir . 'untracked_file';
 write_file($file, 'this is a test');
 
-is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_new']};
+ok (!eval {$repo -> status({'show' => 'blah'})});
+
+is_deeply $repo -> status({'show' => 'index', 'flags' => {'include_untracked' => 1}}, 'test') -> {'test'},
+	undef;
+
+is_deeply $repo -> status({'show' => 'worktree', 'flags' => {'include_untracked' => 1}}, 'test') -> {'test'},
+	{'flags' => ['worktree_new']};
+
+is_deeply $repo -> status({'show' => 'index_and_worktree', 'flags' => {'include_untracked' => 1}}, 'test') -> {'test'},
+	{'flags' => ['worktree_new']};
 
 my $index = $repo -> index;
 is canonpath($index -> path), canonpath(catfile($path, '.git/index'));
@@ -33,10 +42,10 @@ $index -> write;
 my $tree_id = $index -> write_tree;
 my $tree    = $repo -> lookup($tree_id);
 
-is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_new']};
 
 write_file($file, 'this is a test with more content');
-is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new', 'worktree_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_new', 'worktree_modified']};
 
 $index -> update_all({
 	'paths' => [
@@ -45,17 +54,19 @@ $index -> update_all({
 });
 $index -> write;
 
-is_deeply $repo -> status -> {'test'}, {'flags' => ['index_new']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_new']};
 
 write_file($file, 'this is a test');
 $index -> add('test');
 $index -> write;
 
 write_file($untracked_file, 'this is an untracked file');
-is_deeply $repo -> status -> {'untracked_file'}, {'flags' => ['worktree_new']};
+is_deeply $repo -> status({'flags' => {'include_untracked' => 1}}) -> {'untracked_file'},
+	{'flags' => ['worktree_new']};
 
 remove_tree($untracked_file);
-is_deeply $repo -> status -> {'untracked_file'}, undef;
+is_deeply $repo -> status({'flags' => {'include_untracked' => 1}}) -> {'untracked_file'},
+	undef;
 
 isa_ok $tree, 'Git::Raw::Tree';
 
@@ -69,7 +80,7 @@ my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit = $repo -> commit("initial commit\n", $me, $me, [], $tree);
 
-is_deeply $repo -> status -> {'test'}, undef;
+is_deeply $repo -> status({}) -> {'test'}, undef;
 
 my $author = $commit -> author;
 
@@ -90,44 +101,48 @@ is $commit -> time, $time;
 is $commit -> offset, $off;
 
 write_file($file, 'this is a test....');
-is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified'] };
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['worktree_modified'] };
 ok (!eval { $repo -> reset($commit, {'type' => 'invalid_type'}) });
 $repo -> reset($commit, {'type' => 'hard'});
-is $repo -> status -> {'test'}, undef;
+is $repo -> status({}) -> {'test'}, undef;
 
 move($file, $file.'.moved');
 $index -> remove('test');
 $index -> add('test.moved');
 $index -> write;
-is_deeply $repo -> status -> {'test.moved'}, {'flags' => ['index_renamed'],
-	'index' => {'old_file' => 'test'}};
+is_deeply $repo -> status({'flags' => {'renames_head_to_index' => 1}}) -> {'test.moved'}, {
+		'flags' => ['index_renamed'],
+		'index' => {'old_file' => 'test'}
+	};
 
 write_file($file.'.moved', 'this is a test with more content');
-is_deeply $repo -> status -> {'test.moved'}, {'flags' => ['index_renamed', 'worktree_modified'],
-	'index' => {'old_file' => 'test'}};
+is_deeply $repo -> status({'flags' => {'renames_head_to_index' => 1}}) -> {'test.moved'}, {
+	'flags' => ['index_renamed', 'worktree_modified'],
+	'index' => {'old_file' => 'test'}
+	};
 
 move($file.'.moved', $file);
 $index -> remove('test.moved');
 $index -> add('test');
 $index -> write;
-is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_modified']};
 
 $repo -> reset($commit, {'paths' => [undef, 'test']});
-is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['worktree_modified']};
 
 ok (!eval { $index -> update_all({
 	'paths' => [ 'test' ],
 	'notification' => sub { die "Bad!"; }
 })});
 
-is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['worktree_modified']};
 
 $index -> update_all({
 	'paths' => [ 'test' ],
 	'notification' => sub { return 1; }
 });
 
-is_deeply $repo -> status -> {'test'}, {'flags' => ['worktree_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['worktree_modified']};
 
 $index -> update_all({
 	'paths' => [
@@ -145,12 +160,12 @@ $index -> update_all({
 });
 
 $index -> write;
-is_deeply $repo -> status -> {'test'}, {'flags' => ['index_modified']};
+is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_modified']};
 
 write_file($file, 'this is a test');
 $index -> add('test');
 $index -> write;
-is_deeply $repo -> status -> {'test'}, undef;
+is_deeply $repo -> status({}) -> {'test'}, undef;
 
 $file  = $repo -> workdir . 'test2';
 write_file($file, 'this is a second test');
@@ -305,5 +320,34 @@ is $commit5 -> committer -> name, $name;
 is $commit5 -> committer -> email, $email;
 is $commit5 -> committer -> time, $time;
 is $commit5 -> committer -> offset, $off;
+
+$file  = $repo -> workdir . 'prerename';
+write_file($file, q{
+renamed in worktree
+renamed in worktree
+renamed in worktree
+renamed in worktree
+});
+$index -> add('prerename');
+$index -> write;
+
+move($file, $file.'.moved');
+is_deeply $repo -> status({'flags' => {'renames_index_to_workdir' => 1, 'include_untracked' => 1}}) -> {'prerename.moved'}, {
+	'flags' => ['index_new', 'worktree_renamed'],
+	'worktree' => {'old_file' => 'prerename'}
+	};
+
+move($file.'.moved', $file);
+is_deeply $repo -> status({'flags' => {'renames_index_to_workdir' => 1, 'include_untracked' => 1}}) -> {'prerename'}, {
+	'flags' => ['index_new']
+	};
+
+remove_tree($file);
+is_deeply $repo -> status({'flags' => {'renames_index_to_workdir' => 1, 'include_untracked' => 1}}) -> {'prerename'}, {
+	'flags' => ['index_new', 'worktree_deleted']
+	};
+
+$index -> remove('prerename');
+$index -> write();
 
 done_testing;

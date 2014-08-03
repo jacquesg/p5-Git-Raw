@@ -11,7 +11,7 @@ use File::Path 2.07 qw(make_path remove_tree);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
-my @status = $repo->status();
+my @status = $repo->status({});
 
 ok (!eval { Git::Raw::PathSpec -> new });
 my $error = $@;

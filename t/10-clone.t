@@ -31,7 +31,7 @@ ok !$repo -> is_bare;
 ok !$repo -> is_empty;
 ok !$repo -> is_shallow;
 
-is_deeply $repo -> status -> {'master.txt'}, undef;
+is_deeply $repo -> status({}) -> {'master.txt'}, undef;
 
 my @remotes = $repo -> remotes;
 
