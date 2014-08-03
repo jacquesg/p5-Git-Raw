@@ -237,7 +237,7 @@ All of the above.
 
 =item * "callbacks"
 
-Hash containg progress and notification callbacks. Valid fields are:
+Hash containing progress and notification callbacks. Valid fields are:
 
 =over 8
 
@@ -246,14 +246,14 @@ Hash containg progress and notification callbacks. Valid fields are:
 This callback is called for each file matching one of the C<notify> options
 selected. It runs before modifying any files on disk. This callback should
 return a non-zero value should the checkout be cancelled.  The callback receives
-a string containing the path of the file C<path> and an array reference
-containing the reason C<why>.
+a string containing the path of the file C<$path> and an array reference
+containing the reason C<$why>.
 
 =item * "progress"
 
 The callback to be invoked as a file is checked out. The callback receives a
-string containing the path of the file C<path>, an integer C<completed_steps>
-and an integer C<total_steps>.
+string containing the path of the file C<$path>, an integer C<$completed_steps>
+and an integer C<$total_steps>.
 
 =back
 
@@ -315,7 +315,7 @@ returns a hash reference with an entry for each C<$file>, or all files if no fil
 parameters are provided. Each <$file> entry has a list of C<"flags">, which may
 include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renamed">,
 C<"worktree_new">, C<"worktree_modified">, C<"worktree_deleted">,
-C<"worktree_renamed"> and C<"ignored">.
+C<"worktree_renamed">, C<"worktree_unreadable"> and C<"ignored">.
 
 If C<$file> has been renamed in either the index or worktree or both, C<$file>
 will also have a corresponding entry C<"index"> and/or C<"worktree">, containing
@@ -400,7 +400,7 @@ C<Git::Raw>).
 Refresh the stat cache in the index for files that are unchanged but have out
 of date stat information in the index. It will result in less work being done
 on subsequent calls to C<status>. This is mutually exclusive with the
-C<"no_refresh> option.
+C<"no_refresh"> option.
 
 =item * "include_unreadable"
 
