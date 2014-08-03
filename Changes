@@ -10,6 +10,11 @@ Revision history for Git-Raw
     + remote_create
  - Diff::File -> mode() and Diff::Delta -> status() return value(s) changed:
     - "new" to "unreadable" (Incompatible change)
+ - Repository -> status() now takes options (GH#106) (Incompatible change):
+    - Options are mandatory.
+    - Pathspec matching is no longer auto-disabled if a list of files is
+	  specified. It is up to the user to disable it via the "flags" parameter.
+    - "worktree_unreadable" may now be returned as a status flag.
 
 0.40      2014-06-25 21:05:55SAST+0200 Africa/Johannesburg
 
