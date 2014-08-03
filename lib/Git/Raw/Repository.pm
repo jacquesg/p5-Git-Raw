@@ -308,7 +308,7 @@ C<"type"> (setting C<"type"> to C<"soft"> or C<"hard"> has no effect).
 
 =back
 
-=head2 status( [$file, $file, ...] )
+=head2 status( \%opts, [$file, $file, ...] )
 
 Retrieve the status of files in the index and/or working directory. This functions
 returns a hash reference with an entry for each C<$file>, or all files if no file
@@ -321,9 +321,124 @@ If C<$file> has been renamed in either the index or worktree or both, C<$file>
 will also have a corresponding entry C<"index"> and/or C<"worktree">, containing
 the previous filename C<"old_file">.
 
+Valid fields for the C<%opts> hash are:
+
+=over 4
+
+=item * "flags"
+
+Flags for the status. Valid values include:
+
+=over 8
+
+=item * "include_untracked"
+
+Callbacks should be made on untracked files. These will only be made if the
+workdir files are included in the C<$show> option.
+
+=item * "include_ignored"
+
+Callbacks should be made on ignored files. These will only be made if the
+ignored files get callbacks.
+
+=item * "include_unmodified"
+
+Include even unmodified files.
+
+=item * "exclude_submodules"
+
+Submodules should be skipped. This only applies if there are no pending
+typechanges to the submodule (either from or to another type).
+
+=item * "recurse_untracked_dirs"
+
+All files in untracked directories should be included. Normally if an entire
+directory is new, then just the top-level directory is included (with a
+trailing slash on the entry name). This flag includes all of the individual
+files in the directory instead.
+
+=item * "disable_pathspec_match"
+
+Each C<$file> specified should be treated as a literal path, and not as a
+pathspec pattern.
+
+=item * "recurse_ignored_dirs"
+
+The contents of ignored directories should be included in the status. This is
+like doing C<git ls-files -o -i --exclude-standard> with core git.
+
+=item * "renames_head_to_index"
+
+Rename detection should be processed between the head and the index.
+
+=item * "renames_index_to_workdir"
+
+Rename detection should be run between the index and the working directory.
+
+=item * "sort_case_sensitively"
+
+Override the native case sensitivity for the file system and forces the output
+to be in case-sensitive order.
+
+=item * "sort_case_insensitively"
+
+Override the native case sensitivity for the file system and forces the output
+to be in case-insensitive order.
+
+=item * "renames_from_rewrites"
+
+Rename detection should include rewritten files.
+
+=item * "no_refresh"
+
+Bypass the default status behavior of doing a "soft" index reload (i.e.
+reloading the index data if the file on disk has been modified outside
+C<Git::Raw>).
+
+=item * "update_index"
+
+Refresh the stat cache in the index for files that are unchanged but have out
+of date stat information in the index. It will result in less work being done
+on subsequent calls to C<status>. This is mutually exclusive with the
+C<"no_refresh> option.
+
+=item * "include_unreadable"
+
+Include unreadable files.
+
+=item * "include_unreadable_as_untracked"
+
+Include unreadable files as untracked files.
+
+=back
+
+=item * "show"
+
+One of the following values (Defaults to C<index_and_worktree>):
+
+=over 8
+
+=item * "index_and_worktree"
+
+=item * "index"
+
+=item * "worktree"
+
+=back
+
+=back
+
 Example:
 
-    my $file_statuses = $repo -> status();
+    my $opts = {
+      'flags' => {
+        'include_untracked'        => 1,
+        'renames_head_to_index'    => 1,
+        'renames_index_to_workdir' => 1,
+      },
+      'show' => 'index_and_worktree'
+    };
+    my $file_statuses = $repo -> status($opts);
     while (my ($file, $status) = each %$file_statuses) {
       my $flags = $status -> {'flags'};
       print "File: $file: Status: ", join (' ', @$flags), "\n";
