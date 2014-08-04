@@ -63,7 +63,7 @@ reference for symbolic references.
 
 =head2 reflog( )
 
-Retrieve the L<Git::Raw::Reflog> of the reference. Shortcur for
+Retrieve the L<Git::Raw::Reflog> of the reference. Shortcut for
 C<Git::Raw::Reflog-E<gt>open()>.
 
 =cut
@@ -93,6 +93,8 @@ Check if the reference lives in the C<refsE<sol>notes> namespace.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 
