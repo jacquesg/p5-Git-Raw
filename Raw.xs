@@ -10,6 +10,8 @@
 
 #ifdef GIT_SSH
 #include <libssh2.h>
+#else
+#include "libssh2-compat.h"
 #endif
 
 #include <git2.h>
@@ -179,22 +181,6 @@ typedef struct {
 } git_raw_cred;
 
 typedef git_raw_cred * Cred;
-
-#ifndef GIT_SSH
-/* Reduces further conditional compile problems */
-typedef struct _LIBSSH2_USERAUTH_KBDINT_PROMPT
-{
-	char* text;
-	unsigned int length;
-	unsigned char echo;
-} LIBSSH2_USERAUTH_KBDINT_PROMPT;
-
-typedef struct _LIBSSH2_USERAUTH_KBDINT_RESPONSE
-{
-	char* text;
-	unsigned int length;
-} LIBSSH2_USERAUTH_KBDINT_RESPONSE;
-#endif
 
 /* printf format specifier for size_t */
 #if defined(_MSC_VER) || defined(__MINGW32__)
