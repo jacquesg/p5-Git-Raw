@@ -91,6 +91,13 @@ unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	exit;
 }
 
+my %features = Git::Raw -> features;
+if ($features{'ssh'} == 0) {
+	diag("SSH support not available, skipping SSH push tests");
+	done_testing;
+	exit;
+}
+
 my $remote_path = File::Spec -> rel2abs('t/test_repo');
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');

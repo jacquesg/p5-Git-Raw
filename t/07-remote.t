@@ -86,14 +86,24 @@ unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 
 is (Git::Raw::Remote -> is_url_supported('file:///somewhere/on/filesystem'), 1);
 is (Git::Raw::Remote -> is_url_supported('git://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('https://somewhere.com/somerepo.git'), 1);
 is (Git::Raw::Remote -> is_url_supported('http://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
+
+my %features = Git::Raw -> features;
+
+SKIP: {
+	skip "https support not available", 1 if $features{'https'} == 0;
+	is (Git::Raw::Remote -> is_url_supported('https://somewhere.com/somerepo.git'), 1);
+}
+
+SKIP: {
+	skip "ssh support not available", 6 if $features{'ssh'} == 0;
+	is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:somerepo.git'), 1);
+	is (Git::Raw::Remote -> is_url_supported('ssh://me@somewhere.com:/somerepo.git'), 1);
+	is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:somerepo.git'), 1);
+	is (Git::Raw::Remote -> is_url_supported('ssh://somewhere.com:/somerepo.git'), 1);
+	is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:somerepo.git'), 1);
+	is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
+}
 
 $github = Git::Raw::Remote -> load($repo, 'github');
 
