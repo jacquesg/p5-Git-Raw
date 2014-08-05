@@ -62,6 +62,10 @@ provided, "HEAD" is updated.
 Retrieve the commit corresponding to C<$id>. This function is pretty much the
 same as C<$repo-E<gt>lookup($id)> except that it only returns commits.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the commit.
+
 =head2 id( )
 
 Retrieve the id of the commit, as string.

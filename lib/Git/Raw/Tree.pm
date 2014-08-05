@@ -23,6 +23,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 Retrieve the tree corresponding to C<$id>. This function is pretty much the same
 as C<$repo-E<gt>lookup($id)> except that it only returns trees.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the tree.
+
 =head2 id( )
 
 Retrieve the id of the tree, as string.

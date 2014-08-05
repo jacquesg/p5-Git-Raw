@@ -27,6 +27,10 @@ Create a new blob from the given buffer.
 Retrieve the blob corresponding to C<$id>. This function is pretty much the
 same as C<$repo-E<gt>lookup($id)> except that it only returns blobs.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the blob.
+
 =head2 content( )
 
 Retrieve the raw content of a blob.

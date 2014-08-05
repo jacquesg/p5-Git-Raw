@@ -18,6 +18,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the index.
+
 =head2 add( $entry )
 
 Add C<$entry> to the index. C<$entry> should either be the path of a file

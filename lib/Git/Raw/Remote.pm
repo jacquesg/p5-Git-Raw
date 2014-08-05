@@ -64,6 +64,10 @@ Create a remote in memory (anonymous).
 
 Load an existing remote.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the remote.
+
 =head2 name( [ $name, \@problems ] )
 
 Retrieve the name of the remote. If C<$name> is passed, the remote's name will
