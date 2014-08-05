@@ -22,6 +22,10 @@ $tree = $head -> tree;
 ok $tree -> is_tree;
 ok !$tree -> is_blob;
 
+my $repo2 = $tree -> owner;
+isa_ok $repo2, 'Git::Raw::Repository';
+is $repo2 -> path, $repo -> path;
+
 my $lookup_tree = Git::Raw::Tree -> lookup($repo, $tree -> id);
 isa_ok $lookup_tree, 'Git::Raw::Tree';
 $lookup_tree = Git::Raw::Tree -> lookup($repo, substr($tree -> id, 0, 7));
@@ -46,6 +50,11 @@ isa_ok $obj0, 'Git::Raw::Blob';
 is $obj0 -> is_blob, 1;
 is $obj0 -> content, 'this is a test';
 is $obj0 -> size, '14';
+
+my $repo3 = $obj0 -> owner;
+isa_ok $repo3, 'Git::Raw::Repository';
+is $repo3 -> path, $repo -> path;
+is $repo2 -> path, $repo2 -> path;
 
 my $blob_obj0 = Git::Raw::Blob -> lookup($repo, $obj0 -> id);
 isa_ok $blob_obj0, 'Git::Raw::Blob';

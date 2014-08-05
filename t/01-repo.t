@@ -46,6 +46,9 @@ is_deeply $repo -> status({'flags' => {'include_untracked' => 1, 'include_ignore
 	'subdir/'   => {'flags' => ['ignored']}};
 
 my $index = $repo -> index;
+my $repo2 = $index -> owner;
+isa_ok $repo2, 'Git::Raw::Repository';
+is $repo2 -> path, $repo -> path;
 
 ok (eval { $index -> capabilities });
 

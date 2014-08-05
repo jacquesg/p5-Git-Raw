@@ -129,11 +129,9 @@ owner(self)
 	SV *self
 
 	PREINIT:
-		Reference ref;
 		SV *repo;
 
 	CODE:
-		ref = GIT_SV_TO_PTR(Reference, self);
 		repo = GIT_SV_TO_MAGIC(self);
 
 		if (!repo)

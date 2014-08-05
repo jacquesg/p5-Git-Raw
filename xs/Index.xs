@@ -174,6 +174,23 @@ path(self)
 
 	OUTPUT: RETVAL
 
+SV *
+owner(self)
+	SV *self
+
+	PREINIT:
+		SV *repo;
+
+	CODE:
+		repo = GIT_SV_TO_MAGIC(self);
+
+		if (!repo)
+			croak_assert("No owner attached");
+
+		RETVAL = newRV_inc(repo);
+
+	OUTPUT: RETVAL
+
 void
 checkout(self, ...)
 	SV *self

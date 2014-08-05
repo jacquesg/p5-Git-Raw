@@ -27,6 +27,9 @@ my $name = 'github';
 my $url  = 'git://github.com/ghedo/a_git_repository.git';
 
 my $github = Git::Raw::Remote -> create($repo, $name, $url);
+my $repo2 = $github -> owner;
+isa_ok $repo2, 'Git::Raw::Repository';
+is $repo2 -> path, $repo -> path;
 
 is $github -> name, $name;
 is $github -> url, $url;
