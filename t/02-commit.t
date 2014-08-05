@@ -100,6 +100,10 @@ is $commit -> committer -> offset, $off;
 is $commit -> time, $time;
 is $commit -> offset, $off;
 
+my $repo2 = $commit -> owner;
+isa_ok $repo2, 'Git::Raw::Repository';
+is $repo2 -> path, $repo -> path;
+
 write_file($file, 'this is a test....');
 is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['worktree_modified'] };
 ok (!eval { $repo -> reset($commit, {'type' => 'invalid_type'}) });

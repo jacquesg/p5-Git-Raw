@@ -48,6 +48,10 @@ L<Git::Raw::Signature> representing the tagger and a target object.
 Retrieve the tag corresponding to C<$id>. This function is pretty much the same
 as C<$repo-E<gt>lookup($id)> except that it only returns tags.
 
+=head2 owner( )
+
+Retrieve the L<Git::Raw::Repository> owning the tag.
+
 =head2 foreach( $repo, $callback )
 
 Run C<$callback> for every tag in the repo. The callback receives a tag object.
