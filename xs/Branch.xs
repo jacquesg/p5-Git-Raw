@@ -65,11 +65,16 @@ lookup(class, repo, name, is_local)
 			&branch, repo_ptr -> repository,
 			SvPVbyte_nolen(name), type
 		);
-		git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo)
-		);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, SvPVbyte_nolen(class), branch, SvRV(repo)
+			);
+		}
 
 	OUTPUT: RETVAL
 
@@ -113,15 +118,17 @@ upstream(self)
 		Reference ref;
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		rc = git_branch_upstream(&ref, GIT_SV_TO_PTR(Branch, self));
-		if (rc == GIT_ENOTFOUND)
-			XSRETURN_UNDEF;
 
-		git_check_error(rc);
+		if (rc != GIT_ENOTFOUND) {
+			git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
-		);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Reference", ref, GIT_SV_TO_MAGIC(self)
+			);
+		}
 
 	OUTPUT: RETVAL
 
@@ -150,7 +157,9 @@ upstream_name(self)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
 		git_buf_free(&buf);
-		git_check_error(rc);
+
+		if (rc != GIT_ENOTFOUND)
+			git_check_error(rc);
 
 	OUTPUT: RETVAL
 
@@ -188,7 +197,9 @@ remote_name(self)
 
 		git_buf_free(&upstream);
 		git_buf_free(&remote);
-		git_check_error(rc);
+
+		if (rc != GIT_ENOTFOUND)
+			git_check_error(rc);
 
 	OUTPUT: RETVAL
 

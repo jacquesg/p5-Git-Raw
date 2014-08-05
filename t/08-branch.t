@@ -27,6 +27,9 @@ is $branch -> shorthand, $branch_name;
 ok !$branch -> is_head;
 ok $branch -> is_branch;
 ok !$branch -> is_remote;
+is $branch -> upstream, undef;
+is $branch -> upstream_name, undef;
+is $branch -> remote_name, undef;
 
 $branch_name = 'some_branch';
 
@@ -49,6 +52,9 @@ is $look -> name, 'refs/heads/some_branch';
 my $reflog = $look -> reflog;
 my @entries = $reflog -> entries;
 is scalar(@entries), 2;
+
+ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_local', 1)));
+ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_remote', 0)));
 
 # The time of the commit may be off by a second or two, as
 # Git::Raw::Signature -> default() uses the current system time,
