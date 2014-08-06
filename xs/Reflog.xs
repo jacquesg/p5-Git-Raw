@@ -108,26 +108,69 @@ write(self)
 		rc = git_reflog_write(self);
 		git_check_error(rc);
 
-void
-entries(self)
-	SV *self
+SV *
+entry_count(self)
+	Reflog self
 
 	PREINIT:
-		int rc;
-		size_t i, entry_count;
+		size_t count;
 
+	CODE:
+		count = git_reflog_entrycount (self);
+		RETVAL = newSViv ((int) count);
+
+	OUTPUT: RETVAL
+
+void
+entries(self, ...)
+	SV *self
+
+	PROTOTYPE: $;$$
+	PREINIT:
 		Reflog reflog;
-		Signature sig;
+		size_t start = 0, end, entry_count;
 
 	PPCODE:
 		reflog = GIT_SV_TO_PTR(Reflog, self);
-
 		entry_count = git_reflog_entrycount (reflog);
-		for (i = 0; i < entry_count; ++i) {
+
+		if (items >= 2) {
+			SV *index = ST(1);
+
+			if (!SvIOK(index) || SvIV(index) < 0)
+				croak_usage("Invalid type for 'index'");
+
+			start = SvUV(index);
+			if (start >= entry_count)
+				croak_usage("index %" PRIuZ " out of range", start);
+
+			if (items >= 3) {
+				SV *count = ST(2);
+				size_t retrieve_count;
+
+				if (!SvIOK(count) || SvIV(count) < 0)
+					croak_usage("Invalid type for 'count'");
+				if (SvIV(count) == 0)
+					croak_usage("Invalid value for 'count'");
+
+				retrieve_count = SvUV(count);
+				if ((start + retrieve_count) > entry_count)
+					croak_usage("count %" PRIuZ " out of range", retrieve_count);
+
+				entry_count = retrieve_count;
+			} else
+				entry_count -= start;
+		}
+
+		end = start + entry_count;
+
+		for (; start < end; ++start) {
+			int rc;
 			SV *committer;
+			Signature sig;
 
 			const git_reflog_entry *e =
-				git_reflog_entry_byindex(reflog, i);
+				git_reflog_entry_byindex(reflog, start);
 
 			HV *entry = newHV();
 

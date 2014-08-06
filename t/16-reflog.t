@@ -27,6 +27,27 @@ $reflog -> append ($message);
 $reflog -> write;
 @entries = $reflog -> entries;
 is scalar(@entries), 2;
+is $reflog -> entry_count, 2;
+
+ok (!eval { $reflog -> entries(0, 0) });
+ok (!eval { $reflog -> entries(0, 3) });
+ok (!eval { $reflog -> entries(1, 2) });
+ok (!eval { $reflog -> entries(2, 1) });
+ok (eval { $reflog -> entries(0, 2) });
+ok (eval { $reflog -> entries(1, 1) });
+
+my @entries2 = $reflog -> entries(0, 1);
+is scalar(@entries2), 1;
+is $entries2[0] -> {'message'}, $entries[0] -> {'message'};
+
+@entries2 = $reflog -> entries(1, 1);
+is scalar(@entries2), 1;
+is $entries2[0] -> {'message'}, $entries[1] -> {'message'};
+
+@entries2 = $reflog -> entries(0, 2);
+is scalar(@entries2), 2;
+is $entries2[0] -> {'message'}, $entries[0] -> {'message'};
+is $entries2[1] -> {'message'}, $entries[1] -> {'message'};
 
 is $entries[0] -> {'message'}, $message;
 is $entries[0] -> {'new_id'}, $entries[0] -> {'old_id'};
