@@ -534,17 +534,15 @@ Example:
 
     my $branch = Git::Raw::Branch -> lookup($repo, 'branch', 1);
     my $analysis = $repo -> merge_analysis($branch);
-    $repo -> merge($branch1,
-     {
-        'favor' => 'theirs'
-     },
-
-     {
+    my $merge_opts = {
+      'favor' => 'theirs'
+	};
+	my $checkout_opts = {
       'checkout_strategy' => {
         'force' => 1
       }
-     }
-    );
+	};
+    $repo -> merge($branch1, $merge_opts, $checkout_opts);
 
 =head2 ignore( $rules )
 

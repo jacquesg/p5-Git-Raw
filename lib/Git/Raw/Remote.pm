@@ -21,9 +21,9 @@ Git::Raw::Remote - Git remote class
 
     # set the acquire credentials callback
     $remote -> callbacks({
-      'credentials' => sub { Git::Raw::Cred -> userpass($usr, $pwd) }
+      'credentials' => sub { Git::Raw::Cred -> userpass($usr, $pwd) },
       'update_tips' => sub {
-        my ($ref, $a, $b) = @_);
+        my ($ref, $a, $b) = @_;
         print "Updated $ref: $a -> $b", "\n";
       }
     });
@@ -122,11 +122,11 @@ Whether the reference exists locally.
 
 =item * "id"
 
-The object ID of the reference.
+The OID of the reference.
 
 =item * "lid"
 
-The local object ID of the reference (optional).
+The local OID of the reference (optional).
 
 =back
 
@@ -202,6 +202,8 @@ library.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

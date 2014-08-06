@@ -69,6 +69,8 @@ Check if the current local branch is pointed at by HEAD.
 
 Alessandro Ghedini <alexbio@cpan.org>
 
+Jacques Germishuys <jacquesg@striata.com>
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2012 Alessandro Ghedini.
