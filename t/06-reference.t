@@ -31,6 +31,16 @@ $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 is $head -> message, "third commit\n";
 
+ok(!eval { $ref -> peel('any') });
+
+my $peeled_commit = $ref -> peel('commit');
+isa_ok $peeled_commit, 'Git::Raw::Commit';
+is $peeled_commit -> id, $head -> id;
+
+my $peeled_tree = $ref -> peel('tree');
+isa_ok $peeled_tree, 'Git::Raw::Tree';
+is $peeled_tree -> id, $head -> tree -> id;
+
 $ref = $repo -> branch('foobar06', $head);
 $ref -> delete;
 

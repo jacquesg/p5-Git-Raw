@@ -61,6 +61,11 @@ This function returns either an object (L<Git::Raw::Blob>, L<Git::Raw::Commit>,
 L<Git::Raw::Tag> or L<Git::Raw::Tree>) for direct references, or another
 reference for symbolic references.
 
+=head2 peel( $type )
+
+Recursively peel the reference until an object of the specified C<$type> is
+found. Valid values for C<$type> include: C<"commit">, C<"tree"> or C<"tag">.
+
 =head2 reflog( )
 
 Retrieve the L<Git::Raw::Reflog> of the reference. Shortcut for

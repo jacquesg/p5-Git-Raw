@@ -221,6 +221,40 @@ target(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+peel(self, type)
+	SV *self
+	SV *type
+
+	PREINIT:
+		int rc;
+
+		const char *type_str;
+		git_otype t = GIT_OBJ_ANY;
+		git_object *obj = NULL;
+
+	CODE:
+		type_str = git_ensure_pv(type, "type");
+
+		if (strcmp(type_str, "commit") == 0)
+			t = GIT_OBJ_COMMIT;
+		else if (strcmp(type_str, "tree") == 0)
+			t = GIT_OBJ_TREE;
+		else if (strcmp(type_str, "tag") == 0)
+			t = GIT_OBJ_TAG;
+		else
+			croak_usage("Invalid type for 'type'. Expected 'commit', 'tree' or 'tag'");
+
+		rc = git_reference_peel(&obj,
+			GIT_SV_TO_PTR(Reference, self),
+			t
+		);
+		git_check_error(rc);
+
+		RETVAL = git_obj_to_sv(obj, GIT_SV_TO_MAGIC(self));
+
+	OUTPUT: RETVAL
+
+SV *
 shorthand(self)
 	Reference self
 
