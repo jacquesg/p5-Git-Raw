@@ -32,6 +32,9 @@ my $repo2 = $tag -> owner;
 isa_ok $repo2, 'Git::Raw::Repository';
 is $repo2 -> path, $repo -> path;
 
+my $non_existent = Git::Raw::Tag -> lookup($repo, '123456789987654321');
+is $non_existent, undef;
+
 is length ($tag -> id), 40;
 my $lookup_tag = Git::Raw::Tag -> lookup($repo, $tag -> id);
 isa_ok $lookup_tag, 'Git::Raw::Tag';

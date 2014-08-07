@@ -28,11 +28,16 @@ lookup(class, repo, id)
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
 		rc = git_tree_lookup_prefix(&tree, repo_ptr -> repository, &oid, len);
-		git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo)
-		);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, SvPVbyte_nolen(class), tree, SvRV(repo)
+			);
+		}
 
 	OUTPUT: RETVAL
 

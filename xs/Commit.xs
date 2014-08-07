@@ -93,11 +93,16 @@ lookup(class, repo, id)
 
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_commit_lookup_prefix(&commit, repo_ptr -> repository, &oid, len);
-		git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo)
-		);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, SvPVbyte_nolen(class), commit, SvRV(repo)
+			);
+		}
 
 	OUTPUT: RETVAL
 

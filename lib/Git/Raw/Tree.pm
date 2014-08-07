@@ -21,7 +21,8 @@ B<WARNING>: The API of this module is unstable and may change without warning
 =head2 lookup( $repo, $id )
 
 Retrieve the tree corresponding to C<$id>. This function is pretty much the same
-as C<$repo-E<gt>lookup($id)> except that it only returns trees.
+as C<$repo-E<gt>lookup($id)> except that it only returns trees. If the tree
+doesn't exist, this function wil return C<undef>.
 
 =head2 owner( )
 
@@ -171,6 +172,8 @@ Returns false.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

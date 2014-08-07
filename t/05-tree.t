@@ -26,6 +26,9 @@ my $repo2 = $tree -> owner;
 isa_ok $repo2, 'Git::Raw::Repository';
 is $repo2 -> path, $repo -> path;
 
+my $bad_tree = Git::Raw::Tree -> lookup($repo, '123456789987654321');
+is $bad_tree, undef;
+
 my $lookup_tree = Git::Raw::Tree -> lookup($repo, $tree -> id);
 isa_ok $lookup_tree, 'Git::Raw::Tree';
 $lookup_tree = Git::Raw::Tree -> lookup($repo, substr($tree -> id, 0, 7));
