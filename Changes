@@ -17,7 +17,7 @@ Revision history for Git-Raw
  - Branch -> lookup(), upstream_name() and remote_name() used to consider
     a missing branch or remote as an error. They now return undef instead of
 	die'ing. (Incompatible change) (GH#109)
- - Update libgit2 to e0af251
+ - Update libgit2 to 8f759ac
  - Repository -> lookup(), Commit -> lookup(), Blob -> lookup(), Tree -> lookup
     and Tag -> lookup() used to consider a missing object as an error. They
 	now return undef instead of die'ing. (Incompatible change) (GH#110)
