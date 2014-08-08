@@ -24,6 +24,8 @@ Revision history for Git-Raw
  - Tree -> entry_byname(), entry_bypath() used to consider a missing entry as
     an error. They now return undef instead of die'ing. (Incompatible change)
 	(GH#111)
+ - Repository -> merge_base() used to consider a missing merge base as an error.
+    It now returns undef instead of die'ing. (Incompatible change)
  - Added Reference methods (GH#113)
     + peel
  - Reflog -> entries() now take an optional index and count argument. (GH#114)
