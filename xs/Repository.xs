@@ -644,9 +644,14 @@ merge_base(self, ...)
 		rc = git_merge_base_many(
 			&merge_base, self -> repository, (size_t) count, oids);
 		Safefree(oids);
-		git_check_error(rc);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		}
+		else {
+			git_check_error(rc);
 
-		RETVAL = git_oid_to_sv(&merge_base);
+			RETVAL = git_oid_to_sv(&merge_base);
+		}
 
 	OUTPUT: RETVAL
 
