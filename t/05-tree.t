@@ -77,11 +77,15 @@ isa_ok $obj2, 'Git::Raw::Tree';
 
 is $entries -> [3], undef;
 
-ok (!eval { $tree -> entry_byname('unknownfile') });
-my $entry = $tree -> entry_byname('test3');
+my $non_existent_entry = $tree -> entry_byname('unknownfile');
+is $non_existent_entry, undef;
 
+my $entry = $tree -> entry_byname('test3');
 isa_ok $entry, 'Git::Raw::Tree::Entry';
 isa_ok $entry -> object, 'Git::Raw::Tree';
+
+$non_existent_entry = $tree -> entry_bypath('test3/under/the/tree/nonexistent');
+is $non_existent_entry, undef;
 
 $entry = $tree -> entry_bypath('test3/under/the/tree/test3');
 

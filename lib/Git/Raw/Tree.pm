@@ -38,11 +38,13 @@ Retrieve a list of L<Git::Raw::Tree::Entry> objects.
 
 =head2 entry_byname( $name )
 
-Retrieve a L<Git::Raw::Tree::Entry> object by name.
+Retrieve a L<Git::Raw::Tree::Entry> object by name. If the entry cannot be found,
+this function will return C<undef>.
 
 =head2 entry_bypath( $path )
 
-Retrieve a L<Git::Raw::Tree::Entry> object by path.
+Retrieve a L<Git::Raw::Tree::Entry> object by path. If the entry cannot be found,
+this function will return C<undef>.
 
 =head2 merge( $ancestor, $theirs, [\%merge_opts] )
 

@@ -121,16 +121,17 @@ entry_byname(self, name)
 			git_ensure_pv(name, "name")
 		);
 
-		if (!tmp_entry)
-			croak_usage("Invalid name");
+		if (!tmp_entry) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			rc = git_tree_entry_dup(&entry, tmp_entry);
+			git_check_error(rc);
 
-		rc = git_tree_entry_dup(&entry, tmp_entry);
-		git_check_error(rc);
-
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::Tree::Entry",
-			entry, GIT_SV_TO_MAGIC(self)
-		);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Tree::Entry",
+				entry, GIT_SV_TO_MAGIC(self)
+			);
+		}
 
 	OUTPUT: RETVAL
 
@@ -149,11 +150,16 @@ entry_bypath(self, path)
 			&entry, GIT_SV_TO_PTR(Tree, self),
 			git_ensure_pv(path, "path")
 		);
-		git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::Tree::Entry", entry, GIT_SV_TO_MAGIC(self)
-		);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Tree::Entry", entry, GIT_SV_TO_MAGIC(self)
+			);
+		}
 
 	OUTPUT: RETVAL
 
