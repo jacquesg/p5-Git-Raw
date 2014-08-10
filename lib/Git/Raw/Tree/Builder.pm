@@ -11,7 +11,7 @@ Git::Raw::Tree::Builder - Git tree builder class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Tree::Builder> allows you to build Git tree objects.
+A L<Git::Raw::Tree::Builder> allows you to build Git tree objects.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

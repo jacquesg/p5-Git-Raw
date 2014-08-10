@@ -11,7 +11,7 @@ Git::Raw::Diff::Hunk - Git diff hunk class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Diff::Hunk> represents a hunk in a patch.
+A L<Git::Raw::Diff::Hunk> represents a hunk in a patch.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

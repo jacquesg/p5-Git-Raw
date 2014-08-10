@@ -11,7 +11,7 @@ Git::Raw::Filter - Git filter class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Filter> represents a Git filter.
+A L<Git::Raw::Filter> represents a Git filter.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

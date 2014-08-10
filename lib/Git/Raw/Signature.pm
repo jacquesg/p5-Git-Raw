@@ -11,7 +11,7 @@ Git::Raw::Signature - Git signature class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Signature> represents the signature of an action.
+A L<Git::Raw::Signature> represents the signature of an action.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

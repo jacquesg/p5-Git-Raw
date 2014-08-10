@@ -34,7 +34,7 @@ Git::Raw::Repository - Git repository class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Repository> represents a Git repository.
+A L<Git::Raw::Repository> represents a Git repository.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
@@ -312,7 +312,7 @@ C<"type"> (setting C<"type"> to C<"soft"> or C<"hard"> has no effect).
 
 Retrieve the status of files in the index and/or working directory. This functions
 returns a hash reference with an entry for each C<$file>, or all files if no file
-parameters are provided. Each <$file> entry has a list of C<"flags">, which may
+parameters are provided. Each C<$file> entry has a list of C<"flags">, which may
 include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renamed">,
 C<"worktree_new">, C<"worktree_modified">, C<"worktree_deleted">,
 C<"worktree_renamed">, C<"worktree_unreadable"> and C<"ignored">.

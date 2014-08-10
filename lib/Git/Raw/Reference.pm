@@ -11,7 +11,7 @@ Git::Raw::Reference - Git reference class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Reference> represents a Git reference.
+A L<Git::Raw::Reference> represents a Git reference.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

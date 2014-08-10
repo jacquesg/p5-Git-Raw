@@ -11,7 +11,7 @@ Git::Raw::Patch - Git patch class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Patch> represents all the text diffs for a delta.
+A L<Git::Raw::Patch> represents all the text diffs for a delta.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

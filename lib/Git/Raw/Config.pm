@@ -11,7 +11,7 @@ Git::Raw::Config - Git config class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Config> represents a Git configuration file.
+A L<Git::Raw::Config> represents a Git configuration file.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

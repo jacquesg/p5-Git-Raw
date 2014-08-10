@@ -35,7 +35,7 @@ Git::Raw::Error - Error class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Error> represents an error. A C<Git::Raw::Error> may be the result
+A L<Git::Raw::Error> represents an error. A L<Git::Raw::Error> may be the result
 of a libgit2 error, or may be generated internally due to misuse of the API.
 
 B<WARNING>: The API of this module is unstable and may change without warning

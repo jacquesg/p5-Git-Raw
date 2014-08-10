@@ -11,7 +11,7 @@ Git::Raw::Blame - Git blame class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Blame> represents the blame information for a file.
+A L<Git::Raw::Blame> represents the blame information for a file.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

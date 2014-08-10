@@ -9,7 +9,7 @@ Git::Raw::PathSpec::MatchList - Git pathspec class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::PathSpec::MatchList> represents a Git pathspec list of matches.
+A L<Git::Raw::PathSpec::MatchList> represents a Git pathspec list of matches.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

@@ -11,7 +11,7 @@ Git::Raw::Diff::Stats - Git diff statistics class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Diff::Stats> represents diff statistics.
+A L<Git::Raw::Diff::Stats> represents diff statistics.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

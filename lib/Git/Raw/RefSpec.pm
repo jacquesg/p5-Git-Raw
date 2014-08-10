@@ -9,7 +9,7 @@ Git::Raw::RefSpec - Git refspec class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::RefSpec> represents a Git refspec.
+A L<Git::Raw::RefSpec> represents a Git refspec.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

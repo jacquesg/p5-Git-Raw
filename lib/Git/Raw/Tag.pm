@@ -31,7 +31,7 @@ Git::Raw::Tag - Git tag class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Tag> represents an annotated Git tag.
+A L<Git::Raw::Tag> represents an annotated Git tag.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

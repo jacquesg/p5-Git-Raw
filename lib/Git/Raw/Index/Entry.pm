@@ -11,7 +11,7 @@ Git::Raw::Index::Entry - Git index entry class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Index::Entry> represents an index entry in a Git repository index.
+A L<Git::Raw::Index::Entry> represents an index entry in a Git repository index.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

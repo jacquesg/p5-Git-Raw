@@ -11,7 +11,7 @@ Git::Raw::Index - Git index class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Index> represents an index in a Git repository.
+A L<Git::Raw::Index> represents an index in a Git repository.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

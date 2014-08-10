@@ -11,7 +11,7 @@ Git::Raw::Blob - Git blob class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Blob> represents a Git blob.
+A L<Git::Raw::Blob> represents a Git blob.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).

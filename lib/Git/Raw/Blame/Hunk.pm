@@ -11,7 +11,7 @@ Git::Raw::Blame::Hunk - Git blame hunk class
 
 =head1 DESCRIPTION
 
-A C<Git::Raw::Blame::Hunk> represents a hunk in the blame information of a file.
+A L<Git::Raw::Blame::Hunk> represents a hunk in the blame information of a file.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
