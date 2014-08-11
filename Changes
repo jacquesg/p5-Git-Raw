@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Index methods:
+    + find
+
 0.42      2014-08-09 15:19:47+02:00 Africa/Johannesburg
 
  - Added Blob methods (GH#108):
