@@ -126,6 +126,22 @@ is $github -> is_connected, 0;
 my $ref = Git::Raw::Reference -> lookup('refs/remotes/github/master', $repo);
 is $ref -> type, 'direct';
 
+my $master = Git::Raw::Branch -> lookup ($repo, 'master', 1);
+ok ($master);
+my $upstream = $master -> upstream;
+is $upstream, undef;
+
+$upstream = $master -> upstream($ref);
+isa_ok $upstream, 'Git::Raw::Reference';
+is $upstream -> name, $ref -> name;
+
+$upstream = $master -> upstream(undef);
+is $upstream, undef;
+
+$upstream = $master -> upstream($ref -> shorthand);
+isa_ok $upstream, 'Git::Raw::Reference';
+is $upstream -> name, $ref -> name;
+
 my $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
 

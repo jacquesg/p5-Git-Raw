@@ -43,11 +43,12 @@ Retrieve the branch corresponding to the given branch name.
 Rename the branch to C<$name>. Note that in order to get the updated branch
 object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 
-=head2 upstream( )
+=head2 upstream( [$upstream] )
 
-Retrieve the reference supporting the remote tracking branch, given the local
-branch. If there is no corresponding supporting reference, this function will
-return C<undef>.
+Retrieve or set the reference supporting the remote tracking branch, given the
+local branch. If there is no corresponding supporting reference, this function
+will return C<undef>. C<$upstream> may either be a L<Git::Raw::Reference>, a
+string containing the upstream reference name or C<undef>.
 
 =head2 upstream_name( )
 

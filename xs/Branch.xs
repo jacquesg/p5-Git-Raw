@@ -109,18 +109,39 @@ move(self, name, force)
 		git_check_error(rc);
 
 SV *
-upstream(self)
+upstream(self, ...)
 	SV *self
 
 	PREINIT:
 		int rc;
 
+		Branch branch;
 		Reference ref;
 
 	CODE:
+		branch = GIT_SV_TO_PTR(Branch, self);
+
 		RETVAL = &PL_sv_undef;
 
-		rc = git_branch_upstream(&ref, GIT_SV_TO_PTR(Branch, self));
+		if (items == 2) {
+			const char *name = NULL;
+
+			if (SvOK(ST(1))) {
+				if (sv_isobject(ST(1))) {
+					if (sv_derived_from(ST(1), "Git::Raw::Reference"))
+						name = git_reference_shorthand(GIT_SV_TO_PTR(Reference, ST(1)));
+					else
+						croak_usage("Invalid type for 'upstream'. Expected a 'Git::Raw::Reference' or "
+							"'Git::Raw::Branch'");
+				} else
+					name = git_ensure_pv(ST(1), "upstream");
+			}
+
+			rc = git_branch_set_upstream(branch, name);
+			git_check_error(rc);
+		}
+
+		rc = git_branch_upstream(&ref, branch);
 
 		if (rc != GIT_ENOTFOUND) {
 			git_check_error(rc);
