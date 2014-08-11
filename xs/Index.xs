@@ -121,6 +121,38 @@ write_tree(self, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+find(self, path)
+	SV *self
+	SV *path
+
+	PREINIT:
+		int rc;
+		size_t pos;
+		Index index;
+
+	CODE:
+		RETVAL = &PL_sv_undef;
+
+		index = GIT_SV_TO_PTR(Index, self);
+
+		rc = git_index_find(&pos, index, git_ensure_pv(path, "path"));
+		if (rc != GIT_ENOTFOUND) {
+			const git_index_entry *e = NULL;
+
+			git_check_error(rc);
+			if ((e = git_index_get_byindex(index, pos)) != NULL) {
+				SV *repo = GIT_SV_TO_MAGIC(self);
+
+				GIT_NEW_OBJ_WITH_MAGIC(
+					RETVAL, "Git::Raw::Index::Entry",
+					(Index_Entry) e, repo
+				);
+			}
+		}
+
+	OUTPUT: RETVAL
+
 void
 remove(self, path)
 	Index self
@@ -130,7 +162,7 @@ remove(self, path)
 		int rc;
 
 	CODE:
-		rc = git_index_remove_bypath(self, SvPVbyte_nolen(path));
+		rc = git_index_remove_bypath(self, git_ensure_pv(path, "path"));
 		git_check_error(rc);
 
 void

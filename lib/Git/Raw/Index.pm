@@ -66,6 +66,11 @@ be added to the index, C<E<gt>0> if it should be skipped or C<E<lt>0> to abort.
 
 =back
 
+=head2 find( $path )
+
+Find the first L<Git::Raw::Index::Entry> which point to given C<$path>. If an
+entry cannot be found, this function will return C<undef>.
+
 =head2 remove( $path )
 
 Remove C<$path> from the index.

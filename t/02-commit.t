@@ -63,6 +63,14 @@ write_file($file, 'this is a test');
 $index -> add('test');
 $index -> write;
 
+my $entry = $index -> find('test');
+isa_ok $entry, 'Git::Raw::Index::Entry';
+is $entry -> path, 'test';
+is $entry -> stage, 0;
+
+my $non_existent_entry = $index -> find('non-existent');
+is $non_existent_entry, undef;
+
 write_file($untracked_file, 'this is an untracked file');
 is_deeply $repo -> status({'flags' => {'include_untracked' => 1}}) -> {'untracked_file'},
 	{'flags' => ['worktree_new']};
