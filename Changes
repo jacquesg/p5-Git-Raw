@@ -9,6 +9,9 @@ Revision history for Git-Raw
     It now returns undef instead of die'ing. (Incompatible change) (GH#116)
  - Reference -> lookup() now tries harder to find a reference (GH#116)
  - Reflog -> entries() now return real objects (Incompatible change) (GH#117)
+ - Added Repository methods (GH#118):
+    + detach_head
+ - Repository -> head() now accepts an optional message parameter (GH#118)
 
 0.42      2014-08-09 15:19:47+02:00 Africa/Johannesburg
 
