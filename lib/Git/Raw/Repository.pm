@@ -128,11 +128,21 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Retrieve the default L<Git::Raw::Index> of the repository.
 
-=head2 head( [$new_head] )
+=head2 head( [$new_head, $message] )
 
 Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository. If
 the L<Git::Raw::Reference> C<$new_head> is passed, the HEAD of the repository
-will be changed to point to it.
+will be changed to point to it. If a C<$message> is provided, it will be
+used to create the reflog entry, alternatively, the reflog message will simply
+be C<"reset">.
+
+=head2 detach_head( $commitish, [$message] )
+
+Make the repository HEAD point directly to a commit. C<$commitish> should be
+peelable to a L<Git::Raw::Commit> object, that is, it should be a
+L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or alternatively a commit
+id or commit id prefix. If a C<$message> is provided, it will be used to create
+the reflog entry, alternatively, the reflog message will simply be C<"reset">.
 
 =head2 lookup( $id )
 

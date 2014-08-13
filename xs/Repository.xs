@@ -222,7 +222,7 @@ SV *
 head(self, ...)
 	SV *self
 
-	PROTOTYPE: $;$
+	PROTOTYPE: $;$$
 
 	PREINIT:
 		int rc;
@@ -234,15 +234,19 @@ head(self, ...)
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 
-		if (items == 2) {
+		if (items >= 2) {
+			const char *reflog_message = "reset";
 			Reference new_head = GIT_SV_TO_PTR(Reference, ST(1));
+
+			if (items >= 3)
+				reflog_message = git_ensure_pv(ST(2), "message");
 
 			rc = git_signature_default(&sig, repo -> repository);
 			git_check_error(rc);
 
 			rc = git_repository_set_head(
 				repo -> repository, git_reference_name(new_head),
-				sig, NULL
+				sig, reflog_message
 			);
 			git_signature_free(sig);
 			git_check_error(rc);
@@ -256,6 +260,37 @@ head(self, ...)
 		);
 
 	OUTPUT: RETVAL
+
+void
+detach_head(self, commitish, ...)
+	SV *self
+	SV *commitish
+
+	PROTOTYPE: $$;$
+	PREINIT:
+		int rc;
+
+		Repository repo;
+		Signature sig;
+		git_oid id;
+
+		const char *reflog_message = "reset";
+
+	CODE:
+		if (items == 3)
+			reflog_message = git_ensure_pv(ST(2), "message");
+
+		repo = GIT_SV_TO_PTR(Repository, self);
+
+		if (git_sv_to_commitish(repo -> repository, commitish, &id) == NULL)
+			croak_resolve("Could not resolve 'commitish' to a commit id");
+
+		rc = git_signature_default(&sig, repo -> repository);
+		git_check_error(rc);
+
+		rc = git_repository_set_head_detached(repo -> repository,
+			&id, sig, reflog_message);
+		git_check_error(rc);
 
 SV *
 lookup(self, id)
