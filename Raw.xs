@@ -127,6 +127,7 @@ typedef git_pathspec * PathSpec;
 typedef git_pathspec_match_list * PathSpec_MatchList;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
+typedef git_reflog_entry * Reflog_Entry;
 typedef git_refspec * RefSpec;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
@@ -1758,6 +1759,7 @@ INCLUDE: xs/PathSpec/MatchList.xs
 INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/Reflog.xs
+INCLUDE: xs/Reflog/Entry.xs
 INCLUDE: xs/RefSpec.xs
 INCLUDE: xs/Remote.xs
 INCLUDE: xs/Repository.xs

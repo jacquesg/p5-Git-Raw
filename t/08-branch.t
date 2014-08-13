@@ -62,19 +62,21 @@ ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_remote', 0)));
 # a second or two ago.
 my $signature = Git::Raw::Signature -> default($repo);
 
-is $entries[0] -> {'committer'} -> name, $signature -> name;
-is $entries[0] -> {'committer'} -> email, $signature -> email;
-ok $entries[0] -> {'committer'} -> time <= $signature -> time;
-ok $entries[0] -> {'committer'} -> time >= $signature -> time - 2;
-is $entries[0] -> {'committer'} -> offset, $signature -> offset;
-ok $entries[0] -> {'message'} =~ /^Branch: renamed/i;
+isa_ok $entries[0] -> committer, 'Git::Raw::Signature';
+is $entries[0] -> committer -> name, $signature -> name;
+is $entries[0] -> committer -> email, $signature -> email;
+ok $entries[0] -> committer -> time <= $signature -> time;
+ok $entries[0] -> committer -> time >= $signature -> time - 2;
+is $entries[0] -> committer -> offset, $signature -> offset;
+ok $entries[0] -> message =~ /^Branch: renamed/i;
 
-is $entries[1] -> {'committer'} -> name, $signature -> name;
-is $entries[1] -> {'committer'} -> email, $signature -> email;
-ok $entries[1] -> {'committer'} -> time <= $signature -> time;
-ok $entries[1] -> {'committer'} -> time >= $signature -> time - 2;
-is $entries[1] -> {'committer'} -> offset, $signature -> offset;
-ok $entries[1] -> {'message'} =~ /^Branch: created/i;
+isa_ok $entries[1] -> committer, 'Git::Raw::Signature';
+is $entries[1] -> committer -> name, $signature -> name;
+is $entries[1] -> committer -> email, $signature -> email;
+ok $entries[1] -> committer -> time <= $signature -> time;
+ok $entries[1] -> committer -> time >= $signature -> time - 2;
+is $entries[1] -> committer -> offset, $signature -> offset;
+ok $entries[1] -> message =~ /^Branch: created/i;
 
 my $branches = [ $repo -> branches('local') ];
 is scalar(@$branches), 2;

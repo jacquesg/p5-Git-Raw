@@ -165,26 +165,17 @@ entries(self, ...)
 		end = start + entry_count;
 
 		for (; start < end; ++start) {
-			int rc;
-			SV *committer;
-			Signature sig;
+			SV *entry = NULL;
 
 			const git_reflog_entry *e =
 				git_reflog_entry_byindex(reflog, start);
 
-			HV *entry = newHV();
+			GIT_NEW_OBJ_WITH_MAGIC(
+				entry, "Git::Raw::Reflog::Entry",
+				(Reflog_Entry) e, SvRV(self)
+			);
 
-			rc = git_signature_dup(&sig, git_reflog_entry_committer(e));
-			git_check_error(rc);
-
-			GIT_NEW_OBJ(committer, "Git::Raw::Signature", sig);
-
-			hv_stores(entry, "committer", committer);
-			hv_stores(entry, "message", newSVpv(git_reflog_entry_message(e), 0));
-			hv_stores(entry, "new_id", git_oid_to_sv(git_reflog_entry_id_new(e)));
-			hv_stores(entry, "old_id", git_oid_to_sv(git_reflog_entry_id_old(e)));
-
-			mXPUSHs(newRV_noinc((SV *) entry));
+			mXPUSHs(entry);
 		}
 
 		XSRETURN(entry_count);
