@@ -54,18 +54,34 @@ lookup(class, name, repo)
 
 		Repository repo_ptr;
 		Reference ref;
+		const char *ref_name;
 
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		ref_name = git_ensure_pv(name, "name");
+
 		rc = git_reference_lookup(
 			&ref, repo_ptr -> repository,
-			SvPVbyte_nolen(name)
+			ref_name
 		);
-		git_check_error(rc);
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo)
-		);
+		if (rc == GIT_ENOTFOUND) {
+			/* Try to "do what I mean" */
+			rc = git_reference_dwim(
+				&ref, repo_ptr -> repository,
+				ref_name
+			);
+			if (rc == GIT_ENOTFOUND)
+				RETVAL = &PL_sv_undef;
+		}
+
+		if (rc != GIT_ENOTFOUND) {
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, SvPVbyte_nolen(class), ref, SvRV(repo)
+			);
+		}
 
 	OUTPUT: RETVAL
 

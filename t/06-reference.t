@@ -19,6 +19,10 @@ is $ref -> type, 'symbolic';
 isa_ok $ref -> target, 'Git::Raw::Reference';
 
 $ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
+isa_ok $ref, 'Git::Raw::Reference';
+
+my $non_existent_ref = Git::Raw::Reference -> lookup('refs/heads/non-existent', $repo);
+is $non_existent_ref, undef;
 
 is $ref -> type, 'direct';
 is $ref -> name, 'refs/heads/master';
