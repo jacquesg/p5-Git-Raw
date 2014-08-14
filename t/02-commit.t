@@ -367,4 +367,22 @@ is_deeply $repo -> status({'flags' => {'renames_index_to_workdir' => 1, 'include
 $index -> remove('prerename');
 $index -> write();
 
+my $old_head = $repo -> head;
+$repo -> detach_head ($old_head -> target, 'detaching head');
+is $repo -> is_head_detached, 1;
+
+$repo -> head ($old_head, 'reattaching head');
+is $repo -> is_head_detached, 0;
+
+my $reflog = Git::Raw::Reflog -> open(Git::Raw::Reference -> lookup ('HEAD', $repo));
+my $entry_count = $reflog -> entry_count;
+ok $entry_count >= 2;
+
+@entries = $reflog -> entries(0, 2);
+is scalar(@entries), 2;
+is $entries[0] -> message, 'reattaching head';
+is $entries[1] -> message, 'detaching head';
+
+ok (!eval {$repo -> detach_head ('zzz')});
+
 done_testing;
