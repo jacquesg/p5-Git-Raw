@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.43      2014-08-14 15:19:12+02:00 Africa/Johannesburg
+
  - Added Index methods:
     + find
  - Branch -> upstream() can now set/clear the upstream reference (GH#115)
