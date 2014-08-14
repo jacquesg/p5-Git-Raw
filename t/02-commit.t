@@ -4,7 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use File::Copy;
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use File::Spec::Functions qw(catfile canonpath);
 use Cwd qw(abs_path);
 use File::Path 2.07 qw(make_path remove_tree);

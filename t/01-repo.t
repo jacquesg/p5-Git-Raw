@@ -4,7 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use File::Spec;
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use File::Path qw(make_path);
 use Cwd qw(abs_path);
 

@@ -4,7 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use File::Copy;
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use Cwd qw(abs_path);
 use Capture::Tiny 'capture_stdout';
 

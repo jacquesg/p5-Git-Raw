@@ -3,7 +3,7 @@
 use Test::More;
 
 use Git::Raw;
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use Cwd qw(abs_path);
 
 my $path = abs_path('t/test_repo');
@@ -23,7 +23,7 @@ $repo -> checkout($repo -> head($branch), {
 
 my $file  = $repo -> workdir . 'blame';
 my @lines = ('line1', 'line2', 'line3', 'line4');
-write_file($file, map { "$_\n" } @lines);
+write_file($file, join("\n", @lines));
 
 my $index = $repo -> index;
 $index -> add('blame');
@@ -34,7 +34,7 @@ my $commit1 = $repo -> commit("commit1 on blame branch\n", $me, $me, [$repo -> h
 	$repo -> lookup($index -> write_tree));
 
 @lines = ('line1', 'line2', 'line31', 'line4');
-write_file($file, map { "$_\n" } @lines);
+write_file($file, join("\n", @lines));
 $index -> add('blame');
 $index -> write;
 
@@ -42,7 +42,7 @@ my $commit2 = $repo -> commit("commit2 on blame branch\n", $me, $me, [$repo -> h
 	$repo -> lookup($index -> write_tree));
 
 @lines = ('line1', 'line2', 'line31', 'line41');
-write_file($file, map { "$_\n" } @lines);
+write_file($file, join("\n", @lines));
 $index -> add('blame');
 $index -> write;
 

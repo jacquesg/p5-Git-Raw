@@ -4,7 +4,7 @@ use Test::More;
 
 use Git::Raw;
 use Cwd qw(abs_path);
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use File::Basename qw(dirname);
 use File::Path 2.07 qw(make_path remove_tree);
 

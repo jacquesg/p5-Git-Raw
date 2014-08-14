@@ -3,10 +3,7 @@
 use Test::More;
 
 use Git::Raw;
-use File::Copy;
-use File::Slurp;
 use Cwd qw(abs_path);
-use File::Path 2.07 qw(make_path remove_tree);
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);

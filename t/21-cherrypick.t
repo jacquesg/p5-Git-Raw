@@ -3,7 +3,7 @@
 use Test::More;
 
 use Git::Raw;
-use File::Slurp;
+use File::Slurp::Tiny qw(write_file);
 use Cwd qw(abs_path);
 
 my $path = abs_path('t/test_repo');
