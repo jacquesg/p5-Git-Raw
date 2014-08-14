@@ -34,6 +34,8 @@ API.
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
+=head1 METHODS
+
 =head2 features( )
 
 List of (optional) compiled in features. Git::Raw may be built with support

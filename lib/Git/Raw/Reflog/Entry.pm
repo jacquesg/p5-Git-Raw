@@ -11,7 +11,7 @@ Git::Raw::Reflog::Entry - Git reflog entry class
 
 =head1 DESCRIPTION
 
-A L<Git::Raw::Index::Entry> represents an entry in a Git reflog.
+A L<Git::Raw::Reflog::Entry> represents an entry in a Git reflog.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
