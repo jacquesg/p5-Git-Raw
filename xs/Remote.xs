@@ -118,6 +118,31 @@ owner(self)
 	OUTPUT: RETVAL
 
 SV *
+default_branch(self)
+	Remote self
+
+	PREINIT:
+		int rc;
+
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		rc = git_remote_default_branch(&buf, self -> remote);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			if (rc != GIT_OK)
+				git_buf_free(&buf);
+
+			git_check_error(rc);
+			RETVAL = newSVpv(buf.ptr, buf.size);
+		}
+
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
+SV *
 name(self, ...)
 	Remote self
 

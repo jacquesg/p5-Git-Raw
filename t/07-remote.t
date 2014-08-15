@@ -110,8 +110,10 @@ SKIP: {
 
 $github = Git::Raw::Remote -> load($repo, 'github');
 
+ok (!eval { $github -> default_branch });
 ok (!eval { $github -> connect('invalid_direction') });
 $github -> connect('fetch');
+is $github -> default_branch, 'refs/heads/master';
 is $github -> is_connected, 1;
 
 $github -> download;

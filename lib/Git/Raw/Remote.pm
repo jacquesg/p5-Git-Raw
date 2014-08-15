@@ -68,6 +68,16 @@ Load an existing remote.
 
 Retrieve the L<Git::Raw::Repository> owning the remote.
 
+=head2 default_branch( )
+
+Retrieve the default branch of remote repository, that is, the branch which
+HEAD points to. If the remote does not support reporting this information
+directly, it performs the guess as git does, that is, if there are multiple
+branches which point to the same commit, the first one is chosen. If the master
+branch is a candidate, it wins. If the information cannot be determined, this
+function will return C<undef>. Note, this function should only be called after
+the remote has established a connection.
+
 =head2 name( [ $name, \@problems ] )
 
 Retrieve the name of the remote. If C<$name> is passed, the remote's name will
