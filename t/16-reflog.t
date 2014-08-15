@@ -70,7 +70,7 @@ $reflog -> write;
 is scalar(@entries), 3;
 is $entries[0] -> committer -> name, $name;
 is $entries[0] -> committer -> email, $email;
-ok ($entries[0] -> committer -> time <= $time);
+ok ($entries[0] -> committer -> time <= $time + 2);
 ok ($entries[0] -> committer -> time >= $time - 2);
 is $entries[0] -> committer -> offset, $off;
 
