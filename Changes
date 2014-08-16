@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to fa44a16 (GH#120)
+ - Added Remote methods (GH#120):
+    + default_branch
+
 0.43      2014-08-14 15:19:12+02:00 Africa/Johannesburg
 
  - Added Index methods:
