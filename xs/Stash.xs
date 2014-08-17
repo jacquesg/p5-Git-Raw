@@ -1,6 +1,6 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Stash
 
-void
+SV *
 save(class, repo, stasher, msg, ...)
 	SV *class
 	Repository repo
@@ -41,7 +41,14 @@ save(class, repo, stasher, msg, ...)
 		}
 
 		rc = git_stash_save(&oid, repo -> repository, stasher, git_ensure_pv(msg, "msg"), stash_flags);
-		git_check_error(rc);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			git_check_error(rc);
+			RETVAL = newSViv(1);
+		}
+
+	OUTPUT: RETVAL
 
 void
 foreach(class, repo, cb)

@@ -20,7 +20,7 @@ my $email  = $config -> str('user.email');
 
 my $me = Git::Raw::Signature -> now($name, $email);
 
-$repo -> stash($me, 'some stash');
+ok ($repo -> stash($me, 'some stash'));
 
 Git::Raw::Stash -> foreach($repo, sub {
 	my ($i, $msg, $oid) = @_;
@@ -30,6 +30,8 @@ Git::Raw::Stash -> foreach($repo, sub {
 
 	0;
 });
+
+is $repo -> stash($me, 'some stash'), undef;
 
 Git::Raw::Stash -> drop($repo, 0);
 
