@@ -233,9 +233,12 @@ is $head -> committer -> offset, $off;
 is $head -> time, $time;
 is $head -> offset, $off;
 
-my $parents = $head -> parents;
+my $parent_count = $head -> parents;
+is $parent_count, 1;
+my @parents = $head -> parents;
+is scalar(@parents), 1;
 
-is $parents -> [0] -> message, "initial commit\n";
+is $parents [0] -> message, "initial commit\n";
 
 make_path($repo -> workdir . 'test3/under/the/tree');
 $file  = $repo -> workdir . 'test3/under/the/tree/test3';

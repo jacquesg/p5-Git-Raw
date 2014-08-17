@@ -231,7 +231,7 @@ is_deeply $patches[1] -> line_stats, {
 };
 
 my $tree2 = $repo -> head -> target -> tree;
-my $tree1 = $repo -> head -> target -> parents -> [0] -> tree;
+my $tree1 = ($repo -> head -> target -> parents())[0] -> tree;
 
 $diff = $tree1 -> diff({
 	'tree' => $tree2,

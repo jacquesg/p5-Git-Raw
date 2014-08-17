@@ -21,7 +21,7 @@ is $walk -> next, undef;
 is $walk -> next, undef;
 
 $walk -> push($repo -> head -> target);
-$walk -> hide($repo -> head -> target -> parents -> [0]);
+$walk -> hide(($repo -> head -> target -> parents())[0]);
 is $walk -> next -> message, "third commit\n";
 is $walk -> next, undef;
 

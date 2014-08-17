@@ -240,43 +240,48 @@ tree(self)
 
 	OUTPUT: RETVAL
 
-AV *
+void
 parents(self)
 	SV *self
 
 	PREINIT:
-		int rc;
+		int ctx;
 
-		SV *repo;
-		int count, i;
+	PPCODE:
+		ctx = GIMME_V;
 
-		AV *parents;
-		Commit child;
+		if (ctx != G_VOID) {
+			int rc, count;
+			Commit child;
+			SV *repo = GIT_SV_TO_MAGIC(self);
 
-	CODE:
-		repo = GIT_SV_TO_MAGIC(self);
+			child = GIT_SV_TO_PTR(Commit, self);
+			count = git_commit_parentcount(child);
 
-		child = GIT_SV_TO_PTR(Commit, self);
-		count = git_commit_parentcount(child);
+			if (ctx == G_ARRAY) {
+				int i;
 
-		parents = newAV();
+				for (i = 0; i < count; i++) {
+					SV *tmp;
+					Commit parent;
 
-		for (i = 0; i < count; i++) {
-			SV *tmp;
-			Commit parent;
+					rc = git_commit_parent(&parent, child, i);
+					git_check_error(rc);
 
-			rc = git_commit_parent(&parent, child, i);
-			git_check_error(rc);
+					GIT_NEW_OBJ_WITH_MAGIC(
+						tmp, "Git::Raw::Commit", parent, repo
+					);
+					mXPUSHs(tmp);
+				}
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				tmp, "Git::Raw::Commit", parent, repo
-			);
-			av_push(parents, tmp);
-		}
-
-		RETVAL = parents;
-
-	OUTPUT: RETVAL
+				mXPUSHs(newSViv((int) count));
+				XSRETURN((int) count);
+			} else {
+				mXPUSHs(newSViv((int) count));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
 
 SV *
 merge(self, commit, ...)
