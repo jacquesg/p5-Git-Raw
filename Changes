@@ -8,6 +8,8 @@ Revision history for Git-Raw
  - Stash -> save() now returns a true value if files were stashed, and undef
    if nothing was stashed (GH#121). (Potentially incompatible change if you
    relied on the function die'ing if there was nothing to be stashed)
+ - Commit -> parents() and Tree -> entries() now return lists as per the
+   documentation (GH#122)
 
 0.43      2014-08-14 15:19:12+02:00 Africa/Johannesburg
 
