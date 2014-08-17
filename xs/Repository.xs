@@ -447,7 +447,7 @@ status(self, opts, ...)
 				size_t index = (size_t) i - 2;
 				status_opts.pathspec.strings[index] =
 					SvPVbyte_nolen(ST(i));
-				status_opts.pathspec.count = index;
+				status_opts.pathspec.count = index + 1;
 			}
 		}
 
