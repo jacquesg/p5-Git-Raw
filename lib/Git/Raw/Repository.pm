@@ -272,6 +272,22 @@ and an integer C<$total_steps>.
 An optional array representing the list of files thay should be checked out. If
 C<"paths"> is not specified, all files will be checked out (default).
 
+=item * "our_label"
+
+The name of the "our" side of conflicts.
+
+=item * "their_label"
+
+The name of the "their" side of conflicts.
+
+=item * "ancestor_label"
+
+The name of the common ancestor side of conflicts.
+
+=item * "target_directory"
+
+Alternative checkout path to the working directory.
+
 =back
 
 Example:
@@ -546,12 +562,12 @@ Example:
     my $analysis = $repo -> merge_analysis($branch);
     my $merge_opts = {
       'favor' => 'theirs'
-	};
-	my $checkout_opts = {
+    };
+    my $checkout_opts = {
       'checkout_strategy' => {
         'force' => 1
       }
-	};
+    };
     $repo -> merge($branch1, $merge_opts, $checkout_opts);
 
 =head2 ignore( $rules )
