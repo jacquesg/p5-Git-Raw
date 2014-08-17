@@ -70,8 +70,8 @@ foreach(class, repo, cb)
 		rc = git_stash_foreach(
 			payload.repo_ptr -> repository, git_stash_foreach_cb, &payload
 		);
-
-		git_check_error(rc);
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
 
 void
 drop(class, repo, index)

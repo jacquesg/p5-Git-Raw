@@ -983,6 +983,9 @@ STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) 
 	FREETMPS;
 	LEAVE;
 
+	if (rv != 0)
+		rv = GIT_EUSER;
+
 	return rv;
 }
 
@@ -1007,6 +1010,9 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 
 	FREETMPS;
 	LEAVE;
+
+	if (rv != 0)
+		rv = GIT_EUSER;
 
 	return rv;
 }
@@ -1047,6 +1053,9 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 
 	FREETMPS;
 	LEAVE;
+
+	if (rv != 0)
+		rv = GIT_EUSER;
 
 	return rv;
 }
