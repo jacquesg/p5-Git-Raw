@@ -5,6 +5,9 @@ Revision history for Git-Raw
  - Update libgit2 to fa44a16 (GH#120)
  - Added Remote methods (GH#120):
     + default_branch
+ - Stash -> save() now returns a true value if files were stashed, and undef
+   if nothing was stashed (GH#121). (Potentially incompatible change if you
+   relied on the function die'ing if there was nothing to be stashed)
 
 0.43      2014-08-14 15:19:12+02:00 Africa/Johannesburg
 
