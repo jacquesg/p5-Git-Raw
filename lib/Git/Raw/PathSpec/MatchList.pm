@@ -5,7 +5,7 @@ use warnings;
 
 =head1 NAME
 
-Git::Raw::PathSpec::MatchList - Git pathspec class
+Git::Raw::PathSpec::MatchList - Git pathspec matchlist class
 
 =head1 DESCRIPTION
 

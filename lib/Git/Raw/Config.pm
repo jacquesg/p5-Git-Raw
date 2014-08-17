@@ -26,7 +26,7 @@ Create a new config object.
 
 Retrieve the global, XDG and system configuration and open them into a single
 prioritized config object that can be used when accessing default config data
-outside a repository
+outside a repository.
 
 =head2 add_file( $path, $level )
 
@@ -67,6 +67,8 @@ Delete the variable C<$name> from the config object.
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
+
+Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -48,7 +48,8 @@ object, an additional C<Git::Raw::Branch-E<gt>lookup()> is needed.
 Retrieve or set the reference supporting the remote tracking branch, given the
 local branch. If there is no corresponding supporting reference, this function
 will return C<undef>. C<$upstream> may either be a L<Git::Raw::Reference>, a
-string containing the upstream reference name or C<undef>.
+string containing the upstream reference name or C<undef>. If C<$upstream> is
+set to C<undef>, the remote tracking branch association is removed.
 
 =head2 upstream_name( )
 
