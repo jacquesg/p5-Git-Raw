@@ -67,43 +67,52 @@ id(self)
 
 	OUTPUT: RETVAL
 
-AV *
+void
 entries(self)
 	SV *self
 
 	PREINIT:
-		int rc;
-		int i, count;
+		int ctx;
 
 		Tree self_ptr;
-		Tree_Entry entry;
-		AV *entries = newAV();
 
-	CODE:
-		self_ptr = GIT_SV_TO_PTR(Tree, self);
+	PPCODE:
+		ctx = GIMME_V;
 
-		count = git_tree_entrycount(self_ptr);
+		if (ctx != G_VOID) {
+			int rc, count;
 
-		for (i = 0; i < count; i++) {
-			SV *tmp;
+			self_ptr = GIT_SV_TO_PTR(Tree, self);
+			count = git_tree_entrycount(self_ptr);
 
-			Tree_Entry tmp_entry = (Tree_Entry)
-				git_tree_entry_byindex(self_ptr, i);
+			if (ctx == G_ARRAY) {
+				int i;
 
-			rc = git_tree_entry_dup(&entry, tmp_entry);
-			git_check_error(rc);
+				for (i = 0; i < count; i++) {
+					SV *tmp;
+					Tree_Entry entry;
 
-			GIT_NEW_OBJ_WITH_MAGIC(
-				tmp, "Git::Raw::Tree::Entry",
-				entry, GIT_SV_TO_MAGIC(self)
-			);
+					Tree_Entry tmp_entry = (Tree_Entry)
+						git_tree_entry_byindex(self_ptr, i);
 
-			av_push(entries, tmp);
-		}
+					rc = git_tree_entry_dup(&entry, tmp_entry);
+					git_check_error(rc);
 
-		RETVAL = entries;
+					GIT_NEW_OBJ_WITH_MAGIC(
+						tmp, "Git::Raw::Tree::Entry",
+						entry, GIT_SV_TO_MAGIC(self)
+					);
+					mXPUSHs(tmp);
+				}
 
-	OUTPUT: RETVAL
+				mXPUSHs(newSViv((int) count));
+				XSRETURN((int) count);
+			} else {
+				mXPUSHs(newSViv((int) count));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
 
 SV *
 entry_byname(self, name)

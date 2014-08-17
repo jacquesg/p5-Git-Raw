@@ -44,12 +44,12 @@ my $tree = $builder -> write();
 isa_ok $tree, 'Git::Raw::Tree';
 is $tree -> id(), '228c738569c82d9906ea1801f698a7c2a70e56b1';
 
-my $entries = $tree -> entries();
+my @entries = $tree -> entries();
 
-is_deeply [ sort map { $_ -> name() } @$entries ],
+is_deeply [ sort map { $_ -> name() } @entries ],
 	[ qw/one.txt three.txt two.txt/ ];
 
-is_deeply [ map { $_ -> object -> id() } @$entries ],
+is_deeply [ map { $_ -> object -> id() } @entries ],
 	[ map { $empty_blob -> id() } (1..3) ];
 
 $builder -> clear();
@@ -65,12 +65,12 @@ $builder -> remove('two.txt');
 is $builder -> entry_count, 2;
 
 $tree    = $builder -> write();
-$entries = $tree -> entries();
+@entries = $tree -> entries();
 
-is_deeply [ sort map { $_ -> name() } @$entries ],
+is_deeply [ sort map { $_ -> name() } @entries ],
 	[ qw/one.txt three.txt/ ];
 
-is_deeply [ map { $_ -> object -> id() } @$entries ],
+is_deeply [ map { $_ -> object -> id() } @entries ],
 	[ map { $empty_blob -> id() } (1..2) ];
 
 eval {
@@ -100,14 +100,14 @@ $builder -> insert('subdir', $subtree, 0040000);
 is $builder -> entry_count, 3;
 
 $tree    = $builder -> write();
-$entries = $tree -> entries();
+@entries = $tree -> entries();
 
-@$entries = sort { $a -> name() cmp $b -> name() } @$entries;
+@entries = sort { $a -> name() cmp $b -> name() } @entries;
 
-is_deeply [ map { $_ -> name() } @$entries ],
+is_deeply [ map { $_ -> name() } @entries ],
 	[ qw/one.txt subdir three.txt/ ];
 
-is_deeply [ map { $_ -> object -> id() } @$entries ],
+is_deeply [ map { $_ -> object -> id() } @entries ],
 	[ $empty_blob -> id(), $subtree -> id(), $empty_blob -> id() ];
 
 done_testing;

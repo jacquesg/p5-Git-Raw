@@ -11,9 +11,13 @@ my $repo = Git::Raw::Repository -> open($path);
 my $head_id = $repo -> head -> target -> id;
 
 my $head = $repo -> lookup($head_id);
-ok $head -> tree -> entries -> [0] -> object;
+my @entries = $head -> tree -> entries;
+
+ok $entries [0] -> object;
 $head = $repo -> lookup(substr($head_id, 0, 7));
-ok $head -> tree -> entries -> [0] -> object;
+
+@entries = $head -> tree -> entries;
+ok $entries [0] -> object;
 
 $head = $repo -> head -> target;
 
@@ -34,20 +38,23 @@ isa_ok $lookup_tree, 'Git::Raw::Tree';
 $lookup_tree = Git::Raw::Tree -> lookup($repo, substr($tree -> id, 0, 7));
 isa_ok $lookup_tree, 'Git::Raw::Tree';
 
-my $entries = $tree -> entries;
+my $entry_count = $tree -> entries;
+is $entry_count, 3;
+@entries = $tree -> entries;
+is scalar(@entries), 3;
 
-is $entries -> [0] -> name, 'test';
-is $entries -> [1] -> name, 'test2';
-is $entries -> [2] -> name, 'test3';
+is $entries [0] -> name, 'test';
+is $entries [1] -> name, 'test2';
+is $entries [2] -> name, 'test3';
 
-is length($entries -> [0] -> id), 40;
-is length($entries -> [1] -> id), 40;
-is length($entries -> [2] -> id), 40;
+is length($entries [0] -> id), 40;
+is length($entries [1] -> id), 40;
+is length($entries [2] -> id), 40;
 
-is $entries -> [0] -> file_mode, 0100644;
-is $entries -> [2] -> file_mode, 0040000;
+is $entries [0] -> file_mode, 0100644;
+is $entries [2] -> file_mode, 0040000;
 
-my $obj0 = $entries -> [0] -> object;
+my $obj0 = $entries [0] -> object;
 
 isa_ok $obj0, 'Git::Raw::Blob';
 is $obj0 -> is_blob, 1;
@@ -65,17 +72,17 @@ is $blob_obj0 -> is_blob, 1;
 is $obj0 -> content, $blob_obj0 -> content;
 is $obj0 -> size, $blob_obj0 -> size;
 
-my $obj1 = $entries -> [1] -> object;
+my $obj1 = $entries [1] -> object;
 
 isa_ok $obj1, 'Git::Raw::Blob';
 is $obj1 -> content, 'this is a second test';
 is $obj1 -> size, '21';
 
-my $obj2 = $entries -> [2] -> object;
+my $obj2 = $entries [2] -> object;
 
 isa_ok $obj2, 'Git::Raw::Tree';
 
-is $entries -> [3], undef;
+is $entries [3], undef;
 
 my $non_existent_entry = $tree -> entry_byname('unknownfile');
 is $non_existent_entry, undef;
