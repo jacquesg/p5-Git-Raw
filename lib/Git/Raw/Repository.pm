@@ -821,6 +821,15 @@ directory. See C<Git::Raw::Repository-E<gt>merge()> for valid C<%merge_opts>
 and C<%checkout_opts> values. For merge commits C<$mainline> specifies the
 parent.
 
+=head2 revparse( $spec )
+
+Parse the revision string C<$spec> to for C<from>, C<to> and C<intent>. Returns a
+list of objects in list context and the number of objects parsed from C<$spec>
+in scalar context.
+
+	my ($from, $to) = $repo -> revparse('HEAD~..HEAD');
+	print "Range is $from -> $to", "\n";
+
 =head2 state( )
 
 Determine the state of the repository. One of the following values is returned:

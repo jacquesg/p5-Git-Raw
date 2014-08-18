@@ -965,6 +965,51 @@ revert(self, commit, ...)
 		Safefree(opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
+void
+revparse(self, spec)
+	SV *self
+	SV *spec
+
+	PREINIT:
+		int rc;
+		int ctx, count = 0;
+		git_revspec rs = {NULL, NULL, 0};
+
+	PPCODE:
+		ctx = GIMME_V;
+
+		Repository repo = GIT_SV_TO_PTR(Repository, self);
+		rc = git_revparse(&rs, repo -> repository,
+			git_ensure_pv(spec, "spec"));
+		git_check_error(rc);
+
+		if (ctx != G_VOID) {
+			if (ctx == G_ARRAY) {
+				mXPUSHs(git_obj_to_sv(rs.from, SvRV(self)));
+				if (rs.flags & GIT_REVPARSE_SINGLE) {
+					count = 1;
+				} else {
+					mXPUSHs(git_obj_to_sv(rs.to, SvRV(self)));
+					count = 2;
+				}
+			} else {
+				if (rs.flags & GIT_REVPARSE_SINGLE)
+					mXPUSHs(newSViv(1));
+				else
+					mXPUSHs(newSViv(2));
+
+				count = 1;
+			}
+		}
+
+		if (count == 0) {
+			git_object_free(rs.from);
+			git_object_free(rs.to);
+			XSRETURN_EMPTY;
+		}
+
+		XSRETURN(count);
+
 SV *
 state(self)
 	Repository self
