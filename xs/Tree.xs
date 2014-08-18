@@ -105,7 +105,6 @@ entries(self)
 					mXPUSHs(tmp);
 				}
 
-				mXPUSHs(newSViv((int) count));
 				XSRETURN((int) count);
 			} else {
 				mXPUSHs(newSViv((int) count));

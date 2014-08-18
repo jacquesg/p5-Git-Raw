@@ -116,35 +116,42 @@ patches(self)
 	SV *self
 
 	PREINIT:
-		int rc;
-
-		Diff diff_ptr;
-
-		size_t i, count, num_patches = 0;
+		int ctx;
 
 	PPCODE:
-		diff_ptr = GIT_SV_TO_PTR(Diff, self);
+		ctx = GIMME_V;
 
-		count = git_diff_num_deltas(diff_ptr);
-		for (i = 0; i < count; ++i) {
-			Patch patch;
+		if (ctx != G_VOID) {
+			int rc;
+			size_t count;
+			Diff diff_ptr;
+			diff_ptr = GIT_SV_TO_PTR(Diff, self);
 
-			rc = git_patch_from_diff(&patch, diff_ptr, i);
-			git_check_error(rc);
+			count = git_diff_num_deltas(diff_ptr);
+			if (ctx == G_ARRAY) {
+				size_t i;
 
-			if (patch) {
-				SV *p;
+				for (i = 0; i < count; ++i) {
+					SV *tmp;
+					Patch patch;
 
-				GIT_NEW_OBJ_WITH_MAGIC(
-					p, "Git::Raw::Patch", patch, SvRV(self)
-				);
+					rc = git_patch_from_diff(&patch, diff_ptr, i);
+					git_check_error(rc);
 
-				mXPUSHs(p);
-				++num_patches;
+					GIT_NEW_OBJ_WITH_MAGIC(
+						tmp, "Git::Raw::Patch", patch, SvRV(self)
+					);
+
+					mXPUSHs(tmp);
+				}
+
+				XSRETURN((int) count);
+			} else {
+				mXPUSHs(newSViv((int) count));
+				XSRETURN(1);
 			}
-		}
-
-		XSRETURN(num_patches);
+		} else
+			XSRETURN_EMPTY;
 
 void
 DESTROY(self)

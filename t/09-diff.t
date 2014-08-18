@@ -160,6 +160,9 @@ $output = capture_stdout { $diff -> print("patch_header", $printer) };
 is $output, $expected;
 
 is $diff -> delta_count, 2;
+$diff -> patches; # void context
+my $patch_count = $diff -> patches;
+is $patch_count, 2;
 my @patches = $diff -> patches;
 is scalar(@patches), 2;
 

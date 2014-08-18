@@ -233,6 +233,7 @@ is $head -> committer -> offset, $off;
 is $head -> time, $time;
 is $head -> offset, $off;
 
+$head -> parents; # void context
 my $parent_count = $head -> parents;
 is $parent_count, 1;
 my @parents = $head -> parents;

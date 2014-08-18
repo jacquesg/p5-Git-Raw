@@ -38,6 +38,7 @@ isa_ok $lookup_tree, 'Git::Raw::Tree';
 $lookup_tree = Git::Raw::Tree -> lookup($repo, substr($tree -> id, 0, 7));
 isa_ok $lookup_tree, 'Git::Raw::Tree';
 
+$tree -> entries; # void context
 my $entry_count = $tree -> entries;
 is $entry_count, 3;
 @entries = $tree -> entries;
