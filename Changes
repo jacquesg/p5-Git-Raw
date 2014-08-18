@@ -10,6 +10,9 @@ Revision history for Git-Raw
    relied on the function die'ing if there was nothing to be stashed)
  - Commit -> parents() and Tree -> entries() now return lists as per the
    documentation (GH#122)
+ - Config -> foreach(), Stash -> foreach() and Tag -> foreach() now correctly
+   aborts the iteration. Previously it would die if the user requested
+   termination of the loop with a return value that is not GIT_USER. (GH#123)
 
 0.43      2014-08-14 15:19:12+02:00 Africa/Johannesburg
 
