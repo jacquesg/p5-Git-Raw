@@ -22,6 +22,9 @@ my $me = Git::Raw::Signature -> now($name, $email);
 
 ok ($repo -> stash($me, 'some stash'));
 
+eval { Git::Raw::Stash -> foreach($repo, sub { 1; }) };
+ok (!$@);
+
 Git::Raw::Stash -> foreach($repo, sub {
 	my ($i, $msg, $oid) = @_;
 

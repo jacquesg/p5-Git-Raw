@@ -166,6 +166,9 @@ is $config -> str('user.email', $email), $email;
 is $config -> str('user.name'), $name;
 is $config -> str('user.email'), $email;
 
+eval { $config -> foreach(sub { 1; }) };
+ok (!$@);
+
 $config -> foreach(sub {
 	my ($entry_name, $entry_value, $entry_level) = @_;
 

@@ -35,6 +35,13 @@ is $repo2 -> path, $repo -> path;
 my $non_existent = Git::Raw::Tag -> lookup($repo, '123456789987654321');
 is $non_existent, undef;
 
+my $counter = 0;
+eval { Git::Raw::Tag -> foreach($repo, sub { 1; }) };
+ok (!$@);
+
+Git::Raw::Tag -> foreach($repo, sub { $counter++; 0; });
+is $counter, 1;
+
 is length ($tag -> id), 40;
 my $lookup_tag = Git::Raw::Tag -> lookup($repo, $tag -> id);
 isa_ok $lookup_tag, 'Git::Raw::Tag';
