@@ -23,6 +23,40 @@ create(class, repo)
 	OUTPUT: RETVAL
 
 void
+sorting(self, order)
+	Walker self
+	SV *order
+
+	PREINIT:
+		size_t i = 0;
+		AV *order_list;
+
+		SV **entry;
+		unsigned int mode = GIT_SORT_NONE;
+
+	CODE:
+		order_list = git_ensure_av(order, "order");
+		while ((entry = av_fetch(order_list, i++, 0))) {
+			if (SvPOK(*entry)) {
+				const char *mode_str = SvPVbyte_nolen(*entry);
+
+				if (strcmp(mode_str, "none") == 0)
+					mode = GIT_SORT_NONE;
+				else if (strcmp(mode_str, "topological") == 0)
+					mode |= GIT_SORT_TOPOLOGICAL;
+				else if (strcmp(mode_str, "time") == 0)
+					mode |= GIT_SORT_TIME;
+				else if (strcmp(mode_str, "reverse") == 0)
+					mode |= GIT_SORT_REVERSE;
+				else
+					croak_usage("Invalid 'order' value");
+			} else
+				croak_usage("Invalid type for 'order' value");
+		}
+
+		git_revwalk_sorting(self, mode);
+
+void
 push(self, commit)
 	Walker self
 	Commit commit

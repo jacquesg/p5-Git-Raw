@@ -9,8 +9,11 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 my $walk = $repo -> walker;
-$walk -> push($repo -> head -> target);
+ok (!eval { $walk -> sorting (['blah']) });
+ok (!eval { $walk -> sorting ([[], undef]) });
 
+$walk -> sorting (['time']);
+$walk -> push($repo -> head -> target);
 is $walk -> next -> message, "third commit\n";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
@@ -36,6 +39,15 @@ is $walk -> next -> message, "third commit\n";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
 is $walk -> next, undef;
+
+
+$walk -> push_head;
+$walk -> sorting (['reverse', 'topological']);
+is $walk -> next -> message, "initial commit\n";
+is $walk -> next -> message, "second commit\n";
+is $walk -> next -> message, "third commit\n";
+is $walk -> next, undef;
+$walk -> sorting (['none']);
 
 $walk -> push_ref('refs/heads/master');
 my $end = $walk -> next;
