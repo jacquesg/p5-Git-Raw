@@ -42,7 +42,7 @@ $index -> add('test2');
 $index -> write;
 $index -> read;
 
-my $tree = $repo -> lookup($index -> write_tree);
+my $tree = $index -> write_tree;
 
 my $name   = $repo -> config -> str('user.name');
 my $email  = $repo -> config -> str('user.email');

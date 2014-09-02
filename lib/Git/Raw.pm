@@ -10,6 +10,7 @@ use Git::Raw::Error;
 use Git::Raw::Error::Category;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
+use Git::Raw::Tree;
 
 =for HTML
 <a href="https://travis-ci.org/jacquesg/p5-Git-Raw">

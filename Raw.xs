@@ -422,7 +422,7 @@ STATIC git_oid *git_sv_to_commitish(git_repository *repo, SV *sv, git_oid *oid) 
 		const char *commitish_name = NULL;
 
 		/* substr() may return a SVt_PVLV, need to perform some force majeur */
-		if (SvPOK(sv)) {
+		if (SvPOK(sv) || SvGAMAGIC(sv)) {
 			commitish_name = SvPVbyte(sv, len);
 		} else if (SvTYPE(sv) == SVt_PVLV) {
 			commitish_name = SvPVbyte_force(sv, len);
@@ -609,11 +609,13 @@ STATIC const char *git_ensure_pv_with_len(SV *sv, const char *identifier, STRLEN
 	const char *pv = NULL;
 	STRLEN real_len;
 
-	if (SvPOK(sv)) {
+	if (SvPOK(sv) || SvGAMAGIC(sv)) {
 		pv = SvPVbyte(sv, real_len);
 	} else if (SvTYPE(sv) == SVt_PVLV) {
 		pv = SvPVbyte_force(sv, real_len);
-	} else
+	}
+
+	if (pv == NULL)
 		croak_usage("Invalid type for '%s', expected a string", identifier);
 
 	if (len)

@@ -39,8 +39,8 @@ $index -> add_all({
 });
 $index -> write;
 
-my $tree_id = $index -> write_tree;
-my $tree    = $repo -> lookup($tree_id);
+my $tree = $index -> write_tree;
+isa_ok $tree, 'Git::Raw::Tree';
 
 my $non_existent = $repo -> lookup('123456789987654321');
 is $non_existent, undef;
@@ -188,8 +188,7 @@ write_file($file, 'this is a second test');
 $index -> add('test2');
 $index -> write;
 
-$tree_id = $index -> write_tree;
-$tree    = $repo -> lookup($tree_id);
+$tree = $index -> write_tree;
 
 $time = time();
 $me = Git::Raw::Signature -> default($repo);
@@ -248,8 +247,7 @@ write_file($file, 'this is a third test');
 $index -> add('test3/under/the/tree/test3');
 $index -> write;
 
-$tree_id = $index -> write_tree;
-$tree    = $repo -> lookup($tree_id);
+$tree = $index -> write_tree;
 
 $index -> read_tree($tree);
 my @entries = $index -> entries();

@@ -30,7 +30,7 @@ is_deeply $repo -> status({}) -> {'cherry_file'} -> {'flags'}, ['index_new'];
 
 my $me = Git::Raw::Signature -> default($repo);
 my $commit1 = $repo -> commit("commit1 on cbranch\n", $me, $me, [$branch -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $repo -> status({}) -> {'cherry_file'}, undef;
 
@@ -41,7 +41,7 @@ $index -> write;
 is_deeply $repo -> status({}) -> {'cherry_file'} -> {'flags'}, ['index_modified'];
 
 my $commit2 = $repo -> commit("commit2 on cbranch\n", $me, $me, [$commit1],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $repo -> status({}) -> {'cherry_file'}, undef;
 
@@ -62,7 +62,7 @@ is $index -> has_conflicts, 0;
 ok (!eval { $repo -> cherry_pick($commit2) });
 
 my $c_commit1 = $repo -> commit("commit1 on cbranch\n", $me, $me, [$cherry_pick_branch -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $repo -> status({}) -> {'cherry_file'}, undef;
 
@@ -75,7 +75,7 @@ is $index -> has_conflicts, 0;
 ok (!eval { $repo -> cherry_pick($commit2) });
 
 my $c_commit2 = $repo -> commit("commit2 on cbranch\n", $me, $me, [$c_commit1],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $branch -> target -> tree -> id, $cherry_pick_branch -> target -> tree -> id;
 
@@ -100,7 +100,7 @@ $index -> add('cherry_file');
 $index -> write;
 
 my $conflict_commit1 = $repo -> commit("conflict commit on cbranch\n", $me, $me, [$cherry_pick_conflict_branch -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 ok (!eval { $repo -> cherry_pick($commit2, {}, {}, 9999) });
 $repo -> cherry_pick($commit2, {}, {}, 0);
@@ -111,7 +111,7 @@ $index -> add('cherry_file');
 is $index -> has_conflicts, 0;
 
 my $conflict_commit2 = $repo -> commit("commit2 on cbranch\n", $me, $me, [$conflict_commit1],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $index -> has_conflicts, 0;
 is $repo -> status({}) -> {'cherry_file'}, undef;

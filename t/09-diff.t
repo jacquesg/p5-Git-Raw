@@ -275,12 +275,12 @@ is substr($delta -> new_file -> id, 0, 7), 'c7eaef2';
 
 $index -> add('diff');
 $index -> add('diff2');
-my $index_tree1 = $repo -> lookup($index -> write_tree);
+my $index_tree1 = $index -> write_tree;
 
 move($file, $file.'.moved');
 $index -> remove('diff');
 $index -> add('diff.moved');
-my $index_tree2 = $repo -> lookup($index -> write_tree);
+my $index_tree2 = $index -> write_tree;
 
 my $tree_diff = $index_tree1 -> diff({
 	'tree'   => $index_tree2
@@ -404,7 +404,7 @@ EOS
 
 write_file("$file.moved", $content);
 $index -> add('diff.moved');
-$index_tree1 = $repo -> lookup($index -> write_tree);
+$index_tree1 = $index -> write_tree;
 
 move($file.'.moved', $file);
 $index -> remove('diff.moved');
@@ -419,7 +419,7 @@ EOS
 
 write_file($file, $content);
 $index -> add('diff');
-$index_tree2 = $repo -> lookup($index -> write_tree);
+$index_tree2 = $index -> write_tree;
 
 $tree_diff = $index_tree1 -> diff({
 	'tree'   => $index_tree2,
@@ -480,7 +480,7 @@ EOS
 
 write_file($file, $content);
 $index -> add('diff');
-$index_tree2 = $repo -> lookup($index -> write_tree);
+$index_tree2 = $index -> write_tree;
 
 $tree_diff = $index_tree1 -> diff({
 	'tree'   => $index_tree2,

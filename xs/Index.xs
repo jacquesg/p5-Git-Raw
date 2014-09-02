@@ -99,25 +99,45 @@ read_tree(self, tree)
 
 SV *
 write_tree(self, ...)
-	Index self
+	SV *self
 
 	PROTOTYPE: $;$
 	PREINIT:
 		int rc;
 		git_oid oid;
+		Index index;
+
+		SV *repo;
+		Repository repo_ptr;
+		Tree tree;
 
 	CODE:
+		index = GIT_SV_TO_PTR(Index, self);
+
 		if (items == 2) {
-			Repository repo = GIT_SV_TO_PTR(Repository, ST(1));
+			repo = SvRV(ST(1));
+			repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
 			rc = git_index_write_tree_to(
-				&oid, self, repo -> repository
+				&oid, index, repo_ptr -> repository
 			);
 		} else {
-			rc = git_index_write_tree(&oid, self);
+			repo = GIT_SV_TO_MAGIC(self);
+			repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+			rc = git_index_write_tree(&oid, index);
 		}
 		git_check_error(rc);
 
-		RETVAL = git_oid_to_sv(&oid);
+		rc = git_tree_lookup(&tree, repo_ptr -> repository,
+			&oid
+		);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Tree",
+			tree, repo
+		);
 
 	OUTPUT: RETVAL
 

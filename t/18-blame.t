@@ -31,7 +31,7 @@ $index -> write;
 
 my $me = Git::Raw::Signature -> default($repo);
 my $commit1 = $repo -> commit("commit1 on blame branch\n", $me, $me, [$repo -> head -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 @lines = ('line1', 'line2', 'line31', 'line4');
 write_file($file, join("\n", @lines));
@@ -39,7 +39,7 @@ $index -> add('blame');
 $index -> write;
 
 my $commit2 = $repo -> commit("commit2 on blame branch\n", $me, $me, [$repo -> head -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 @lines = ('line1', 'line2', 'line31', 'line41');
 write_file($file, join("\n", @lines));
@@ -47,7 +47,7 @@ $index -> add('blame');
 $index -> write;
 
 my $commit3 = $repo -> commit("commit3 on blame branch\n", $me, $me, [$repo -> head -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 my $blame = $repo -> blame('blame');
 isa_ok $blame, 'Git::Raw::Blame';

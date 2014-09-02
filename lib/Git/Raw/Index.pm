@@ -103,7 +103,8 @@ Replace the index contente with C<$tree>.
 =head2 write_tree( [$repo] )
 
 Create a new tree from the index and write it to disk. C<$repo> optionally
-indicates which L<Git::Raw::Repository> the tree should be written to.
+indicates which L<Git::Raw::Repository> the tree should be written to. Returns
+a L<Git::Raw::Tree> object.
 
 =head2 checkout( [\%checkout_opts] )
 

@@ -147,7 +147,7 @@ $index -> write;
 
 my $me = Git::Raw::Signature -> default($repo);
 my $commit = $repo -> commit("commit on file_on_ssh_branch\n", $me, $me, [$branch -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is scalar(@remotes), 1;
 $remote = shift @remotes;

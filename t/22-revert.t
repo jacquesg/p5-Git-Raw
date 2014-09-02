@@ -30,7 +30,7 @@ is_deeply $repo -> status({}) -> {'revert_file'} -> {'flags'}, ['index_new'];
 
 my $me = Git::Raw::Signature -> default($repo);
 my $commit1 = $repo -> commit("commit1 on rbranch\n", $me, $me, [$branch -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $repo -> status({}) -> {'revert_file'}, undef;
 
@@ -41,7 +41,7 @@ $index -> write;
 is_deeply $repo -> status({}) -> {'revert_file'} -> {'flags'}, ['index_modified'];
 
 my $commit2 = $repo -> commit("commit2 on rbranch\n", $me, $me, [$commit1],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is $repo -> status({}) -> {'revert_file'}, undef;
 
@@ -60,7 +60,7 @@ is_deeply $repo -> status({}) -> {'revert_file'} -> {'flags'}, ['index_modified'
 is read_file($file1), 'this is revert_file';
 
 my $revert_commit = $repo -> commit("revert commit1\n", $me, $me, [$commit2],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is_deeply $repo -> status({}) -> {'revert_file'}, undef;
 is $revert_commit -> tree -> id, $commit1 -> tree -> id;

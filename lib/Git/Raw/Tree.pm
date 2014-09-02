@@ -3,6 +3,9 @@ package Git::Raw::Tree;
 use strict;
 use warnings;
 
+use overload
+	'""'       => sub { return $_[0] -> id };
+
 use Git::Raw;
 
 =head1 NAME

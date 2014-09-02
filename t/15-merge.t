@@ -29,7 +29,7 @@ is $config -> str('user.email', $email), $email;
 my $me = Git::Raw::Signature -> default($repo);
 
 my $commit = $repo -> commit("initial commit\n", $me, $me, [],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 my $initial_head = $repo -> head;
 my $branch1 = $repo -> branch('branch1', $initial_head -> target);
@@ -42,7 +42,7 @@ $index -> add('test1');
 $index -> write;
 
 my $commit1 = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
 $repo -> checkout($repo -> head($master), {
@@ -105,7 +105,7 @@ $index -> add('test1');
 $index -> write;
 
 my $commit2 = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 $repo -> checkout($repo -> head($master), {
 	'checkout_strategy' => {
@@ -167,7 +167,7 @@ is $merge_msg, "Merge branch 'branch2'\n\nConflicts:\n\ttest1\n";
 
 my $target = $master -> target;
 $commit = $repo -> commit("Merge commit!", $me, $me, [$target, $commit2],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 Git::Raw::Graph -> is_descendant_of($repo, $commit, $target), 1;
 Git::Raw::Graph -> is_descendant_of($repo, $commit, $commit2), 1;
@@ -194,7 +194,7 @@ $index -> add('test1');
 $index -> write;
 
 $commit = $repo -> commit("commit on branch3\n", $me, $me, [$branch3 -> target],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $initial_head), 1);
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $initial_head), 1);
@@ -254,14 +254,14 @@ $index -> add('test1');
 $index -> write;
 
 my $merge_commit1 = $repo -> commit("merge commit on branch1\n", $me, $me, [$head_commit],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 write_file($file1, 'post-commit merge');
 $index -> add('test1');
 $index -> write;
 
 my $merge_commit2 = $repo -> commit("merge commit on branch1\n", $me, $me, [$merge_commit1],
-	$repo -> lookup($index -> write_tree));
+	$index -> write_tree);
 
 my $merged_index = $merge_commit1 -> merge($merge_commit2, {});
 isa_ok $merged_index, 'Git::Raw::Index';

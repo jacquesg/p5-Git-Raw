@@ -145,7 +145,7 @@ is $apply, 0;
 
 my $me = Git::Raw::Signature -> default($repo);
 my $commit1 = $repo -> commit(
-	"Filter commit1\n", $me, $me, [$repo -> head -> target], $repo -> lookup($index -> write_tree)
+	"Filter commit1\n", $me, $me, [$repo -> head -> target], $index -> write_tree
 );
 
 write_file($file, 'X:filter me some more and more:X');
@@ -153,7 +153,7 @@ $index -> add('filterfile');
 $index -> write;
 
 my $commit2 = $repo -> commit(
-	"Filter commit2\n", $me, $me, [$commit1], $repo -> lookup($index -> write_tree)
+	"Filter commit2\n", $me, $me, [$commit1], $index -> write_tree
 );
 
 my $worktree_filter = Git::Raw::Filter -> create ("worktree", "text");
