@@ -8,6 +8,7 @@ XSLoader::load('Git::Raw', $Git::Raw::VERSION);
 
 use Git::Raw::Error;
 use Git::Raw::Error::Category;
+use Git::Raw::Commit;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
 use Git::Raw::Tree;

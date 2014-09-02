@@ -57,6 +57,25 @@ with the corresponding name is automatically updated or created. If
 C<$update_ref> is C<undef>, no reference is updated.  If C<$update_ref> is not
 provided, "HEAD" is updated.
 
+=cut
+
+sub amend {
+	my $baseline = shift;
+	Git::Raw::Commit -> create(
+		$baseline -> owner(),
+		$baseline -> message,
+		$baseline -> author,
+		$baseline -> committer,
+		@_
+	);
+}
+
+=head2 amend( $baseline, [@parents], $tree [, $update_ref ] )
+
+Create a new commit using C<$baseline> as a template for the message, author
+and committer. This method is useful for rewriting a commit, by replacing its
+parents and trees. See C<Git::Raw::Commit-E<gt>create()>
+
 =head2 lookup( $repo, $id )
 
 Retrieve the commit corresponding to C<$id>. This function is pretty much the

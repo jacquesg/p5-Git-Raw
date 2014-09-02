@@ -89,7 +89,7 @@ my $time = time();
 my $off  = 120;
 my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
-my $commit = $repo -> commit("initial commit\n", $me, $me, [], $tree);
+my $commit = Git::Raw::Commit -> create($repo, "initial commit\n", $me, $me, [], $tree);
 
 is_deeply $repo -> status({}) -> {'test'}, undef;
 
@@ -196,16 +196,21 @@ $me = Git::Raw::Signature -> default($repo);
 my @current_time = localtime($time);
 $off = (timegm(@current_time) - timelocal(@current_time))/60;
 
+my $head = $repo -> head -> target;
+isa_ok $head, 'Git::Raw::Commit';
+
 my $commit2 = $repo -> commit(
-	"second commit\n", $me, $me, [$repo -> head -> target], $tree
+	"second commit\n", $me, $me, [$head], $tree
 );
+
+my $amended = $commit2 -> amend([$head], $tree, undef);
+is $amended -> tree -> id, $commit2 -> tree -> id;
+is $amended -> id, $commit2 -> id;
 
 is $commit2 -> ancestor(0) -> id, $commit2 -> id;
 is $commit2 -> ancestor(1) -> id, $commit -> id;
 
-my $head = $repo -> head -> target;
-
-isa_ok $head, 'Git::Raw::Commit';
+$head = $repo -> head -> target;
 
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit2, $commit), 1);
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit2 -> id, $commit -> id), 1);
