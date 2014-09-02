@@ -5,6 +5,8 @@ Revision history for Git-Raw
  - Update libgit2 to 46a13f3 (GH#126)
  - Added Walker methods (GH#127):
     + sorting
+ - Index -> write_tree() now returns a Tree object (GH#128). A stringify
+   overload has been provided for compatibility
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
