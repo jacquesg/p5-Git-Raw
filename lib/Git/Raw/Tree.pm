@@ -2,9 +2,10 @@ package Git::Raw::Tree;
 
 use strict;
 use warnings;
-
 use overload
-	'""'       => sub { return $_[0] -> id };
+	'""'       => sub { return $_[0] -> id },
+	'eq'       => \&_cmp,
+	'ne'       => sub { \&_cmp() };
 
 use Git::Raw;
 
@@ -191,5 +192,26 @@ by the Free Software Foundation; or the Artistic License.
 See http://dev.perl.org/licenses/ for more information.
 
 =cut
+
+sub _cmp {
+	if (defined($_[0]) && defined ($_[1])) {
+		my ($a, $b);
+
+		$a = $_[0] -> id;
+
+		if (ref($_[1])) {
+			if (!$_[1] -> can('id')) {
+				return 0;
+			}
+			$b = $_[1] -> id;
+		} else {
+			$b = "$_[1]";
+		}
+
+		return $a eq $b;
+	}
+
+	return 0;
+}
 
 1; # End of Git::Raw::Tree

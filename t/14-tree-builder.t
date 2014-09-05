@@ -43,6 +43,12 @@ my $tree = $builder -> write();
 
 isa_ok $tree, 'Git::Raw::Tree';
 is $tree -> id(), '228c738569c82d9906ea1801f698a7c2a70e56b1';
+ok ('228c738569c82d9906ea1801f698a7c2a70e56b1' eq $tree);
+ok ($tree eq $tree);
+ok ($tree eq $tree -> id);
+ok ($tree -> id eq $tree);
+ok ($tree ne undef);
+ok ($tree ne $builder);
 
 my @entries = $tree -> entries();
 

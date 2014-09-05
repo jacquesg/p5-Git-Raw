@@ -207,6 +207,13 @@ my $amended = $commit2 -> amend([$head], $tree, undef);
 is $amended -> tree -> id, $commit2 -> tree -> id;
 is $amended -> id, $commit2 -> id;
 
+ok ($amended eq $commit2);
+ok ($amended eq $commit2 -> id);
+ok ($amended -> id eq $commit2);
+ok ($commit2 ne $commit);
+ok ($commit2 ne undef);
+ok ($commit2 ne $repo);
+
 is $commit2 -> ancestor(0) -> id, $commit2 -> id;
 is $commit2 -> ancestor(1) -> id, $commit -> id;
 

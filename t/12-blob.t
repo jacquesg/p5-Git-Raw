@@ -25,5 +25,10 @@ is $non_existent, undef;
 my $blob2 = Git::Raw::Blob -> lookup($repo, $blob -> id);
 ok ($blob2);
 is $blob2 -> id, $blob -> id;
+ok ($blob2 eq $blob);
+ok ($blob2 eq $blob -> id);
+ok ($blob2 -> id eq $blob);
+ok ($blob2 ne undef);
+ok ($blob2 ne $repo);
 
 done_testing;
