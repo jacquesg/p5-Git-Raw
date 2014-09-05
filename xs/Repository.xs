@@ -653,39 +653,48 @@ diff(self, ...)
 	OUTPUT: RETVAL
 
 SV *
-merge_base(self, ...)
-	Repository self
+merge_base(repo, ...)
+	SV *repo
 
 	PROTOTYPE: $;@
 
 	PREINIT:
 		int i, rc, count;
 
+		Repository repo_ptr;
 		git_oid merge_base, *oids = NULL;
 
 	CODE:
 		if (items < 3)
 			croak_usage("At least 2 arguments needed");
 
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+
 		count = items - 1;
 		Renew(oids, count, git_oid);
 		for (i = 0; i < count; ++i) {
-			if (git_sv_to_commitish(self -> repository, ST(i + 1), oids + i) == NULL) {
+			if (git_sv_to_commitish(repo_ptr -> repository, ST(i + 1), oids + i) == NULL) {
 				Safefree(oids);
 				croak_resolve("Could not resolve 'object' to a commit id");
 			}
 		}
 
 		rc = git_merge_base_many(
-			&merge_base, self -> repository, (size_t) count, oids);
+			&merge_base, repo_ptr -> repository, (size_t) count, oids);
 		Safefree(oids);
-		if (rc == GIT_ENOTFOUND) {
-			RETVAL = &PL_sv_undef;
-		}
-		else {
+
+		RETVAL = &PL_sv_undef;
+		if (rc != GIT_ENOTFOUND) {
+			Commit commit;
 			git_check_error(rc);
 
-			RETVAL = git_oid_to_sv(&merge_base);
+			rc = git_commit_lookup(&commit, repo_ptr -> repository, &merge_base);
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Commit",
+				commit, repo
+			);
 		}
 
 	OUTPUT: RETVAL

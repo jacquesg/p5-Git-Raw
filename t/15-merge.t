@@ -53,14 +53,18 @@ $repo -> checkout($repo -> head($master), {
 
 ok (!eval { $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 2)) });
 ok (!eval { $repo -> merge_base("refs/heads/master", sub {}) });
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1 -> id);
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1);
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 7));
-is $master -> target -> id, $repo -> merge_base($master, $commit1);
-is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1');
-
 ok (!eval { $repo -> merge_base($master) });
 ok (!eval { $repo -> merge_base($master, 'refs/heads/unknown_branch') });
+
+my $mb = $repo -> merge_base("refs/heads/master", $commit1 -> id);
+isa_ok $mb, 'Git::Raw::Commit';
+is $mb -> id, "$mb";
+
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1 -> id);
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1) -> id;
+is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 7)) -> id;
+is $master -> target -> id, $repo -> merge_base($master, $commit1) -> id;
+is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1') -> id;
 
 my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
@@ -113,8 +117,8 @@ $repo -> checkout($repo -> head($master), {
 	}
 });
 
-is $branch2 -> target -> id, $repo -> merge_base($branch2, $commit2);
-is $commit -> id, $repo -> merge_base($commit1, $commit2);
+is $branch2 -> target -> id, $repo -> merge_base($branch2, $commit2) -> id;
+is $commit -> id, $repo -> merge_base($commit1, $commit2) -> id;
 
 $r = $repo ->merge_analysis($branch2);
 is_deeply $r, ['normal'];
