@@ -7,6 +7,8 @@ Revision history for Git-Raw
     + sorting
  - Index -> write_tree() now returns a Tree object (GH#128). A stringify
    overload has been provided for compatibility
+ - Repository -> merge_base() now returns a Commit object (GH#129)
+ - Commit, Tree and Blob now have overloads for equality and stringify (GH#129)
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
