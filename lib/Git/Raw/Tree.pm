@@ -5,7 +5,7 @@ use warnings;
 use overload
 	'""'       => sub { return $_[0] -> id },
 	'eq'       => \&_cmp,
-	'ne'       => sub { \&_cmp() };
+	'ne'       => sub { !&_cmp(@_) };
 
 use Git::Raw;
 
