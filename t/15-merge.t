@@ -188,6 +188,25 @@ Git::Raw::Graph -> is_descendant_of($repo, $commit, 'branch2'), 1;
 Git::Raw::Graph -> is_descendant_of($repo, $target, $commit), 0;
 Git::Raw::Graph -> is_descendant_of($repo, $commit2, $commit), 0;
 
+ok (!eval { Git::Raw::Graph->ahead_behind ($repo, "blah", $target) });
+ok (!eval { Git::Raw::Graph->ahead_behind ($repo, $commit, "blah") });
+
+my $ahead_behind = Git::Raw::Graph->ahead_behind ($repo, $commit, $target);
+ok (exists($ahead_behind->{ahead}));
+ok (!exists($ahead_behind->{behind}));
+my $ahead = $ahead_behind->{ahead};
+is scalar(@$ahead), 2;
+is $ahead -> [0] -> id, $commit -> id;
+is $ahead -> [1] -> id, $commit2 -> id;
+
+$ahead_behind = Git::Raw::Graph->ahead_behind ($repo, $target, $commit);
+ok (exists($ahead_behind->{behind}));
+ok (!exists($ahead_behind->{ahead}));
+my $behind = $ahead_behind->{behind};
+is scalar(@$behind), 2;
+is $behind -> [0] -> id, $commit -> id;
+is $behind -> [1] -> id, $commit2 -> id;
+
 is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
