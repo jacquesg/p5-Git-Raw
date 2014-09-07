@@ -34,6 +34,10 @@ Retrieve the size of the index entry.
 
 Retrieve the stage number for the index entry.
 
+=head2 blob( )
+
+Retrieve the blob for the the index entry. Returns a L<Git::Raw::Blob> object.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

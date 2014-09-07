@@ -139,8 +139,11 @@ my $ancestor_entry = $conflict -> ancestor;
 my $our_entry = $conflict -> ours;
 my $their_entry = $conflict -> theirs;
 isa_ok $ancestor_entry, 'Git::Raw::Index::Entry';
+isa_ok $ancestor_entry -> blob, 'Git::Raw::Blob';
 isa_ok $our_entry, 'Git::Raw::Index::Entry';
+isa_ok $our_entry -> blob, 'Git::Raw::Blob';
 isa_ok $their_entry, 'Git::Raw::Index::Entry';
+isa_ok $their_entry -> blob, 'Git::Raw::Blob';
 
 is $ancestor_entry -> path, 'test1';
 is $our_entry -> path, 'test1';
