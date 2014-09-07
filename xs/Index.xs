@@ -356,44 +356,39 @@ conflicts(self)
 
 		while ((rc = git_index_conflict_next(
 			&ancestor, &ours, &theirs, iter)) == GIT_OK) {
-			HV *entries = newHV();
+			SV *c = NULL;
+			Index_Conflict conflict = NULL;
+			Newxz(conflict, 1, git_raw_index_conflict);
 
 			if (ancestor != NULL) {
-				SV *entry = NULL;
-
 				GIT_NEW_OBJ_WITH_MAGIC(
-					entry, "Git::Raw::Index::Entry",
+					conflict -> ancestor, "Git::Raw::Index::Entry",
 					(Index_Entry) ancestor, repo
 				);
-
-				hv_stores(entries, "ancestor", entry);
 			}
 
 			if (ours != NULL) {
-				SV *entry = NULL;
-
 				GIT_NEW_OBJ_WITH_MAGIC(
-					entry, "Git::Raw::Index::Entry",
+					conflict -> ours, "Git::Raw::Index::Entry",
 					(Index_Entry) ours, repo
 				);
-
-				hv_stores(entries, "ours", entry);
 			}
 
 			if (theirs != NULL) {
-				SV *entry = NULL;
-
 				GIT_NEW_OBJ_WITH_MAGIC(
-					entry, "Git::Raw::Index::Entry",
+					conflict -> theirs, "Git::Raw::Index::Entry",
 					(Index_Entry) theirs, repo
 				);
-
-				hv_stores(entries, "theirs", entry);
 			}
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				c, "Git::Raw::Index::Conflict",
+				(Index_Conflict) conflict, repo
+			);
 
 			num_conflicts++;
 
-			mXPUSHs(newRV_noinc((SV *) entries));
+			mXPUSHs(c);
 		}
 
 		git_index_conflict_iterator_free(iter);

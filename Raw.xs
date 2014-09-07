@@ -137,6 +137,14 @@ typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
 typedef struct {
+	SV *ours;
+	SV *ancestor;
+	SV *theirs;
+} git_raw_index_conflict;
+
+typedef git_raw_index_conflict * Index_Conflict;
+
+typedef struct {
 	int code;
 	int category;
 	SV *message;
@@ -1763,6 +1771,7 @@ INCLUDE: xs/Filter.xs
 INCLUDE: xs/Filter/Source.xs
 INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
+INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs

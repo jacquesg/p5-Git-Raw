@@ -14,6 +14,7 @@ Error					T_GIT_REF
 Filter					T_GIT_REF
 Filter_Source			T_GIT_REF
 Index					T_GIT_REF
+Index_Conflict			T_GIT_REF
 Index_Entry				T_GIT_REF
 Patch					T_GIT_REF
 PathSpec				T_GIT_REF

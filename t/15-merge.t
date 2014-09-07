@@ -133,9 +133,14 @@ my @conflicts = $index -> conflicts;
 is scalar(@conflicts), 1;
 
 my $conflict = shift @conflicts;
-my $ancestor_entry = $conflict -> {'ancestor'};
-my $our_entry = $conflict -> {'ours'};
-my $their_entry = $conflict -> {'theirs'};
+isa_ok $conflict, 'Git::Raw::Index::Conflict';
+
+my $ancestor_entry = $conflict -> ancestor;
+my $our_entry = $conflict -> ours;
+my $their_entry = $conflict -> theirs;
+isa_ok $ancestor_entry, 'Git::Raw::Index::Entry';
+isa_ok $our_entry, 'Git::Raw::Index::Entry';
+isa_ok $their_entry, 'Git::Raw::Index::Entry';
 
 is $ancestor_entry -> path, 'test1';
 is $our_entry -> path, 'test1';

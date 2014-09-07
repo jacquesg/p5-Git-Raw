@@ -131,7 +131,7 @@ Remove all conflicts in the index (entries with a stage greater than 0).
 =head2 conflicts( )
 
 Retrieve index entries that represent a conflict. Returns a list of
-L<Git::Raw::Index::Entry> objects.
+L<Git::Raw::Index::Conflict> objects.
 
 =head2 update_all( \%opts )
 
