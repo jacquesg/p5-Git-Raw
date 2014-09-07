@@ -9,6 +9,12 @@ Revision history for Git-Raw
    overload has been provided for compatibility
  - Repository -> merge_base() now returns a Commit object (GH#129)
  - Commit, Tree and Blob now have overloads for equality and stringify (GH#129)
+ - Added Index::Entry methods (GH#130):
+    + blob
+ - Index -> conflicts() now returns Index::Conflict objects (GH#130)
+   (Incompatible change). The documenation was actually incorrect, a list
+   of hashes was returned whereas the documenation stated a list of
+   Index::Entry objects.
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
