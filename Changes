@@ -7,7 +7,9 @@ Revision history for Git-Raw
     + sorting
  - Added Index::Entry methods (GH#130):
     + blob
- - Added Graph methods (GH#131):
+ - Added Graph methods (GH#131,GH#132):
+    + ahead()
+    + behind()
     + ahead_behind()
  - Index -> write_tree() now returns a Tree object (GH#128). A stringify
    overload has been provided for compatibility
