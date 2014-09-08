@@ -1,5 +1,157 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Graph
 
+void
+ahead(class, repo, local, upstream)
+	SV *class
+	SV *repo
+	SV *local
+	SV *upstream
+
+	PREINIT:
+		int ctx;
+
+		Repository repo_ptr;
+
+		size_t ahead, behind;
+		git_oid local_id, upstream_id;
+
+	PPCODE:
+		ctx = GIMME_V;
+
+		if (ctx != G_VOID) {
+			int rc;
+
+			repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+			if (git_sv_to_commitish(repo_ptr -> repository, local, &local_id) == NULL)
+				croak_resolve("Could not resolve 'local' to a commit id");
+
+			if (git_sv_to_commitish(repo_ptr -> repository, upstream, &upstream_id) == NULL)
+				croak_resolve("Could not resolve 'upstream' to a commit id");
+
+			rc = git_graph_ahead_behind(
+				&ahead, &behind,
+				repo_ptr -> repository,
+				&local_id, &upstream_id
+			);
+			git_check_error(rc);
+
+			if (ctx == G_ARRAY) {
+				git_revwalk *walker = NULL;
+				size_t i;
+
+				rc = git_revwalk_new(&walker, repo_ptr -> repository);
+				git_check_error(rc);
+
+				rc = git_revwalk_push(walker, &local_id);
+				git_check_error(rc);
+
+				git_revwalk_sorting(walker, GIT_SORT_TOPOLOGICAL);
+				for (i = 0; i < ahead; ++i) {
+					git_oid commit_id;
+					Commit commit;
+					SV *c = NULL;
+
+					rc = git_revwalk_next(&commit_id, walker);
+					git_check_error(rc);
+
+					rc = git_commit_lookup(
+						&commit, repo_ptr -> repository,
+						&commit_id
+					);
+					git_check_error(rc);
+
+					GIT_NEW_OBJ_WITH_MAGIC(
+						c, "Git::Raw::Commit", commit, SvRV(repo)
+					);
+
+					mXPUSHs(c);
+				}
+
+				git_revwalk_free(walker);
+				XSRETURN((int) ahead);
+			} else {
+				mXPUSHs(newSViv((int) ahead));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
+
+void
+behind(class, repo, local, upstream)
+	SV *class
+	SV *repo
+	SV *local
+	SV *upstream
+
+	PREINIT:
+		int ctx;
+
+		Repository repo_ptr;
+
+		size_t ahead, behind;
+		git_oid local_id, upstream_id;
+
+	PPCODE:
+		ctx = GIMME_V;
+
+		if (ctx != G_VOID) {
+			int rc;
+
+			repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+			if (git_sv_to_commitish(repo_ptr -> repository, local, &local_id) == NULL)
+				croak_resolve("Could not resolve 'local' to a commit id");
+
+			if (git_sv_to_commitish(repo_ptr -> repository, upstream, &upstream_id) == NULL)
+				croak_resolve("Could not resolve 'upstream' to a commit id");
+
+			rc = git_graph_ahead_behind(
+				&ahead, &behind,
+				repo_ptr -> repository,
+				&local_id, &upstream_id
+			);
+			git_check_error(rc);
+
+			if (ctx == G_ARRAY) {
+				git_revwalk *walker = NULL;
+				size_t i;
+
+				rc = git_revwalk_new(&walker, repo_ptr -> repository);
+				git_check_error(rc);
+
+				rc = git_revwalk_push(walker, &upstream_id);
+				git_check_error(rc);
+
+				git_revwalk_sorting(walker, GIT_SORT_TOPOLOGICAL);
+				for (i = 0; i < behind; ++i) {
+					git_oid commit_id;
+					Commit commit;
+					SV *c = NULL;
+
+					rc = git_revwalk_next(&commit_id, walker);
+					git_check_error(rc);
+
+					rc = git_commit_lookup(
+						&commit, repo_ptr -> repository,
+						&commit_id
+					);
+					git_check_error(rc);
+
+					GIT_NEW_OBJ_WITH_MAGIC(
+						c, "Git::Raw::Commit", commit, SvRV(repo)
+					);
+
+					mXPUSHs(c);
+				}
+
+				git_revwalk_free(walker);
+				XSRETURN((int) behind);
+			} else {
+				mXPUSHs(newSViv((int) behind));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
+
 SV *
 ahead_behind(class, repo, local, upstream)
 	SV *class

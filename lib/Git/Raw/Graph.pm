@@ -33,9 +33,25 @@ Git::Raw::Graph - Git graph class
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
+=head2 ahead( $repo, $local, $upstream )
+
+Get the commits C<$local> is ahead of C<$upstream>. C<$local> and C<$upstream>
+should be peelable to a L<Git::Raw::Commit> object, that is, it should be a
+L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or alternatively a commit
+id or commit id prefix. This method returns a list of L<Git::Raw::Commit>
+objects, sorted in topological order.
+
+=head2 behind( $repo, $local, $upstream )
+
+Get the commits C<$local> is behind C<$upstream>. C<$local> and C<$upstream>
+should be peelable to a L<Git::Raw::Commit> object, that is, it should be a
+L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or alternatively a commit
+id or commit id prefix. This method returns a list of L<Git::Raw::Commit>
+objects, sorted in topological order.
+
 =head2 ahead_behind( $repo, $local, $upstream )
 
-Get the unique unique commits between C<$local> and C<$upstream>. C<$local>
+Get the unique commits between C<$local> and C<$upstream>. C<$local>
 and C<$upstream> should be peelable to a L<Git::Raw::Commit> object, that is,
 it should be a L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or
 alternatively a commit id or commit id prefix. This method returns a hash

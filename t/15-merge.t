@@ -188,8 +188,8 @@ Git::Raw::Graph -> is_descendant_of($repo, $commit, 'branch2'), 1;
 Git::Raw::Graph -> is_descendant_of($repo, $target, $commit), 0;
 Git::Raw::Graph -> is_descendant_of($repo, $commit2, $commit), 0;
 
-ok (!eval { Git::Raw::Graph->ahead_behind ($repo, "blah", $target) });
-ok (!eval { Git::Raw::Graph->ahead_behind ($repo, $commit, "blah") });
+ok (!eval { Git::Raw::Graph -> ahead_behind($repo, "blah", $target) });
+ok (!eval { Git::Raw::Graph -> ahead_behind($repo, $commit, "blah") });
 
 my $ahead_behind = Git::Raw::Graph->ahead_behind ($repo, $commit, $target);
 ok (exists($ahead_behind->{ahead}));
@@ -206,6 +206,26 @@ my $behind = $ahead_behind->{behind};
 is scalar(@$behind), 2;
 is $behind -> [0] -> id, $commit -> id;
 is $behind -> [1] -> id, $commit2 -> id;
+
+ok (!eval { Git::Raw::Graph -> ahead($repo, "blah", $target) });
+ok (!eval { Git::Raw::Graph -> ahead($repo, $commit, "blah") });
+
+Git::Raw::Graph -> ahead($repo, $commit, $target);
+my $ahead_count = Git::Raw::Graph -> ahead($repo, $commit, $target);
+is $ahead_count, 2;
+my @a = Git::Raw::Graph -> ahead($repo, $commit, $target);
+is scalar(@a), 2;
+is_deeply $ahead, [@a];
+
+ok (!eval { Git::Raw::Graph -> behind($repo, "blah", $target) });
+ok (!eval { Git::Raw::Graph -> behind($repo, $commit, "blah") });
+
+Git::Raw::Graph -> behind($repo, $target, $commit);
+my $behind_count = Git::Raw::Graph -> behind($repo, $target, $commit);
+is $behind_count, 2;
+my @b = Git::Raw::Graph -> behind($repo, $target, $commit);
+is scalar(@b), 2;
+is_deeply $behind, [@b];
 
 is $repo -> state, "merge";
 $repo -> state_cleanup;
