@@ -494,20 +494,6 @@ is_connected(self)
 	OUTPUT: RETVAL
 
 SV *
-is_url_valid(class, url)
-	SV *class
-	SV *url
-
-	PREINIT:
-		int r;
-
-	CODE:
-		r = git_remote_valid_url(git_ensure_pv(url, "url"));
-		RETVAL = newSViv(r);
-
-	OUTPUT: RETVAL
-
-SV *
 is_url_supported(class, url)
 	SV *class
 	SV *url
