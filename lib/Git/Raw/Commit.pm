@@ -137,6 +137,12 @@ containing the merge result.
 Retrieve the L<Git::Raw::Commit> object that is the C<$gen>'th generation
 ancestor of this commit, following only the first parents.
 
+=head2 diff( [$parent_no] )
+
+Retrieve the diff associated with the commit. If the commit has no parents,
+C<$parent_no> should not specified. Similarly, for merge commits, C<$parent_no>
+should be specified.
+
 =head2 as_email( [\%opts] )
 
 Retrieve the patch e-mail associated with the commit. Valid fields for the

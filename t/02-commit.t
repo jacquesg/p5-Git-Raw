@@ -91,6 +91,11 @@ my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit = Git::Raw::Commit -> create($repo, "initial commit\n", $me, $me, [], $tree);
 
+ok (!eval { $commit -> diff(0)});
+ok (!eval { $commit -> diff(1)});
+my $diff = $commit -> diff;
+isa_ok $diff, 'Git::Raw::Diff';
+
 is_deeply $repo -> status({}) -> {'test'}, undef;
 
 my $author = $commit -> author;
@@ -202,6 +207,12 @@ isa_ok $head, 'Git::Raw::Commit';
 my $commit2 = $repo -> commit(
 	"second commit\n", $me, $me, [$head], $tree
 );
+
+ok (!eval { $commit2 -> diff(1) });
+$diff = $commit2 -> diff;
+isa_ok $diff, 'Git::Raw::Diff';
+my $diff2 = $commit2 -> diff(0);
+isa_ok $diff2, 'Git::Raw::Diff';
 
 my $commit2_id = $commit2 -> id;
 my $patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email))."\n";

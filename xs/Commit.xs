@@ -367,7 +367,7 @@ as_email(commit, ...)
 			HV *hopt;
 			HV *opts;
 
-			opts = git_ensure_hv(ST(1), "options");
+			opts = git_ensure_hv(ST(1), "opts");
 
 			if ((opt = git_hv_int_entry(opts, "patch_no")))
 				patch_no = (size_t) SvIV(opt);
@@ -398,6 +398,62 @@ as_email(commit, ...)
 
 		RETVAL = newSVpv(buf.ptr, buf.size);
 		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
+SV *
+diff(self, ...)
+	SV *self
+
+	PROTOTYPE: $;$
+	PREINIT:
+		int rc;
+		unsigned int parent_count, requested_parent = 0;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		Commit commit, parent = NULL;
+		Tree our_tree = NULL, parent_tree = NULL;
+		Diff diff;
+
+	CODE:
+		commit = GIT_SV_TO_PTR(Commit, self);
+
+		parent_count = git_commit_parentcount(commit);
+		if (items == 2) {
+			if (parent_count == 0)
+				croak_usage("Commit has no parents");
+
+			requested_parent = git_ensure_iv(ST(1), "parent");
+		}
+
+		if (parent_count > 0) {
+			if (requested_parent > (parent_count - 1))
+				croak_usage("Commit parent %u is out of range", requested_parent);
+
+			rc = git_commit_parent(&parent, commit, 0);
+			git_check_error(rc);
+
+			rc = git_commit_tree(&parent_tree, parent);
+			git_check_error(rc);
+		}
+
+		rc = git_commit_tree(&our_tree, commit);
+		git_check_error(rc);
+
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		rc = git_diff_tree_to_tree(
+			&diff, repo_ptr -> repository,
+			parent_tree, our_tree, NULL
+		);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Diff", diff, repo
+		);
 
 	OUTPUT: RETVAL
 
