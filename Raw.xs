@@ -137,9 +137,9 @@ typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
 typedef struct {
-	SV *ours;
-	SV *ancestor;
-	SV *theirs;
+	const git_index_entry *ours;
+	const git_index_entry *ancestor;
+	const git_index_entry *theirs;
 } git_raw_index_conflict;
 
 typedef git_raw_index_conflict * Index_Conflict;

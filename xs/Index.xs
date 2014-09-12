@@ -360,30 +360,13 @@ conflicts(self)
 			Index_Conflict conflict = NULL;
 			Newxz(conflict, 1, git_raw_index_conflict);
 
-			if (ancestor != NULL) {
-				GIT_NEW_OBJ_WITH_MAGIC(
-					conflict -> ancestor, "Git::Raw::Index::Entry",
-					(Index_Entry) ancestor, repo
-				);
-			}
-
-			if (ours != NULL) {
-				GIT_NEW_OBJ_WITH_MAGIC(
-					conflict -> ours, "Git::Raw::Index::Entry",
-					(Index_Entry) ours, repo
-				);
-			}
-
-			if (theirs != NULL) {
-				GIT_NEW_OBJ_WITH_MAGIC(
-					conflict -> theirs, "Git::Raw::Index::Entry",
-					(Index_Entry) theirs, repo
-				);
-			}
+			conflict -> ancestor = ancestor;
+			conflict -> ours = ours;
+			conflict -> theirs = theirs;
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				c, "Git::Raw::Index::Conflict",
-				(Index_Conflict) conflict, repo
+				conflict, repo
 			);
 
 			num_conflicts++;
