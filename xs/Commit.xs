@@ -346,6 +346,61 @@ ancestor(self, gen)
 
 	OUTPUT: RETVAL
 
+SV *
+as_email(commit, ...)
+	Commit commit
+
+	PROTOTYPE: $;$
+	PREINIT:
+		int rc;
+
+		git_repository *repo;
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
+		git_diff_format_email_flags_t flags = GIT_DIFF_FORMAT_EMAIL_NONE;
+
+		size_t patch_no = 1, total_patches = 1;
+
+	CODE:
+		if (items == 2) {
+			SV *opt;
+			HV *hopt;
+			HV *opts;
+
+			opts = git_ensure_hv(ST(1), "options");
+
+			if ((opt = git_hv_int_entry(opts, "patch_no")))
+				patch_no = (size_t) SvIV(opt);
+
+			if ((opt = git_hv_int_entry(opts, "total_patches")))
+				total_patches = (size_t) SvIV(opt);
+
+			if ((hopt = git_hv_hash_entry(opts, "flags"))) {
+				if ((opt = git_hv_int_entry(hopt, "exclude_subject_patch_marker"))) {
+					if (SvIV(opt))
+						flags |= GIT_DIFF_FORMAT_EMAIL_EXCLUDE_SUBJECT_PATCH_MARKER;
+				}
+			}
+		}
+
+		repo = git_commit_owner(commit);
+
+		rc = git_diff_commit_as_email(
+			&buf, repo, commit,
+			patch_no, total_patches,
+			flags,
+			&diff_opts
+		);
+		if (rc != GIT_OK) {
+			git_buf_free(&buf);
+			git_check_error(rc);
+		}
+
+		RETVAL = newSVpv(buf.ptr, buf.size);
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self

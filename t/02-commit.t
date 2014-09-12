@@ -203,6 +203,92 @@ my $commit2 = $repo -> commit(
 	"second commit\n", $me, $me, [$head], $tree
 );
 
+my $commit2_id = $commit2 -> id;
+my $patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email))."\n";
+my $expected_patch = qq{
+From $commit2_id Mon Sep 17 00:00:00 2001
+From: Git::Raw author <git-xs\@example.com>
+Subject: [PATCH] second commit
+
+---
+ test2 | 1 +
+ 1 file changed, 1 insertion(+), 0 deletions(-)
+ create mode 100644 test2
+
+diff --git a/test2 b/test2
+new file mode 100644
+index 0000000..7b79d2f
+--- /dev/null
++++ b/test2
+@@ -0,0 +1 @@
++this is a second test
+\\ No newline at end of file
+--
+libgit2 0.21.0
+};
+
+is $patch, $expected_patch;
+
+my $email_opts = {
+	'patch_no'      => 1,
+	'total_patches' => 2,
+};
+
+$patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email($email_opts)))."\n";
+$expected_patch = qq{
+From $commit2_id Mon Sep 17 00:00:00 2001
+From: Git::Raw author <git-xs\@example.com>
+Subject: [PATCH 1/2] second commit
+
+---
+ test2 | 1 +
+ 1 file changed, 1 insertion(+), 0 deletions(-)
+ create mode 100644 test2
+
+diff --git a/test2 b/test2
+new file mode 100644
+index 0000000..7b79d2f
+--- /dev/null
++++ b/test2
+@@ -0,0 +1 @@
++this is a second test
+\\ No newline at end of file
+--
+libgit2 0.21.0
+};
+
+is $patch, $expected_patch;
+
+$email_opts->{flags} = {
+	'exclude_subject_patch_marker' => 1
+};
+
+$patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email($email_opts)))."\n";
+$expected_patch = qq{
+From $commit2_id Mon Sep 17 00:00:00 2001
+From: Git::Raw author <git-xs\@example.com>
+Subject: second commit
+
+---
+ test2 | 1 +
+ 1 file changed, 1 insertion(+), 0 deletions(-)
+ create mode 100644 test2
+
+diff --git a/test2 b/test2
+new file mode 100644
+index 0000000..7b79d2f
+--- /dev/null
++++ b/test2
+@@ -0,0 +1 @@
++this is a second test
+\\ No newline at end of file
+--
+libgit2 0.21.0
+};
+
+is $patch, $expected_patch;
+
+
 my $amended = $commit2 -> amend([$head], $tree, undef);
 is $amended -> tree -> id, $commit2 -> tree -> id;
 is $amended -> id, $commit2 -> id;

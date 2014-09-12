@@ -137,6 +137,35 @@ containing the merge result.
 Retrieve the L<Git::Raw::Commit> object that is the C<$gen>'th generation
 ancestor of this commit, following only the first parents.
 
+=head2 as_email( [\%opts] )
+
+Retrieve the patch e-mail associated with the commit. Valid fields for the
+C<%opts> has are:
+
+=over 4
+
+=item * "patch_no"
+
+The patch number for this commit.
+
+=item * "total_patches"
+
+Total number of patches.
+
+=item * "flags"
+
+E-mail generation flags. Valid fields for this hash include:
+
+=over 8
+
+=item * "exclude_subject_patch_marker"
+
+Don't insert C<"[PATCH]"> in the subject header.
+
+=back
+
+=back
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
