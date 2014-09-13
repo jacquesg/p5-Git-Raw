@@ -11,6 +11,9 @@ Revision history for Git-Raw
     + ahead()
     + behind()
     + ahead_behind()
+ - Added Commit methods (GH#134):
+    + as_email()
+    + diff()
  - Index -> write_tree() now returns a Tree object (GH#128). A stringify
    overload has been provided for compatibility
  - Repository -> merge_base() now returns a Commit object (GH#129)
