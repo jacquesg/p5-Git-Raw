@@ -10,6 +10,7 @@ Revision history for Git-Raw
  - Enable support for OS X's Security framework
  - Added Index::Entry methods:
     + is_conflict()
+ - Try to support WinHTTP on Windows
  - Removed Remote methods: (Incompatible change)
     - save()
  - Remote -> create_anonymous() no longer accepts a 'fetch_refspecs' parameter (Incompatible change)
