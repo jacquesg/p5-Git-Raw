@@ -63,6 +63,7 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 		}
 	}
 })});
+rmtree $path if (-e $path);
 
 $path = File::Spec->rel2abs('t/test_repo_remote_name_undef');
 ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
@@ -73,6 +74,7 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 		}
 	}
 })});
+rmtree $path if (-e $path);
 
 my $triggered_remote_create = 0;
 $path = File::Spec->rel2abs('t/test_repo_remote_name');
@@ -191,8 +193,6 @@ rmtree abs_path('t/test_repo_clone');
 rmtree abs_path('t/test_repo_clone_bare');
 rmtree abs_path('t/test_repo_clone_callbacks');
 rmtree abs_path('t/test_repo_disable_checkout');
-rmtree abs_path('t/test_repo_remote_name_die');
-rmtree abs_path('t/test_repo_remote_name_undef');
 rmtree abs_path('t/test_repo_remote_name');
 
 if ($^O eq 'MSWin32') {
