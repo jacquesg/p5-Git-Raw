@@ -22,6 +22,7 @@ Revision history for Git-Raw
    (Incompatible change). The documenation was actually incorrect, a list
    of hashes was returned whereas the documenation stated a list of
    Index::Entry objects.
+ - Try to support WinHTTP on Windows
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
