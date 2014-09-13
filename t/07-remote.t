@@ -6,19 +6,6 @@ use Git::Raw;
 use Cwd qw(abs_path);
 use File::Path qw(make_path rmtree);
 
-is (Git::Raw::Remote -> is_url_valid('/somewhere/on/filesystem'), 0);
-is (Git::Raw::Remote -> is_url_valid('somewhere/on/filesystem'), 0);
-is (Git::Raw::Remote -> is_url_valid('file:///somewhere/on/filesystem'), 1);
-is (Git::Raw::Remote -> is_url_valid('git://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('https://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('http://somewhere.com/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('ssh://me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('ssh://me@somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('ssh://somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('ssh://somewhere.com:/somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:somerepo.git'), 1);
-is (Git::Raw::Remote -> is_url_valid('me@somewhere.com:/somerepo.git'), 1);
-
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
