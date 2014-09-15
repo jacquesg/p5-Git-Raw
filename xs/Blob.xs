@@ -137,6 +137,15 @@ is_blob(self)
 
 	OUTPUT: RETVAL
 
+SV *
+is_binary(self)
+	Blob self
+
+	CODE:
+		RETVAL = newSViv(git_blob_is_binary(self));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self

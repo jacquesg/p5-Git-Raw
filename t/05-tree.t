@@ -58,6 +58,7 @@ is $entries [2] -> file_mode, 0040000;
 my $obj0 = $entries [0] -> object;
 
 isa_ok $obj0, 'Git::Raw::Blob';
+is $obj0 -> is_binary, 0;
 is $obj0 -> is_blob, 1;
 is $obj0 -> content, 'this is a test';
 is $obj0 -> size, '14';

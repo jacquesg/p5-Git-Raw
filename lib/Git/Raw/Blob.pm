@@ -48,6 +48,10 @@ Retrieve the size of the raw content of a blob.
 
 Return the raw ID (the SHA-1 hash) of the blob.
 
+=head2 is_binary( )
+
+Determine if the blob content is most certainly binary or not.
+
 =head2 is_blob( )
 
 Returns true.
