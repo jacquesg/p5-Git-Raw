@@ -14,6 +14,8 @@ Revision history for Git-Raw
  - Added Commit methods (GH#134):
     + as_email()
     + diff()
+ - Added Blob methods:
+    + is_binary()
  - Added methods:
     + message_prettify()
  - Removed Remote methods (GH#135) (Incompatible change):
