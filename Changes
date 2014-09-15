@@ -29,6 +29,8 @@ Revision history for Git-Raw
    of hashes was returned whereas the documenation stated a list of
    Index::Entry objects.
  - Try to support WinHTTP on Windows
+ - Remote's update tips callback now set $a or $b to undef if the
+   reference was created or removed (Incompatible change) (GH#136)
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
