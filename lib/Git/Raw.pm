@@ -44,6 +44,12 @@ B<WARNING>: The API of this module is unstable and may change without warning
 List of (optional) compiled in features. Git::Raw may be built with support
 for threads, HTTPS and SSH.
 
+=head2 message_prettify( $msg, [$strip_comments, $comment_char] )
+
+Clean up C<$msg> from excess whitespace and ensure that the last line ends with
+a newline. The default is to strip all comments, starting with a C<#>, unless
+otherwise specified.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

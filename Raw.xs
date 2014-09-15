@@ -1726,6 +1726,46 @@ MODULE = Git::Raw			PACKAGE = Git::Raw
 BOOT:
 	git_threads_init();
 
+SV *
+message_prettify(class, msg, ...)
+	SV *class
+	SV *msg
+
+	PROTOTYPE: $;$$
+	PREINIT:
+		int rc, strip_comments = 1;
+		char comment_char = '#';
+
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+		const char *message;
+
+	CODE:
+		message = git_ensure_pv(msg, "msg");
+
+		if (items >= 3)
+			strip_comments = (int) git_ensure_iv(ST(2), "strip_comments");
+		if (items >= 4) {
+			STRLEN len;
+			const char *comment = git_ensure_pv_with_len(ST(3), "comment_char", &len);
+
+			if (len != 1)
+				croak_usage("Expected a single character for 'comment_char'");
+
+			comment_char = comment[0];
+		}
+
+		rc = git_message_prettify(
+			&buf, message, strip_comments, comment_char
+		);
+		if (rc == GIT_OK) {
+			RETVAL = newSVpv(buf.ptr, buf.size);
+			git_buf_free(&buf);
+		}
+
+		git_check_error(rc);
+
+	OUTPUT: RETVAL
+
 void
 features(class)
 	SV *class

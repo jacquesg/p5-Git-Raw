@@ -294,4 +294,30 @@ $repo -> state_cleanup;
 isnt -f $rebase_interactive_file, 1;
 is $repo -> state, "none";
 
+my $message = q{Some message
+# With comments
+};
+
+ok (!eval { Git::Raw -> message_prettify($message, 1, 'blah') });
+
+my $clean = Git::Raw -> message_prettify($message, 1, '!');
+is $clean, $message;
+
+$clean = Git::Raw -> message_prettify($message, 0, '#');
+is $clean, $message;
+
+$clean = Git::Raw -> message_prettify($message, 1, '#');
+is $clean, "Some message\n";
+
+$message = q{Some message
+! With comments
+And more content
+! With comments
+};
+
+$clean = Git::Raw -> message_prettify($message, 1, '!');
+is $clean, q{Some message
+And more content
+};
+
 done_testing;
