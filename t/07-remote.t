@@ -181,7 +181,7 @@ $github -> callbacks({
 	'update_tips' => sub {
 		my ($ref, $a, $b) = @_;
 		ok $ref =~ /^refs\//;
-		ok $a eq '0000000000000000000000000000000000000000';
+		ok (!defined($a));
 		ok length($b) == 40;
 
 		$update_tips = 1;

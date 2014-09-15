@@ -325,9 +325,10 @@ $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 			);
 		},
 		'update_tips' => sub {
-			my ($ref, $msg) = @_;
+			my ($ref, $a, $b) = @_;
 			like $ref, qr/refs/;
-			is $msg, '0' x 40;
+			ok !defined($a);
+			ok defined($b);
 			$update_tips_fired = 1;
 		}
 	}

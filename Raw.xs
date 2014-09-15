@@ -1257,8 +1257,8 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 
 	PUSHMARK(SP);
 	mXPUSHs(newSVpv(name, 0));
-	XPUSHs(a != NULL ? sv_2mortal(git_oid_to_sv(a)) : &PL_sv_undef);
-	XPUSHs(b != NULL ? sv_2mortal(git_oid_to_sv(b)) : &PL_sv_undef);
+	XPUSHs((a != NULL && !git_oid_iszero(a)) ? sv_2mortal(git_oid_to_sv(a)) : &PL_sv_undef);
+	XPUSHs((b != NULL && !git_oid_iszero(b)) ? sv_2mortal(git_oid_to_sv(b)) : &PL_sv_undef);
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> update_tips, G_DISCARD);

@@ -166,8 +166,10 @@ C<indexed_deltas> and C<received_bytes>.
 =item * "update_tips"
 
 Each time a reference is updated locally, this function will be called with
-information about it. The callback receives a string containing the name of the
-reference that was updated, and the two OID's C<a> before and after C<b> the update.
+information about it. The callback receives a string containing the reference
+C<$name> of the reference that was updated, and the two OID's C<$a> before and
+after C<$b> the update. C<$a> will be C<undef> if the reference was created,
+likewise C<$b> will be C<undef> if the reference was removed.
 
 =back
 
