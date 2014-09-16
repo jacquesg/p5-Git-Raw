@@ -137,16 +137,22 @@ containing the merge result.
 Retrieve the L<Git::Raw::Commit> object that is the C<$gen>'th generation
 ancestor of this commit, following only the first parents.
 
-=head2 diff( [$parent_no] )
+=head2 diff( [$parent_no, \%diff_opts] )
 
 Retrieve the diff associated with the commit. If the commit has no parents,
 C<$parent_no> should not specified. Similarly, for merge commits, C<$parent_no>
-should be specified.
+should be specified. See C<Git::Raw::Repository-E<gt>diff()> for valid
+C<%diff_opts> values. In this context, specifying a L<Git::Raw::Tree> in
+C<%diff_opts> will have no effect as it will be determined from the commit's
+parent.
 
-=head2 as_email( [\%opts] )
+=head2 as_email( [\%format_opts, \%diff_opts] )
 
-Retrieve the patch e-mail associated with the commit. Valid fields for the
-C<%opts> has are:
+Retrieve the patch e-mail associated with the commit. See
+C<Git::Raw::Repository-E<gt>diff()> for valid C<%diff_opts> values. In this
+context, specifying a L<Git::Raw::Tree> in C<%diff_opts> will have no effect
+as it will be determined from the commit's parent.  Valid fields for the
+C<%format_opts> hash are:
 
 =over 4
 

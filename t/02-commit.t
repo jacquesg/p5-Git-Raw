@@ -93,8 +93,11 @@ my $commit = Git::Raw::Commit -> create($repo, "initial commit\n", $me, $me, [],
 
 ok (!eval { $commit -> diff(0)});
 ok (!eval { $commit -> diff(1)});
+
 my $diff = $commit -> diff;
 isa_ok $diff, 'Git::Raw::Diff';
+
+$diff = $commit -> diff(undef, {});
 
 is_deeply $repo -> status({}) -> {'test'}, undef;
 
@@ -245,7 +248,7 @@ my $email_opts = {
 	'total_patches' => 2,
 };
 
-$patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email($email_opts)))."\n";
+$patch = "\n".join("\n", grep { $_ !~ /^Date/ } split (/\n/, $commit2 -> as_email($email_opts, {})))."\n";
 $expected_patch = qq{
 From $commit2_id Mon Sep 17 00:00:00 2001
 From: Git::Raw author <git-xs\@example.com>

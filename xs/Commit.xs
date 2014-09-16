@@ -350,7 +350,7 @@ SV *
 as_email(commit, ...)
 	Commit commit
 
-	PROTOTYPE: $;$
+	PROTOTYPE: $;$$
 	PREINIT:
 		int rc;
 
@@ -362,25 +362,32 @@ as_email(commit, ...)
 		size_t patch_no = 1, total_patches = 1;
 
 	CODE:
-		if (items == 2) {
-			SV *opt;
-			HV *hopt;
-			HV *opts;
+		if (items >= 2) {
+			if (SvOK(ST(1))) {
+				SV *opt;
+				HV *hopt;
+				HV *opts;
 
-			opts = git_ensure_hv(ST(1), "opts");
+				opts = git_ensure_hv(ST(1), "format_opts");
 
-			if ((opt = git_hv_int_entry(opts, "patch_no")))
-				patch_no = (size_t) SvIV(opt);
+				if ((opt = git_hv_int_entry(opts, "patch_no")))
+					patch_no = (size_t) SvIV(opt);
 
-			if ((opt = git_hv_int_entry(opts, "total_patches")))
-				total_patches = (size_t) SvIV(opt);
+				if ((opt = git_hv_int_entry(opts, "total_patches")))
+					total_patches = (size_t) SvIV(opt);
 
-			if ((hopt = git_hv_hash_entry(opts, "flags"))) {
-				if ((opt = git_hv_int_entry(hopt, "exclude_subject_patch_marker"))) {
-					if (SvIV(opt))
-						flags |= GIT_DIFF_FORMAT_EMAIL_EXCLUDE_SUBJECT_PATCH_MARKER;
+				if ((hopt = git_hv_hash_entry(opts, "flags"))) {
+					if ((opt = git_hv_int_entry(hopt, "exclude_subject_patch_marker"))) {
+						if (SvIV(opt))
+							flags |= GIT_DIFF_FORMAT_EMAIL_EXCLUDE_SUBJECT_PATCH_MARKER;
+					}
 				}
 			}
+		}
+
+		if (items >= 3) {
+			HV *opts  = git_ensure_hv(ST(2), "diff_opts");
+			git_hv_to_diff_opts(opts, &diff_opts, NULL);
 		}
 
 		repo = git_commit_owner(commit);
@@ -405,7 +412,7 @@ SV *
 diff(self, ...)
 	SV *self
 
-	PROTOTYPE: $;$
+	PROTOTYPE: $;$$
 	PREINIT:
 		int rc;
 		unsigned int parent_count, requested_parent = 0;
@@ -413,19 +420,28 @@ diff(self, ...)
 		SV *repo;
 		Repository repo_ptr;
 
+		Diff diff;
 		Commit commit, parent = NULL;
 		Tree our_tree = NULL, parent_tree = NULL;
-		Diff diff;
+
+		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
 
 	CODE:
 		commit = GIT_SV_TO_PTR(Commit, self);
 
 		parent_count = git_commit_parentcount(commit);
-		if (items == 2) {
-			if (parent_count == 0)
-				croak_usage("Commit has no parents");
+		if (items >= 2) {
+			if (SvOK(ST(1))) {
+				if (parent_count == 0)
+					croak_usage("Commit has no parents");
 
-			requested_parent = git_ensure_iv(ST(1), "parent");
+				requested_parent = git_ensure_iv(ST(1), "parent");
+			}
+		}
+
+		if (items >= 3) {
+			HV *opts  = git_ensure_hv(ST(2), "diff_opts");
+			git_hv_to_diff_opts(opts, &diff_opts, NULL);
 		}
 
 		if (parent_count > 0) {
@@ -447,7 +463,7 @@ diff(self, ...)
 
 		rc = git_diff_tree_to_tree(
 			&diff, repo_ptr -> repository,
-			parent_tree, our_tree, NULL
+			parent_tree, our_tree, &diff_opts
 		);
 		git_check_error(rc);
 

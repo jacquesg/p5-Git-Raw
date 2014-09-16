@@ -1692,10 +1692,12 @@ STATIC void git_hv_to_diff_opts(HV *opts, git_diff_options *diff_options, git_tr
 	HV *hopt;
 	AV *lopt;
 
-	*tree = NULL;
+	if (tree) {
+		*tree = NULL;
 
-	if ((opt = git_hv_sv_entry(opts, "tree")) && SvOK(opt))
-		*tree = GIT_SV_TO_PTR(Tree, opt);
+		if ((opt = git_hv_sv_entry(opts, "tree")) && SvOK(opt))
+			*tree = GIT_SV_TO_PTR(Tree, opt);
+	}
 
 	if ((hopt = git_hv_hash_entry(opts, "flags")))
 		diff_options->flags |= git_hv_to_diff_flag(hopt);
