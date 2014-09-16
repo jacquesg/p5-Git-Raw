@@ -33,6 +33,10 @@
 #endif
 
 /* remap libgit2 error enum's to defines */
+#ifdef EAUTH
+#undef EAUTH
+#endif
+
 #define OK                GIT_OK
 #define ERROR             GIT_ERROR
 #define ENOTFOUND         GIT_ENOTFOUND
