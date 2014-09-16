@@ -48,6 +48,7 @@
 #define EMERGECONFLICT    GIT_EMERGECONFLICT
 #define ELOCKED           GIT_ELOCKED
 #define EMODIFIED         GIT_EMODIFIED
+#define EAUTH             GIT_EAUTH
 #define PASSTHROUGH       GIT_PASSTHROUGH
 #define ITEROVER          GIT_ITEROVER
 
