@@ -116,6 +116,9 @@ my $conflict_commit2 = $repo -> commit("commit2 on cbranch\n", $me, $me, [$confl
 is $index -> has_conflicts, 0;
 is $repo -> status({}) -> {'cherry_file'}, undef;
 isnt $branch -> target -> tree -> id, $cherry_pick_conflict_branch -> target -> tree -> id;
+is $repo -> state, "cherry_pick";
+$repo -> state_cleanup;
+is $repo -> state, "none";
 
 my $master = Git::Raw::Branch -> lookup($repo, 'master', 1);
 $index -> read_tree($master -> target -> tree);

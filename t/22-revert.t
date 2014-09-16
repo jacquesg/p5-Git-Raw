@@ -65,4 +65,20 @@ my $revert_commit = $repo -> commit("revert commit1\n", $me, $me, [$commit2],
 is_deeply $repo -> status({}) -> {'revert_file'}, undef;
 is $revert_commit -> tree -> id, $commit1 -> tree -> id;
 
+is $repo -> state, "revert";
+$repo -> state_cleanup;
+is $repo -> state, "none";
+
+my $master = Git::Raw::Branch -> lookup($repo, 'master', 1);
+$index -> read_tree($master -> target -> tree);
+$index -> write;
+
+$repo -> checkout($master -> target -> tree, {
+	'checkout_strategy' => {
+		'safe' => 1
+	}
+});
+
+$repo -> head($master);
+
 done_testing;
