@@ -11,7 +11,7 @@ Revision history for Git-Raw
     + ahead()
     + behind()
     + ahead_behind()
- - Added Commit methods (GH#134):
+ - Added Commit methods (GH#134,GH#138):
     + as_email()
     + diff()
  - Added Blob methods:
@@ -31,6 +31,7 @@ Revision history for Git-Raw
  - Try to support WinHTTP on Windows
  - Remote's update tips callback now set $a or $b to undef if the
    reference was created or removed (Incompatible change) (GH#136)
+ - Added extra diff flags (GH#138)
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
