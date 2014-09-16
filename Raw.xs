@@ -760,6 +760,12 @@ STATIC unsigned git_hv_to_diff_flag(HV *flags) {
 
 	git_flag_opt(flags, "minimal", GIT_DIFF_MINIMAL, &out);
 
+	git_flag_opt(flags, "show_binary", GIT_DIFF_SHOW_BINARY, &out);
+
+	git_flag_opt(flags, "force_text", GIT_DIFF_FORCE_TEXT, &out);
+
+	git_flag_opt(flags, "force_binary", GIT_DIFF_FORCE_BINARY, &out);
+
 	return out;
 }
 
@@ -1677,6 +1683,56 @@ STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opt
 						croak_usage("Invalid type for 'notify' value");
 				}
 			}
+		}
+	}
+}
+
+STATIC void git_hv_to_diff_opts(HV *opts, git_diff_options *diff_options, git_tree **tree) {
+	SV *opt;
+	HV *hopt;
+	AV *lopt;
+
+	*tree = NULL;
+
+	if ((opt = git_hv_sv_entry(opts, "tree")) && SvOK(opt))
+		*tree = GIT_SV_TO_PTR(Tree, opt);
+
+	if ((hopt = git_hv_hash_entry(opts, "flags")))
+		diff_options->flags |= git_hv_to_diff_flag(hopt);
+
+	if ((hopt = git_hv_hash_entry(opts, "prefix"))) {
+		SV *ab;
+
+		if ((ab = git_hv_string_entry(hopt, "a")))
+			diff_options->old_prefix = SvPVbyte_nolen(ab);
+
+		if ((ab = git_hv_string_entry(hopt, "b")))
+			diff_options->new_prefix = SvPVbyte_nolen(ab);
+	}
+
+	if ((opt = git_hv_int_entry(opts, "context_lines")))
+		diff_options->context_lines = (uint16_t) SvIV(opt);
+
+	if ((opt = git_hv_int_entry(opts, "interhunk_lines")))
+		diff_options->interhunk_lines = (uint16_t) SvIV(opt);
+
+	if ((lopt = git_hv_list_entry(opts, "paths"))) {
+		SV **path;
+		char **paths = NULL;
+		size_t i = 0, count = 0;
+
+		while ((path = av_fetch(lopt, i++, 0))) {
+			if (!SvOK(*path))
+				continue;
+
+			Renew(paths, count + 1, char *);
+			paths[count++] = SvPVbyte_nolen(*path);
+		}
+
+		if (count > 0) {
+			diff_options->flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
+			diff_options->pathspec.strings = paths;
+			diff_options->pathspec.count   = count;
 		}
 	}
 }

@@ -283,10 +283,34 @@ $index -> add('diff.moved');
 my $index_tree2 = $index -> write_tree;
 
 my $tree_diff = $index_tree1 -> diff({
-	'tree'   => $index_tree2
+	'tree'   => $index_tree2,
+	'flags'  => {
+		'force_binary' => 1,
+		'show_binary'  => 1
+	}
 });
 
 is $tree_diff -> delta_count, 2;
+@patches = $tree_diff -> patches;
+
+$expected =<<'EOS';
+diff --git a/diff b/diff
+deleted file mode 100644
+index 6afc8a62bdc52dcf57a125667c48f16d674cf061..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+Hc$@<O00001
+
+literal 16
+Xc$`bgOiNS9P1R9I%1kUt&fo$7F2V&(
+EOS
+
+is $patches[0] -> buffer, $expected;
+
+$tree_diff = $index_tree1 -> diff({
+	'tree'   => $index_tree2,
+});
+
 @patches = $tree_diff -> patches;
 
 $expected = <<'EOS';

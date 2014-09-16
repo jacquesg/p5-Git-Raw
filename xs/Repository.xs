@@ -575,7 +575,6 @@ diff(self, ...)
 		Diff diff;
 		Index index;
 
-		char **paths = NULL;
 		Tree tree = NULL;
 
 		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
@@ -585,53 +584,8 @@ diff(self, ...)
 		git_check_error(rc);
 
 		if (items == 2) {
-			SV *opt;
-			AV *lopt;
-			HV *hopt;
-			HV *opts;
-
-			opts = git_ensure_hv(ST(1), "options");
-
-			if ((opt = git_hv_sv_entry(opts, "tree")) && SvOK(opt))
-				tree = GIT_SV_TO_PTR(Tree, opt);
-
-			if ((hopt = git_hv_hash_entry(opts, "flags")))
-				diff_opts.flags |= git_hv_to_diff_flag(hopt);
-
-			if ((hopt = git_hv_hash_entry(opts, "prefix"))) {
-				SV *ab;
-
-				if ((ab = git_hv_string_entry(hopt, "a")))
-					diff_opts.old_prefix = SvPVbyte_nolen(ab);
-
-				if ((ab = git_hv_string_entry(hopt, "b")))
-					diff_opts.new_prefix = SvPVbyte_nolen(ab);
-			}
-
-			if ((opt = git_hv_int_entry(opts, "context_lines")))
-				diff_opts.context_lines = (uint16_t) SvIV(opt);
-
-			if ((opt = git_hv_int_entry(opts, "interhunk_lines")))
-				diff_opts.interhunk_lines = (uint16_t) SvIV(opt);
-
-			if ((lopt = git_hv_list_entry(opts, "paths"))) {
-				SV **path;
-				size_t i = 0, count = 0;
-
-				while ((path = av_fetch(lopt, i++, 0))) {
-					if (!SvOK(*path))
-						continue;
-
-					Renew(paths, count + 1, char *);
-					paths[count++] = SvPVbyte_nolen(*path);
-				}
-
-				if (count > 0) {
-					diff_opts.flags |= GIT_DIFF_DISABLE_PATHSPEC_MATCH;
-					diff_opts.pathspec.strings = paths;
-					diff_opts.pathspec.count   = count;
-				}
-			}
+			HV *opts = git_ensure_hv(ST(1), "diff_opts");
+			git_hv_to_diff_opts(opts, &diff_opts, &tree);
 		}
 
 		if (tree) {
@@ -645,7 +599,8 @@ diff(self, ...)
 		}
 
 		git_index_free(index);
-		Safefree(paths);
+		if (diff_opts.pathspec.count > 0)
+			Safefree(diff_opts.pathspec.strings);
 		git_check_error(rc);
 
 		RETVAL = diff;
