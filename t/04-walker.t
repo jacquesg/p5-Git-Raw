@@ -20,7 +20,22 @@ is $walk -> next -> message, "initial commit\n";
 
 is $walk -> next, undef;
 
+$walk -> push($repo -> head -> target);
+$walk->all();
+
+$walk -> push($repo -> head -> target);
+my $count = $walk->all();
+is $count, 3;
+
+$walk -> push($repo -> head -> target);
+my @all = $walk->all();
+is scalar(@all), 3;
+is $all[0] -> message, "third commit\n";
+is $all[1] -> message, "second commit\n";
+is $all[2] -> message, "initial commit\n";
+
 # next after reset returns undef
+$walk -> reset;
 is $walk -> next, undef;
 
 $walk -> push($repo -> head -> target);

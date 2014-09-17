@@ -224,6 +224,53 @@ next(self)
 	OUTPUT: RETVAL
 
 void
+all(self)
+	SV *self
+
+	PREINIT:
+		int ctx;
+
+	PPCODE:
+		ctx = GIMME_V;
+
+		if (ctx != G_VOID) {
+			int rc;
+			git_oid oid;
+			size_t count = 0;
+			SV *repo = GIT_SV_TO_MAGIC(self);
+			Walker walk = GIT_SV_TO_PTR(Walker, self);
+
+			while ((rc = git_revwalk_next(&oid, walk)) != GIT_ITEROVER) {
+				if (ctx == G_ARRAY) {
+					Commit commit = NULL;
+					SV *tmp;
+
+					rc = git_commit_lookup(&commit, git_revwalk_repository(walk), &oid);
+					git_check_error(rc);
+
+					GIT_NEW_OBJ_WITH_MAGIC(
+						tmp, "Git::Raw::Commit", commit, repo
+					);
+
+					mXPUSHs(tmp);
+				}
+
+				++count;
+			}
+
+			if (rc != GIT_ITEROVER)
+				git_check_error(rc);
+
+			if (ctx == G_ARRAY) {
+				XSRETURN((int) count);
+			} else {
+				mXPUSHs(newSViv((int) count));
+				XSRETURN(1);
+			}
+		} else
+			XSRETURN_EMPTY;
+
+void
 reset(self)
 	Walker self
 

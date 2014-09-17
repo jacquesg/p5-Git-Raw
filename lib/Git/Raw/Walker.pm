@@ -119,7 +119,12 @@ Hide HEAD of the repository and its ancestors from the walker.
 
 =head2 next( )
 
-Retrieve the next commit from the revision walk.
+Retrieve the next commit from the revision walk. Returns a L<Git::Raw::Commit>
+object.
+
+=head2 all( )
+
+Retrieve all commits. Returns a list of L<Git::Raw::Commit> objects.
 
 =head2 reset( )
 
