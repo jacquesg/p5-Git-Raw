@@ -32,6 +32,8 @@ Revision history for Git-Raw
  - Remote's update tips callback now set $a or $b to undef if the
    reference was created or removed (Incompatible change) (GH#136)
  - Added extra diff flags (GH#138)
+ - Remote -> load() used to consider a missing remote as an error.
+   It now returns undef instead of die'ing. (Incompatible change) (GH#139)
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
