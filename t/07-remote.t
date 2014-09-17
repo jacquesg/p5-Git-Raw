@@ -95,7 +95,11 @@ SKIP: {
 	is (Git::Raw::Remote -> is_url_supported('me@somewhere.com:/somerepo.git'), 1);
 }
 
+my $non_existent_remote = Git::Raw::Remote -> load($repo, 'nonexistent_remote');
+is $non_existent_remote, undef;
+
 $github = Git::Raw::Remote -> load($repo, 'github');
+isa_ok $github, 'Git::Raw::Remote';
 
 ok (!eval { $github -> default_branch });
 ok (!eval { $github -> connect('invalid_direction') });

@@ -80,7 +80,6 @@ load(class, repo, name)
 		int rc;
 
 		git_remote *r = NULL;
-		Remote remote = NULL;
 		Repository repo_ptr = NULL;
 
 	CODE:
@@ -88,15 +87,20 @@ load(class, repo, name)
 		rc = git_remote_load(
 			&r, repo_ptr -> repository,
 			git_ensure_pv(name, "name"));
-		git_check_error(rc);
+		if (rc == GIT_ENOTFOUND) {
+			RETVAL = &PL_sv_undef;
+		} else {
+			Remote remote = NULL;
+			git_check_error(rc);
 
-		Newx(remote, 1, git_raw_remote);
-		git_init_remote_callbacks(&remote -> callbacks);
-		remote -> remote = r;
+			Newx(remote, 1, git_raw_remote);
+			git_init_remote_callbacks(&remote -> callbacks);
+			remote -> remote = r;
 
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, SvPVbyte_nolen(class), remote, SvRV(repo)
-		);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, SvPVbyte_nolen(class), remote, SvRV(repo)
+			);
+		}
 
 	OUTPUT: RETVAL
 
