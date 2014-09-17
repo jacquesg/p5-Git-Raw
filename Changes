@@ -16,6 +16,8 @@ Revision history for Git-Raw
     + diff()
  - Added Blob methods:
     + is_binary()
+ - Added Walker methods (GH#140):
+    + all()
  - Added methods:
     + message_prettify()
  - Removed Remote methods (GH#135) (Incompatible change):
