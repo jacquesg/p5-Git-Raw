@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.45      2014-09-18 23:29:31+02:00 Africa/Johannesburg
+
  - Update libgit2 to 73dd663 (GH#126,GH#137)
  - Added Walker methods (GH#127):
     + sorting
