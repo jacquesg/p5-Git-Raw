@@ -305,10 +305,7 @@ is_tag(self)
 		int rc;
 
 	CODE:
-		rc = git_reference_is_tag(self);
-		git_check_error(rc);
-
-		RETVAL = newSViv(rc);
+		RETVAL = newSViv(git_reference_is_tag(self));
 
 	OUTPUT: RETVAL
 
