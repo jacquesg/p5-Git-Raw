@@ -768,8 +768,8 @@ sub tag { return Git::Raw::Tag -> create(@_) }
 
 =head2 tags( )
 
-Retrieve the list of L<Git::Raw::Tag> objects representing the
-repository's annotated Git tags. Lightweight tags are not returned.
+Retrieve the list of annotated and/or lightweight tag objects. Shortcut for
+C<Git::Raw::Tag-E<gt>foreach()>.
 
 =cut
 
@@ -780,7 +780,7 @@ sub tags {
 
 	Git::Raw::Tag -> foreach($self, sub {
 		push @tags, shift; 0
-	});
+	}, @_);
 
 	return @tags;
 }

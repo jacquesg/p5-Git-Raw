@@ -53,10 +53,13 @@ doesn't exist, this function wil return C<undef>.
 
 Retrieve the L<Git::Raw::Repository> owning the tag.
 
-=head2 foreach( $repo, $callback )
+=head2 foreach( $repo, $callback, [$type] )
 
-Run C<$callback> for every tag in the repo. The callback receives a tag object.
-A non-zero return value stops the loop.
+Run C<$callback> for every tag in the repo. The callback receives a tag object,
+which will either a be a L<Git::Raw::Tag> object for annotated tags, or a
+L<Git::Raw::Reference> for lightweight tags. C<$type> may be C<"all">,
+C<"annotated"> or C<"lightweight">. If C<$type> is not specified or is C<undef>,
+all tags will be returned. A non-zero return value stops the loop.
 
 =head2 delete( )
 

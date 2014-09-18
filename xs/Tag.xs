@@ -95,11 +95,12 @@ owner(self)
 	OUTPUT: RETVAL
 
 void
-foreach(class, repo, cb)
+foreach(class, repo, cb, ...)
 	SV *class
 	SV *repo
 	SV *cb
 
+	PROTOTYPE: $$$;$
 	PREINIT:
 		int rc;
 
@@ -108,10 +109,29 @@ foreach(class, repo, cb)
 			GIT_SV_TO_PTR(Repository, repo),
 			repo,
 			cb,
-			SvPVbyte_nolen(class)
+			1,
+			1
 		};
 
-		rc = git_tag_foreach(payload.repo_ptr -> repository, git_tag_foreach_cbb, &payload);
+		if (items == 4 && SvOK(ST(3))) {
+			const char *type = git_ensure_pv(ST(3), "type");
+
+			if (strcmp(type, "lightweight") == 0)
+				payload.annotated = 0;
+			else if (strcmp(type, "annotated") == 0)
+				payload.lightweight = 0;
+			else {
+				if (strcmp(type, "all") != 0)
+					croak_usage("Invalid value for 'type', expected "
+						"'all', 'lightweight' or 'annotated'");
+			}
+		}
+
+		rc = git_tag_foreach(
+			payload.repo_ptr -> repository,
+			git_tag_foreach_cbb,
+			&payload
+		);
 
 		if (rc != GIT_EUSER)
 			git_check_error(rc);

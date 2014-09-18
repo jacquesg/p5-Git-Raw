@@ -67,13 +67,34 @@ is $tags[0] -> name, $tag_name;
 is $tags[0] -> message, $tag_msg;
 is $tags[1], undef;
 
+ok (!eval { $repo -> tags('invalid') });
+
+@tags = $repo -> tags('all');
+is scalar(@tags), 1;
+
+@tags = $repo -> tags('lightweight');
+is scalar(@tags), 0;
+
+@tags = $repo -> tags(undef);
+is scalar(@tags), 1;
+
 $tags[0] -> delete;
 
 Git::Raw::Reference -> create("refs/tags/lightweight-tag", $repo, $commit);
 
 @tags = $repo -> tags;
 
-is $tags[0], undef;
+my $lw_tag = $tags[0];
+isa_ok $lw_tag, 'Git::Raw::Reference';
+is $lw_tag -> is_tag, 1;
+is $lw_tag -> is_branch, 0;
+$lw_tag = undef;
+
+@tags = $repo -> tags('lightweight');
+is scalar(@tags), 1;
+
+@tags = $repo -> tags('annotated');
+is scalar(@tags), 0;
 
 Git::Raw::Reference -> lookup("refs/tags/lightweight-tag", $repo) -> delete();
 

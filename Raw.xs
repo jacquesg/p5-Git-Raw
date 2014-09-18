@@ -979,7 +979,8 @@ typedef struct {
 	Repository repo_ptr;
 	SV *repo;
 	SV *cb;
-	const char *class;
+	int annotated;
+	int lightweight;
 } git_foreach_payload;
 
 STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) {
@@ -1041,29 +1042,49 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	dSP;
 	int rv = 0;
+	git_otype type = GIT_OBJ_ANY;
 	git_object *tag;
 
 	SV *cb_arg = NULL;
 	git_foreach_payload *pl = payload;
 
-	int rc = git_object_lookup(&tag, pl -> repo_ptr -> repository, oid, GIT_OBJ_ANY);
+	int rc = git_object_lookup(
+		&tag, pl -> repo_ptr -> repository, oid, type
+	);
 	git_check_error(rc);
 
-	if (git_object_type(tag) != GIT_OBJ_TAG) {
+	type = git_object_type(tag);
+
+	if (type == GIT_OBJ_TAG) {
+		if (pl -> annotated) {
+			GIT_NEW_OBJ_WITH_MAGIC(
+				cb_arg, "Git::Raw::Tag", (void *) tag, SvRV(pl -> repo)
+			);
+		} else
+			return 0;
+	} else if (type == GIT_OBJ_COMMIT) {
 		git_object_free(tag);
 
-		return 0;
-	}
+		if (pl -> lightweight) {
+			Reference ref = NULL;
+			rc = git_reference_lookup(&ref,
+				pl -> repo_ptr -> repository, name
+			);
+			git_check_error(rc);
 
-	GIT_NEW_OBJ_WITH_MAGIC(
-		cb_arg, pl -> class, (void *) tag, SvRV(pl -> repo)
-	);
+			GIT_NEW_OBJ_WITH_MAGIC(
+				cb_arg, "Git::Raw::Reference", (void *) ref, SvRV(pl -> repo)
+			);
+		} else
+			return 0;
+	} else
+		croak_assert("Unexpected tag, object type of %s", git_object_type2string(type));
 
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	XPUSHs(cb_arg);
+	mXPUSHs(cb_arg);
 	PUTBACK;
 
 	call_sv(pl -> cb, G_SCALAR);

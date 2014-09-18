@@ -126,7 +126,7 @@ foreach(self, cb)
 	PREINIT:
 		int rc;
 
-		git_foreach_payload payload = { NULL, NULL, NULL, NULL };
+		git_foreach_payload payload = { NULL, NULL, NULL };
 
 	CODE:
 		payload.cb = cb;

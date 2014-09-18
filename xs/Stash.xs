@@ -63,8 +63,7 @@ foreach(class, repo, cb)
 		git_foreach_payload payload = {
 			GIT_SV_TO_PTR(Repository, repo),
 			repo,
-			cb,
-			NULL
+			cb
 		};
 
 		rc = git_stash_foreach(
