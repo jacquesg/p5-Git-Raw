@@ -36,6 +36,8 @@ Revision history for Git-Raw
  - Added extra diff flags (GH#138)
  - Remote -> load() used to consider a missing remote as an error.
    It now returns undef instead of die'ing. (Incompatible change) (GH#139)
+ - Tag -> foreach() now also returns lightweight tags (GH#141,GH#142)
+ - Reference -> is_tag() was broken for lightweight tags (GH#142)
 
 0.44      2014-08-18 10:34:18+02:00 Africa/Johannesburg
 
