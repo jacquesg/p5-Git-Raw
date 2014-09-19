@@ -1,6 +1,8 @@
 Revision history for Git-Raw
 
 {{$NEXT}}
+ - Fix more test cases that were failing if diff.mnemonicprefix is set (GH#143)
+ - Revert previous attempt at getting WinHTTP to work
 
 0.45      2014-09-18 23:29:31+02:00 Africa/Johannesburg
 
