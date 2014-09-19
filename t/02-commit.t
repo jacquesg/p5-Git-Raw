@@ -12,6 +12,7 @@ use Time::Local;
 
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
+$repo -> config -> bool('diff.mnemonicprefix', 0);
 
 my $file  = $repo -> workdir . 'test';
 my $untracked_file = $repo -> workdir . 'untracked_file';
