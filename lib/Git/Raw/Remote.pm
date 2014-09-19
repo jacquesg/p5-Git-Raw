@@ -62,7 +62,8 @@ Create a remote in memory (anonymous).
 
 =head2 load( $repo, $name )
 
-Load an existing remote.
+Load an existing remote. Returns a L<Git::Raw::Remote> object if the remote
+was found, otherwise C<undef>.
 
 =head2 owner( )
 
@@ -91,7 +92,7 @@ updated and returned.
 
 =head2 pushurl( [ $url ] )
 
-Retrieve the push URL for the remote. If C<$url> is passed, teh rmeote's push
+Retrieve the push URL for the remote. If C<$url> is passed, the remote's push
 URL will be updated and returned.
 
 =head2 check_cert( $value )
@@ -147,27 +148,28 @@ The local OID of the reference (optional).
 =item * "credentials"
 
 The callback to be called any time authentication is required to connect to the
-remote repository. The callback receives a string containing the URL of the
-remote, and it must return a L<Git::Raw::Cred> object.
+remote repository. The callback receives a string C<$url> containing the URL of
+the remote, and it must return a L<Git::Raw::Cred> object.
 
 =item * "sideband_progress"
 
-Textual progress from the remote. Text send over the progress side-band will be
-passed to this function (this is the 'counting objects' output). The callback
-receives a string containing progress information.
+Textual progress from the remote. Text sent over the progress side-band will be
+passed to this function (this is the 'counting objects' output or any other
+information the remote sends). The callback receives a string C<$msg>
+containing the progress information.
 
 =item * "transfer_progress"
 
 During the download of new data, this will be regularly called with the current
 count of progress done by the indexer. The callback receives the following integers:
-C<total_objects>, C<received_objects>, C<local_objects>, C<total_deltas>,
-C<indexed_deltas> and C<received_bytes>.
+C<$total_objects>, C<$received_objects>, C<$local_objects>, C<$total_deltas>,
+C<$indexed_deltas> and C<$received_bytes>.
 
 =item * "update_tips"
 
 Each time a reference is updated locally, this function will be called with
 information about it. The callback receives a string containing the reference
-C<$name> of the reference that was updated, and the two OID's C<$a> before and
+C<$ref> of the reference that was updated, and the two OID's C<$a> before and
 after C<$b> the update. C<$a> will be C<undef> if the reference was created,
 likewise C<$b> will be C<undef> if the reference was removed.
 

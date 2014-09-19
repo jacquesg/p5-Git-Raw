@@ -766,10 +766,10 @@ Create a new L<Git::Raw::Tag>. Shortcut for C<Git::Raw::Tag-E<gt>create()>.
 
 sub tag { return Git::Raw::Tag -> create(@_) }
 
-=head2 tags( )
+=head2 tags( [$type] )
 
-Retrieve the list of annotated and/or lightweight tag objects. Shortcut for
-C<Git::Raw::Tag-E<gt>foreach()>.
+Retrieve the list of annotated and/or lightweight tag objects. Possible values
+for C<$type> include C<"all">, C<"annotated"> or C<"lightweight">.
 
 =cut
 
@@ -785,7 +785,7 @@ sub tags {
 	return @tags;
 }
 
-=head2 stash( $stasher, $msg )
+=head2 stash( $repo, $msg )
 
 Save the local modifications to a new stash. Shortcut for C<Git::Raw::Stash-E<gt>save()>.
 
