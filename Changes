@@ -2,7 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added support for Notes (GH#144)
+
 0.46      2014-09-19 12:42:13+02:00 Africa/Johannesburg
+
  - Fix more test cases that were failing if diff.mnemonicprefix is set (GH#143)
  - Revert previous attempt at getting WinHTTP to work
 
