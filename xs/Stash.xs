@@ -3,7 +3,7 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Stash
 SV *
 save(class, repo, stasher, msg, ...)
 	SV *class
-	Repository repo
+	SV *repo
 	Signature stasher
 	SV *msg
 
@@ -12,10 +12,14 @@ save(class, repo, stasher, msg, ...)
 	PREINIT:
 		int rc;
 
+		Repository repo_ptr;
+
 		git_oid oid;
 		unsigned int stash_flags = GIT_STASH_DEFAULT;
 
 	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+
 		if (items == 5) {
 			AV *flags;
 			SV **flag;
@@ -28,7 +32,7 @@ save(class, repo, stasher, msg, ...)
 				if (!SvPOK(*flag))
 					continue;
 
-				opt = SvPVbyte_nolen(*flag);
+				opt = git_ensure_pv(*flag, "flag");
 
 				if (strcmp(opt, "keep_index") == 0)
 					stash_flags |= GIT_STASH_KEEP_INDEX;
@@ -36,16 +40,34 @@ save(class, repo, stasher, msg, ...)
 					stash_flags |= GIT_STASH_INCLUDE_UNTRACKED;
 				else if (strcmp(opt, "include_ignored") == 0)
 					stash_flags |= GIT_STASH_INCLUDE_IGNORED;
+				else
+					croak_usage("Unknown value for flag '%s', expected "
+						"'keep_index', 'include_untracked' or 'include_ignored'",
+						opt);
+
 				++count;
 			}
 		}
 
-		rc = git_stash_save(&oid, repo -> repository, stasher, git_ensure_pv(msg, "msg"), stash_flags);
-		if (rc == GIT_ENOTFOUND) {
-			RETVAL = &PL_sv_undef;
-		} else {
+		rc = git_stash_save(&oid, repo_ptr -> repository,
+			stasher,
+			git_ensure_pv(msg, "msg"),
+			stash_flags
+		);
+
+		RETVAL = &PL_sv_undef;
+		if (rc != GIT_ENOTFOUND) {
+			Commit commit;
 			git_check_error(rc);
-			RETVAL = newSViv(1);
+
+			rc = git_commit_lookup(&commit,
+				repo_ptr -> repository, &oid
+			);
+			git_check_error(rc);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Commit", commit, SvRV(repo)
+			);
 		}
 
 	OUTPUT: RETVAL
@@ -63,7 +85,7 @@ foreach(class, repo, cb)
 		git_foreach_payload payload = {
 			GIT_SV_TO_PTR(Repository, repo),
 			repo,
-			cb
+			git_ensure_cv(cb, "callback")
 		};
 
 		rc = git_stash_foreach(

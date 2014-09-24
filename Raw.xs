@@ -1012,9 +1012,21 @@ STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) 
 	return rv;
 }
 
-STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *payload) {
+STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, void *p) {
 	dSP;
-	int rv = 0;
+	int rc, rv = 0;
+	Commit c = NULL;
+	SV *commit = NULL;
+	git_foreach_payload *payload = (git_foreach_payload *) p;
+
+	rc = git_commit_lookup(&c,
+		payload -> repo_ptr -> repository, oid
+	);
+	git_check_error(rc);
+
+	GIT_NEW_OBJ_WITH_MAGIC(
+		commit, "Git::Raw::Commit", c, SvRV(payload -> repo)
+	);
 
 	ENTER;
 	SAVETMPS;
@@ -1022,20 +1034,24 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 	PUSHMARK(SP);
 	mXPUSHs(newSVuv(i));
 	mXPUSHs(newSVpv(msg, 0));
-	mXPUSHs(git_oid_to_sv((git_oid *) oid));
+	mXPUSHs(commit);
 	PUTBACK;
 
-	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
+	call_sv(payload -> cb, G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
-	rv = POPi;
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else {
+		rv = POPi;
+		if (rv != 0)
+			rv = GIT_EUSER;
+	}
 
 	FREETMPS;
 	LEAVE;
-
-	if (rv != 0)
-		rv = GIT_EUSER;
 
 	return rv;
 }
