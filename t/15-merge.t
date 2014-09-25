@@ -167,6 +167,11 @@ is $ancestor_entry -> path, 'test1';
 is $our_entry -> path, 'test1';
 is $their_entry -> path, 'test1';
 
+my $dup = $ancestor_entry -> clone('test1.cloned');
+isa_ok $dup, 'Git::Raw::Index::Entry';
+is $dup -> path, 'test1.cloned';
+is $dup -> id, $ancestor_entry -> id;
+
 $merge_result = $index -> merge ($ancestor_entry,
 	$their_entry, $our_entry, {
 		'favor' => 'ours'
@@ -186,6 +191,11 @@ ok $ancestor_entry -> id ne $their_entry -> id;
 ok $our_entry -> id ne $their_entry -> id;
 
 $index -> remove_conflict('test1');
+is $index -> has_conflicts, 0;
+
+$index -> add_conflict($dup, $dup, $dup);
+is $index -> has_conflicts, 1;
+$index -> remove_conflict('test1.cloned');
 is $index -> has_conflicts, 0;
 
 $index -> conflict_cleanup;

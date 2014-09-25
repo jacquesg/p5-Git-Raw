@@ -13,9 +13,13 @@ ours(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> ours) {
+			Index_Entry entry;
+			Newxz(entry, 1, git_raw_index_entry);
+
+			entry -> index_entry = (git_index_entry *) conflict -> ours;
 			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> ours, GIT_SV_TO_MAGIC(self)
+				entry, GIT_SV_TO_MAGIC(self)
 			);
 		}
 
@@ -34,9 +38,13 @@ ancestor(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> ancestor) {
+			Index_Entry entry;
+			Newxz(entry, 1, git_raw_index_entry);
+
+			entry -> index_entry = (git_index_entry *) conflict -> ancestor;
 			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> ancestor, GIT_SV_TO_MAGIC(self)
+				entry, GIT_SV_TO_MAGIC(self)
 			);
 		}
 
@@ -55,9 +63,13 @@ theirs(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> theirs) {
+			Index_Entry entry;
+			Newxz(entry, 1, git_raw_index_entry);
+
+			entry -> index_entry = (git_index_entry *) conflict -> theirs;
 			GIT_NEW_OBJ_WITH_MAGIC(
 				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> theirs, GIT_SV_TO_MAGIC(self)
+				entry, GIT_SV_TO_MAGIC(self)
 			);
 		}
 

@@ -116,6 +116,11 @@ C<%checkout_opts> values.
 
 Retrieve index entries. Returns a list of L<Git::Raw::Index::Entry> objects.
 
+=head2 add_conflict( $ancestor, $theirs, $ours)
+
+Add a new conflict entry. C<$ancestor>, C<$theirs> and C<$ours> should be
+L<Git::Raw::Index::Entry> objects.
+
 =head2 remove_conflict( $file )
 
 Remove C<$file> from the index.

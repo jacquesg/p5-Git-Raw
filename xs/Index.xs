@@ -11,8 +11,10 @@ add(self, entry)
 	CODE:
 		if (SvPOK(entry))
 			rc = git_index_add_bypath(self, SvPVbyte_nolen(entry));
-		else
-			rc = git_index_add(self, GIT_SV_TO_PTR(Index::Entry, entry));
+		else {
+			Index_Entry e = GIT_SV_TO_PTR(Index::Entry, entry);
+			rc = git_index_add(self, e -> index_entry);
+		}
 
 		git_check_error(rc);
 
@@ -158,17 +160,23 @@ find(self, path)
 
 		rc = git_index_find(&pos, index, git_ensure_pv(path, "path"));
 		if (rc != GIT_ENOTFOUND) {
-			const git_index_entry *e = NULL;
+			Index_Entry e = NULL;
+			Newxz(e, 1, git_raw_index_entry);
 
-			git_check_error(rc);
-			if ((e = git_index_get_byindex(index, pos)) != NULL) {
+			if (rc != GIT_OK) {
+				Safefree(e);
+				git_check_error(rc);
+			}
+
+			if ((e -> index_entry = (git_index_entry *) git_index_get_byindex(index, pos)) != NULL) {
 				SV *repo = GIT_SV_TO_MAGIC(self);
 
 				GIT_NEW_OBJ_WITH_MAGIC(
 					RETVAL, "Git::Raw::Index::Entry",
 					(Index_Entry) e, repo
 				);
-			}
+			} else
+				Safefree(e);
 		}
 
 	OUTPUT: RETVAL
@@ -202,7 +210,10 @@ merge(self, ancestor, theirs, ours, ...)
 		Newxz(result, 1, git_merge_file_result);
 
 		rc = git_merge_file_from_index(result, repo_ptr -> repository,
-			ancestor, ours, theirs, &options);
+			ancestor -> index_entry,
+			ours -> index_entry,
+			theirs -> index_entry,
+			&options);
 		if (rc != GIT_OK) {
 			Safefree(result);
 			git_check_error(rc);
@@ -330,21 +341,42 @@ entries(self)
 			SV *repo = GIT_SV_TO_MAGIC(self);
 
 			for (i = 0; i < count; ++i) {
-				const git_index_entry *e =
+				Index_Entry e = NULL;
+				Newxz(e, 1, git_raw_index_entry);
+				e -> index_entry = (git_index_entry *)
 					git_index_get_byindex(index_ptr, i);
 
-				if (e != NULL) {
+				if (e -> index_entry != NULL) {
 					SV *entry = NULL;
 					GIT_NEW_OBJ_WITH_MAGIC(
 						entry, "Git::Raw::Index::Entry",
-						(Index_Entry) e, repo
+						e, repo
 					);
 					mXPUSHs(entry);
-				}
+				} else
+					Safefree(e);
 			}
 		}
 
 		XSRETURN(count);
+
+void
+add_conflict(self, ancestor, theirs, ours)
+	Index self
+	Index_Entry ancestor
+	Index_Entry theirs
+	Index_Entry ours
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_index_conflict_add(self,
+			ancestor -> index_entry,
+			ours -> index_entry,
+			theirs -> index_entry
+		);
+		git_check_error(rc);
 
 void
 remove_conflict(self, path)
