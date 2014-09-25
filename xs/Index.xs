@@ -173,6 +173,48 @@ find(self, path)
 
 	OUTPUT: RETVAL
 
+SV *
+merge(self, ancestor, theirs, ours, ...)
+	SV *self
+	Index_Entry ancestor
+	Index_Entry theirs
+	Index_Entry ours
+
+	PROTOTYPE: $$$$;$
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		git_merge_file_options options = GIT_MERGE_FILE_OPTIONS_INIT;
+		Merge_File_Result result = NULL;
+
+	CODE:
+		if (items == 5 && SvOK(ST(4))) {
+			HV *opts = git_ensure_hv(ST(4), "merge_opts");
+			git_hv_to_merge_file_opts(opts, &options);
+		}
+
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		Newxz(result, 1, git_merge_file_result);
+
+		rc = git_merge_file_from_index(result, repo_ptr -> repository,
+			ancestor, ours, theirs, &options);
+		if (rc != GIT_OK) {
+			Safefree(result);
+			git_check_error(rc);
+		}
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Merge::File::Result",
+			(Merge_File_Result) result, repo
+		);
+
+	OUTPUT: RETVAL
+
 void
 remove(self, path)
 	Index self

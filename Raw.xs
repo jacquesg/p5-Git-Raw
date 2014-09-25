@@ -127,6 +127,7 @@ typedef git_diff_hunk * Diff_Hunk;
 typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
+typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 typedef git_patch * Patch;
 typedef git_pathspec * PathSpec;
@@ -1822,6 +1823,49 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 		merge_options -> target_limit = SvIV(opt);
 }
 
+STATIC unsigned git_hv_to_merge_file_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "merge", GIT_MERGE_FILE_STYLE_MERGE, &out);
+	git_flag_opt(flags, "diff3", GIT_MERGE_FILE_STYLE_DIFF3, &out);
+	git_flag_opt(flags, "simplify_alnum", GIT_MERGE_FILE_SIMPLIFY_ALNUM, &out);
+
+	return out;
+}
+
+STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_options) {
+	AV *lopt;
+	HV *hopt;
+	SV *opt;
+
+	if ((hopt = git_hv_hash_entry(opts, "flags")))
+		merge_options -> flags |= git_hv_to_merge_file_flag(hopt);
+
+	if ((opt = git_hv_string_entry(opts, "favor"))) {
+		const char *favor = SvPVbyte_nolen(opt);
+		if (strcmp(favor, "ours") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_OURS;
+		else if (strcmp(favor, "theirs") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_THEIRS;
+		else if (strcmp(favor, "union") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_UNION;
+		else
+			croak_usage("Invalid 'favor' value");
+	}
+
+	if ((opt = git_hv_string_entry(opts, "ancestor_label")))
+		merge_options -> ancestor_label = SvPVbyte_nolen(opt);
+
+	if ((opt = git_hv_string_entry(opts, "our_label")))
+		merge_options -> our_label = SvPVbyte_nolen(opt);
+
+	if ((opt = git_hv_string_entry(opts, "their_label")))
+		merge_options -> their_label = SvPVbyte_nolen(opt);
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
@@ -1916,6 +1960,7 @@ INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
+INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs
