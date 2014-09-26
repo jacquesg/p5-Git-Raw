@@ -126,6 +126,7 @@ typedef git_diff_file * Diff_File;
 typedef git_diff_hunk * Diff_Hunk;
 typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
+typedef git_index_entry * Index_Entry;
 typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 typedef git_patch * Patch;
@@ -141,13 +142,6 @@ typedef git_tree * Tree;
 typedef git_treebuilder * Tree_Builder;
 typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
-
-typedef struct {
-	git_index_entry * index_entry;
-	int owned;
-} git_raw_index_entry;
-
-typedef git_raw_index_entry * Index_Entry;
 
 typedef struct {
 	const git_index_entry *ours;
@@ -373,6 +367,23 @@ STATIC void git_index_entry_free(git_index_entry *entry)
 		Safefree(entry -> path);
 		Safefree(entry);
 	}
+}
+
+STATIC SV *git_index_entry_to_sv(const git_index_entry *index_entry, const char *path, SV *repo) {
+	SV *ie = &PL_sv_undef;
+
+	if (index_entry) {
+		git_index_entry *entry = NULL;
+
+		if ((entry = git_index_entry_dup(index_entry, path))) {
+			GIT_NEW_OBJ_WITH_MAGIC(
+				ie, "Git::Raw::Index::Entry",
+				entry, repo
+			);
+		}
+	}
+
+	return ie;
 }
 
 STATIC SV *git_obj_to_sv(git_object *o, SV *repo) {

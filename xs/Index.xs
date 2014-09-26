@@ -13,7 +13,7 @@ add(self, entry)
 			rc = git_index_add_bypath(self, SvPVbyte_nolen(entry));
 		else {
 			Index_Entry e = GIT_SV_TO_PTR(Index::Entry, entry);
-			rc = git_index_add(self, e -> index_entry);
+			rc = git_index_add(self, e);
 		}
 
 		git_check_error(rc);
@@ -160,23 +160,12 @@ find(self, path)
 
 		rc = git_index_find(&pos, index, git_ensure_pv(path, "path"));
 		if (rc != GIT_ENOTFOUND) {
-			Index_Entry e = NULL;
-			Newxz(e, 1, git_raw_index_entry);
+			git_check_error(rc);
 
-			if (rc != GIT_OK) {
-				Safefree(e);
-				git_check_error(rc);
-			}
-
-			if ((e -> index_entry = (git_index_entry *) git_index_get_byindex(index, pos)) != NULL) {
-				SV *repo = GIT_SV_TO_MAGIC(self);
-
-				GIT_NEW_OBJ_WITH_MAGIC(
-					RETVAL, "Git::Raw::Index::Entry",
-					(Index_Entry) e, repo
-				);
-			} else
-				Safefree(e);
+			RETVAL = git_index_entry_to_sv(
+				git_index_get_byindex(index, pos), NULL,
+				GIT_SV_TO_MAGIC(self)
+			);
 		}
 
 	OUTPUT: RETVAL
@@ -210,9 +199,9 @@ merge(self, ancestor, theirs, ours, ...)
 		Newxz(result, 1, git_merge_file_result);
 
 		rc = git_merge_file_from_index(result, repo_ptr -> repository,
-			ancestor -> index_entry,
-			ours -> index_entry,
-			theirs -> index_entry,
+			ancestor,
+			ours,
+			theirs,
 			&options);
 		if (rc != GIT_OK) {
 			Safefree(result);
@@ -341,20 +330,9 @@ entries(self)
 			SV *repo = GIT_SV_TO_MAGIC(self);
 
 			for (i = 0; i < count; ++i) {
-				Index_Entry e = NULL;
-				Newxz(e, 1, git_raw_index_entry);
-				e -> index_entry = (git_index_entry *)
-					git_index_get_byindex(index_ptr, i);
-
-				if (e -> index_entry != NULL) {
-					SV *entry = NULL;
-					GIT_NEW_OBJ_WITH_MAGIC(
-						entry, "Git::Raw::Index::Entry",
-						e, repo
-					);
-					mXPUSHs(entry);
-				} else
-					Safefree(e);
+				SV *entry = git_index_entry_to_sv(
+					git_index_get_byindex(index_ptr, i), NULL, repo);
+				mXPUSHs(entry);
 			}
 		}
 
@@ -372,9 +350,7 @@ add_conflict(self, ancestor, theirs, ours)
 
 	CODE:
 		rc = git_index_conflict_add(self,
-			ancestor -> index_entry,
-			ours -> index_entry,
-			theirs -> index_entry
+			ancestor, ours, theirs
 		);
 		git_check_error(rc);
 

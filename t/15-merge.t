@@ -193,9 +193,9 @@ ok $our_entry -> id ne $their_entry -> id;
 $index -> remove_conflict('test1');
 is $index -> has_conflicts, 0;
 
-$index -> add_conflict($dup, $dup, $dup);
+$index -> add_conflict($ancestor_entry, $their_entry, $our_entry);
 is $index -> has_conflicts, 1;
-$index -> remove_conflict('test1.cloned');
+$index -> remove_conflict('test1');
 is $index -> has_conflicts, 0;
 
 $index -> conflict_cleanup;

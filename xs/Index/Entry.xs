@@ -5,7 +5,7 @@ id(self)
 	Index_Entry self
 
 	CODE:
-		RETVAL = git_oid_to_sv(&self -> index_entry -> id);
+		RETVAL = git_oid_to_sv(&self -> id);
 
 	OUTPUT: RETVAL
 
@@ -14,7 +14,7 @@ path(self)
 	Index_Entry self
 
 	CODE:
-		RETVAL = newSVpv(self -> index_entry -> path, 0);
+		RETVAL = newSVpv(self -> path, 0);
 
 	OUTPUT: RETVAL
 
@@ -23,7 +23,7 @@ size(self)
 	Index_Entry self
 
 	CODE:
-		RETVAL = newSVuv((size_t) self -> index_entry -> file_size);
+		RETVAL = newSVuv((size_t) self -> file_size);
 
 	OUTPUT: RETVAL
 
@@ -32,7 +32,7 @@ stage(self)
 	Index_Entry self
 
 	CODE:
-		RETVAL = newSViv(git_index_entry_stage(self -> index_entry));
+		RETVAL = newSViv(git_index_entry_stage(self));
 
 	OUTPUT: RETVAL
 
@@ -42,19 +42,14 @@ clone(self, path)
 	const char *path
 
 	PREINIT:
-		Index_Entry old_entry, new_entry = NULL;
+		Index_Entry old_entry;
 
 	CODE:
 		old_entry = GIT_SV_TO_PTR(Index::Entry, self);
 
-		Newxz(new_entry, 1, git_raw_index_entry);
-		new_entry -> owned = 1;
-		new_entry -> index_entry =
-			git_index_entry_dup(old_entry -> index_entry, path);
-
-		GIT_NEW_OBJ_WITH_MAGIC(
-			RETVAL, "Git::Raw::Index::Entry",
-			new_entry, GIT_SV_TO_MAGIC(self)
+		RETVAL = git_index_entry_to_sv(
+			old_entry, path,
+			GIT_SV_TO_MAGIC(self)
 		);
 
 	OUTPUT: RETVAL
@@ -82,7 +77,7 @@ blob(self)
 
 		rc = git_blob_lookup(
 			&blob, repo_ptr -> repository,
-			&entry -> index_entry -> id
+			&entry -> id
 		);
 		if (rc != GIT_ENOTFOUND) {
 			git_check_error(rc);
@@ -101,9 +96,7 @@ DESTROY(self)
 		Index_Entry entry;
 
 	CODE:
-		entry = GIT_SV_TO_PTR(Index::Entry, self);
-		if (entry -> owned)
-			git_index_entry_free(entry -> index_entry);
-
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
-		Safefree(entry);
+
+		entry = GIT_SV_TO_PTR(Index::Entry, self);
+		git_index_entry_free(entry);
