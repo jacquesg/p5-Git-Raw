@@ -195,6 +195,12 @@ is $index -> has_conflicts, 0;
 
 $index -> add_conflict($ancestor_entry, $their_entry, $our_entry);
 is $index -> has_conflicts, 1;
+$conflict = $index -> get_conflict('test1');
+isa_ok $conflict, 'Git::Raw::Index::Conflict';
+is $conflict -> ancestor -> id, $ancestor_entry -> id;
+is $conflict -> ours -> id, $our_entry -> id;
+is $conflict -> theirs -> id, $their_entry -> id;
+
 $index -> remove_conflict('test1');
 is $index -> has_conflicts, 0;
 

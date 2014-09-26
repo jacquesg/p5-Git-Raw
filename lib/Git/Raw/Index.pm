@@ -121,9 +121,13 @@ Retrieve index entries. Returns a list of L<Git::Raw::Index::Entry> objects.
 Add a new conflict entry. C<$ancestor>, C<$theirs> and C<$ours> should be
 L<Git::Raw::Index::Entry> objects.
 
-=head2 remove_conflict( $file )
+=head2 get_conflict( $path )
 
-Remove C<$file> from the index.
+Remove conflict entries for C<$path>.
+
+=head2 remove_conflict( $path )
+
+Remove C<$path> from the index.
 
 =head2 has_conflicts( )
 

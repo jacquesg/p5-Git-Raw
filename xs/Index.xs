@@ -354,6 +354,44 @@ add_conflict(self, ancestor, theirs, ours)
 		);
 		git_check_error(rc);
 
+SV *
+get_conflict(self, path)
+	SV *self
+	SV *path
+
+	PREINIT:
+		int rc;
+
+		Index index;
+		const git_index_entry *ancestor, *ours, *theirs;
+		Index_Conflict conflict = NULL;
+
+	CODE:
+		index = GIT_SV_TO_PTR(Index, self);
+
+		rc = git_index_conflict_get(
+			&ancestor, &ours, &theirs,
+			index, git_ensure_pv(path, "path")
+		);
+
+		RETVAL = &PL_sv_undef;
+		if (rc != GIT_ENOTFOUND) {
+			git_check_error(rc);
+
+			Newxz(conflict, 1, git_raw_index_conflict);
+
+			conflict -> ancestor = git_index_entry_dup(ancestor, NULL);
+			conflict -> ours = git_index_entry_dup(ours, NULL);
+			conflict -> theirs = git_index_entry_dup(theirs, NULL);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Index::Conflict",
+				conflict, GIT_SV_TO_MAGIC(self)
+			);
+		}
+
+	OUTPUT: RETVAL
+
 void
 remove_conflict(self, path)
 	Index self
@@ -363,7 +401,9 @@ remove_conflict(self, path)
 		int rc;
 
 	CODE:
-		rc = git_index_conflict_remove(self, SvPVbyte_nolen(path));
+		rc = git_index_conflict_remove(self,
+			git_ensure_pv(path, "path")
+		);
 		git_check_error(rc);
 
 void
@@ -410,9 +450,9 @@ conflicts(self)
 			Index_Conflict conflict = NULL;
 			Newxz(conflict, 1, git_raw_index_conflict);
 
-			conflict -> ancestor = ancestor;
-			conflict -> ours = ours;
-			conflict -> theirs = theirs;
+			conflict -> ancestor = git_index_entry_dup(ancestor, NULL);
+			conflict -> ours = git_index_entry_dup(ours, NULL);
+			conflict -> theirs = git_index_entry_dup(theirs, NULL);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				c, "Git::Raw::Index::Conflict",
