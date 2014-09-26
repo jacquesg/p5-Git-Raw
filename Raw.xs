@@ -354,9 +354,15 @@ STATIC git_index_entry *git_index_entry_dup(const git_index_entry *entry,
 {
 	git_index_entry *new_entry = NULL;
 
-	Newxz(new_entry, 1, git_index_entry);
-	StructCopy(entry, new_entry, git_index_entry);
-	new_entry -> path = savepv(new_path);
+	if (entry) {
+		Newxz(new_entry, 1, git_index_entry);
+		StructCopy(entry, new_entry, git_index_entry);
+
+		if (new_path)
+			new_entry -> path = savepv(new_path);
+		else
+			new_entry -> path = savepv(entry -> path);
+	}
 
 	return new_entry;
 }
