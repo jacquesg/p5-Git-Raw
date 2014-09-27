@@ -184,6 +184,9 @@ is undef, $config -> bool('some.bool');
 ok $config -> bool('some.bool', 1);
 ok $config -> bool('some.bool');
 
+my $default_config = Git::Raw::Config -> default;
+isa_ok $default_config, 'Git::Raw::Config';
+
 my $detached_config1 = Git::Raw::Config -> new;
 isa_ok $detached_config1, 'Git::Raw::Config';
 $detached_config1 -> add_file('.testconfig', 5);

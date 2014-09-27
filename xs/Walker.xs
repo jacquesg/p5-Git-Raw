@@ -241,6 +241,8 @@ all(self)
 			Walker walk = GIT_SV_TO_PTR(Walker, self);
 
 			while ((rc = git_revwalk_next(&oid, walk)) != GIT_ITEROVER) {
+				git_check_error(rc);
+
 				if (ctx == G_ARRAY) {
 					Commit commit = NULL;
 					SV *tmp;
@@ -257,9 +259,6 @@ all(self)
 
 				++count;
 			}
-
-			if (rc != GIT_ITEROVER)
-				git_check_error(rc);
 
 			if (ctx == G_ARRAY) {
 				XSRETURN((int) count);

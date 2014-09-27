@@ -130,10 +130,6 @@ type(self)
 			case GIT_REF_SYMBOLIC:
 				type = newSVpv("symbolic", 0);
 				break;
-
-			default:
-				croak_assert("Invalid reference type: %d", (int) rt);
-				break;
 		}
 
 		RETVAL = type;
@@ -149,10 +145,6 @@ owner(self)
 
 	CODE:
 		repo = GIT_SV_TO_MAGIC(self);
-
-		if (!repo)
-			croak_assert("No owner attached");
-
 		RETVAL = newRV_inc(repo);
 
 	OUTPUT: RETVAL
@@ -188,6 +180,8 @@ target(self, ...)
 				new_ref, GIT_SV_TO_MAGIC(self)
 			);
 		} else {
+			RETVAL = &PL_sv_undef;
+
 			git_ref_t rt = git_reference_type(ref);
 			switch (rt) {
 				case GIT_REF_OID: {
@@ -227,10 +221,6 @@ target(self, ...)
 					);
 					break;
 				}
-
-				default:
-					RETVAL = &PL_sv_undef;
-					croak_assert("Invalid reference type: %d", (int) rt);
 			}
 		}
 

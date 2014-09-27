@@ -131,6 +131,8 @@ ok ($master);
 my $upstream = $master -> upstream;
 is $upstream, undef;
 
+ok (!eval { $master -> upstream($repo -> head -> target) });
+
 $upstream = $master -> upstream($ref);
 isa_ok $upstream, 'Git::Raw::Reference';
 is $upstream -> name, $ref -> name;
