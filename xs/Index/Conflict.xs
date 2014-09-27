@@ -13,9 +13,8 @@ ours(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> ours) {
-			GIT_NEW_OBJ_WITH_MAGIC(
-				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> ours, GIT_SV_TO_MAGIC(self)
+			RETVAL = git_index_entry_to_sv(
+				conflict -> ours, NULL, GIT_SV_TO_MAGIC(self)
 			);
 		}
 
@@ -34,9 +33,8 @@ ancestor(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> ancestor) {
-			GIT_NEW_OBJ_WITH_MAGIC(
-				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> ancestor, GIT_SV_TO_MAGIC(self)
+			RETVAL = git_index_entry_to_sv(
+				conflict -> ancestor, NULL, GIT_SV_TO_MAGIC(self)
 			);
 		}
 
@@ -55,9 +53,8 @@ theirs(self)
 		RETVAL = &PL_sv_undef;
 
 		if (conflict -> theirs) {
-			GIT_NEW_OBJ_WITH_MAGIC(
-				RETVAL, "Git::Raw::Index::Entry",
-				(Index_Entry) conflict -> theirs, GIT_SV_TO_MAGIC(self)
+			RETVAL = git_index_entry_to_sv(
+				conflict -> theirs, NULL, GIT_SV_TO_MAGIC(self)
 			);
 		}
 
@@ -72,5 +69,9 @@ DESTROY(self)
 
 	CODE:
 		conflict = GIT_SV_TO_PTR(Index::Conflict, self);
+		git_index_entry_free(conflict -> ours);
+		git_index_entry_free(conflict -> theirs);
+		git_index_entry_free(conflict -> ancestor);
+
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
 		Safefree(conflict);

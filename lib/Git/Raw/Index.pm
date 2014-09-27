@@ -116,9 +116,18 @@ C<%checkout_opts> values.
 
 Retrieve index entries. Returns a list of L<Git::Raw::Index::Entry> objects.
 
-=head2 remove_conflict( $file )
+=head2 add_conflict( $ancestor, $theirs, $ours)
 
-Remove C<$file> from the index.
+Add a new conflict entry. C<$ancestor>, C<$theirs> and C<$ours> should be
+L<Git::Raw::Index::Entry> objects.
+
+=head2 get_conflict( $path )
+
+Remove conflict entries for C<$path>.
+
+=head2 remove_conflict( $path )
+
+Remove C<$path> from the index.
 
 =head2 has_conflicts( )
 
@@ -132,6 +141,54 @@ Remove all conflicts in the index (entries with a stage greater than 0).
 
 Retrieve index entries that represent a conflict. Returns a list of
 L<Git::Raw::Index::Conflict> objects.
+
+=head2 merge( $ancestor, $theirs, $ours, [\%merge_opts] )
+
+Merge two files as they exist in the index. C<$ancestor>, C<$theirs> and
+C<$ours> should be L<Git::Raw::Index::Entry> objects. Returns a
+L<Git::Raw::Merge::File::Result> object. Valid fields for the C<%merge_opts>
+hash are:
+
+=over 4
+
+=item * "our_label"
+
+The name of the "our" side of conflicts.
+
+=item * "their_label"
+
+The name of the "their" side of conflicts.
+
+=item * "ancestor_label"
+
+The name of the common ancestor side of conflicts.
+
+=item * "favor"
+
+Specify content automerging behaviour. Valid values are C<"ours">, C<"theirs">,
+and C<"union">.
+
+=item * "flags"
+
+Merge file flags. Valid values include:
+
+=over 8
+
+=item * "merge"
+
+Create standard conflicted merge file.
+
+=item * "diff3"
+
+Create diff3-style files.
+
+=item * "simplify_alnum"
+
+Condense non-alphanumeric regions for simplified diff file.
+
+=back
+
+=back
 
 =head2 update_all( \%opts )
 

@@ -145,9 +145,42 @@ isa_ok $our_entry -> blob, 'Git::Raw::Blob';
 isa_ok $their_entry, 'Git::Raw::Index::Entry';
 isa_ok $their_entry -> blob, 'Git::Raw::Blob';
 
+my $merge_result = $index -> merge ($ancestor_entry,
+	$their_entry, $our_entry, {
+		'ancestor_label' => 'test1',
+		'our_label'      => 'HEAD',
+		'their_label'    => 'branch2',
+		'flags'          => {
+			'merge' => 1
+		}
+});
+isa_ok $merge_result, 'Git::Raw::Merge::File::Result';
+is $merge_result -> automergeable, 0;
+is $merge_result -> path, $ancestor_entry -> path;
+is $merge_result -> path, $our_entry -> path;
+is $merge_result -> path, $their_entry -> path;
+
+$content = read_file($file1);
+is $merge_result -> content, $content;
+
 is $ancestor_entry -> path, 'test1';
 is $our_entry -> path, 'test1';
 is $their_entry -> path, 'test1';
+
+my $dup = $ancestor_entry -> clone('test1.cloned');
+isa_ok $dup, 'Git::Raw::Index::Entry';
+is $dup -> path, 'test1.cloned';
+is $dup -> id, $ancestor_entry -> id;
+
+$merge_result = $index -> merge ($ancestor_entry,
+	$their_entry, $our_entry, {
+		'favor' => 'ours'
+});
+is $merge_result -> automergeable, 1;
+
+$merge_result = eval { $index -> merge ($ancestor_entry,
+	$their_entry, $our_entry, { 'favor' => 'blah' }) };
+is $merge_result, undef;
 
 is length($ancestor_entry -> id), 40;
 is length($our_entry -> id), 40;
@@ -156,6 +189,17 @@ is length($their_entry -> id), 40;
 ok $ancestor_entry -> id ne $our_entry -> id;
 ok $ancestor_entry -> id ne $their_entry -> id;
 ok $our_entry -> id ne $their_entry -> id;
+
+$index -> remove_conflict('test1');
+is $index -> has_conflicts, 0;
+
+$index -> add_conflict($ancestor_entry, $their_entry, $our_entry);
+is $index -> has_conflicts, 1;
+$conflict = $index -> get_conflict('test1');
+isa_ok $conflict, 'Git::Raw::Index::Conflict';
+is $conflict -> ancestor -> id, $ancestor_entry -> id;
+is $conflict -> ours -> id, $our_entry -> id;
+is $conflict -> theirs -> id, $their_entry -> id;
 
 $index -> remove_conflict('test1');
 is $index -> has_conflicts, 0;

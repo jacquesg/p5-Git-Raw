@@ -37,6 +37,24 @@ stage(self)
 	OUTPUT: RETVAL
 
 SV *
+clone(self, path)
+	SV *self
+	const char *path
+
+	PREINIT:
+		Index_Entry old_entry;
+
+	CODE:
+		old_entry = GIT_SV_TO_PTR(Index::Entry, self);
+
+		RETVAL = git_index_entry_to_sv(
+			old_entry, path,
+			GIT_SV_TO_MAGIC(self)
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 blob(self)
 	SV *self
 
@@ -58,7 +76,8 @@ blob(self)
 		RETVAL = &PL_sv_undef;
 
 		rc = git_blob_lookup(
-			&blob, repo_ptr -> repository, &entry -> id
+			&blob, repo_ptr -> repository,
+			&entry -> id
 		);
 		if (rc != GIT_ENOTFOUND) {
 			git_check_error(rc);
@@ -73,5 +92,11 @@ void
 DESTROY(self)
 	SV* self
 
+	PREINIT:
+		Index_Entry entry;
+
 	CODE:
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+
+		entry = GIT_SV_TO_PTR(Index::Entry, self);
+		git_index_entry_free(entry);

@@ -127,6 +127,7 @@ typedef git_diff_hunk * Diff_Hunk;
 typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
+typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 typedef git_patch * Patch;
 typedef git_pathspec * PathSpec;
@@ -143,9 +144,9 @@ typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
 
 typedef struct {
-	const git_index_entry *ours;
-	const git_index_entry *ancestor;
-	const git_index_entry *theirs;
+	git_index_entry *ours;
+	git_index_entry *ancestor;
+	git_index_entry *theirs;
 } git_raw_index_conflict;
 
 typedef git_raw_index_conflict * Index_Conflict;
@@ -340,6 +341,49 @@ STATIC void croak_resolve(const char *pat, ...) {
 	va_end(list);
 
 	croak_error_obj(e);
+}
+
+STATIC git_index_entry *git_index_entry_dup(const git_index_entry *entry,
+	const char *new_path)
+{
+	git_index_entry *new_entry = NULL;
+
+	if (entry) {
+		Newxz(new_entry, 1, git_index_entry);
+		StructCopy(entry, new_entry, git_index_entry);
+
+		if (new_path)
+			new_entry -> path = savepv(new_path);
+		else
+			new_entry -> path = savepv(entry -> path);
+	}
+
+	return new_entry;
+}
+
+STATIC void git_index_entry_free(git_index_entry *entry)
+{
+	if (entry) {
+		Safefree(entry -> path);
+		Safefree(entry);
+	}
+}
+
+STATIC SV *git_index_entry_to_sv(const git_index_entry *index_entry, const char *path, SV *repo) {
+	SV *ie = &PL_sv_undef;
+
+	if (index_entry) {
+		git_index_entry *entry = NULL;
+
+		if ((entry = git_index_entry_dup(index_entry, path))) {
+			GIT_NEW_OBJ_WITH_MAGIC(
+				ie, "Git::Raw::Index::Entry",
+				entry, repo
+			);
+		}
+	}
+
+	return ie;
 }
 
 STATIC SV *git_obj_to_sv(git_object *o, SV *repo) {
@@ -1822,6 +1866,49 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 		merge_options -> target_limit = SvIV(opt);
 }
 
+STATIC unsigned git_hv_to_merge_file_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "merge", GIT_MERGE_FILE_STYLE_MERGE, &out);
+	git_flag_opt(flags, "diff3", GIT_MERGE_FILE_STYLE_DIFF3, &out);
+	git_flag_opt(flags, "simplify_alnum", GIT_MERGE_FILE_SIMPLIFY_ALNUM, &out);
+
+	return out;
+}
+
+STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_options) {
+	AV *lopt;
+	HV *hopt;
+	SV *opt;
+
+	if ((hopt = git_hv_hash_entry(opts, "flags")))
+		merge_options -> flags |= git_hv_to_merge_file_flag(hopt);
+
+	if ((opt = git_hv_string_entry(opts, "favor"))) {
+		const char *favor = SvPVbyte_nolen(opt);
+		if (strcmp(favor, "ours") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_OURS;
+		else if (strcmp(favor, "theirs") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_THEIRS;
+		else if (strcmp(favor, "union") == 0)
+			merge_options -> favor =
+				GIT_MERGE_FILE_FAVOR_UNION;
+		else
+			croak_usage("Invalid 'favor' value");
+	}
+
+	if ((opt = git_hv_string_entry(opts, "ancestor_label")))
+		merge_options -> ancestor_label = SvPVbyte_nolen(opt);
+
+	if ((opt = git_hv_string_entry(opts, "our_label")))
+		merge_options -> our_label = SvPVbyte_nolen(opt);
+
+	if ((opt = git_hv_string_entry(opts, "their_label")))
+		merge_options -> their_label = SvPVbyte_nolen(opt);
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
@@ -1916,6 +2003,7 @@ INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
+INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs

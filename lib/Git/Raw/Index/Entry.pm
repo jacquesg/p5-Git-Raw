@@ -38,6 +38,12 @@ Retrieve the stage number for the index entry.
 
 Retrieve the blob for the the index entry. Returns a L<Git::Raw::Blob> object.
 
+=head2 clone( $path )
+
+Clone the entry, but use C<$path> as the entry's path. B<WARNING>: Use with
+caution. This is only useful for scenarios where a conflict entry should be
+added to the index where C<$path> should be used.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

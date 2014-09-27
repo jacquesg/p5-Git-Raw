@@ -11,8 +11,10 @@ add(self, entry)
 	CODE:
 		if (SvPOK(entry))
 			rc = git_index_add_bypath(self, SvPVbyte_nolen(entry));
-		else
-			rc = git_index_add(self, GIT_SV_TO_PTR(Index::Entry, entry));
+		else {
+			Index_Entry e = GIT_SV_TO_PTR(Index::Entry, entry);
+			rc = git_index_add(self, e);
+		}
 
 		git_check_error(rc);
 
@@ -158,18 +160,58 @@ find(self, path)
 
 		rc = git_index_find(&pos, index, git_ensure_pv(path, "path"));
 		if (rc != GIT_ENOTFOUND) {
-			const git_index_entry *e = NULL;
-
 			git_check_error(rc);
-			if ((e = git_index_get_byindex(index, pos)) != NULL) {
-				SV *repo = GIT_SV_TO_MAGIC(self);
 
-				GIT_NEW_OBJ_WITH_MAGIC(
-					RETVAL, "Git::Raw::Index::Entry",
-					(Index_Entry) e, repo
-				);
-			}
+			RETVAL = git_index_entry_to_sv(
+				git_index_get_byindex(index, pos), NULL,
+				GIT_SV_TO_MAGIC(self)
+			);
 		}
+
+	OUTPUT: RETVAL
+
+SV *
+merge(self, ancestor, theirs, ours, ...)
+	SV *self
+	Index_Entry ancestor
+	Index_Entry theirs
+	Index_Entry ours
+
+	PROTOTYPE: $$$$;$
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		Repository repo_ptr;
+
+		git_merge_file_options options = GIT_MERGE_FILE_OPTIONS_INIT;
+		Merge_File_Result result = NULL;
+
+	CODE:
+		if (items == 5 && SvOK(ST(4))) {
+			HV *opts = git_ensure_hv(ST(4), "merge_opts");
+			git_hv_to_merge_file_opts(opts, &options);
+		}
+
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		Newxz(result, 1, git_merge_file_result);
+
+		rc = git_merge_file_from_index(result, repo_ptr -> repository,
+			ancestor,
+			ours,
+			theirs,
+			&options);
+		if (rc != GIT_OK) {
+			Safefree(result);
+			git_check_error(rc);
+		}
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Merge::File::Result",
+			(Merge_File_Result) result, repo
+		);
 
 	OUTPUT: RETVAL
 
@@ -288,21 +330,67 @@ entries(self)
 			SV *repo = GIT_SV_TO_MAGIC(self);
 
 			for (i = 0; i < count; ++i) {
-				const git_index_entry *e =
-					git_index_get_byindex(index_ptr, i);
-
-				if (e != NULL) {
-					SV *entry = NULL;
-					GIT_NEW_OBJ_WITH_MAGIC(
-						entry, "Git::Raw::Index::Entry",
-						(Index_Entry) e, repo
-					);
-					mXPUSHs(entry);
-				}
+				SV *entry = git_index_entry_to_sv(
+					git_index_get_byindex(index_ptr, i), NULL, repo);
+				mXPUSHs(entry);
 			}
 		}
 
 		XSRETURN(count);
+
+void
+add_conflict(self, ancestor, theirs, ours)
+	Index self
+	Index_Entry ancestor
+	Index_Entry theirs
+	Index_Entry ours
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_index_conflict_add(self,
+			ancestor, ours, theirs
+		);
+		git_check_error(rc);
+
+SV *
+get_conflict(self, path)
+	SV *self
+	SV *path
+
+	PREINIT:
+		int rc;
+
+		Index index;
+		const git_index_entry *ancestor, *ours, *theirs;
+		Index_Conflict conflict = NULL;
+
+	CODE:
+		index = GIT_SV_TO_PTR(Index, self);
+
+		rc = git_index_conflict_get(
+			&ancestor, &ours, &theirs,
+			index, git_ensure_pv(path, "path")
+		);
+
+		RETVAL = &PL_sv_undef;
+		if (rc != GIT_ENOTFOUND) {
+			git_check_error(rc);
+
+			Newxz(conflict, 1, git_raw_index_conflict);
+
+			conflict -> ancestor = git_index_entry_dup(ancestor, NULL);
+			conflict -> ours = git_index_entry_dup(ours, NULL);
+			conflict -> theirs = git_index_entry_dup(theirs, NULL);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				RETVAL, "Git::Raw::Index::Conflict",
+				conflict, GIT_SV_TO_MAGIC(self)
+			);
+		}
+
+	OUTPUT: RETVAL
 
 void
 remove_conflict(self, path)
@@ -313,7 +401,9 @@ remove_conflict(self, path)
 		int rc;
 
 	CODE:
-		rc = git_index_conflict_remove(self, SvPVbyte_nolen(path));
+		rc = git_index_conflict_remove(self,
+			git_ensure_pv(path, "path")
+		);
 		git_check_error(rc);
 
 void
@@ -360,9 +450,9 @@ conflicts(self)
 			Index_Conflict conflict = NULL;
 			Newxz(conflict, 1, git_raw_index_conflict);
 
-			conflict -> ancestor = ancestor;
-			conflict -> ours = ours;
-			conflict -> theirs = theirs;
+			conflict -> ancestor = git_index_entry_dup(ancestor, NULL);
+			conflict -> ours = git_index_entry_dup(ours, NULL);
+			conflict -> theirs = git_index_entry_dup(theirs, NULL);
 
 			GIT_NEW_OBJ_WITH_MAGIC(
 				c, "Git::Raw::Index::Conflict",

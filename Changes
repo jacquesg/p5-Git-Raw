@@ -6,6 +6,16 @@ Revision history for Git-Raw
  - Stash -> save() now returns a Commit object (GH#145) (Incompatible change)
  - Stash -> foreach()'s callback now receives a Commit object instead of the
    object id (GH#145) (Incompatible change)
+ - Added Index methods (Beta) (GH#146):
+    + add_conflict
+    + get_conflict
+    + merge
+ - Added Index::Entry methods (Beta) (GH#146):
+    + clone
+ - Added Merge::File::Result methods (Beta) (GH#146):
+    + automergeable
+    + content
+    + path
 
 0.46      2014-09-19 12:42:13+02:00 Africa/Johannesburg
 
