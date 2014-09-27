@@ -86,10 +86,6 @@ owner(self)
 
 	CODE:
 		repo = GIT_SV_TO_MAGIC(self);
-
-		if (!repo)
-			croak_assert("No owner attached");
-
 		RETVAL = newRV_inc(repo);
 
 	OUTPUT: RETVAL
@@ -195,6 +191,8 @@ tagger(self)
 		Signature tagger, result;
 
 	CODE:
+		RETVAL = &PL_sv_undef;
+
 		if ((tagger = (Signature) git_tag_tagger(self)) != NULL) {
 			rc = git_signature_dup(&result, tagger);
 			git_check_error(rc);
@@ -202,8 +200,7 @@ tagger(self)
 			GIT_NEW_OBJ(
 				RETVAL, "Git::Raw::Signature", result
 			);
-		} else
-			RETVAL = &PL_sv_undef;
+		}
 
 	OUTPUT: RETVAL
 

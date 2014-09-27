@@ -50,10 +50,6 @@ owner(self)
 
 	CODE:
 		repo = GIT_SV_TO_MAGIC(self);
-
-		if (!repo)
-			croak_assert("No owner attached");
-
 		RETVAL = newRV_inc(repo);
 
 	OUTPUT: RETVAL
