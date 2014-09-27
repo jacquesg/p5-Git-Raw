@@ -3,12 +3,12 @@
 use Test::More;
 
 use Git::Raw;
-use File::Spec;
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
 use File::Path qw(make_path);
 use Cwd qw(abs_path);
 
-my $path = abs_path('t').'/test_repo';
+my $path = rel2abs(catfile('t/test_repo'));
 my $repo = Git::Raw::Repository -> init($path, 0);
 
 mkdir "$path/subdir" or die "Can't create subdir: $!";
@@ -205,7 +205,7 @@ isnt -f '.testconfig', 1;
 is $repo -> state, "none";
 is $repo -> is_head_detached, 0;
 
-my $commit_msg_file = File::Spec->catfile($repo -> path, 'MERGE_MSG');
+my $commit_msg_file = catfile($repo -> path, 'MERGE_MSG');
 ok (open HANDLE, ">$commit_msg_file");
 ok (close HANDLE);
 
@@ -213,7 +213,7 @@ $repo -> state_cleanup;
 isnt -f $commit_msg_file, 1;
 is $repo -> state, "none";
 
-my $revert_head_file = File::Spec->catfile($repo -> path, 'REVERT_HEAD');
+my $revert_head_file = catfile($repo -> path, 'REVERT_HEAD');
 ok (open HANDLE, ">$revert_head_file");
 ok (close HANDLE);
 
@@ -222,7 +222,7 @@ $repo -> state_cleanup;
 isnt -f $revert_head_file, 1;
 is $repo -> state, "none";
 
-my $merge_head_file = File::Spec->catfile($repo -> path, 'MERGE_HEAD');
+my $merge_head_file = catfile($repo -> path, 'MERGE_HEAD');
 ok (open HANDLE, ">$merge_head_file");
 ok (close HANDLE);
 
@@ -231,7 +231,7 @@ $repo -> state_cleanup;
 isnt -f $merge_head_file, 1;
 is $repo -> state, "none";
 
-my $cherry_pick_head_file = File::Spec->catfile($repo -> path, 'CHERRY_PICK_HEAD');
+my $cherry_pick_head_file = catfile($repo -> path, 'CHERRY_PICK_HEAD');
 ok (open HANDLE, ">$cherry_pick_head_file");
 ok (close HANDLE);
 
@@ -240,7 +240,7 @@ $repo -> state_cleanup;
 isnt -f $cherry_pick_head_file, 1;
 is $repo -> state, "none";
 
-my $bisect_log_file = File::Spec->catfile($repo -> path, 'BISECT_LOG');
+my $bisect_log_file = catfile($repo -> path, 'BISECT_LOG');
 ok (open HANDLE, ">$bisect_log_file");
 ok (close HANDLE);
 
@@ -249,8 +249,8 @@ $repo -> state_cleanup;
 isnt -f $bisect_log_file, 1;
 is $repo -> state, "none";
 
-my $rebase_merge_dir = File::Spec->catfile($repo -> path, 'rebase-merge');
-my $rebase_apply_dir = File::Spec->catfile($repo -> path, 'rebase-apply');
+my $rebase_merge_dir = catfile($repo -> path, 'rebase-merge');
+my $rebase_apply_dir = catfile($repo -> path, 'rebase-apply');
 
 make_path($rebase_merge_dir);
 is $repo -> state, "rebase_merge";
@@ -264,7 +264,7 @@ $repo -> state_cleanup;
 isnt -e $rebase_apply_dir, 1;
 is $repo -> state, "none";
 
-my $rebase_rebasing_file = File::Spec->catfile($rebase_apply_dir, 'rebasing');
+my $rebase_rebasing_file = catfile($rebase_apply_dir, 'rebasing');
 make_path($rebase_apply_dir);
 ok (open HANDLE, ">$rebase_rebasing_file");
 ok (close HANDLE);
@@ -274,7 +274,7 @@ $repo -> state_cleanup;
 isnt -f $rebase_rebasing_file, 1;
 is $repo -> state, "none";
 
-my $rebase_applying_file = File::Spec->catfile($rebase_apply_dir, 'applying');
+my $rebase_applying_file = catfile($rebase_apply_dir, 'applying');
 make_path($rebase_apply_dir);
 ok (open HANDLE, ">$rebase_applying_file");
 ok (close HANDLE);
@@ -284,7 +284,7 @@ $repo -> state_cleanup;
 isnt -f $rebase_applying_file, 1;
 is $repo -> state, "none";
 
-my $rebase_interactive_file = File::Spec->catfile($rebase_merge_dir, 'interactive');
+my $rebase_interactive_file = catfile($rebase_merge_dir, 'interactive');
 make_path($rebase_merge_dir);
 ok (open HANDLE, ">$rebase_interactive_file");
 ok (close HANDLE);

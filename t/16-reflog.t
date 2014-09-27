@@ -59,7 +59,6 @@ is $entries[0] -> committer -> offset, $entries[1] -> committer -> offset;
 
 my $name  = 'Committer';
 my $email = 'committer@example.com';
-
 my $time = time();
 my $off  = 120;
 my $me   = Git::Raw::Signature -> new($name, $email, $time, $off);
@@ -70,9 +69,6 @@ $reflog -> write;
 is scalar(@entries), 3;
 is $entries[0] -> committer -> name, $name;
 is $entries[0] -> committer -> email, $email;
-ok ($entries[0] -> committer -> time <= $time + 2);
-ok ($entries[0] -> committer -> time >= $time - 2);
-is $entries[0] -> committer -> offset, $off;
 
 $reflog -> drop (1);
 $reflog -> write;
