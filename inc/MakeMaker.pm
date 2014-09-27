@@ -107,7 +107,7 @@ while (my ($library, $test) = each %library_tests) {
 			my ($link_dir, $link_lib) = (dirname($user_lib), basename($user_lib));
 
 			if (!$is_msvc) {
-				my @tokens = grep { $_ } split(/(lib|.)/, $link_lib);
+				my @tokens = grep { $_ } split(/(lib|\.)/, $link_lib);
 				shift @tokens if ($tokens[0] eq 'lib');
 				$link_lib = shift @tokens;
 			}
