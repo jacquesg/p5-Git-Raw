@@ -1422,7 +1422,21 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		const char *usr_from_url, unsigned int allow, void *cbs) {
 	dSP;
 	int rv = 0;
+	AV *types = newAV();
 	Cred creds;
+
+	if (allow & GIT_CREDTYPE_USERPASS_PLAINTEXT)
+		av_push(types, newSVpv("userpass_plaintext", 0));
+	if (allow & GIT_CREDTYPE_SSH_KEY)
+		av_push(types, newSVpv("ssh_key", 0));
+	if (allow & GIT_CREDTYPE_SSH_CUSTOM)
+		av_push(types, newSVpv("ssh_custom", 0));
+	if (allow & GIT_CREDTYPE_DEFAULT)
+		av_push(types, newSVpv("default", 0));
+	if (allow & GIT_CREDTYPE_SSH_INTERACTIVE)
+		av_push(types, newSVpv("ssh_interactive", 0));
+	if (allow & GIT_CREDTYPE_USERNAME)
+		av_push(types, newSVpv("username", 0));
 
 	ENTER;
 	SAVETMPS;
@@ -1430,6 +1444,7 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	PUSHMARK(SP);
 	mXPUSHs(newSVpv(url, 0));
 	mXPUSHs(newSVpv(usr_from_url, 0));
+	mXPUSHs(newRV_noinc((SV *)types));
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
@@ -1437,11 +1452,15 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		rv = -1;
+		rv = GIT_PASSTHROUGH;
 		(void) POPs;
 	} else {
-		creds = GIT_SV_TO_PTR(Cred, POPs);
-		*cred = creds -> cred;
+		SV *c = POPs;
+		if (SvOK(c)) {
+			creds = GIT_SV_TO_PTR(Cred, c);
+			*cred = creds -> cred;
+		} else
+			rv = GIT_PASSTHROUGH;
 	}
 
 	FREETMPS;
@@ -1487,7 +1506,7 @@ STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *
 		const char *response = SvPV(r, len);
 		int index = num_prompts - i;
 
-		New(0, responses[index].text, len, char);
+		Newxz(responses[index].text, len, char);
 		Copy(response, responses[index].text, len, char);
 		responses[index].length = len;
 	}

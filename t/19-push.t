@@ -103,7 +103,10 @@ my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
 
 my $credentials = sub {
-	my ($url, $user) = @_;
+	my ($url, $user, $types) = @_;
+
+	is ref($types), 'ARRAY';
+	is scalar(grep { $_ eq 'ssh_key' } @$types), 1;
 
 	my $ssh_dir = File::Spec -> catfile($ENV{HOME}, '.ssh');
 	ok -e $ssh_dir;
