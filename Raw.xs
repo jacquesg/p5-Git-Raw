@@ -53,6 +53,7 @@
 #define ELOCKED           GIT_ELOCKED
 #define EMODIFIED         GIT_EMODIFIED
 #define EAUTH             GIT_EAUTH
+#define ECERTIFICATE      GIT_ECERTIFICATE
 #define PASSTHROUGH       GIT_PASSTHROUGH
 #define ITEROVER          GIT_ITEROVER
 
