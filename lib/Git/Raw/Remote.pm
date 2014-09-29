@@ -149,7 +149,39 @@ The local OID of the reference (optional).
 
 The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string C<$url> containing the URL of
-the remote, and it must return a L<Git::Raw::Cred> object.
+the remote, the C<$user> extracted from the URL and a list of supported
+authentication C<$types>. The callback should return either a L<Git::Raw::Cred>
+object or alternatively C<undef> to abort the authentication process. B<Note:>
+this callback may be invoked more than once. C<$types> may contain one or more
+of the following:
+
+=over 8
+
+=item * "userpass_plaintext"
+
+Plaintext username and password.
+
+=item * "ssh_key"
+
+A SSH key from disk
+
+=item * "ssh_custom"
+
+A SSH key with a custom signature function.
+
+=item * "ssh_interactive"
+
+Keyboard-interactive based SSH authentication
+
+=item * "username"
+
+Username-only credential information.
+
+=item * "default"
+
+A key for NTLM/Kerberos default credentials.
+
+=back
 
 =item * "sideband_progress"
 

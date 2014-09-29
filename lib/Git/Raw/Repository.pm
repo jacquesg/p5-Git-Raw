@@ -75,34 +75,24 @@ with a remote name other than 'origin', this callback should be used. The callba
 receives a L<Git::Raw::Repository> object, a string containing the default name
 for the remote, typically 'origin', and a string containing the URL of the remote.
 This callbacks should return a L<Git::Raw::Remote> object. The returned object and
-the the repository object passed to this callback is ephemeral. Do not take any
+the repository object passed to this callback is ephemeral. B<Note:> Do not take any
 references to it as it may be freed internally.
 
 =item * "credentials"
 
-The callback to be called any time authentication is required to connect to the
-remote repository. The callback receives a string containing the URL of the
-remote, and it must return a L<Git::Raw::Cred> object.
+See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
 
 =item * "sideband_progress"
 
-Textual progress from the remote. Text send over the progress side-band will be
-passed to this function (this is the 'counting objects' output). The callback
-receives a string containing progress information.
+See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
 
 =item * "transfer_progress"
 
-During the download of new data, this will be regularly called with the current
-count of progress done by the indexer. The callback receives the following
-integers: C<total_objects>, C<received_objects>, C<local_objects>,
-C<total_deltas>, C<indexed_deltas> and C<received_bytes>.
+See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
 
 =item * "update_tips"
 
-Each time a reference is updated locally, this function will be called with
-information about it. The callback receives a string containing the name of the
-reference that was updated, and the two OID's C<"a"> before and C<"b"> after the
-update.
+See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
 
 =back
 
