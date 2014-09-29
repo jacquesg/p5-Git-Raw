@@ -27,6 +27,8 @@ script:
  - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
  - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+ - sudo sed -i 's,ChallengeResponseAuthentication no,ChallengeResponseAuthentication yes,g' /etc/ssh/sshd_config
+ - sudo restart ssh
  - dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -test -report coveralls
 
 notifications:
