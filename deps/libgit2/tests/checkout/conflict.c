@@ -48,7 +48,7 @@ static git_index *g_index;
 
 struct checkout_index_entry {
 	uint16_t mode;
-	char oid_str[41];
+	char oid_str[GIT_OID_HEXSZ+1];
 	int stage;
 	char path[128];
 };
@@ -1078,8 +1078,8 @@ static void collect_progress(
 {
 	git_vector *paths = payload;
 
-	(void)completed_steps;
-	(void)total_steps;
+	GIT_UNUSED(completed_steps);
+	GIT_UNUSED(total_steps);
 
 	if (path == NULL)
 		return;
