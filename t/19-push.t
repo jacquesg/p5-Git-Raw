@@ -102,11 +102,29 @@ my $remote_path = File::Spec -> rel2abs('t/test_repo');
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
 
+my $challenge = sub {
+	my ($name, $instruction, @prompts) = @_;
+
+	is scalar(@prompts), 1;
+	my $prompt = shift @prompts;
+	like $prompt->{text}, qr/Password/;
+	is $prompt->{echo}, 0;
+	return ('blah');
+};
+
+my $tried_interactive = 0;
 my $credentials = sub {
 	my ($url, $user, $types) = @_;
 
 	is ref($types), 'ARRAY';
 	is scalar(grep { $_ eq 'ssh_key' } @$types), 1;
+	is scalar(grep { $_ eq 'ssh_custom' } @$types), 1;
+	is scalar(grep { $_ eq 'ssh_interactive' } @$types), 1;
+
+	if (!$tried_interactive) {
+		$tried_interactive = 1;
+		return Git::Raw::Cred -> sshinteractive($user, $challenge);
+	}
 
 	my $ssh_dir = File::Spec -> catfile($ENV{HOME}, '.ssh');
 	ok -e $ssh_dir;
