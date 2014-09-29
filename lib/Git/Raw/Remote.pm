@@ -95,10 +95,6 @@ updated and returned.
 Retrieve the push URL for the remote. If C<$url> is passed, the remote's push
 URL will be updated and returned.
 
-=head2 check_cert( $value )
-
-Set whether to check the server's certificate (applies to HTTPS only).
-
 =head2 add_fetch( $spec )
 
 Add a fetch spec to the remote.

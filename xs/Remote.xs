@@ -305,14 +305,6 @@ refspec_count(self)
 	OUTPUT: RETVAL
 
 void
-check_cert(self, value)
-	Remote self
-	SV *value
-
-	CODE:
-		git_remote_check_cert(self -> remote, git_ensure_iv(value, "value"));
-
-void
 fetch(self)
 	Remote self
 
