@@ -412,6 +412,10 @@ callbacks(self, callbacks)
 			get_callback_option(callbacks, "credentials")))
 			rcallbacks.credentials = git_credentials_cbb;
 
+		if ((remote -> callbacks.certificate_check =
+			get_callback_option(callbacks, "certificate_check")))
+			rcallbacks.certificate_check = git_certificate_check_cbb;
+
 		if ((remote -> callbacks.progress =
 			get_callback_option(callbacks, "sideband_progress")))
 			rcallbacks.sideband_progress = git_progress_cbb;

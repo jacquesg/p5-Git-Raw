@@ -70,6 +70,11 @@ clone(class, url, path, opts)
 				clone_opts.remote_callbacks.credentials =
 					git_credentials_cbb;
 
+			if ((cbs.certificate_check =
+				get_callback_option(callbacks, "certificate_check")))
+				clone_opts.remote_callbacks.certificate_check =
+					git_certificate_check_cbb;
+
 			if ((cbs.progress =
 				get_callback_option(callbacks, "sideband_progress")))
 				clone_opts.remote_callbacks.sideband_progress =

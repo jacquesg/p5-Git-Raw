@@ -97,6 +97,7 @@
 typedef struct {
 	SV *progress;
 	SV *credentials;
+	SV *certificate_check;
 	SV *transfer_progress;
 	SV *update_tips;
 } git_raw_remote_callbacks;
@@ -119,6 +120,9 @@ typedef git_blame * Blame;
 typedef git_blame_hunk * Blame_Hunk;
 typedef git_blob * Blob;
 typedef git_reference * Branch;
+typedef git_cert * Cert;
+typedef git_cert_hostkey * Cert_HostKey;
+typedef git_cert_x509 * Cert_X509;
 typedef git_commit * Commit;
 typedef git_config * Config;
 typedef git_diff * Diff;
@@ -524,6 +528,7 @@ on_error:
 
 STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	cbs -> credentials = NULL;
+	cbs -> certificate_check = NULL;
 	cbs -> progress = NULL;
 	cbs -> transfer_progress = NULL;
 	cbs -> update_tips = NULL;
@@ -533,6 +538,11 @@ STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	if (cbs -> credentials) {
 		SvREFCNT_dec(cbs -> credentials);
 		cbs -> credentials = NULL;
+	}
+
+	if (cbs -> certificate_check) {
+		SvREFCNT_dec(cbs -> certificate_check);
+		cbs -> certificate_check = NULL;
 	}
 
 	if (cbs -> progress) {
@@ -1470,6 +1480,49 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	return rv;
 }
 
+STATIC int git_certificate_check_cbb(git_cert *cert, int valid, void *cbs) {
+	dSP;
+	int rv = 0;
+	SV *obj = NULL;
+
+	if (cert -> cert_type == GIT_CERT_X509) {
+		git_cert_x509 *x509 = (git_cert_x509 *) cert;
+
+		GIT_NEW_OBJ(
+			obj, "Git::Raw::Cert::X509", (void *) x509
+		);
+	} else if (cert -> cert_type == GIT_CERT_HOSTKEY_LIBSSH2) {
+		git_cert_hostkey *ssh = (git_cert_hostkey *) cert;
+
+		GIT_NEW_OBJ(
+			obj, "Git::Raw::Cert::HostKey", (void *) ssh
+		);
+	}
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(obj);
+	mXPUSHs(newSViv(valid));
+	PUTBACK;
+
+	call_sv(((git_raw_remote_callbacks *) cbs) -> certificate_check, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else
+		rv = POPi;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
 STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *instruction, int instruction_len,
 			int num_prompts, const LIBSSH2_USERAUTH_KBDINT_PROMPT *prompts, LIBSSH2_USERAUTH_KBDINT_RESPONSE *responses, void **abstract) {
 	dSP;
@@ -2007,6 +2060,9 @@ INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs
 INCLUDE: xs/Blob.xs
 INCLUDE: xs/Branch.xs
+INCLUDE: xs/Cert.xs
+INCLUDE: xs/Cert/HostKey.xs
+INCLUDE: xs/Cert/X509.xs
 INCLUDE: xs/Commit.xs
 INCLUDE: xs/Config.xs
 INCLUDE: xs/Cred.xs
