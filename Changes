@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.47      2014-09-30 13:06:48+02:00 Africa/Johannesburg
+
  - Added support for Notes (GH#144)
  - Stash -> save() now returns a Commit object (GH#145) (Incompatible change)
  - Stash -> foreach()'s callback now receives a Commit object instead of the
