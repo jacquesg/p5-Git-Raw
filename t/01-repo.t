@@ -3,12 +3,13 @@
 use Test::More;
 
 use Git::Raw;
-use File::Spec::Functions qw(catfile rel2abs);
+use File::Spec::Unix;
+use File::Spec::Functions qw(catfile);
 use File::Slurp::Tiny qw(write_file);
 use File::Path qw(make_path);
 use Cwd qw(abs_path);
 
-my $path = rel2abs(catfile('t/test_repo'));
+my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t/test_repo'));
 my $repo = Git::Raw::Repository -> init($path, 0);
 
 mkdir "$path/subdir" or die "Can't create subdir: $!";
