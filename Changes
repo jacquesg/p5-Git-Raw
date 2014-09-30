@@ -21,6 +21,7 @@ Revision history for Git-Raw
  - Update libgit2 to 4c53489 (GH#147)
  - Removed Remote methods (GH#147) (Incompatible change):
     + check_cert()
+ - Added Remote certificate callback (GH#148)
 
 0.46      2014-09-19 12:42:13+02:00 Africa/Johannesburg
 

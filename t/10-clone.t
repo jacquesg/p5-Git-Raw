@@ -195,13 +195,63 @@ rmtree abs_path('t/test_repo_clone_callbacks');
 rmtree abs_path('t/test_repo_disable_checkout');
 rmtree abs_path('t/test_repo_remote_name');
 
+
+my %features = Git::Raw -> features;
+if ($features{'https'} == 0) {
+	diag("HTTPS support not available, skipping HTTPS clone tests");
+	done_testing;
+	exit;
+}
+
+$url = 'https://github.com/libgit2/TestGitRepository.git';
+$path = File::Spec -> rel2abs('t/test_repo_clone');
+
+my ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
+$repo = Git::Raw::Repository -> clone($url, $path, {
+	'callbacks' => {
+		'certificate_check' => sub {
+			my ($cert, $valid) = @_;
+			$certificate_check_fired = 1;
+
+			isa_ok $cert, 'Git::Raw::Cert';
+			isa_ok $cert, 'Git::Raw::Cert::X509';
+			is $cert -> type, 'x509';
+
+			my $data = $cert -> data;
+			ok (length($data) > 0);
+
+			is $valid, 1;
+
+			1;
+		},
+		'update_tips' => sub {
+			my ($ref, $a, $b) = @_;
+			$update_tips_fired = 1;
+
+			like $ref, qr/refs/;
+			ok !defined($a);
+			ok defined($b);
+		}
+	}
+});
+
+ok !$repo -> is_empty;
+
+is $credentials_fired, 0;
+is $certificate_check_fired, 1;
+is $update_tips_fired, 1;
+
+$repo = undef;
+
+rmtree abs_path('t/test_repo_clone');
+
+
 if ($^O eq 'MSWin32') {
 	diag("Windows doesn't have a SSH server, skipping SSH clone tests");
 	done_testing;
 	exit;
 }
 
-my %features = Git::Raw -> features;
 if ($features{'ssh'} == 0) {
 	diag("SSH support not available, skipping SSH clone tests");
 	done_testing;
@@ -299,12 +349,13 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 rmtree $path;
 ok ! -e $path;
 
-my ($credentials_fired, $update_tips_fired) = (0, 0);
+($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
 $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 	'checkout_branch' => 'master',
 	'callbacks' => {
 		'credentials' => sub {
 			my ($url, $user) = @_;
+			$credentials_fired = 1;
 
 			my $ssh_dir = File::Spec -> catfile($ENV{HOME}, '.ssh');
 			ok -e $ssh_dir;
@@ -317,25 +368,54 @@ $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 			is $user, $ENV{USER};
 			is $url, $remote_url;
 
-			$credentials_fired = 1;
 			return Git::Raw::Cred -> sshkey(
 				$user,
 				$public_key,
 				$private_key
 			);
 		},
+		'certificate_check' => sub {
+			my ($cert, $valid) = @_;
+			$certificate_check_fired = 1;
+
+			ok (defined($valid));
+
+			isa_ok $cert, 'Git::Raw::Cert';
+			isa_ok $cert, 'Git::Raw::Cert::HostKey';
+			is $cert -> type, 'hostkey';
+
+			$cert -> ssh_types;
+			my $type_count = $cert -> ssh_types;
+			is $type_count, 2;
+
+			my @types = $cert -> ssh_types;
+			is scalar(@types), 2;
+
+			is $types[0], 'md5';
+			is $types[1], 'sha1';
+
+			my $md5 = $cert -> md5;
+			is length($md5), 16;
+
+			my $sha1 = $cert -> sha1;
+			is length($sha1), 20;
+
+			1;
+		},
 		'update_tips' => sub {
 			my ($ref, $a, $b) = @_;
+			$update_tips_fired = 1;
+
 			like $ref, qr/refs/;
 			ok !defined($a);
 			ok defined($b);
-			$update_tips_fired = 1;
 		}
 	}
 });
 
 ok !$repo -> is_empty;
 is $credentials_fired, 1;
+is $certificate_check_fired, 1;
 is $update_tips_fired, 1;
 @remotes = $repo -> remotes;
 

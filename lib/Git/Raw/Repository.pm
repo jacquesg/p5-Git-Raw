@@ -82,6 +82,10 @@ references to it as it may be freed internally.
 
 See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
 
+=item * "certificate_check"
+
+See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
+
 =item * "sideband_progress"
 
 See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.

@@ -4,6 +4,9 @@ Blob					T_GIT_REF
 Branch					T_GIT_REF
 Commit					T_GIT_REF
 Config					T_GIT_REF
+Cert					T_GIT_REF
+Cert_HostKey			T_GIT_REF
+Cert_X509				T_GIT_REF
 Cred					T_GIT_REF
 Diff					T_GIT_REF
 Diff_Delta				T_GIT_REF

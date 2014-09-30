@@ -179,6 +179,13 @@ A key for NTLM/Kerberos default credentials.
 
 =back
 
+=item * "certificate_check"
+
+Callback to be invoked if cert verification fails. The callback receives a
+L<Git::Raw::Cert::X509> or L<Git::Raw::Cert::HostKey> object and a truthy
+value C<$is_valid>. This callback should return 1 to allow the connection to
+proceed or 0 to abort. Returning a negative number indicates an error.
+
 =item * "sideband_progress"
 
 Textual progress from the remote. Text sent over the progress side-band will be
