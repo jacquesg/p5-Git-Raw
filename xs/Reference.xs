@@ -180,9 +180,9 @@ target(self, ...)
 				new_ref, GIT_SV_TO_MAGIC(self)
 			);
 		} else {
-			RETVAL = &PL_sv_undef;
-
 			git_ref_t rt = git_reference_type(ref);
+
+			RETVAL = &PL_sv_undef;
 			switch (rt) {
 				case GIT_REF_OID: {
 					git_object *obj;
