@@ -1585,7 +1585,7 @@ STATIC int git_filter_init_cbb(git_filter *filter) {
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		rv = -1;
+		rv = GIT_EUSER;
 		(void) POPs;
 	} else {
 		rv = POPi;
@@ -1637,7 +1637,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		rv = -1;
+		rv = GIT_EUSER;
 		(void) POPs;
 	} else {
 		rv = POPi;
@@ -1675,7 +1675,7 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 	SPAGAIN;
 
 	if (SvTRUE(ERRSV)) {
-		rv = -1;
+		rv = GIT_EUSER;
 		(void) POPs;
 	} else {
 		rv = POPi;
