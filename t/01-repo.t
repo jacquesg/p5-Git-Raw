@@ -11,6 +11,7 @@ use Cwd qw(abs_path);
 
 my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t/test_repo'));
 my $repo = Git::Raw::Repository -> init($path, 0);
+isa_ok $repo, 'Git::Raw::Repository';
 
 mkdir "$path/subdir" or die "Can't create subdir: $!";
 my $disc = Git::Raw::Repository -> discover("$path/subdir");
