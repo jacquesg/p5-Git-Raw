@@ -69,17 +69,17 @@ if (my $os_params = $os_specific{$^O}) {
 	}
 }
 
-my %library_tests = (
-	'ssl' => {
-		'lib'     => 'ssl',
-		'header'  => 'openssl/opensslconf.h',
-	},
-	'ssh2' => {
+my @library_tests = (
+	{
 		'lib'     => 'ssh2',
 		'libpath' => $ssh2_libpath,
 		'incpath' => $ssh2_incpath,
 		'header'  => 'libssh2.h',
-	}
+	},
+	{
+		'lib'     => 'ssl',
+		'header'  => 'openssl/opensslconf.h',
+	},
 );
 
 my %library_opts = (
@@ -94,7 +94,8 @@ my %library_opts = (
 );
 
 # check for optional libraries
-while (my ($library, $test) = each %library_tests) {
+foreach my $test (@library_tests) {
+	my $library = $test->{lib};
 	my $user_library_opt = $opt->{$library};
 	my $user_incpath = $user_library_opt->{'incdir'};
 	my $user_libs = $user_library_opt->{'libs'};
