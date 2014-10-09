@@ -123,7 +123,8 @@ L<Git::Raw::Index::Entry> objects.
 
 =head2 get_conflict( $path )
 
-Remove conflict entries for C<$path>.
+Get the conflict entry for C<$path>. If C<$path> has no conflict entry,
+this function will return C<undef>.
 
 =head2 remove_conflict( $path )
 
