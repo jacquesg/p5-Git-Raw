@@ -15,6 +15,7 @@ Diff_Hunk				T_GIT_REF
 Diff_Stats				T_GIT_REF
 Error					T_GIT_REF
 Filter					T_GIT_REF
+Filter_List				T_GIT_REF
 Filter_Source			T_GIT_REF
 Index					T_GIT_REF
 Index_Conflict			T_GIT_REF

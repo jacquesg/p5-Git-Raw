@@ -2,7 +2,7 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Filter
 
 SV *
 create(class, name, attributes)
-	SV *class
+	const char *class
 	const char *name
 	const char *attributes
 
@@ -10,19 +10,20 @@ create(class, name, attributes)
 		Filter filter;
 
 	CODE:
-		Newx(filter, 1, git_raw_filter);
-		memset(filter, 0, sizeof(git_raw_filter));
+		Newxz(filter, 1, git_raw_filter);
 
-		Newx(filter -> name, strlen(name) + 1, char);
+		Newxz(filter -> name, strlen(name) + 1, char);
 		strcpy(filter -> name, name);
 
-		Newx(filter -> attributes, strlen(attributes) + 1, char);
+		Newxz(filter -> attributes, strlen(attributes) + 1, char);
 		strcpy(filter -> attributes, attributes);
 
 		filter -> filter.version = GIT_FILTER_VERSION;
 		filter -> filter.attributes = filter -> attributes;
 
-		GIT_NEW_OBJ(RETVAL, SvPVbyte_nolen(class), filter);
+		GIT_NEW_OBJ(RETVAL,
+			class, filter
+		);
 
 	OUTPUT: RETVAL
 
@@ -38,12 +39,6 @@ callbacks(self, callbacks)
 		cbs = &self -> callbacks;
 
 		git_clean_filter_callbacks(cbs);
-
-		self -> filter.initialize = NULL;
-		self -> filter.shutdown = NULL;
-		self -> filter.check = NULL;
-		self -> filter.apply = NULL;
-		self -> filter.cleanup = NULL;
 
 		if ((cbs -> initialize = get_callback_option(
 			callbacks, "initialize")))
@@ -82,7 +77,7 @@ register(self, priority)
 			croak_usage("No callbacks registered for filter '%s'", self -> name);
 
 		rc = git_filter_register(
-			self -> name, (git_filter *) self, priority
+			self -> name, &self -> filter, priority
 		);
 		git_check_error(rc);
 

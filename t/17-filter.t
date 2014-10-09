@@ -22,6 +22,7 @@ $repo -> checkout($repo -> head($branch), {
 
 # odb filter
 my $odb_filter = Git::Raw::Filter -> create ("odb", "text");
+isa_ok $odb_filter, 'Git::Raw::Filter';
 
 my $file = $repo -> workdir . 'filterfile';
 write_file($file, 'X:filter me:X');
@@ -229,5 +230,50 @@ $repo -> checkout($repo -> head($old_head), {
 		'force' => 1
 	}
 });
+
+ok (!eval { Git::Raw::Filter::List -> load($repo, 'code.txt', "invalid") });
+ok (!eval { Git::Raw::Filter::List -> load($repo, 'code.txt', $repo) });
+
+my $in_data = "blah\r\n";
+my $out_data = "blah\n";
+
+# Worktree to ODB
+$file = $repo -> workdir . 'code.txt';
+write_file($file, $in_data, binmode => ':raw');
+
+my $list = Git::Raw::Filter::List -> load($repo, 'code.txt', "to_odb");
+isa_ok $list, 'Git::Raw::Filter::List';
+
+my $new_content = $list -> apply_to_file('code.txt');
+is $new_content, $out_data;
+
+$new_content = $list -> apply_to_data($in_data);
+is $new_content, $out_data;
+
+my $blob = Git::Raw::Blob -> create($repo, $in_data);
+$new_content = $list -> apply_to_blob($blob);
+is $new_content, $out_data;
+
+# ODB to worktree
+$in_data = "blah\n";
+$out_data = "blah\n";
+
+if ($^O eq 'MSWin32') {
+	$out_data = "blah\r\n";
+}
+
+write_file($file, $in_data, binmode => ':raw');
+$list = Git::Raw::Filter::List -> load($repo, 'code.txt', "to_worktree");
+isa_ok $list, 'Git::Raw::Filter::List';
+
+$new_content = $list -> apply_to_file('code.txt');
+is $new_content, $out_data;
+
+$new_content = $list -> apply_to_data($in_data);
+is $new_content, $out_data;
+
+$blob = Git::Raw::Blob -> create($repo, $in_data);
+$new_content = $list -> apply_to_blob($blob);
+is $new_content, $out_data;
 
 done_testing;

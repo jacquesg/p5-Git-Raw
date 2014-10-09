@@ -173,6 +173,7 @@ typedef struct {
 
 typedef git_raw_filter * Filter;
 typedef git_filter_source * Filter_Source;
+typedef git_filter_list * Filter_List;
 
 typedef struct {
 	git_remote *remote;
@@ -2074,6 +2075,7 @@ INCLUDE: xs/Diff/Stats.xs
 INCLUDE: xs/Error.xs
 INCLUDE: xs/Error/Category.xs
 INCLUDE: xs/Filter.xs
+INCLUDE: xs/Filter/List.xs
 INCLUDE: xs/Filter/Source.xs
 INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
