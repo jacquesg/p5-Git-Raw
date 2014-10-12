@@ -8,6 +8,14 @@ v0.21 + 1
 
 * Use a map for the treebuilder, making insertion O(1)
 
+* Introduce reference transactions, which allow multiple references to
+  be locked at the same time and updates be queued. This also allows
+  us to safely update a reflog with arbitrary contents, as we need to
+  do for stash.
+
+* The index' tree cache is now filled upon read-tree and write-tree
+  and the cache is written to disk.
+
 * LF -> CRLF filter refuses to handle mixed-EOL files
 
 * LF -> CRLF filter now runs when * text = auto (with Git for Windows 1.9.4)
@@ -21,6 +29,10 @@ v0.21 + 1
   as, so this introduces the USERNAME credential type which the ssh
   transport will use to ask for the username.
 
+* The build system now accepts an option EMBED_SSH_PATH which when set
+  tells it to include a copy of libssh2 at the given location. This is
+  enabled for MSVC.
+
 * The git_transport_register function no longer takes a priority and takes
   a URL scheme name (eg "http") instead of a prefix like "http://"
 
@@ -30,6 +42,9 @@ v0.21 + 1
 * A factory function for ssh has been added which allows to change the
   path of the programs to execute for receive-pack and upload-pack on
   the server, git_transport_ssh_with_paths.
+
+* git_remote_delete() now accepts the repository and the remote's name
+  instead of a loaded remote.
 
 * The git_clone_options struct no longer provides the ignore_cert_errors or
   remote_name members for remote customization.
@@ -56,5 +71,14 @@ v0.21 + 1
 * Add support for refspecs with the asterisk in the middle of a
   pattern.
 
+* Fetching now performs opportunistic updates. To achieve this, we
+  introduce a difference between active and passive refspecs, which
+  make git_remote_download and git_remote_fetch to take a list of
+  resfpecs to be the active list, similarly to how git fetch accepts a
+  list on the command-line.
+
 * Introduce git_merge_bases() and the git_oidarray type to expose all
   merge bases between two commits.
+
+* Introduce git_merge_bases_many() to expose all merge bases between
+  multiple commits.

@@ -171,6 +171,9 @@ typedef struct git_reference git_reference;
 /** Iterator for references */
 typedef struct git_reference_iterator  git_reference_iterator;
 
+/** Transactional interface to references */
+typedef struct git_transaction git_transaction;
+
 /** Merge heads, the input to merge */
 typedef struct git_merge_head git_merge_head;
 
@@ -287,9 +290,10 @@ typedef struct {
  * @param len The size of the certificate or host info
  * @param valid Whether the libgit2 checks (OpenSSL or WinHTTP) think
  * this certificate is valid
+ * @param host Hostname of the host libgit2 connected to
  * @param payload Payload provided by the caller
  */
-typedef int (*git_transport_certificate_check_cb)(git_cert *cert, int valid, void *payload);
+typedef int (*git_transport_certificate_check_cb)(git_cert *cert, int valid, const char *host, void *payload);
 
 /**
  * Opaque structure representing a submodule.
