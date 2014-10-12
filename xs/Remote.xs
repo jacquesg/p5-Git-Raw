@@ -317,7 +317,7 @@ fetch(self)
 		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
 		git_check_error(rc);
 
-		rc = git_remote_fetch(self -> remote, sig, NULL);
+		rc = git_remote_fetch(self -> remote, NULL, sig, NULL);
 		git_signature_free(sig);
 		git_check_error(rc);
 
@@ -361,7 +361,7 @@ download(self)
 		int rc;
 
 	CODE:
-		rc = git_remote_download(self -> remote);
+		rc = git_remote_download(self -> remote, NULL);
 		git_check_error(rc);
 
 void

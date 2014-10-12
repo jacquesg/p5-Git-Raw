@@ -405,7 +405,7 @@ reset(self, target, opts)
 			rc = git_signature_default(&sig, self -> repository);
 			git_check_error(rc);
 
-			rc = git_reset(self -> repository, git_sv_to_obj(target), reset, sig, NULL);
+			rc = git_reset(self -> repository, git_sv_to_obj(target), reset, NULL, sig, NULL);
 			git_signature_free(sig);
 			git_check_error(rc);
 		}
