@@ -1481,7 +1481,7 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	return rv;
 }
 
-STATIC int git_certificate_check_cbb(git_cert *cert, int valid, void *cbs) {
+STATIC int git_certificate_check_cbb(git_cert *cert, int valid, const char *host, void *cbs) {
 	dSP;
 	int rv = 0;
 	SV *obj = NULL;
@@ -1506,6 +1506,7 @@ STATIC int git_certificate_check_cbb(git_cert *cert, int valid, void *cbs) {
 	PUSHMARK(SP);
 	mXPUSHs(obj);
 	mXPUSHs(newSViv(valid));
+	mXPUSHs(newSVpv(host, 0));
 	PUTBACK;
 
 	call_sv(((git_raw_remote_callbacks *) cbs) -> certificate_check, G_EVAL|G_SCALAR);

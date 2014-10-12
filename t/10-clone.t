@@ -210,7 +210,7 @@ my ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'certificate_check' => sub {
-			my ($cert, $valid) = @_;
+			my ($cert, $valid, $host) = @_;
 			$certificate_check_fired = 1;
 
 			isa_ok $cert, 'Git::Raw::Cert';
@@ -221,6 +221,7 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 			ok (length($data) > 0);
 
 			is $valid, 1;
+			is $host, 'github.com';
 
 			1;
 		},
