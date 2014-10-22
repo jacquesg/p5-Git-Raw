@@ -75,7 +75,7 @@ $push -> callbacks({
 });
 
 $total_packed = 0;
-$push -> finish;
+is $push -> finish, 1;
 is $push -> unpack_ok, 1;
 ok ($total_packed > 0);
 is $updated_ref, "refs/heads/master";
@@ -174,6 +174,8 @@ is scalar(@remotes), 1;
 $remote = shift @remotes;
 
 my ($credentials_fired, $sideband_fired, $update_tips_fired) = (0, 0, 0);
+my ($pack_progress_fired, $transfer_progress_fired, $status_fired) = (0, 0, 0);
+
 $remote -> callbacks({
 	'credentials' => sub {
 		$credentials_fired = 1;
@@ -182,26 +184,14 @@ $remote -> callbacks({
 	'sideband_progress' => sub {
 		my ($msg) = @_;
 
-		like $msg, qr/pre-receive hook/;
+		is $msg, "This is from the pre-receive hook!";
 		$sideband_fired = 1;
 	},
-	'update_tips' => sub {
-		my ($ref, $a, $b) = @_;
-
-		is $ref, 'refs/remotes/origin/ssh_branch';
-		ok !defined($a);
-		ok defined($b);
-		isnt $a, $b;
-		$update_tips_fired = 1;
-	}
 });
-
 $remote -> connect('push');
 
 $push = Git::Raw::Push -> new($remote);
 $push -> add_refspec("refs/heads/ssh_branch:");
-
-my ($pack_progress_fired, $transfer_progress_fired, $status_fired) = (0, 0, 0);
 $push -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
@@ -217,19 +207,20 @@ $push -> callbacks({
 		my ($ref, $msg) = @_;
 
 		is $ref, 'refs/heads/ssh_branch';
-		ok !defined($msg);
+		ok defined($msg);
+		like $msg, qr/pre-receive hook/;
 		$status_fired = 1;
 	}
 });
 
-# setup a pre-receive hook that just print out a message
+# setup a pre-receive hook that fails
 my $pre_receive_content = <<'EOS';
 #!/usr/bin/env perl
 
 $|++;
 
 print STDERR "This is from the pre-receive hook!";
-exit(0);
+exit(1);
 EOS
 
 my $pre_receive_file = File::Spec->catfile ($remote_path, '.git', 'hooks', 'pre-receive');
@@ -241,16 +232,59 @@ write_file($pre_receive_file, $pre_receive_content);
 ok -e $pre_receive_file;
 chmod 0755, $pre_receive_file;
 
-$push -> finish;
-is $push -> unpack_ok, 1;
-
+# pre-receive hook kick
+is $push -> finish, 0;
 is $sideband_fired, 1;
 is $credentials_fired, 1;
 is $pack_progress_fired, 1;
 is $transfer_progress_fired, 1;
 is $status_fired, 1;
 
+$remote -> disconnect;
+$remote -> connect('push');
+
+# setup a pre-receive hook that succeeds
+$pre_receive_content = <<'EOS';
+#!/usr/bin/env perl
+
+$|++;
+
+print STDERR "This is from the pre-receive hook!";
+exit(0);
+EOS
+
+write_file($pre_receive_file, $pre_receive_content);
+
+$remote -> callbacks({
+	'update_tips' => sub {
+		my ($ref, $a, $b) = @_;
+
+		is $ref, 'refs/remotes/origin/ssh_branch';
+		ok !defined($a);
+		ok defined($b);
+		isnt $a, $b;
+		$update_tips_fired = 1;
+	}
+});
+
+$push = Git::Raw::Push -> new($remote);
+$push -> add_refspec("refs/heads/ssh_branch:");
+$push -> callbacks({
+	'status' => sub {
+		my ($ref, $msg) = @_;
+
+		is $ref, 'refs/heads/ssh_branch';
+		ok !defined($msg);
+		$status_fired = 1;
+	}
+});
+
+$status_fired = 0;
+is $push -> finish, 1;
+is $push -> unpack_ok, 1;
+is $status_fired, 1;
 is $update_tips_fired, 0;
+
 $push -> update_tips;
 is $update_tips_fired, 1;
 
