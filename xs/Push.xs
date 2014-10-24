@@ -54,15 +54,13 @@ finish(self)
 		rc = git_push_finish(self -> push);
 		git_check_error(rc);
 
-		if (self -> callbacks.status != NULL) {
-			rc = git_push_status_foreach(
-				self -> push,
-				git_push_status_cbb,
-				self);
+		rc = git_push_status_foreach(
+			self -> push,
+			git_push_status_cbb,
+			self);
 
-			if (rc != GIT_EUSER)
-				git_check_error(rc);
-		}
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
 
 		RETVAL = newSViv(self -> success);
 
