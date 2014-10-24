@@ -48,14 +48,16 @@ Git::Raw::Push - Git push class
     });
 
     # perform the actual push
-    $push -> finish;
-    if ($push -> unpack_ok) {
-      print "References updated successfully", "\n";
+    if ($push -> finish) {
+      if ($push -> unpack_ok) {
+        print "References updated successfully", "\n";
+      } else {
+        print STDERR "Not all references updated", "\n";
+      }
+      $push -> update_tips;
     } else {
-      print STDERR "Not all references updated", "\n";
+      print STDERR "Push failed", "\n";
     }
-
-    $push -> update_tips;
 
     # disconnect the remote
     $remote -> disconnect;
@@ -111,7 +113,8 @@ C<$msg> is defined, the reference mentioned in C<$ref> has not been updated.
 
 =head2 finish( )
 
-Perform the actual push.
+Perform the actual push. Return a truthy value to indicate if the push was
+successful.
 
 =head2 unpack_ok( )
 

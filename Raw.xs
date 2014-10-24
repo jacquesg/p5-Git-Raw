@@ -193,6 +193,7 @@ typedef git_raw_repository * Repository;
 typedef struct {
 	git_push *push;
 	git_raw_push_callbacks callbacks;
+	int success;
 } git_raw_push;
 
 typedef git_raw_push * Push;
@@ -1332,8 +1333,17 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	return 0;
 }
 
-STATIC int git_push_status_cbb(const char *ref, const char *msg, void *cbs) {
+STATIC int git_push_status_cbb(const char *ref, const char *msg, void *p) {
 	dSP;
+	Push push = (Push) p;
+	SV *cb = push -> callbacks.status;
+
+	if (msg != NULL) {
+		push -> success = 0;
+	}
+
+	if (!cb)
+		return 0;
 
 	ENTER;
 	SAVETMPS;
@@ -1343,7 +1353,7 @@ STATIC int git_push_status_cbb(const char *ref, const char *msg, void *cbs) {
 	mXPUSHs(newSVpv(msg, 0));
 	PUTBACK;
 
-	call_sv(((git_raw_push_callbacks *) cbs) -> status, G_DISCARD);
+	call_sv(cb, G_VOID);
 
 	SPAGAIN;
 
