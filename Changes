@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.49      2014-10-24 12:04:09+02:00 Africa/Johannesburg
+
  - Update libgit2 to 4bb6ffb
  - Push -> finish() now returns a truthy value to indicate success (GH#150)
 
