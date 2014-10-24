@@ -32,7 +32,7 @@ $push -> callbacks({
 	}
 });
 
-$push -> finish;
+is $push -> finish, 1;
 is $push -> unpack_ok, 1;
 ok ($total_packed > 0);
 
@@ -239,6 +239,10 @@ is $credentials_fired, 1;
 is $pack_progress_fired, 1;
 is $transfer_progress_fired, 1;
 is $status_fired, 1;
+
+# Update tips should die()
+eval { $push -> update_tips };
+ok ($@);
 
 $remote -> disconnect;
 $remote -> connect('push');
