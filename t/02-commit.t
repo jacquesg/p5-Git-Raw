@@ -120,6 +120,13 @@ is $commit -> committer -> offset, $off;
 is $commit -> time, $time;
 is $commit -> offset, $off;
 
+subtest "overloading" => sub {
+    is $commit->id, "$commit",          "stringification";
+    cmp_ok $commit, 'eq', $commit->id,  "eq";
+    ok !($commit ne $commit->id),       "ne";
+    is $commit cmp $commit->id, 0,      "cmp";
+};
+
 my $repo2 = $commit -> owner;
 isa_ok $repo2, 'Git::Raw::Repository';
 is $repo2 -> path, $repo -> path;
@@ -312,7 +319,6 @@ ok ($amended eq $commit2);
 ok ($amended eq $commit2 -> id);
 ok ($amended -> id eq $commit2);
 ok ($commit2 ne $commit);
-ok ($commit2 ne undef);
 ok ($commit2 ne $repo);
 
 is $commit2 -> ancestor(0) -> id, $commit2 -> id;

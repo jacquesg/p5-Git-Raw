@@ -28,7 +28,7 @@ is $blob2 -> id, $blob -> id;
 ok ($blob2 eq $blob);
 ok ($blob2 eq $blob -> id);
 ok ($blob2 -> id eq $blob);
-ok ($blob2 ne undef);
 ok ($blob2 ne $repo);
+is $blob cmp $blob2, 0, "cmp";
 
 done_testing;

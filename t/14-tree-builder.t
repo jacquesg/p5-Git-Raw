@@ -47,8 +47,8 @@ ok ('228c738569c82d9906ea1801f698a7c2a70e56b1' eq $tree);
 ok ($tree eq $tree);
 ok ($tree eq $tree -> id);
 ok ($tree -> id eq $tree);
-ok ($tree ne undef);
 ok ($tree ne $builder);
+is $tree cmp $tree->id, 0, "cmp";
 
 my @entries = $tree -> entries();
 
