@@ -8,6 +8,9 @@ use Cwd qw(abs_path);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
+my $git_default_notes_ref    = 'refs/notes/commits';
+my $config_default_notes_ref = $repo -> config -> str('core.notesRef');
+
 my $ref = Git::Raw::Note -> default_ref($repo);
 is $ref, undef;
 
@@ -21,9 +24,11 @@ is $note, undef;
 
 $note = Git::Raw::Note -> create($repo, $repo -> head -> target, 'Some content2!', undef, 1);
 
+diag "repo notes ref is: $config_default_notes_ref"
+    if $git_default_notes_ref ne $config_default_notes_ref;
 $ref = Git::Raw::Note -> default_ref($repo);
 isa_ok $ref, 'Git::Raw::Reference';
-is $ref -> name, 'refs/notes/commits';
+is $ref -> name, $config_default_notes_ref;
 is $ref -> is_note, 1;
 
 my $note2 = Git::Raw::Note -> read($repo, $repo -> head -> target);
