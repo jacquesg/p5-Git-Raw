@@ -128,9 +128,9 @@ Return a list of L<Git::Raw::Patch> objects for the diff.
 Generate text output from the diff object. The C<$callback> will be called for
 each line of the diff with two arguments: the first one represents the type of
 the patch line (C<"ctx"> for context lines, C<"add"> for additions, C<"del">
-for deletions, C<"file"> for file headers, C<"hunk"> for hunk headers or
-C<"bin"> for binary data) and the second argument contains the content of the
-patch line.
+for deletions, C<"file"> for file headers, C<"hunk"> for hunk headers, C<"bin">
+for binary data or C<"noeol"> if both files have no LF at end) and the second
+argument contains the content of the patch line.
 
 The C<$format> can be one of the following:
 

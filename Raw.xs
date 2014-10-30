@@ -1013,6 +1013,10 @@ STATIC int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 			XPUSHs(sv_2mortal(newSVpv("hunk", 0)));
 			break;
 
+		case GIT_DIFF_LINE_CONTEXT_EOFNL:
+			XPUSHs(sv_2mortal(newSVpv("noeol", 0)));
+			break;
+
 		case GIT_DIFF_LINE_BINARY:
 			XPUSHs(sv_2mortal(newSVpv("bin", 0)));
 			break;
