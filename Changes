@@ -2,6 +2,16 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to de0c455
+ - Removed Remote methods (Incompatible change):
+    + is_url_supported()
+ - Removed Config methods (Incompatible change):
+    + refresh()
+ - Split Remote -> name into Remote -> name and Remote -> rename
+   (Incompatible change)
+ - Added fallbacks for overloads (GH#151)
+ - Handle no EOF markers when printing diffs
+
 0.49      2014-10-24 12:04:09+02:00 Africa/Johannesburg
 
  - Update libgit2 to 4bb6ffb
