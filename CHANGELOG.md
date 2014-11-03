@@ -43,8 +43,16 @@ v0.21 + 1
   path of the programs to execute for receive-pack and upload-pack on
   the server, git_transport_ssh_with_paths.
 
+* git_remote_rename() now takes the repository and the remote's
+  current name. Accepting a remote indicates we want to change it,
+  which we only did partially. It is much clearer if we accept a name
+  and no loaded objects are changed.
+
 * git_remote_delete() now accepts the repository and the remote's name
   instead of a loaded remote.
+
+* git_remote_supported_url() has been removed as it has become
+  essentially useless with rsync-style ssh paths.
 
 * The git_clone_options struct no longer provides the ignore_cert_errors or
   remote_name members for remote customization.
@@ -82,3 +90,25 @@ v0.21 + 1
 
 * Introduce git_merge_bases_many() to expose all merge bases between
   multiple commits.
+
+* git_merge_head is now git_annotated_commit, to better reflect its usage
+  for multiple functions (including rebase)
+
+* Introduce rebase functionality (using the merge algorithm only).
+  Introduce git_rebase_init() to begin a new rebase session,
+  git_rebase_open() to open an in-progress rebase session,
+  git_rebase_commit() to commit the current rebase operation,
+  git_rebase_next() to apply the next rebase operation,
+  git_rebase_abort() to abort an in-progress rebase and git_rebase_finish()
+  to complete a rebase operation.
+
+* Introduce git_note_author() and git_note_committer() to get the author
+  and committer information on a git_note, respectively.
+
+* The THREADSAFE option to build libgit2 with threading support has
+  been flipped to be on by default.
+
+* The context_lines and interhunk_lines fields in git_diff_options are
+  now uint32_t instead of uint16_t. This allows to set them to UINT_MAX,
+  in effect asking for "infinite" context e.g. to iterate over all the
+  unmodified lines of a diff.
