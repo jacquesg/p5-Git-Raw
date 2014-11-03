@@ -79,11 +79,14 @@ branch is a candidate, it wins. If the information cannot be determined, this
 function will return C<undef>. Note, this function should only be called after
 the remote has established a connection.
 
-=head2 name( [ $name, \@problems ] )
+=head2 name( )
 
-Retrieve the name of the remote. If C<$name> is passed, the remote's name will
-be updated and returned. Non-default refspecs cannot be renamed and will be
-store in C<@problems> if provided.
+Retrieve the name of the remote.
+
+=head2 rename( $repo, $old_name, $new_name, [ \@problems ] )
+
+Rename a remote. Non-default refspecs cannot be renamed and will be store in
+C<@problems> if provided.
 
 =head2 url( [ $url ] )
 
@@ -239,15 +242,6 @@ Update the tips to the new status.
 =head2 is_connected( )
 
 Check if the remote is connected.
-
-=head2 is_url_valid( $url )
-
-Check whether C<$url> is a valid remote URL.
-
-=head2 is_url_supported( $url )
-
-Check whether C<$url> the passed URL is supported by this version of the
-library.
 
 =head1 AUTHOR
 

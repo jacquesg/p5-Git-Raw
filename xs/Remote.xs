@@ -143,39 +143,44 @@ default_branch(self)
 	OUTPUT: RETVAL
 
 SV *
-name(self, ...)
+name(self)
 	Remote self
 
-	PROTOTYPE: $;$$
-
-	PREINIT:
-		int rc;
-		const char *name;
-
-		git_strarray problems = {NULL, 0};
-
 	CODE:
-		if (items > 1) {
-			AV *p = NULL;
-			name = git_ensure_pv(ST(1), "name");
-
-			if (items > 2)
-				p = git_ensure_av(ST(2), "problems");
-
-			rc = git_remote_rename(&problems, self -> remote, name);
-			git_check_error(rc);
-
-			if (p != NULL && problems.count > 0) {
-				size_t i;
-				for (i = 0; i < problems.count; ++i)
-					av_push(p, newSVpv(problems.strings[i], 0));
-			}
-			git_strarray_free(&problems);
-		}
-
 		RETVAL = newSVpv(git_remote_name(self -> remote), 0);
 
 	OUTPUT: RETVAL
+
+void
+rename(class, repo, old_name, new_name, ...)
+	const char *class
+	Repository repo
+	const char *old_name
+	const char *new_name
+
+	PROTOTYPE: $$$$;$
+
+	PREINIT:
+		int rc;
+
+		AV *p = NULL;
+		Remote remote;
+		git_strarray problems = {NULL, 0};
+
+	CODE:
+		if (items >= 5)
+			p = git_ensure_av(ST(4), "problems");
+
+		rc = git_remote_rename(&problems, repo -> repository,
+			old_name, new_name);
+		git_check_error(rc);
+
+		if (p != NULL && problems.count > 0) {
+			size_t i;
+			for (i = 0; i < problems.count; ++i)
+				av_push(p, newSVpv(problems.strings[i], 0));
+		}
+		git_strarray_free(&problems);
 
 SV *
 url(self, ...)
@@ -485,20 +490,6 @@ is_connected(self)
 
 	CODE:
 		RETVAL = newSViv(git_remote_connected(self -> remote));
-
-	OUTPUT: RETVAL
-
-SV *
-is_url_supported(class, url)
-	SV *class
-	SV *url
-
-	PREINIT:
-		int r;
-
-	CODE:
-		r = git_remote_supported_url(git_ensure_pv(url, "url"));
-		RETVAL = newSViv(r);
 
 	OUTPUT: RETVAL
 

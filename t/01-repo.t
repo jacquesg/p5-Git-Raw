@@ -199,7 +199,6 @@ $detached_config2 -> add_file('.testconfig', 5);
 
 $detached_config1 -> str('some.str', 'hello');
 is 'hello', $detached_config1 -> str('some.str');
-$detached_config2 -> refresh;
 is 'hello', $detached_config2 -> str('some.str');
 
 $detached_config1 = undef;

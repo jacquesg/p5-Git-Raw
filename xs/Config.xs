@@ -138,17 +138,6 @@ foreach(self, cb)
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
 
-void
-refresh(self)
-	Config self
-
-	PREINIT:
-		int rc;
-
-	CODE:
-		rc = git_config_refresh(self);
-		git_check_error(rc);
-
 Config
 default(class)
 	SV *class

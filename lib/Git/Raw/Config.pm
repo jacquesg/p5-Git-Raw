@@ -56,10 +56,6 @@ Run C<$callback> for every config entry. The callback receives the name of the
 config entry, its value and its priority level. A non-zero return value stops
 the loop.
 
-=head2 refresh( )
-
-Reload the config files from disk.
-
 =head2 delete( $name )
 
 Delete the variable C<$name> from the config object.

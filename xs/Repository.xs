@@ -667,18 +667,18 @@ merge_analysis(self, ref)
 	PREINIT:
 		int rc;
 
-		git_merge_head *merge_head;
+		git_annotated_commit *merge_head;
 		git_merge_preference_t pref;
 		git_merge_analysis_t analysis;
 
 		AV *result;
 	CODE:
-		rc = git_merge_head_from_ref(&merge_head, self -> repository, ref);
+		rc = git_annotated_commit_from_ref(&merge_head, self -> repository, ref);
 		git_check_error(rc);
 
 		rc = git_merge_analysis(&analysis, &pref,
-			self -> repository, (const git_merge_head **) &merge_head, 1);
-		git_merge_head_free(merge_head);
+			self -> repository, (const git_annotated_commit **) &merge_head, 1);
+		git_annotated_commit_free(merge_head);
 		git_check_error(rc);
 
 		result = newAV();
@@ -704,13 +704,13 @@ merge(self, ref, ...)
 	PREINIT:
 		int rc;
 
-		git_merge_head *merge_head;
+		git_annotated_commit *merge_head;
 
 		git_merge_options merge_opts = GIT_MERGE_OPTIONS_INIT;
 		git_checkout_options checkout_opts = GIT_CHECKOUT_OPTIONS_INIT;
 
 	CODE:
-		rc = git_merge_head_from_ref(&merge_head, self -> repository, ref);
+		rc = git_annotated_commit_from_ref(&merge_head, self -> repository, ref);
 		git_check_error(rc);
 
 		if (items >= 3) {
@@ -724,11 +724,11 @@ merge(self, ref, ...)
 		}
 
 		rc = git_merge(
-			self -> repository, (const git_merge_head **) &merge_head,
+			self -> repository, (const git_annotated_commit **) &merge_head,
 			1, &merge_opts, &checkout_opts
 		);
 		Safefree(checkout_opts.paths.strings);
-		git_merge_head_free(merge_head);
+		git_annotated_commit_free(merge_head);
 		git_check_error(rc);
 
 void
