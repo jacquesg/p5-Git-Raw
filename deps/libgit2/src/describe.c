@@ -397,7 +397,7 @@ static int show_suffix(
 	const git_oid* id,
 	size_t abbrev_size)
 {
-	int error, size;
+	int error, size = 0;
 
 	char hex_oid[GIT_OID_HEXSZ];
 
@@ -571,8 +571,6 @@ static int describe(
 		}
 	}
 
-	best = (struct possible_tag *)git_vector_get(&all_matches, 0);
-
 	git_vector_sort(&all_matches);
 
 	best = (struct possible_tag *)git_vector_get(&all_matches, 0);
@@ -727,7 +725,7 @@ int git_describe_workdir(
 	git_oid current_id;
 	git_status_list *status = NULL;
 	git_status_options status_opts = GIT_STATUS_OPTIONS_INIT;
-	git_describe_result *result;
+	git_describe_result *result = NULL;
 	git_object *commit;
 
 	if ((error = git_reference_name_to_id(&current_id, repo, GIT_HEAD_FILE)) < 0)
@@ -818,7 +816,8 @@ int git_describe_format(git_buf *out, const git_describe_result *result, const g
 	/* If we didn't find *any* tags, we fall back to the commit's id */
 	if (result->fallback_to_id) {
 		char hex_oid[GIT_OID_HEXSZ + 1] = {0};
-		int size;
+		int size = 0;
+
 		if ((error = find_unique_abbrev_size(
 			     &size, repo, &result->commit_id, opts.abbreviated_size)) < 0)
 			return -1;
