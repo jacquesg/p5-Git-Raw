@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to de0c455
+ - Update libgit2 to de0c455 (GH#153)
  - Removed Remote methods (Incompatible change):
     + is_url_supported()
  - Removed Config methods (Incompatible change):
@@ -11,6 +11,9 @@ Revision history for Git-Raw
    (Incompatible change)
  - Added fallbacks for overloads (GH#151)
  - Handle no EOF markers when printing diffs
+ - Added Note methods (GH#154):
+    + author
+    + committer
 
 0.49      2014-10-24 12:04:09+02:00 Africa/Johannesburg
 
