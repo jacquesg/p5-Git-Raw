@@ -41,6 +41,14 @@ Retrieve the note's id.
 
 Retrieve the note's message.
 
+=head2 author( )
+
+Retrieve the L<Git::Raw::Signature> representing the author of the note.
+
+=head2 committer( )
+
+Retrieve the L<Git::Raw::Signature> representing the committer.
+
 =head2 default_ref( $repo )
 
 Get the default notes reference for the repository. Returns a

@@ -140,6 +140,40 @@ message(self)
 
 	OUTPUT: RETVAL
 
+Signature
+author(self)
+	Note self
+
+	PREINIT:
+		int rc;
+		Signature a, r;
+
+	CODE:
+		a = (Signature) git_note_author(self);
+		rc = git_signature_dup(&r, a);
+		git_check_error(rc);
+
+		RETVAL = r;
+
+	OUTPUT: RETVAL
+
+Signature
+committer(self)
+	Note self
+
+	PREINIT:
+		int rc;
+		Signature c, r;
+
+	CODE:
+		c = (Signature) git_note_committer(self);
+		rc = git_signature_dup(&r, c);
+		git_check_error(rc);
+
+		RETVAL = r;
+
+	OUTPUT: RETVAL
+
 SV *
 default_ref(class, repo)
 	SV *class

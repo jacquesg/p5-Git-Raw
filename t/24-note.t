@@ -21,6 +21,15 @@ is $note, undef;
 
 $note = Git::Raw::Note -> create($repo, $repo -> head -> target, 'Some content2!', undef, 1);
 
+my $default_sig = Git::Raw::Signature -> default($repo);
+my $author = $note -> author;
+is $author -> name, $default_sig -> name;
+is $author -> email, $default_sig -> email;
+
+my $committer = $note -> committer;
+is $committer -> name, $default_sig -> name;
+is $committer -> email, $default_sig -> email;
+
 $ref = Git::Raw::Note -> default_ref($repo);
 isa_ok $ref, 'Git::Raw::Reference';
 is $ref -> name, 'refs/notes/commits';
