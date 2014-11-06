@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to de0c455 (GH#153)
+ - Update libgit2 to 64dc248 (GH#153)
  - Removed Remote methods (Incompatible change):
     + is_url_supported()
  - Removed Config methods (Incompatible change):
