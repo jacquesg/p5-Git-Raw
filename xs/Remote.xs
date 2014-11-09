@@ -84,7 +84,7 @@ load(class, repo, name)
 
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
-		rc = git_remote_load(
+		rc = git_remote_lookup(
 			&r, repo_ptr -> repository,
 			git_ensure_pv(name, "name"));
 		if (rc == GIT_ENOTFOUND) {

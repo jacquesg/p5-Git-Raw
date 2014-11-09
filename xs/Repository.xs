@@ -811,7 +811,7 @@ remotes(self)
 			git_remote *r = NULL;
 			Remote remote = NULL;
 
-			rc = git_remote_load(&r, repo -> repository, remotes.strings[i]);
+			rc = git_remote_lookup(&r, repo -> repository, remotes.strings[i]);
 			git_check_error(rc);
 
 			Newxz(remote, 1, git_raw_remote);
