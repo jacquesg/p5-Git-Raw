@@ -85,6 +85,9 @@ v0.21 + 1
   resfpecs to be the active list, similarly to how git fetch accepts a
   list on the command-line.
 
+* Rename git_remote_load() to git_remote_lookup() to bring it in line
+  with the rest of the lookup functions.
+
 * Introduce git_merge_bases() and the git_oidarray type to expose all
   merge bases between two commits.
 
@@ -112,3 +115,14 @@ v0.21 + 1
   now uint32_t instead of uint16_t. This allows to set them to UINT_MAX,
   in effect asking for "infinite" context e.g. to iterate over all the
   unmodified lines of a diff.
+
+* git_status_file now takes an exact path. Use git_status_list_new if
+  pathspec searching is needed.
+
+* The fetch behavior of remotes with autotag set to GIT_REMOTE_DOWNLOAD_TAGS_ALL
+  has been changed to match git 1.9.0 and later. In this mode, libgit2 now
+  fetches all tags in addition to whatever else needs to be fetched.
+
+* git_threads_init() and git_threads_shutdown() have been renamed to
+  git_libgit2_init() and git_libgit2_shutdown() to better explain what
+  their purpose is, as it's grown to be more than just about threads.
