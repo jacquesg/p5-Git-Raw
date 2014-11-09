@@ -2001,7 +2001,7 @@ STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_op
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
-	git_threads_init();
+	git_libgit2_init();
 
 SV *
 message_prettify(class, msg, ...)
