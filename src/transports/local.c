@@ -47,6 +47,17 @@ static void free_head(git_remote_head *head)
 	git__free(head);
 }
 
+static void free_heads(git_vector *heads)
+{
+	git_remote_head *head;
+	size_t i;
+
+	git_vector_foreach(heads, i, head)
+		free_head(head);
+
+	git_vector_free(heads);
+}
+
 static int add_ref(transport_local *t, const char *name)
 {
 	const char peeled[] = "^{}";
@@ -198,6 +209,8 @@ static int local_connect(
 	if (t->connected)
 		return 0;
 
+	free_heads(&t->refs);
+
 	t->url = git__strdup(url);
 	GITERR_CHECK_ALLOC(t->url);
 	t->direction = direction;
@@ -326,14 +339,11 @@ static int local_push_update_remote_ref(
 	int error;
 	git_reference *remote_ref = NULL;
 
-	/* rref will be NULL if it is implicit in the pushspec (e.g. 'b1:') */
-	rref = rref ? rref : lref;
-
-	if (lref) {
+	/* check for lhs, if it's empty it means to delete */
+	if (lref[0] != '\0') {
 		/* Create or update a ref */
-		if ((error = git_reference_create(NULL, remote_repo, rref, loid,
-				!git_oid_iszero(roid), NULL, NULL)) < 0)
-			return error;
+		error = git_reference_create(NULL, remote_repo, rref, loid,
+					     !git_oid_iszero(roid), NULL, NULL);
 	} else {
 		/* Delete a ref */
 		if ((error = git_reference_lookup(&remote_ref, remote_repo, rref)) < 0) {
@@ -342,13 +352,11 @@ static int local_push_update_remote_ref(
 			return error;
 		}
 
-		if ((error = git_reference_delete(remote_ref)) < 0)
-			return error;
-
+		error = git_reference_delete(remote_ref);
 		git_reference_free(remote_ref);
 	}
 
-	return 0;
+	return error;
 }
 
 static int local_push(
@@ -405,7 +413,7 @@ static int local_push(
 	git_vector_foreach(&push->specs, j, spec) {
 		push_status *status;
 		const git_error *last;
-		char *ref = spec->rref ? spec->rref : spec->lref;
+		char *ref = spec->refspec.dst;
 
 		status = git__calloc(sizeof(push_status), 1);
 		if (!status)
@@ -417,7 +425,7 @@ static int local_push(
 			goto on_error;
 		}
 
-		error = local_push_update_remote_ref(remote_repo, spec->lref, spec->rref,
+		error = local_push_update_remote_ref(remote_repo, spec->refspec.src, spec->refspec.dst,
 			&spec->loid, &spec->roid);
 
 		switch (error) {
@@ -624,13 +632,8 @@ static int local_close(git_transport *transport)
 static void local_free(git_transport *transport)
 {
 	transport_local *t = (transport_local *)transport;
-	size_t i;
-	git_remote_head *head;
 
-	git_vector_foreach(&t->refs, i, head)
-		free_head(head);
-
-	git_vector_free(&t->refs);
+	free_heads(&t->refs);
 
 	/* Close the transport, if it's still open. */
 	local_close(transport);

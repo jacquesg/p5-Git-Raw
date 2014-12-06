@@ -323,11 +323,10 @@ static int note_new(
 		git_signature_dup(&note->committer, git_commit_committer(commit)) < 0)
 		return -1;
 
-	note->message = git__strdup((char *)git_blob_rawcontent(blob));
+	note->message = git__strndup(git_blob_rawcontent(blob), git_blob_rawsize(blob));
 	GITERR_CHECK_ALLOC(note->message);
 
 	*out = note;
-
 	return 0;
 }
 
@@ -456,9 +455,9 @@ int git_note_read(git_note **out, git_repository *repo,
 int git_note_create(
 	git_oid *out,
 	git_repository *repo,
+	const char *notes_ref,
 	const git_signature *author,
 	const git_signature *committer,
-	const char *notes_ref,
 	const git_oid *oid,
 	const char *note,
 	int allow_note_overwrite)

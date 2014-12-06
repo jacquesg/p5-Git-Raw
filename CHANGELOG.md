@@ -108,6 +108,9 @@ v0.21 + 1
 * Introduce git_note_author() and git_note_committer() to get the author
   and committer information on a git_note, respectively.
 
+* git_note_create() has changed the position of the notes reference
+  name to match git_note_remove().
+
 * The THREADSAFE option to build libgit2 with threading support has
   been flipped to be on by default.
 
@@ -126,3 +129,7 @@ v0.21 + 1
 * git_threads_init() and git_threads_shutdown() have been renamed to
   git_libgit2_init() and git_libgit2_shutdown() to better explain what
   their purpose is, as it's grown to be more than just about threads.
+
+* git_libgit2_init() and git_libgit2_shutdown() now return the number of
+  initializations of the library, so consumers may schedule work on the
+  first initialization.
