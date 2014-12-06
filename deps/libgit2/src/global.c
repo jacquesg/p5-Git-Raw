@@ -67,7 +67,13 @@ void openssl_locking_function(int mode, int n, const char *file, int line)
 
 static void shutdown_ssl_locking(void)
 {
+	int num_locks, i;
+
+	num_locks = CRYPTO_num_locks();
 	CRYPTO_set_locking_callback(NULL);
+
+	for (i = 0; i < num_locks; ++i)
+		git_mutex_free(openssl_locks);
 	git__free(openssl_locks);
 }
 #endif
@@ -125,6 +131,7 @@ int git_openssl_set_locking(void)
 	giterr_set(GITERR_THREAD, "libgit2 as not built with threads");
 	return -1;
 # endif
+#else
 	giterr_set(GITERR_SSL, "libgit2 was not built with OpenSSL support");
 	return -1;
 #endif
@@ -188,19 +195,21 @@ static int synchronized_threads_init(void)
 
 int git_libgit2_init(void)
 {
-	int error = 0;
+	int ret;
 
 	/* Enter the lock */
 	while (InterlockedCompareExchange(&_mutex, 1, 0)) { Sleep(0); }
 
 	/* Only do work on a 0 -> 1 transition of the refcount */
-	if (1 == git_atomic_inc(&git__n_inits))
-		error = synchronized_threads_init();
+	if ((ret = git_atomic_inc(&git__n_inits)) == 1) {
+		if (synchronized_threads_init() < 0)
+			ret = -1;
+	}
 
 	/* Exit the lock */
 	InterlockedExchange(&_mutex, 0);
 
-	return error;
+	return ret;
 }
 
 static void synchronized_threads_shutdown(void)
@@ -211,17 +220,21 @@ static void synchronized_threads_shutdown(void)
 	git_mutex_free(&git__mwindow_mutex);
 }
 
-void git_libgit2_shutdown(void)
+int git_libgit2_shutdown(void)
 {
+	int ret;
+
 	/* Enter the lock */
 	while (InterlockedCompareExchange(&_mutex, 1, 0)) { Sleep(0); }
 
 	/* Only do work on a 1 -> 0 transition of the refcount */
-	if (0 == git_atomic_dec(&git__n_inits))
+	if ((ret = git_atomic_dec(&git__n_inits)) == 0)
 		synchronized_threads_shutdown();
 
 	/* Exit the lock */
 	InterlockedExchange(&_mutex, 0);
+
+	return ret;
 }
 
 git_global_st *git__global_state(void)
@@ -275,17 +288,22 @@ static void init_once(void)
 
 int git_libgit2_init(void)
 {
+	int ret;
+
 	pthread_once(&_once_init, init_once);
-	git_atomic_inc(&git__n_inits);
-	return init_error;
+	ret = git_atomic_inc(&git__n_inits);
+
+	return init_error ? init_error : ret;
 }
 
-void git_libgit2_shutdown(void)
+int git_libgit2_shutdown(void)
 {
 	void *ptr = NULL;
 	pthread_once_t new_once = PTHREAD_ONCE_INIT;
+	int ret;
 
-	if (git_atomic_dec(&git__n_inits) > 0) return;
+	if ((ret = git_atomic_dec(&git__n_inits)) > 0)
+		return ret;
 
 	/* Shut down any subsystems that have global state */
 	git__shutdown();
@@ -297,6 +315,8 @@ void git_libgit2_shutdown(void)
 	pthread_key_delete(_tls_key);
 	git_mutex_free(&git__mwindow_mutex);
 	_once_init = new_once;
+
+	return ret;
 }
 
 git_global_st *git__global_state(void)
@@ -330,15 +350,18 @@ int git_libgit2_init(void)
 		ssl_inited = 1;
 	}
 
-	git_atomic_inc(&git__n_inits);
-	return 0;
+	return git_atomic_inc(&git__n_inits);
 }
 
-void git_libgit2_shutdown(void)
+int git_libgit2_shutdown(void)
 {
+	int ret;
+
 	/* Shut down any subsystems that have global state */
-	if (0 == git_atomic_dec(&git__n_inits))
+	if (ret = git_atomic_dec(&git__n_inits))
 		git__shutdown();
+
+	return ret;
 }
 
 git_global_st *git__global_state(void)

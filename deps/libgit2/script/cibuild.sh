@@ -7,13 +7,14 @@ then
 fi
 
 # Create a test repo which we can use for the online::push tests
-mkdir $HOME/_temp
-git init --bare $HOME/_temp/test.git
-git daemon --listen=localhost --export-all --enable=receive-pack --base-path=$HOME/_temp $HOME/_temp 2>/dev/null &
+mkdir "$HOME"/_temp
+git init --bare "$HOME"/_temp/test.git
+git daemon --listen=localhost --export-all --enable=receive-pack --base-path="$HOME"/_temp "$HOME"/_temp 2>/dev/null &
 export GITTEST_REMOTE_URL="git://localhost/test.git"
 
 mkdir _build
 cd _build
+# shellcheck disable=SC2086
 cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS || exit $?
 make -j2 install || exit $?
 ctest -V . || exit $?
@@ -43,6 +44,9 @@ export GITTEST_REMOTE_SSH_PUBKEY="$HOME/.ssh/id_rsa.pub"
 export GITTEST_REMOTE_SSH_PASSPHRASE=""
 
 if [ -e ./libgit2_clar ]; then
-    ./libgit2_clar -sonline::push -sonline::clone::cred_callback -sonline::clone::ssh_cert &&
+    ./libgit2_clar -sonline::push -sonline::clone::ssh_cert &&
     ./libgit2_clar -sonline::clone::ssh_with_paths
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+        ./libgit2_clar -sonline::clone::cred_callback
+    fi
 fi
