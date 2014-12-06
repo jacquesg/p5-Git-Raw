@@ -20,7 +20,7 @@ isa_ok $remote, 'Git::Raw::Remote';
 
 my $total_packed = 0;
 my $push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/master:");
+$push -> add_refspec("refs/heads/master:refs/heads/master");
 $push -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
@@ -55,7 +55,7 @@ $remote = Git::Raw::Remote -> create_anonymous($repo, $local_url, undef);
 my $updated_ref;
 
 $push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/master:");
+$push -> add_refspec("refs/heads/master:refs/heads/master");
 $push -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
@@ -191,7 +191,7 @@ $remote -> callbacks({
 $remote -> connect('push');
 
 $push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/ssh_branch:");
+$push -> add_refspec("refs/heads/ssh_branch:refs/heads/ssh_branch");
 $push -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
@@ -272,7 +272,7 @@ $remote -> callbacks({
 });
 
 $push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/ssh_branch:");
+$push -> add_refspec("refs/heads/ssh_branch:refs/heads/ssh_branch");
 $push -> callbacks({
 	'status' => sub {
 		my ($ref, $msg) = @_;
