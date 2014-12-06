@@ -31,7 +31,7 @@ create(class, repo, commitish, content, ...)
 		rc = git_signature_default(&sig, repo_ptr -> repository);
 		git_check_error(rc);
 
-		rc = git_note_create(NULL, repo_ptr -> repository, sig, sig, ref_name,
+		rc = git_note_create(NULL, repo_ptr -> repository, ref_name, sig, sig,
 			git_sv_to_commitish(repo_ptr -> repository, commitish, &oid),
 			git_ensure_pv(content, "content"), force
 		);
