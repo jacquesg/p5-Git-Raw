@@ -26,7 +26,7 @@
 /* internally generated classes */
 #define INTERNAL          -20000
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #undef ERROR
 #undef PASSTHROUGH
 #undef CALLBACK
