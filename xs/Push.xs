@@ -66,15 +66,6 @@ finish(self)
 
 	OUTPUT: RETVAL
 
-SV *
-unpack_ok(self)
-	Push self
-
-	CODE:
-		RETVAL = newSViv(git_push_unpack_ok(self -> push));
-
-	OUTPUT: RETVAL
-
 void
 update_tips(self)
 	SV *self
