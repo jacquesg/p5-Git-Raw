@@ -8,6 +8,8 @@ new(class, repo, ...)
 	PREINIT:
 		int rc;
 
+		Repository r;
+
 		Tree source = NULL;
 		Tree_Builder builder;
 
@@ -15,7 +17,9 @@ new(class, repo, ...)
 		if (items > 2)
 			source = GIT_SV_TO_PTR(Tree, ST(2));
 
-		rc = git_treebuilder_create(&builder, source);
+		r = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_treebuilder_create(&builder, r -> repository,
+			source);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, class, builder, SvRV(repo));
@@ -142,7 +146,7 @@ write(self)
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 		rc = git_treebuilder_write(
-			&oid, repo_ptr -> repository, GIT_SV_TO_PTR(Tree::Builder, self)
+			&oid, GIT_SV_TO_PTR(Tree::Builder, self)
 		);
 		git_check_error(rc);
 
