@@ -33,6 +33,11 @@ v0.21 + 1
   tells it to include a copy of libssh2 at the given location. This is
   enabled for MSVC.
 
+* libgit2 no longer automatically sets the OpenSSL locking
+  functions. This is not something which we can know to do. A
+  last-resort convenience function is provided in sys/openssl.h,
+  git_openssl_set_locking() which can be used to set the locking.
+
 * The git_transport_register function no longer takes a priority and takes
   a URL scheme name (eg "http") instead of a prefix like "http://"
 
@@ -88,6 +93,9 @@ v0.21 + 1
 * Rename git_remote_load() to git_remote_lookup() to bring it in line
   with the rest of the lookup functions.
 
+* git_push_unpack_ok() has been removed and git_push_finish() now
+  returns an error if the unpacking failed.
+
 * Introduce git_merge_bases() and the git_oidarray type to expose all
   merge bases between two commits.
 
@@ -133,3 +141,7 @@ v0.21 + 1
 * git_libgit2_init() and git_libgit2_shutdown() now return the number of
   initializations of the library, so consumers may schedule work on the
   first initialization.
+
+* git_treebuilder_create now takes a repository so that it can query
+  repository configuration.  Subsequently, git_treebuilder_write no
+  longer takes a repository.

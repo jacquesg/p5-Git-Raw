@@ -33,7 +33,6 @@ $push -> callbacks({
 });
 
 is $push -> finish, 1;
-is $push -> unpack_ok, 1;
 ok ($total_packed > 0);
 
 $push = undef;
@@ -76,7 +75,6 @@ $push -> callbacks({
 
 $total_packed = 0;
 is $push -> finish, 1;
-is $push -> unpack_ok, 1;
 ok ($total_packed > 0);
 is $updated_ref, "refs/heads/master";
 
@@ -285,7 +283,6 @@ $push -> callbacks({
 
 $status_fired = 0;
 is $push -> finish, 1;
-is $push -> unpack_ok, 1;
 is $status_fired, 1;
 is $update_tips_fired, 0;
 
