@@ -1,6 +1,9 @@
 Raw.bs
 Raw.c
 Raw.o
+Raw.def
+dll.base
+dll.exp
 const-c-category.inc
 const-c-error.inc
 const-xs-category.inc
