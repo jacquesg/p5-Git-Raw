@@ -18,7 +18,7 @@ new(class, repo, ...)
 			source = GIT_SV_TO_PTR(Tree, ST(2));
 
 		r = GIT_SV_TO_PTR(Repository, repo);
-		rc = git_treebuilder_create(&builder, r -> repository,
+		rc = git_treebuilder_new(&builder, r -> repository,
 			source);
 		git_check_error(rc);
 
