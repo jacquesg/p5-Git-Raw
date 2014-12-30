@@ -89,6 +89,12 @@ unless ($ENV{NETWORK_TESTING} or $ENV{RELEASE_TESTING}) {
 	exit;
 }
 
+if ($^O eq 'MSWin32') {
+	diag("Windows doesn't have a SSH server, skipping SSH push tests");
+	done_testing;
+	exit;
+}
+
 my %features = Git::Raw -> features;
 if ($features{'ssh'} == 0) {
 	diag("SSH support not available, skipping SSH push tests");
