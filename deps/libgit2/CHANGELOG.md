@@ -142,6 +142,25 @@ v0.21 + 1
   initializations of the library, so consumers may schedule work on the
   first initialization.
 
-* git_treebuilder_create now takes a repository so that it can query
-  repository configuration.  Subsequently, git_treebuilder_write no
-  longer takes a repository.
+* git_treebuilder_new (was git_treebuilder_create) now takes a
+  repository so that it can query repository configuration.
+  Subsequently, git_treebuilder_write no longer takes a repository.
+
+* git_treebuilder_create was renamed to git_treebuilder_new to better
+  reflect it being a constructor rather than something which writes to
+  disk.
+
+* git_checkout now handles case-changing renames correctly on
+  case-insensitive filesystems; for example renaming "readme" to "README".
+
+* git_index_name_entrycount() and git_index_reuc_entrycount() now
+  return size_t instead of unsigned int.
+
+* The search for libssh2 is now done via pkg-config instead of a
+  custom search of a few directories.
+
+* Add support for core.protectHFS and core.protectNTFS. Add more
+  validation for filenames which we write such as references.
+
+* The local transport now generates textual progress output like
+  git-upload-pack does ("counting objects").

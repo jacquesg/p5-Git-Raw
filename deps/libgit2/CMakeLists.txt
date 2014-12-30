@@ -19,6 +19,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 INCLUDE(CheckLibraryExists)
 INCLUDE(AddCFlagIfSupported)
+INCLUDE(FindPkgConfig)
 
 # Build options
 #
@@ -212,7 +213,7 @@ ENDIF()
 
 # Optional external dependency: libssh2
 IF (USE_SSH)
-	FIND_PACKAGE(LIBSSH2)
+	PKG_CHECK_MODULES(LIBSSH2 libssh2)
 ENDIF()
 IF (LIBSSH2_FOUND)
 	ADD_DEFINITIONS(-DGIT_SSH)
