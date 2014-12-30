@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to d147900
+ - Update libgit2 to 4ceb388
  - Removed Push methods (Incompatible change):
     + unpack_ok() (It is now automatically called in finish())
 
