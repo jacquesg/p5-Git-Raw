@@ -326,6 +326,41 @@ fetch(self)
 		git_signature_free(sig);
 		git_check_error(rc);
 
+SV *
+push(self, refspecs)
+	Remote self
+	SV *refspecs
+
+	PREINIT:
+		int rc;
+
+		Signature sig;
+		git_push_options opts = GIT_PUSH_OPTIONS_INIT;
+		git_strarray specs = {NULL, 0};
+
+	CODE:
+		git_list_to_paths(
+			git_ensure_av(refspecs, "refspecs"),
+			&specs
+		);
+
+		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
+		git_check_error(rc);
+
+		/* Reset the push success marker */
+		self -> callbacks.push_success = 1;
+
+		rc = git_remote_push(self -> remote, &specs, &opts,
+			sig, NULL);
+		git_signature_free(sig);
+		Safefree(specs.strings);
+		if (rc != GIT_OK && rc != GIT_EUSER)
+			git_check_error(rc);
+
+		RETVAL = newSViv(self -> callbacks.push_success);
+
+	OUTPUT: RETVAL
+
 void
 connect(self, direction)
 	Remote self
@@ -367,6 +402,45 @@ download(self)
 
 	CODE:
 		rc = git_remote_download(self -> remote, NULL);
+		git_check_error(rc);
+
+SV *
+upload(self, refspecs)
+	Remote self
+	SV *refspecs
+
+	PREINIT:
+		int rc;
+		git_push_options opts = GIT_PUSH_OPTIONS_INIT;
+		git_strarray specs = {NULL, 0};
+
+	CODE:
+		git_list_to_paths(
+			git_ensure_av(refspecs, "refspecs"),
+			&specs
+		);
+
+		/* Reset the push success marker */
+		self -> callbacks.push_success = 1;
+
+		rc = git_remote_upload(self -> remote, &specs, &opts);
+		Safefree(specs.strings);
+
+		if (rc != GIT_OK && rc != GIT_EUSER)
+			git_check_error(rc);
+		RETVAL = newSViv(self -> callbacks.push_success);
+
+	OUTPUT: RETVAL
+
+void
+prune(self)
+	Remote self
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_remote_prune(self -> remote);
 		git_check_error(rc);
 
 void
@@ -432,6 +506,19 @@ callbacks(self, callbacks)
 		if ((remote -> callbacks.update_tips =
 			get_callback_option(callbacks, "update_tips")))
 			rcallbacks.update_tips = git_update_tips_cbb;
+
+		if ((remote -> callbacks.pack_progress =
+			get_callback_option(callbacks, "pack_progress")))
+			rcallbacks.pack_progress = git_packbuilder_progress_cbb;
+
+		if ((remote -> callbacks.push_transfer_progress =
+			get_callback_option(callbacks, "push_transfer_progress")))
+			rcallbacks.push_transfer_progress = git_push_transfer_progress_cbb;
+
+		/* This callback should always fire */
+		remote -> callbacks.push_update_reference =
+			get_callback_option(callbacks, "push_update_reference");
+		rcallbacks.push_update_reference = git_push_update_reference_cbb;
 
 		rcallbacks.payload = &remote -> callbacks;
 

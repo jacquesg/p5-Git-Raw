@@ -212,12 +212,37 @@ C<$ref> of the reference that was updated, and the two OID's C<$a> before and
 after C<$b> the update. C<$a> will be C<undef> if the reference was created,
 likewise C<$b> will be C<undef> if the reference was removed.
 
+=item * "push_transfer_progress"
+
+During the upload of new data, this will reguarly be called with the transfer
+progress. The callback receives the following integers:
+C<$current>, C<$total> and C<$bytes>.
+
+=item * "push_update_reference"
+
+For each of the updated references, this will be called with a status report
+for the reference. The callback receives C<$ref> and C<$msg> as strings. If
+C<$msg> is defined, the reference mentioned in C<$ref> has not been updated.
+
+=item * "pack_progress"
+
+During the packing of new data, this will reguarly be called with the progress
+of the pack operation. Be aware that this is called inline with pack
+building operations, so performance may be affected. The callback receives the
+following integers:
+C<$stage>, C<$current> and C<$total>.
+
 =back
 
 =head2 fetch( )
 
 Download new data and update tips. Convenience function to connect to a remote,
 download the data, disconnect and update the remote-tracking branches.
+
+=head2 push( \@refspecs )
+
+Perform all the steps of a push, including uploading new data and updating the
+remote tracking-branches.
 
 =head2 connect( $direction )
 
@@ -230,6 +255,16 @@ Disconnect the remote.
 =head2 download( )
 
 Download the remote packfile.
+
+=head2 upload( \@refspecs )
+
+Create a packfile and send it to the server. C<@refspecs> is a list of refspecs
+to use for the negotiation with the server to determine the the missing objects
+that need to be uploaded.
+
+=head2 prune( )
+
+Prune tracking refs that are no longer present on remote.
 
 =head2 save( )
 

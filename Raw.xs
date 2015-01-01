@@ -100,13 +100,11 @@ typedef struct {
 	SV *certificate_check;
 	SV *transfer_progress;
 	SV *update_tips;
+	SV *pack_progress;
+	SV *push_transfer_progress;
+	SV *push_update_reference;
+	int push_success;
 } git_raw_remote_callbacks;
-
-typedef struct {
-	SV *packbuilder_progress;
-	SV *transfer_progress;
-	SV *status;
-} git_raw_push_callbacks;
 
 typedef struct {
 	SV *initialize;
@@ -189,14 +187,6 @@ typedef struct {
 } git_raw_repository;
 
 typedef git_raw_repository * Repository;
-
-typedef struct {
-	git_push *push;
-	git_raw_push_callbacks callbacks;
-	int success;
-} git_raw_push;
-
-typedef git_raw_push * Push;
 
 typedef struct {
 	git_cred *cred;
@@ -534,6 +524,9 @@ STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
 	cbs -> progress = NULL;
 	cbs -> transfer_progress = NULL;
 	cbs -> update_tips = NULL;
+	cbs -> pack_progress = NULL;
+	cbs -> push_transfer_progress = NULL;
+	cbs -> push_update_reference = NULL;
 }
 
 STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
@@ -561,28 +554,20 @@ STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
 		SvREFCNT_dec(cbs -> update_tips);
 		cbs -> update_tips = NULL;
 	}
-}
 
-STATIC void git_init_push_callbacks(git_raw_push_callbacks *cbs) {
-	cbs -> packbuilder_progress = NULL;
-	cbs -> transfer_progress = NULL;
-	cbs -> status = NULL;
-}
-
-STATIC void git_clean_push_callbacks(git_raw_push_callbacks *cbs) {
-	if (cbs -> packbuilder_progress) {
-		SvREFCNT_dec(cbs -> packbuilder_progress);
-		cbs -> packbuilder_progress = NULL;
+	if (cbs -> pack_progress) {
+		SvREFCNT_dec(cbs -> pack_progress);
+		cbs -> pack_progress = NULL;
 	}
 
-	if (cbs -> transfer_progress) {
-		SvREFCNT_dec(cbs -> transfer_progress);
-		cbs -> transfer_progress = NULL;
+	if (cbs -> push_transfer_progress) {
+		SvREFCNT_dec(cbs -> push_transfer_progress);
+		cbs -> push_transfer_progress = NULL;
 	}
 
-	if (cbs -> status) {
-		SvREFCNT_dec(cbs -> status);
-		cbs -> status = NULL;
+	if (cbs -> push_update_reference) {
+		SvREFCNT_dec(cbs -> push_update_reference);
+		cbs -> push_update_reference = NULL;
 	}
 }
 
@@ -1305,7 +1290,7 @@ STATIC int git_push_transfer_progress_cbb(unsigned int current, unsigned int tot
 	mXPUSHs(newSVuv(bytes));
 	PUTBACK;
 
-	call_sv(((git_raw_push_callbacks *) cbs) -> transfer_progress, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> push_transfer_progress, G_DISCARD);
 
 	SPAGAIN;
 
@@ -1327,7 +1312,7 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	mXPUSHs(newSVuv(total));
 	PUTBACK;
 
-	call_sv(((git_raw_push_callbacks *) cbs) -> packbuilder_progress, G_DISCARD);
+	call_sv(((git_raw_remote_callbacks *) cbs) -> pack_progress, G_DISCARD);
 
 	SPAGAIN;
 
@@ -1337,13 +1322,15 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	return 0;
 }
 
-STATIC int git_push_status_cbb(const char *ref, const char *msg, void *p) {
+STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void *p) {
 	dSP;
-	Push push = (Push) p;
-	SV *cb = push -> callbacks.status;
+	int rv = 0;
+	git_raw_remote_callbacks *callbacks = (git_raw_remote_callbacks *) p;
+	SV *cb = callbacks -> push_update_reference;
 
 	if (msg != NULL) {
-		push -> success = 0;
+		rv = GIT_EUSER;
+		callbacks -> push_success = 0;
 	}
 
 	if (!cb)
@@ -1364,7 +1351,7 @@ STATIC int git_push_status_cbb(const char *ref, const char *msg, void *p) {
 	FREETMPS;
 	LEAVE;
 
-	return 0;
+	return rv;
 }
 
 STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
@@ -2101,7 +2088,6 @@ INCLUDE: xs/Note.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs
 INCLUDE: xs/PathSpec/MatchList.xs
-INCLUDE: xs/Push.xs
 INCLUDE: xs/Reference.xs
 INCLUDE: xs/Reflog.xs
 INCLUDE: xs/Reflog/Entry.xs

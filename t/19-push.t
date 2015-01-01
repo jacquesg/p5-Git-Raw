@@ -19,9 +19,7 @@ my $remote = Git::Raw::Remote -> create_anonymous($repo, $local_path, undef);
 isa_ok $remote, 'Git::Raw::Remote';
 
 my $total_packed = 0;
-my $push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/master:refs/heads/master");
-$push -> callbacks({
+$remote -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
 
@@ -32,10 +30,9 @@ $push -> callbacks({
 	}
 });
 
-is $push -> finish, 1;
+is $remote -> upload(['refs/heads/master:refs/heads/master']), 1;
 ok ($total_packed > 0);
 
-$push = undef;
 $remote = undef;
 $local_repo = undef;
 
@@ -53,9 +50,7 @@ $remote = Git::Raw::Remote -> create_anonymous($repo, $local_url, undef);
 
 my $updated_ref;
 
-$push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/master:refs/heads/master");
-$push -> callbacks({
+$remote -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
 
@@ -64,7 +59,7 @@ $push -> callbacks({
 		ok ($current > $total_packed);
 		$total_packed++;
 	},
-	'status' => sub {
+	'push_update_reference' => sub {
 		my ($ref, $msg) = @_;
 
 		ok (defined($ref));
@@ -74,11 +69,9 @@ $push -> callbacks({
 });
 
 $total_packed = 0;
-is $push -> finish, 1;
+is $remote -> upload(['refs/heads/master:refs/heads/master']), 1;
 ok ($total_packed > 0);
 is $updated_ref, "refs/heads/master";
-
-$push -> update_tips;
 
 remove_tree $local_path;
 ok ! -e $local_path;
@@ -188,33 +181,32 @@ $remote -> callbacks({
 	'sideband_progress' => sub {
 		my ($msg) = @_;
 
-		is $msg, "This is from the pre-receive hook!";
+		diag("Remote message (sideband): $msg");
+		is $msg, "This is from the pre-receive hook! (Disallowing it)";
 		$sideband_fired = 1;
 	},
-});
-$remote -> connect('push');
-
-$push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/ssh_branch:refs/heads/ssh_branch");
-$push -> callbacks({
 	'pack_progress' => sub {
 		my ($stage, $current, $total) = @_;
 
 		$pack_progress_fired = 1;
 	},
-	'transfer_progress' => sub {
+	'push_transfer_progress' => sub {
 		my ($current, $total, $bytes) = @_;
 
 		$transfer_progress_fired = 1;
 	},
-	'status' => sub {
+	'push_update_reference' => sub {
 		my ($ref, $msg) = @_;
 
 		is $ref, 'refs/heads/ssh_branch';
 		ok defined($msg);
 		like $msg, qr/pre-receive hook/;
 		$status_fired = 1;
-	}
+	},
+	'update_tips' => sub {
+		my ($ref, $a, $b) = @_;
+		$update_tips_fired = 1;
+	},
 });
 
 # setup a pre-receive hook that fails
@@ -223,7 +215,7 @@ my $pre_receive_content = <<'EOS';
 
 $|++;
 
-print STDERR "This is from the pre-receive hook!";
+print STDERR "This is from the pre-receive hook! (Disallowing it)";
 exit(1);
 EOS
 
@@ -237,19 +229,17 @@ ok -e $pre_receive_file;
 chmod 0755, $pre_receive_file;
 
 # pre-receive hook kick
-is $push -> finish, 0;
+$remote -> connect('push');
+is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"]), 0;
+diag("Pre-receive hook (successfully) declined the push");
+#$remote -> disconnect;
+
 is $sideband_fired, 1;
 is $credentials_fired, 1;
 is $pack_progress_fired, 1;
 is $transfer_progress_fired, 1;
 is $status_fired, 1;
-
-# Update tips should die()
-eval { $push -> update_tips };
-ok ($@);
-
-$remote -> disconnect;
-$remote -> connect('push');
+is $update_tips_fired, 0;
 
 # setup a pre-receive hook that succeeds
 $pre_receive_content = <<'EOS';
@@ -257,13 +247,24 @@ $pre_receive_content = <<'EOS';
 
 $|++;
 
-print STDERR "This is from the pre-receive hook!";
+print STDERR "This is from the pre-receive hook! (Allowing it)";
 exit(0);
 EOS
 
 write_file($pre_receive_file, $pre_receive_content);
 
 $remote -> callbacks({
+	'credentials' => sub {
+		$credentials_fired = 1;
+		return &{$credentials}(@_);
+	},
+	'sideband_progress' => sub {
+		my ($msg) = @_;
+
+		diag("Remote message (sideband): $msg");
+		is $msg, "This is from the pre-receive hook! (Allowing it)";
+		$sideband_fired = 1;
+	},
 	'update_tips' => sub {
 		my ($ref, $a, $b) = @_;
 
@@ -272,13 +273,8 @@ $remote -> callbacks({
 		ok defined($b);
 		isnt $a, $b;
 		$update_tips_fired = 1;
-	}
-});
-
-$push = Git::Raw::Push -> new($remote);
-$push -> add_refspec("refs/heads/ssh_branch:refs/heads/ssh_branch");
-$push -> callbacks({
-	'status' => sub {
+	},
+	'push_update_reference' => sub {
 		my ($ref, $msg) = @_;
 
 		is $ref, 'refs/heads/ssh_branch';
@@ -287,12 +283,12 @@ $push -> callbacks({
 	}
 });
 
+$sideband_fired = 0;
+$update_tips_fired = 0;
 $status_fired = 0;
-is $push -> finish, 1;
+is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"]), 1;
+is $sideband_fired, 1;
 is $status_fired, 1;
-is $update_tips_fired, 0;
-
-$push -> update_tips;
 is $update_tips_fired, 1;
 
 @remotes = ();
