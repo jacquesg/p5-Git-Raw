@@ -93,8 +93,11 @@ v0.21 + 1
 * Rename git_remote_load() to git_remote_lookup() to bring it in line
   with the rest of the lookup functions.
 
-* git_push_unpack_ok() has been removed and git_push_finish() now
-  returns an error if the unpacking failed.
+* The git_push struct to perform a push has been replaced with
+  git_remote_upload(). The refspecs and options are passed as a
+  function argument. git_push_update_tips() is now also
+  git_remote_update_tips() and the callbacks are in the same struct as
+  the rest.
 
 * Introduce git_merge_bases() and the git_oidarray type to expose all
   merge bases between two commits.
@@ -133,6 +136,11 @@ v0.21 + 1
 * The fetch behavior of remotes with autotag set to GIT_REMOTE_DOWNLOAD_TAGS_ALL
   has been changed to match git 1.9.0 and later. In this mode, libgit2 now
   fetches all tags in addition to whatever else needs to be fetched.
+
+* The remote object has learnt to prune remote-tracking branches. If
+  the remote is configured to do so, this will happen via
+  git_remote_fetch(). You can also call git_remote_prune() after
+  connecting or fetching to perform the prune.
 
 * git_threads_init() and git_threads_shutdown() have been renamed to
   git_libgit2_init() and git_libgit2_shutdown() to better explain what
