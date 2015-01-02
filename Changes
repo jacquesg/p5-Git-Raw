@@ -2,9 +2,17 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to 4ceb388
- - Removed Push methods (Incompatible change):
-    + unpack_ok() (It is now automatically called in finish())
+ - Update libgit2 to 56065c0 (GH#155)
+ - Removed Push package completely (GH#155) (Incompatible change):
+    The functionality has been absorbed into the Remote package
+ - Added Remote methods (GH#155):
+    + prune()
+    + push()
+    + upload()
+ - Added Remote callbacks (GH#155):
+    + pack_progress
+    + push_transfer_progress
+    + push_update_reference
 
 0.50      2014-11-15 20:10:04+02:00 Africa/Johannesburg
 
