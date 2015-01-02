@@ -32,9 +32,7 @@ script:
  - dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -test -report coveralls
 
 notifications:
-  recipient:
-   - alessandro@ghedini.me
-   - jacquesg@cpan.org
   email:
-    on_success: change
-    on_failure: always
+    recipients:
+     - alessandro@ghedini.me
+     - jacquesg@cpan.org
