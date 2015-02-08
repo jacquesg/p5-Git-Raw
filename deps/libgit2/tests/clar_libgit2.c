@@ -53,6 +53,11 @@ void cl_git_rewritefile(const char *path, const char *content)
 	cl_git_write2file(path, content, 0, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 }
 
+void cl_git_rmfile(const char *filename)
+{
+	cl_must_pass(p_unlink(filename));
+}
+
 #ifdef GIT_WIN32
 
 #include "win32/utf-conv.h"
@@ -532,4 +537,26 @@ void cl_sandbox_set_search_path_defaults(void)
 	git_libgit2_opts(
 		GIT_OPT_SET_SEARCH_PATH, GIT_CONFIG_LEVEL_SYSTEM, sandbox_path);
 }
+
+#ifdef GIT_WIN32
+bool cl_sandbox_supports_8dot3(void)
+{
+	git_buf longpath = GIT_BUF_INIT;
+	char *shortname;
+	bool supported;
+
+	cl_git_pass(
+		git_buf_joinpath(&longpath, clar_sandbox_path(), "longer_than_8dot3"));
+
+	cl_git_write2file(longpath.ptr, "", 0, O_RDWR|O_CREAT, 0666);
+	shortname = git_win32_path_8dot3_name(longpath.ptr);
+
+	supported = (shortname != NULL);
+
+	git__free(shortname);
+	git_buf_free(&longpath);
+
+	return supported;
+}
+#endif
 

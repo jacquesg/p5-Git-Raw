@@ -35,6 +35,7 @@ OPTION( LIBGIT2_FILENAME	"Name of the produced binary"			OFF )
 
 OPTION( ANDROID				"Build for android NDK"	 				OFF )
 
+OPTION( USE_OPENSSL                     "Link with and use openssl library"             ON )
 OPTION( USE_ICONV			"Link with and use iconv library" 		OFF )
 OPTION( USE_SSH				"Link with libssh to enable SSH support" ON )
 OPTION( USE_GSSAPI			"Link with libgssapi for SPNEGO auth"   OFF )
@@ -152,7 +153,7 @@ IF (WIN32 AND WINHTTP AND NOT MINGW)
 	INCLUDE_DIRECTORIES(deps/http-parser)
 	FILE(GLOB SRC_HTTP deps/http-parser/*.c deps/http-parser/*.h)
 ELSE ()
-	IF (NOT AMIGA)
+	IF (NOT AMIGA AND USE_OPENSSL)
 		FIND_PACKAGE(OpenSSL)
 	ENDIF ()
 
@@ -220,6 +221,8 @@ IF (LIBSSH2_FOUND)
 	INCLUDE_DIRECTORIES(${LIBSSH2_INCLUDE_DIR})
 	SET(LIBGIT2_PC_REQUIRES "${LIBGIT2_PC_REQUIRES} libssh2")
 	SET(SSH_LIBRARIES ${LIBSSH2_LIBRARIES})
+ELSE()
+	MESSAGE(STATUS "LIBSSH2 not found. Set CMAKE_PREFIX_PATH if it is installed outside of the default search path.")
 ENDIF()
 
 # Optional external dependency: libgssapi

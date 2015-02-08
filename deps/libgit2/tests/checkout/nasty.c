@@ -23,7 +23,29 @@ void test_checkout_nasty__cleanup(void)
 	cl_git_sandbox_cleanup();
 }
 
-void test_checkout_fails(const char *refname, const char *filename)
+static void test_checkout_passes(const char *refname, const char *filename)
+{
+	git_oid commit_id;
+	git_commit *commit;
+	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
+	git_buf path = GIT_BUF_INIT;
+
+	cl_git_pass(git_buf_joinpath(&path, repo_name, filename));
+
+	cl_git_pass(git_reference_name_to_id(&commit_id, repo, refname));
+	cl_git_pass(git_commit_lookup(&commit, repo, &commit_id));
+
+	opts.checkout_strategy = GIT_CHECKOUT_FORCE |
+		GIT_CHECKOUT_DONT_UPDATE_INDEX;
+
+	cl_git_pass(git_checkout_tree(repo, (const git_object *)commit, &opts));
+	cl_assert(!git_path_exists(path.ptr));
+
+	git_commit_free(commit);
+	git_buf_free(&path);
+}
+
+static void test_checkout_fails(const char *refname, const char *filename)
 {
 	git_oid commit_id;
 	git_commit *commit;
@@ -195,6 +217,9 @@ void test_checkout_nasty__git_tilde1(void)
 void test_checkout_nasty__git_custom_shortname(void)
 {
 #ifdef GIT_WIN32
+	if (!cl_sandbox_supports_8dot3())
+		clar__skip();
+
 	cl_must_pass(p_rename("nasty/.git", "nasty/_temp"));
 	cl_git_write2file("nasty/git~1", "", 0, O_RDWR|O_CREAT, 0666);
 	cl_must_pass(p_rename("nasty/_temp", "nasty/.git"));
@@ -323,3 +348,19 @@ void test_checkout_nasty__honors_core_protectntfs(void)
 	test_checkout_fails("refs/heads/dot_git_dot", ".git/foobar");
 	test_checkout_fails("refs/heads/git_tilde1", ".git/foobar");
 }
+
+void test_checkout_nasty__symlink1(void)
+{
+	test_checkout_passes("refs/heads/symlink1", ".git/foobar");
+}
+
+void test_checkout_nasty__symlink2(void)
+{
+	test_checkout_passes("refs/heads/symlink2", ".git/foobar");
+}
+
+void test_checkout_nasty__symlink3(void)
+{
+	test_checkout_passes("refs/heads/symlink3", ".git/foobar");
+}
+
