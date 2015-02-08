@@ -24,12 +24,10 @@ do { \
 	structname structname##_macro_latest = macroinit; \
 	structname structname##_func_latest; \
 	int structname##_curr_ver = structver - 1; \
+	memset(&structname##_func_latest, 0, sizeof(structname##_func_latest)); \
 	cl_git_pass(funcinitname(&structname##_func_latest, structver)); \
-	cl_check_( \
-		memcmp(&structname##_macro_latest, &structname##_func_latest, \
-			sizeof(structname)) == 0, \
-		"Macro-based and function-based initializer for " STRINGIFY(structname) \
-			" are not equivalent."); \
+	options_cmp(&structname##_macro_latest, &structname##_func_latest, \
+		sizeof(structname), STRINGIFY(structname)); \
 	\
 	while (structname##_curr_ver > 0) \
 	{ \
@@ -39,8 +37,40 @@ do { \
 	}\
 } while(0)
 
-void test_structinit_structinit__compare(void)
+static void options_cmp(void *one, void *two, size_t size, const char *name)
 {
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		if (((char *)one)[i] != ((char *)two)[i]) {
+			char desc[1024];
+
+			p_snprintf(desc, 1024, "Difference in %s at byte %" PRIuZ ": macro=%u / func=%u",
+				name, i, ((char *)one)[i], ((char *)two)[i]);
+			clar__fail(__FILE__, __LINE__,
+				"Difference between macro and function options initializer",
+				desc, 0);
+			return;
+		}
+	}
+}
+
+void test_core_structinit__compare(void)
+{
+	/* These tests assume that they can memcmp() two structures that were
+	 * initialized with the same static initializer.  Eg,
+	 * git_blame_options = GIT_BLAME_OPTIONS_INIT;
+	 *
+	 * This assumption fails when there is padding between structure members,
+	 * which is not guaranteed to be initialized to anything sane at all.
+	 *
+	 * Assume most compilers, in a debug build, will clear that memory for
+	 * us or set it to sentinal markers.  Etc.
+	 */
+#if !defined(DEBUG) && !defined(_DEBUG)
+	clar__skip();
+#endif
+
 	/* blame */
 	CHECK_MACRO_FUNC_INIT_EQUAL( \
 		git_blame_options, GIT_BLAME_OPTIONS_VERSION, \
@@ -125,4 +155,9 @@ void test_structinit_structinit__compare(void)
 	CHECK_MACRO_FUNC_INIT_EQUAL( \
 		git_refdb_backend, GIT_REFDB_BACKEND_VERSION, \
 		GIT_REFDB_BACKEND_INIT, git_refdb_init_backend);
+
+	/* submodule update */
+	CHECK_MACRO_FUNC_INIT_EQUAL( \
+		git_submodule_update_options, GIT_SUBMODULE_UPDATE_OPTIONS_VERSION, \
+		GIT_SUBMODULE_UPDATE_OPTIONS_INIT, git_submodule_update_init_options);
 }

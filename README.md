@@ -1,8 +1,8 @@
 libgit2 - the Git linkable library
 ==================================
 
-[![Travis Build Status](https://secure.travis-ci.org/libgit2/libgit2.png?branch=master)](http://travis-ci.org/libgit2/libgit2)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/gnjsdi9r48cfoveg/branch/master?svg=true)](https://ci.appveyor.com/project/nulltoken/libgit2/branch/master)
+[![Travis Build Status](https://secure.travis-ci.org/libgit2/libgit2.svg?branch=master)](http://travis-ci.org/libgit2/libgit2)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/xvof5b4t5480a2q3/branch/master?svg=true)](https://ci.appveyor.com/project/libgit2/libgit2/branch/master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/639/badge.svg)](https://scan.coverity.com/projects/639)
 
 `libgit2` is a portable, pure C implementation of the Git core methods
@@ -215,6 +215,8 @@ Here are the bindings to libgit2 that are currently available:
     * Rugged <https://github.com/libgit2/rugged>
 * Rust
     * git2-rs <https://github.com/alexcrichton/git2-rs>
+* Swift
+    * Gift <https://github.com/modocache/Gift>
 * Vala
     * libgit2.vapi <https://github.com/apmasell/vapis/blob/master/libgit2.vapi>
 

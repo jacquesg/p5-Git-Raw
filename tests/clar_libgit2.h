@@ -112,6 +112,7 @@ void cl_git_append2file(const char *filename, const char *new_content);
 void cl_git_rewritefile(const char *filename, const char *new_content);
 void cl_git_write2file(const char *path, const char *data,
 	size_t datalen, int flags, unsigned int mode);
+void cl_git_rmfile(const char *filename);
 
 bool cl_toggle_filemode(const char *filename);
 bool cl_is_chmod_supported(void);
@@ -159,5 +160,9 @@ void cl_fake_home(void);
 void cl_fake_home_cleanup(void *);
 
 void cl_sandbox_set_search_path_defaults(void);
+
+#ifdef GIT_WIN32
+bool cl_sandbox_supports_8dot3(void);
+#endif
 
 #endif
