@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to 56065c0 (GH#155)
+ - Update libgit2 to b703049 (GH#155, GH#156)
  - Removed Push package completely (GH#155) (Incompatible change):
     The functionality has been absorbed into the Remote package
  - Added Remote methods (GH#155):
