@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.51      2015-02-09 09:55:03+02:00 Africa/Johannesburg
+
  - Update libgit2 to b703049 (GH#155, GH#156)
  - Removed Push package completely (GH#155) (Incompatible change):
     The functionality has been absorbed into the Remote package
