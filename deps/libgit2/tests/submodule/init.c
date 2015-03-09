@@ -34,9 +34,9 @@ void test_submodule_init__absolute_url(void)
 	/* init and verify that absolute path is written to .git/config */
 	cl_git_pass(git_submodule_init(sm, false));
 
-	cl_git_pass(git_repository_config(&cfg, g_repo));
+	cl_git_pass(git_repository_config_snapshot(&cfg, g_repo));
 
-	git_config_get_string(&config_url, cfg, "submodule.testrepo.url");
+	cl_git_pass(git_config_get_string(&config_url, cfg, "submodule.testrepo.url"));
 	cl_assert_equal_s(absolute_url.ptr, config_url);
 
 	git_buf_free(&absolute_url);
@@ -64,9 +64,9 @@ void test_submodule_init__relative_url(void)
 	/* init and verify that absolute path is written to .git/config */
 	cl_git_pass(git_submodule_init(sm, false));
 
-	cl_git_pass(git_repository_config(&cfg, g_repo));
+	cl_git_pass(git_repository_config_snapshot(&cfg, g_repo));
 
-	git_config_get_string(&config_url, cfg, "submodule.testrepo.url");
+	cl_git_pass(git_config_get_string(&config_url, cfg, "submodule.testrepo.url"));
 	cl_assert_equal_s(absolute_url.ptr, config_url);
 
 	git_buf_free(&absolute_url);
@@ -89,7 +89,7 @@ void test_submodule_init__relative_url_detached_head(void)
 	cl_git_pass(git_repository_head(&head_ref, g_repo));
 	cl_git_pass(git_reference_peel(&head_commit, head_ref, GIT_OBJ_COMMIT));
 
-	cl_git_pass(git_repository_set_head_detached(g_repo, git_commit_id((git_commit *)head_commit), NULL, NULL));
+	cl_git_pass(git_repository_set_head_detached(g_repo, git_commit_id((git_commit *)head_commit)));
 
 	cl_assert(git_path_dirname_r(&absolute_url, git_repository_workdir(g_repo)) > 0);
 	cl_git_pass(git_buf_joinpath(&absolute_url, absolute_url.ptr, "testrepo.git"));
@@ -102,9 +102,9 @@ void test_submodule_init__relative_url_detached_head(void)
 	/* init and verify that absolute path is written to .git/config */
 	cl_git_pass(git_submodule_init(sm, false));
 
-	cl_git_pass(git_repository_config(&cfg, g_repo));
+	cl_git_pass(git_repository_config_snapshot(&cfg, g_repo));
 
-	git_config_get_string(&config_url, cfg, "submodule.testrepo.url");
+	cl_git_pass(git_config_get_string(&config_url, cfg, "submodule.testrepo.url"));
 	cl_assert_equal_s(absolute_url.ptr, config_url);
 
 	git_buf_free(&absolute_url);

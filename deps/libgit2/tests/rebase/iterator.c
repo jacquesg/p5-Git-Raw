@@ -42,6 +42,7 @@ static void test_operations(git_rebase *rebase, size_t expected_current)
 		operation = git_rebase_operation_byindex(rebase, i);
 		cl_assert_equal_i(GIT_REBASE_OPERATION_PICK, operation->type);
 		cl_assert_equal_oid(&expected_oid[i], &operation->id);
+		cl_assert_equal_p(NULL, operation->exec);
 	}
 }
 
@@ -63,7 +64,7 @@ void test_rebase_iterator__iterates(void)
 	cl_git_pass(git_annotated_commit_from_ref(&branch_head, repo, branch_ref));
 	cl_git_pass(git_annotated_commit_from_ref(&upstream_head, repo, upstream_ref));
 
-	cl_git_pass(git_rebase_init(&rebase, repo, branch_head, upstream_head, NULL, signature, NULL));
+	cl_git_pass(git_rebase_init(&rebase, repo, branch_head, upstream_head, NULL, NULL));
 	test_operations(rebase, 0);
 	git_rebase_free(rebase);
 

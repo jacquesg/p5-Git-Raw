@@ -277,7 +277,7 @@ static int normalize_find_opts(
 	if (!given ||
 		 (given->flags & GIT_DIFF_FIND_ALL) == GIT_DIFF_FIND_BY_CONFIG)
 	{
-		const char *rule =
+		char *rule =
 			git_config__get_string_force(cfg, "diff.renames", "true");
 		int boolval;
 
@@ -287,6 +287,8 @@ static int normalize_find_opts(
 			opts->flags |= GIT_DIFF_FIND_RENAMES | GIT_DIFF_FIND_COPIES;
 		else
 			opts->flags |= GIT_DIFF_FIND_RENAMES;
+
+		git__free(rule);
 	}
 
 	/* some flags imply others */
@@ -811,6 +813,7 @@ int git_diff_find_similar(
 	size_t num_deltas, num_srcs = 0, num_tgts = 0;
 	size_t tried_srcs = 0, tried_tgts = 0;
 	size_t num_rewrites = 0, num_updates = 0, num_bumped = 0;
+	size_t sigcache_size;
 	void **sigcache = NULL; /* cache of similarity metric file signatures */
 	diff_find_match *tgt2src = NULL;
 	diff_find_match *src2tgt = NULL;
@@ -831,7 +834,8 @@ int git_diff_find_similar(
 	if ((opts.flags & GIT_DIFF_FIND_ALL) == 0)
 		goto cleanup;
 
-	sigcache = git__calloc(num_deltas * 2, sizeof(void *));
+	GITERR_CHECK_ALLOC_MULTIPLY(&sigcache_size, num_deltas, 2);
+	sigcache = git__calloc(sigcache_size, sizeof(void *));
 	GITERR_CHECK_ALLOC(sigcache);
 
 	/* Label rename sources and targets

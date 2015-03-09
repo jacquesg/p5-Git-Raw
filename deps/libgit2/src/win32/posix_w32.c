@@ -33,15 +33,37 @@
  *    inheritable on Windows, so specify the flag to get default behavior back. */
 #define STANDARD_OPEN_FLAGS (_O_BINARY | _O_NOINHERIT)
 
+/* Allowable mode bits on Win32.  Using mode bits that are not supported on
+ * Win32 (eg S_IRWXU) is generally ignored, but Wine warns loudly about it
+ * so we simply remove them.
+ */
+#define WIN32_MODE_MASK (_S_IREAD | _S_IWRITE)
+
 /* GetFinalPathNameByHandleW signature */
 typedef DWORD(WINAPI *PFGetFinalPathNameByHandleW)(HANDLE, LPWSTR, DWORD, DWORD);
 
-int p_ftruncate(int fd, long size)
+/**
+ * Truncate or extend file.
+ *
+ * We now take a "git_off_t" rather than "long" because
+ * files may be longer than 2Gb.
+ */
+int p_ftruncate(int fd, git_off_t size)
 {
-#if defined(_MSC_VER) && _MSC_VER >= 1500
-	return _chsize_s(fd, size);
+	if (size < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+#if !defined(__MINGW32__) || defined(MINGW_HAS_SECURE_API)
+	return ((_chsize_s(fd, size) == 0) ? 0 : -1);
 #else
-	return _chsize(fd, size);
+	/* TODO MINGW32 Find a replacement for _chsize() that handles big files. */
+	if (size > INT32_MAX) {
+		errno = EFBIG;
+		return -1;
+	}
+	return _chsize(fd, (long)size);
 #endif
 }
 
@@ -343,7 +365,7 @@ int p_open(const char *path, int flags, ...)
 		va_end(arg_list);
 	}
 
-	return _wopen(buf, flags | STANDARD_OPEN_FLAGS, mode);
+	return _wopen(buf, flags | STANDARD_OPEN_FLAGS, mode & WIN32_MODE_MASK);
 }
 
 int p_creat(const char *path, mode_t mode)
@@ -353,7 +375,9 @@ int p_creat(const char *path, mode_t mode)
 	if (git_win32_path_from_utf8(buf, path) < 0)
 		return -1;
 
-	return _wopen(buf, _O_WRONLY | _O_CREAT | _O_TRUNC | STANDARD_OPEN_FLAGS, mode);
+	return _wopen(buf,
+		_O_WRONLY | _O_CREAT | _O_TRUNC | STANDARD_OPEN_FLAGS,
+		mode & WIN32_MODE_MASK);
 }
 
 int p_getcwd(char *buffer_out, size_t size)
@@ -448,12 +472,8 @@ int p_stat(const char* path, struct stat* buf)
 	git_win32_path path_w;
 	int len;
 
-	if ((len = git_win32_path_from_utf8(path_w, path)) < 0)
-		return -1;
-
-	git_win32__path_trim_end(path_w, len);
-
-	if (lstat_w(path_w, buf, false) < 0)
+	if ((len = git_win32_path_from_utf8(path_w, path)) < 0 ||
+		lstat_w(path_w, buf, false) < 0)
 		return -1;
 
 	/* The item is a symbolic link or mount point. No need to iterate
@@ -611,7 +631,7 @@ int p_access(const char* path, mode_t mode)
 	if (git_win32_path_from_utf8(buf, path) < 0)
 		return -1;
 
-	return _waccess(buf, mode);
+	return _waccess(buf, mode & WIN32_MODE_MASK);
 }
 
 static int ensure_writable(wchar_t *fpath)

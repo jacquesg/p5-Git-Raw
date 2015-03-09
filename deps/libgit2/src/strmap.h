@@ -12,10 +12,11 @@
 #define kmalloc git__malloc
 #define kcalloc git__calloc
 #define krealloc git__realloc
+#define kreallocarray git__reallocarray
 #define kfree git__free
 #include "khash.h"
 
-__KHASH_TYPE(str, const char *, void *);
+__KHASH_TYPE(str, const char *, void *)
 typedef khash_t(str) git_strmap;
 typedef khiter_t git_strmap_iter;
 

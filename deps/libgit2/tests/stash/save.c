@@ -195,7 +195,7 @@ void test_stash_save__cannot_stash_against_an_unborn_branch(void)
 {
 	git_reference *head;
 
-	cl_git_pass(git_reference_symbolic_create(&head, repo, "HEAD", "refs/heads/unborn", 1, NULL, NULL));
+	cl_git_pass(git_reference_symbolic_create(&head, repo, "HEAD", "refs/heads/unborn", 1, NULL));
 
 	cl_assert_equal_i(GIT_EUNBORNBRANCH,
 		git_stash_save(&stash_tip_oid, repo, signature, NULL, GIT_STASH_DEFAULT));
@@ -217,7 +217,7 @@ void test_stash_save__cannot_stash_against_a_bare_repository(void)
 
 void test_stash_save__can_stash_against_a_detached_head(void)
 {
-	git_repository_detach_head(repo, NULL, NULL);
+	git_repository_detach_head(repo);
 
 	cl_git_pass(git_stash_save(&stash_tip_oid, repo, signature, NULL, GIT_STASH_DEFAULT));
 
@@ -398,4 +398,23 @@ void test_stash_save__skip_submodules(void)
 		&stash_tip_oid, repo, signature, NULL, GIT_STASH_INCLUDE_UNTRACKED));
 
 	assert_status(repo, "untracked_repo/", GIT_STATUS_WT_NEW);
+}
+
+void test_stash_save__deleted_in_index_modified_in_workdir(void)
+{
+	git_index *index;
+
+	git_repository_index(&index, repo);
+
+	cl_git_pass(git_index_remove_bypath(index, "who"));
+	cl_git_pass(git_index_write(index));
+
+	assert_status(repo, "who", GIT_STATUS_WT_NEW | GIT_STATUS_INDEX_DELETED);
+
+	cl_git_pass(git_stash_save(&stash_tip_oid, repo, signature, NULL, GIT_STASH_DEFAULT));
+
+	assert_blob_oid("stash@{0}^0:who", "a0400d4954659306a976567af43125a0b1aa8595");
+	assert_blob_oid("stash@{0}^2:who", NULL);
+
+	git_index_free(index);
 }

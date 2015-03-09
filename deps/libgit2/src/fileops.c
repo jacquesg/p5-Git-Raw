@@ -7,10 +7,13 @@
 #include "common.h"
 #include "fileops.h"
 #include "global.h"
+#include "strmap.h"
 #include <ctype.h>
 #if GIT_WIN32
 #include "win32/findfile.h"
 #endif
+
+GIT__USE_STRMAP
 
 int git_futils_mkpath2file(const char *file_path, const mode_t mode)
 {
@@ -121,10 +124,17 @@ mode_t git_futils_canonical_mode(mode_t raw_mode)
 int git_futils_readbuffer_fd(git_buf *buf, git_file fd, size_t len)
 {
 	ssize_t read_size = 0;
+	size_t alloc_len;
 
 	git_buf_clear(buf);
 
-	if (git_buf_grow(buf, len + 1) < 0)
+	if (!git__is_ssizet(len)) {
+		giterr_set(GITERR_INVALID, "Read too large.");
+		return -1;
+	}
+
+	GITERR_CHECK_ALLOC_ADD(&alloc_len, len, 1);
+	if (git_buf_grow(buf, alloc_len) < 0)
 		return -1;
 
 	/* p_read loops internally to read len bytes */
@@ -174,7 +184,7 @@ int git_futils_readbuffer_updated(
 	 */
 	if (size && *size != (size_t)st.st_size)
 		changed = true;
-	if (mtime && *mtime != st.st_mtime)
+	if (mtime && *mtime != (time_t)st.st_mtime)
 		changed = true;
 	if (!size && !mtime)
 		changed = true;
@@ -321,16 +331,16 @@ GIT_INLINE(int) validate_existing(
 	return 0;
 }
 
-int git_futils_mkdir_withperf(
+int git_futils_mkdir_ext(
 	const char *path,
 	const char *base,
 	mode_t mode,
 	uint32_t flags,
-	struct git_futils_mkdir_perfdata *perfdata)
+	struct git_futils_mkdir_options *opts)
 {
 	int error = -1;
 	git_buf make_path = GIT_BUF_INIT;
-	ssize_t root = 0, min_root_len;
+	ssize_t root = 0, min_root_len, root_len;
 	char lastch = '/', *tail;
 	struct stat st;
 
@@ -343,22 +353,29 @@ int git_futils_mkdir_withperf(
 		goto done;
 	}
 
-	/* remove trailing slashes on path */
-	while (make_path.ptr[make_path.size - 1] == '/') {
-		make_path.size--;
-		make_path.ptr[make_path.size] = '\0';
-	}
+	/* Trim trailing slashes (except the root) */
+	if ((root_len = git_path_root(make_path.ptr)) < 0)
+		root_len = 0;
+	else
+		root_len++;
+
+	while (make_path.size > (size_t)root_len &&
+		make_path.ptr[make_path.size - 1] == '/')
+		make_path.ptr[--make_path.size] = '\0';
 
 	/* if we are not supposed to made the last element, truncate it */
 	if ((flags & GIT_MKDIR_SKIP_LAST2) != 0) {
-		git_buf_rtruncate_at_char(&make_path, '/');
+		git_path_dirname_r(&make_path, make_path.ptr);
 		flags |= GIT_MKDIR_SKIP_LAST;
 	}
-	if ((flags & GIT_MKDIR_SKIP_LAST) != 0)
-		git_buf_rtruncate_at_char(&make_path, '/');
+	if ((flags & GIT_MKDIR_SKIP_LAST) != 0) {
+		git_path_dirname_r(&make_path, make_path.ptr);
+	}
 
-	/* if nothing left after truncation, then we're done! */
-	if (!make_path.size) {
+	/* We were either given the root path (or trimmed it to
+	 * the root), we don't have anything to do.
+	 */
+	if (make_path.size <= (size_t)root_len) {
 		error = 0;
 		goto done;
 	}
@@ -394,11 +411,14 @@ int git_futils_mkdir_withperf(
 		*tail = '\0';
 		st.st_mode = 0;
 
+		if (opts->dir_map && git_strmap_exists(opts->dir_map, make_path.ptr))
+			continue;
+
 		/* See what's going on with this path component */
-		perfdata->stat_calls++;
+		opts->perfdata.stat_calls++;
 
 		if (p_lstat(make_path.ptr, &st) < 0) {
-			perfdata->mkdir_calls++;
+			opts->perfdata.mkdir_calls++;
 
 			if (errno != ENOENT || p_mkdir(make_path.ptr, mode) < 0) {
 				giterr_set(GITERR_OS, "Failed to make directory '%s'", make_path.ptr);
@@ -416,7 +436,7 @@ int git_futils_mkdir_withperf(
 			}
 
 			if ((error = validate_existing(
-				make_path.ptr, &st, mode, flags, perfdata)) < 0)
+				make_path.ptr, &st, mode, flags, &opts->perfdata)) < 0)
 					goto done;
 		}
 
@@ -425,7 +445,7 @@ int git_futils_mkdir_withperf(
 			 (lastch == '\0' && (flags & GIT_MKDIR_CHMOD) != 0)) &&
 			st.st_mode != mode) {
 
-			perfdata->chmod_calls++;
+			opts->perfdata.chmod_calls++;
 
 			if ((error = p_chmod(make_path.ptr, mode)) < 0 &&
 				lastch == '\0') {
@@ -434,6 +454,23 @@ int git_futils_mkdir_withperf(
 				goto done;
 			}
 		}
+
+		if (opts->dir_map && opts->pool) {
+			char *cache_path;
+			size_t alloc_size;
+
+			GITERR_CHECK_ALLOC_ADD(&alloc_size, make_path.size, 1);
+			if (!git__is_uint32(alloc_size))
+				return -1;
+			cache_path = git_pool_malloc(opts->pool, (uint32_t)alloc_size);
+			GITERR_CHECK_ALLOC(cache_path);
+
+			memcpy(cache_path, make_path.ptr, make_path.size + 1);
+
+			git_strmap_insert(opts->dir_map, cache_path, cache_path, error);
+			if (error < 0)
+				goto done;
+		}
 	}
 
 	error = 0;
@@ -441,7 +478,7 @@ int git_futils_mkdir_withperf(
 	/* check that full path really is a directory if requested & needed */
 	if ((flags & GIT_MKDIR_VERIFY_DIR) != 0 &&
 		lastch != '\0') {
-		perfdata->stat_calls++;
+		opts->perfdata.stat_calls++;
 
 		if (p_stat(make_path.ptr, &st) < 0 || !S_ISDIR(st.st_mode)) {
 			giterr_set(GITERR_OS, "Path is not a directory '%s'",
@@ -461,8 +498,8 @@ int git_futils_mkdir(
 	mode_t mode,
 	uint32_t flags)
 {
-	struct git_futils_mkdir_perfdata perfdata = {0};
-	return git_futils_mkdir_withperf(path, base, mode, flags, &perfdata);
+	struct git_futils_mkdir_options options = {0};
+	return git_futils_mkdir_ext(path, base, mode, flags, &options);
 }
 
 int git_futils_mkdir_r(const char *path, const char *base, const mode_t mode)
@@ -684,7 +721,11 @@ static int cp_link(const char *from, const char *to, size_t link_size)
 {
 	int error = 0;
 	ssize_t read_len;
-	char *link_data = git__malloc(link_size + 1);
+	char *link_data;
+	size_t alloc_size;
+
+	GITERR_CHECK_ALLOC_ADD(&alloc_size, link_size, 1);
+	link_data = git__malloc(alloc_size);
 	GITERR_CHECK_ALLOC(link_data);
 
 	read_len = p_readlink(from, link_data, link_size);
