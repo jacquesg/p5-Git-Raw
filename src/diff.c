@@ -461,12 +461,13 @@ static int diff_list_apply_options(
 
 	/* if ignore_submodules not explicitly set, check diff config */
 	if (diff->opts.ignore_submodules <= 0) {
-		const git_config_entry *entry;
+		 git_config_entry *entry;
 		git_config__lookup_entry(&entry, cfg, "diff.ignoresubmodules", true);
 
 		if (entry && git_submodule_parse_ignore(
 				&diff->opts.ignore_submodules, entry->value) < 0)
 			giterr_clear();
+		git_config_entry_free(entry);
 	}
 
 	/* if either prefix is not set, figure out appropriate value */
@@ -600,7 +601,7 @@ int git_diff__oid_for_entry(
 		error = -1;
 	} else if (!(error = git_filter_list_load(
 		&fl, diff->repo, NULL, entry.path,
-		GIT_FILTER_TO_ODB, GIT_FILTER_OPT_ALLOW_UNSAFE)))
+		GIT_FILTER_TO_ODB, GIT_FILTER_ALLOW_UNSAFE)))
 	{
 		int fd = git_futils_open_ro(full_path.ptr);
 		if (fd < 0)
@@ -1527,6 +1528,7 @@ int git_diff_format_email(
 	char *summary = NULL, *loc = NULL;
 	bool ignore_marker;
 	unsigned int format_flags = 0;
+	size_t allocsize;
 	int error;
 
 	assert(out && diff && opts);
@@ -1558,8 +1560,10 @@ int git_diff_format_email(
 			goto on_error;
 		}
 
-		summary = git__calloc(offset + 1, sizeof(char));
+		GITERR_CHECK_ALLOC_ADD(&allocsize, offset, 1);
+		summary = git__calloc(allocsize, sizeof(char));
 		GITERR_CHECK_ALLOC(summary);
+
 		strncpy(summary, opts->summary, offset);
 	}
 

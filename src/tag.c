@@ -72,7 +72,7 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 	};
 
 	unsigned int i;
-	size_t text_len;
+	size_t text_len, alloc_len;
 	char *search;
 
 	if (git_oid__parse(&tag->target, &buffer, buffer_end, "object ") < 0)
@@ -117,7 +117,8 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 
 	text_len = search - buffer;
 
-	tag->tag_name = git__malloc(text_len + 1);
+	GITERR_CHECK_ALLOC_ADD(&alloc_len, text_len, 1);
+	tag->tag_name = git__malloc(alloc_len);
 	GITERR_CHECK_ALLOC(tag->tag_name);
 
 	memcpy(tag->tag_name, buffer, text_len);
@@ -141,7 +142,8 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 
 		text_len = buffer_end - ++buffer;
 
-		tag->message = git__malloc(text_len + 1);
+		GITERR_CHECK_ALLOC_ADD(&alloc_len, text_len, 1);
+		tag->message = git__malloc(alloc_len);
 		GITERR_CHECK_ALLOC(tag->message);
 
 		memcpy(tag->message, buffer, text_len);
@@ -271,7 +273,7 @@ static int git_tag_create__internal(
 	} else
 		git_oid_cpy(oid, git_object_id(target));
 
-	error = git_reference_create(&new_ref, repo, ref_name.ptr, oid, allow_ref_overwrite, NULL, NULL);
+	error = git_reference_create(&new_ref, repo, ref_name.ptr, oid, allow_ref_overwrite, NULL);
 
 cleanup:
 	git_reference_free(new_ref);
@@ -378,7 +380,7 @@ int git_tag_create_frombuffer(git_oid *oid, git_repository *repo, const char *bu
 	}
 
 	error = git_reference_create(
-		&new_ref, repo, ref_name.ptr, oid, allow_ref_overwrite, NULL, NULL);
+		&new_ref, repo, ref_name.ptr, oid, allow_ref_overwrite, NULL);
 
 	git_reference_free(new_ref);
 	git_buf_free(&ref_name);

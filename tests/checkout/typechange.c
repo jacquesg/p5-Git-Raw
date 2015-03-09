@@ -122,7 +122,7 @@ void test_checkout_typechange__checkout_typechanges_safe(void)
 		cl_git_pass(git_checkout_tree(g_repo, obj, &opts));
 
 		cl_git_pass(
-			git_repository_set_head_detached(g_repo, git_object_id(obj), NULL, NULL));
+			git_repository_set_head_detached(g_repo, git_object_id(obj)));
 
 		assert_workdir_matches_tree(g_repo, git_object_id(obj), NULL, true);
 
@@ -212,7 +212,7 @@ void test_checkout_typechange__checkout_with_conflicts(void)
 		p_mkdir("typechanges/d", 0777); /* intentionally empty dir */
 		force_create_file("typechanges/untracked");
 
-		opts.checkout_strategy = GIT_CHECKOUT_SAFE_CREATE;
+		opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 		memset(&cts, 0, sizeof(cts));
 
 		cl_git_fail(git_checkout_tree(g_repo, obj, &opts));
@@ -231,7 +231,7 @@ void test_checkout_typechange__checkout_with_conflicts(void)
 		cl_assert(!git_path_exists("typechanges/untracked"));
 
 		cl_git_pass(
-			git_repository_set_head_detached(g_repo, git_object_id(obj), NULL, NULL));
+			git_repository_set_head_detached(g_repo, git_object_id(obj)));
 
 		assert_workdir_matches_tree(g_repo, git_object_id(obj), NULL, true);
 

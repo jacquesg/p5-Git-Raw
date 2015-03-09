@@ -17,7 +17,7 @@
 #include "config.h"
 #include "repository.h"
 
-GIT__USE_STRMAP;
+GIT__USE_STRMAP
 
 typedef enum {
 	DIFF_DRIVER_AUTO = 0,
@@ -158,6 +158,30 @@ static git_diff_driver_registry *git_repository_driver_registry(
 	return repo->diff_drivers;
 }
 
+static int diff_driver_alloc(
+	git_diff_driver **out, size_t *namelen_out, const char *name)
+{
+	git_diff_driver *driver;
+	size_t driverlen = sizeof(git_diff_driver),
+		namelen = strlen(name),
+		alloclen;
+
+	GITERR_CHECK_ALLOC_ADD(&alloclen, driverlen, namelen);
+	GITERR_CHECK_ALLOC_ADD(&alloclen, alloclen, 1);
+
+	driver = git__calloc(1, alloclen);
+	GITERR_CHECK_ALLOC(driver);
+
+	memcpy(driver->name, name, namelen);
+
+	*out = driver;
+
+	if (namelen_out)
+		*namelen_out = namelen;
+
+	return 0;
+}
+
 static int git_diff_driver_builtin(
 	git_diff_driver **out,
 	git_diff_driver_registry *reg,
@@ -166,7 +190,7 @@ static int git_diff_driver_builtin(
 	int error = 0;
 	git_diff_driver_definition *ddef = NULL;
 	git_diff_driver *drv = NULL;
-	size_t namelen, idx;
+	size_t idx;
 
 	for (idx = 0; idx < ARRAY_SIZE(builtin_defs); ++idx) {
 		if (!strcasecmp(driver_name, builtin_defs[idx].name)) {
@@ -177,13 +201,10 @@ static int git_diff_driver_builtin(
 	if (!ddef)
 		goto done;
 
-	namelen = strlen(ddef->name);
-
-	drv = git__calloc(1, sizeof(git_diff_driver) + namelen + 1);
-	GITERR_CHECK_ALLOC(drv);
+	if ((error = diff_driver_alloc(&drv, NULL, ddef->name)) < 0)
+		goto done;
 
 	drv->type = DIFF_DRIVER_PATTERNLIST;
-	memcpy(drv->name, ddef->name, namelen);
 
 	if (ddef->fns &&
 		(error = diff_driver_add_patterns(
@@ -217,11 +238,11 @@ static int git_diff_driver_load(
 	int error = 0;
 	git_diff_driver_registry *reg;
 	git_diff_driver *drv = NULL;
-	size_t namelen = strlen(driver_name);
+	size_t namelen;
 	khiter_t pos;
-	git_config *cfg;
+	git_config *cfg = NULL;
 	git_buf name = GIT_BUF_INIT;
-	const git_config_entry *ce;
+	git_config_entry *ce = NULL;
 	bool found_driver = false;
 
 	if ((reg = git_repository_driver_registry(repo)) == NULL)
@@ -233,10 +254,10 @@ static int git_diff_driver_load(
 		return 0;
 	}
 
-	drv = git__calloc(1, sizeof(git_diff_driver) + namelen + 1);
-	GITERR_CHECK_ALLOC(drv);
+	if ((error = diff_driver_alloc(&drv, &namelen, driver_name)) < 0)
+		goto done;
+
 	drv->type = DIFF_DRIVER_AUTO;
-	memcpy(drv->name, driver_name, namelen);
 
 	/* if you can't read config for repo, just use default driver */
 	if (git_repository_config_snapshot(&cfg, repo) < 0) {
@@ -320,6 +341,7 @@ static int git_diff_driver_load(
 	*out = drv;
 
 done:
+	git_config_entry_free(ce);
 	git_buf_free(&name);
 	git_config_free(cfg);
 
@@ -397,13 +419,12 @@ void git_diff_driver_update_options(
 int git_diff_driver_content_is_binary(
 	git_diff_driver *driver, const char *content, size_t content_len)
 {
-	git_buf search;
-
-	search.ptr   = (char *)content;
-	search.size  = min(content_len, GIT_FILTER_BYTES_TO_CHECK_NUL);
-	search.asize = 0;
+	git_buf search = GIT_BUF_INIT;
 
 	GIT_UNUSED(driver);
+
+	git_buf_attach_notowned(&search, content,
+		min(content_len, GIT_FILTER_BYTES_TO_CHECK_NUL));
 
 	/* TODO: provide encoding / binary detection callbacks that can
 	 * be UTF-8 aware, etc.  For now, instead of trying to be smart,

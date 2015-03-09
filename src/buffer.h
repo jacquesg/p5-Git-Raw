@@ -37,6 +37,18 @@ GIT_INLINE(bool) git_buf_is_allocated(const git_buf *buf)
 extern void git_buf_init(git_buf *buf, size_t initial_size);
 
 /**
+ * Resize the buffer allocation to make more space.
+ *
+ * This will attempt to grow the buffer to accommodate the additional size.
+ * It is similar to `git_buf_grow`, but performs the new size calculation,
+ * checking for overflow.
+ *
+ * Like `git_buf_grow`, if this is a user-supplied buffer, this will allocate
+ * a new buffer.
+ */
+extern int git_buf_grow_by(git_buf *buffer, size_t additional_size);
+
+/**
  * Attempt to grow the buffer to hold at least `target_size` bytes.
  *
  * If the allocation fails, this will return an error.  If `mark_oom` is true,
@@ -61,6 +73,12 @@ extern void git_buf_sanitize(git_buf *buf);
 extern void git_buf_swap(git_buf *buf_a, git_buf *buf_b);
 extern char *git_buf_detach(git_buf *buf);
 extern void git_buf_attach(git_buf *buf, char *ptr, size_t asize);
+
+/* Populates a `git_buf` where the contents are not "owned" by the
+ * buffer, and calls to `git_buf_free` will not free the given buf.
+ */
+extern void git_buf_attach_notowned(
+	git_buf *buf, const char *ptr, size_t size);
 
 /**
  * Test if there have been any reallocation failures with this git_buf.

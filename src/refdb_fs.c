@@ -26,7 +26,7 @@
 #include <git2/sys/refs.h>
 #include <git2/sys/reflog.h>
 
-GIT__USE_STRMAP;
+GIT__USE_STRMAP
 
 #define DEFAULT_NESTING_LEVEL	5
 #define MAX_NESTING_LEVEL		10
@@ -1324,7 +1324,7 @@ static int refdb_fs_backend__rename(
 	/* Try to rename the refog; it's ok if the old doesn't exist */
 	error = refdb_reflog_fs__rename(_backend, old_name, new_name);
 	if (((error == 0) || (error == GIT_ENOTFOUND)) &&
-	    ((error = reflog_append(backend, new, NULL, NULL, who, message)) < 0)) {
+	    ((error = reflog_append(backend, new, git_reference_target(new), NULL, who, message)) < 0)) {
 		git_reference_free(new);
 		git_filebuf_cleanup(&file);
 		return error;
@@ -1768,6 +1768,15 @@ static int reflog_append(refdb_fs_backend *backend, const git_reference *ref, co
 
 	if (((error = git_futils_mkpath2file(git_buf_cstr(&path), 0777)) < 0) &&
 	    (error != GIT_EEXISTS)) {
+		goto cleanup;
+	}
+
+	/* If the new branch matches part of the namespace of a previously deleted branch,
+	 * there maybe an obsolete/unused directory (or directory hierarchy) in the way.
+	 */
+	if (git_path_isdir(git_buf_cstr(&path)) &&
+		(git_futils_rmdir_r(git_buf_cstr(&path), NULL, GIT_RMDIR_SKIP_NONEMPTY) < 0)) {
+		error = -1;
 		goto cleanup;
 	}
 

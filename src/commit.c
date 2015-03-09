@@ -104,7 +104,7 @@ int git_commit_create_from_callback(
 
 	if (update_ref != NULL) {
 		error = git_reference__update_for_commit(
-			repo, ref, update_ref, id, committer, "commit");
+			repo, ref, update_ref, id, "commit");
 		git_reference_free(ref);
 		return error;
 	}
@@ -295,7 +295,7 @@ int git_commit_amend(
 
 	if (!error && update_ref) {
 		error = git_reference__update_for_commit(
-			repo, ref, NULL, id, committer, "commit");
+			repo, ref, NULL, id, "commit");
 		git_reference_free(ref);
 	}
 
@@ -400,7 +400,7 @@ GIT_COMMIT_GETTER(const char *, raw_header, commit->raw_header)
 GIT_COMMIT_GETTER(git_time_t, time, commit->committer->when.time)
 GIT_COMMIT_GETTER(int, time_offset, commit->committer->when.offset)
 GIT_COMMIT_GETTER(unsigned int, parentcount, (unsigned int)git_array_size(commit->parent_ids))
-GIT_COMMIT_GETTER(const git_oid *, tree_id, &commit->tree_id);
+GIT_COMMIT_GETTER(const git_oid *, tree_id, &commit->tree_id)
 
 const char *git_commit_message(const git_commit *commit)
 {

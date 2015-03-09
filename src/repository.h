@@ -128,10 +128,15 @@ struct git_repository {
 	char *namespace;
 	char *name_8dot3;
 
+	char *ident_name;
+	char *ident_email;
+
 	unsigned is_bare:1,
 		has_8dot3:1,
 		has_8dot3_default:1;
 	unsigned int lru_counter;
+
+	git_atomic attr_session_key;
 
 	git_cvar_value cvar_cache[GIT_CVAR_CACHE_MAX];
 };
