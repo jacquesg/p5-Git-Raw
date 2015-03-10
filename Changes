@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to d7c8194 (GH#158)
+ - The 'safe_create' checkout strategy has been removed from libgit2 (use 'safe') (Incompatible change)
+ - Repository -> head() and Repository -> detach_head() no longer accept reflog messages (Incompatible change)
+
 0.51      2015-02-09 09:55:03+02:00 Africa/Johannesburg
 
  - Update libgit2 to b703049 (GH#155, GH#156)
