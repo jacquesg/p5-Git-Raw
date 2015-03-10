@@ -16,7 +16,7 @@ my $branch = $repo -> branch($branch_name, $old_head -> target);
 # switch to a new branch
 $repo -> checkout($repo -> head($branch), {
 	'checkout_strategy' => {
-		'safe_create' => 1
+		'safe' => 1
 	}
 });
 

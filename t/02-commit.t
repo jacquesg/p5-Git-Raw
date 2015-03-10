@@ -489,10 +489,10 @@ $index -> remove('prerename');
 $index -> write();
 
 my $old_head = $repo -> head;
-$repo -> detach_head ($old_head -> target, 'detaching head');
+$repo -> detach_head($old_head -> target);
 is $repo -> is_head_detached, 1;
 
-$repo -> head ($old_head, 'reattaching head');
+$repo -> head ($old_head);
 is $repo -> is_head_detached, 0;
 
 my $reflog = Git::Raw::Reflog -> open(Git::Raw::Reference -> lookup ('HEAD', $repo));
@@ -501,9 +501,10 @@ ok $entry_count >= 2;
 
 @entries = $reflog -> entries(0, 2);
 is scalar(@entries), 2;
-is $entries[0] -> message, 'reattaching head';
-is $entries[1] -> message, 'detaching head';
+like $entries[0] -> message, qr/^checkout: moving from /;
+like $entries[0] -> message, qr/to master$/;
+like $entries[1] -> message, qr/^checkout: moving from master to/;
 
-ok (!eval {$repo -> detach_head ('zzz')});
+ok (!eval {$repo -> detach_head()});
 
 done_testing;

@@ -122,21 +122,18 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Retrieve the default L<Git::Raw::Index> of the repository.
 
-=head2 head( [$new_head, $message] )
+=head2 head( [$new_head] )
 
 Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository. If
 the L<Git::Raw::Reference> C<$new_head> is passed, the HEAD of the repository
-will be changed to point to it. If a C<$message> is provided, it will be
-used to create the reflog entry, alternatively, the reflog message will simply
-be C<"reset">.
+will be changed to point to it.
 
-=head2 detach_head( $commitish, [$message] )
+=head2 detach_head( $commitish )
 
 Make the repository HEAD point directly to a commit. C<$commitish> should be
 peelable to a L<Git::Raw::Commit> object, that is, it should be a
 L<Git::Raw::Commit> or L<Git::Raw::Reference> object, or alternatively a commit
-id or commit id prefix. If a C<$message> is provided, it will be used to create
-the reflog entry, alternatively, the reflog message will simply be C<"reset">.
+id or commit id prefix.
 
 =head2 lookup( $id )
 
@@ -169,12 +166,6 @@ opposite of C<"none">.
 
 Make only modifications that will not lose changes (to be used in order to
 simulate C<git checkout>.
-
-=item * "safe_create"
-
-Like C<"safe">, but will also cause a file to be checked out if it is missing
-from the working directory even if it is not modified between the target and
-baseline (to be used in order to simulate C<git checkout-index> and C<git clone>).
 
 =item * "allow_conflicts"
 

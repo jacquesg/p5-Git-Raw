@@ -108,13 +108,18 @@ str(self, name, ...)
 			value = git_ensure_pv(ST(2), "value");
 
 			rc = git_config_set_string(self, id, value);
-		} else {
-			if ((rc = git_config_get_string(&value, self, id)) == GIT_ENOTFOUND)
-				XSRETURN_UNDEF;
-		}
+			git_check_error(rc);
 
-		git_check_error(rc);
-		RETVAL = newSVpv(value, 0);
+			RETVAL = newSVpv(value, 0);
+		} else {
+			git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+			if ((rc = git_config_get_string_buf(&buf, self, id)) == GIT_ENOTFOUND)
+				XSRETURN_UNDEF;
+			git_check_error(rc);
+
+			RETVAL = newSVpv(buf.ptr, 0);
+			git_buf_free(&buf);
+		}
 
 	OUTPUT: RETVAL
 

@@ -31,7 +31,7 @@ load(class, repo, path, mode)
 				repo_ptr -> repository, NULL,
 				git_ensure_pv(path, "path"),
 				m,
-				GIT_FILTER_OPT_DEFAULT
+				GIT_FILTER_DEFAULT
 			);
 			git_check_error(rc);
 		} else

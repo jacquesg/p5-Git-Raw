@@ -316,14 +316,8 @@ fetch(self)
 	PREINIT:
 		int rc;
 
-		Signature sig;
-
 	CODE:
-		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
-		git_check_error(rc);
-
-		rc = git_remote_fetch(self -> remote, NULL, sig, NULL);
-		git_signature_free(sig);
+		rc = git_remote_fetch(self -> remote, NULL, NULL);
 		git_check_error(rc);
 
 SV *
@@ -334,7 +328,6 @@ push(self, refspecs)
 	PREINIT:
 		int rc;
 
-		Signature sig;
 		git_push_options opts = GIT_PUSH_OPTIONS_INIT;
 		git_strarray specs = {NULL, 0};
 
@@ -344,15 +337,10 @@ push(self, refspecs)
 			&specs
 		);
 
-		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
-		git_check_error(rc);
-
 		/* Reset the push success marker */
 		self -> callbacks.push_success = 1;
 
-		rc = git_remote_push(self -> remote, &specs, &opts,
-			sig, NULL);
-		git_signature_free(sig);
+		rc = git_remote_push(self -> remote, &specs, &opts);
 		Safefree(specs.strings);
 		if (rc != GIT_OK && rc != GIT_EUSER)
 			git_check_error(rc);
@@ -460,14 +448,9 @@ update_tips(self)
 
 	PREINIT:
 		int rc;
-		Signature sig;
 
 	CODE:
-		rc = git_signature_default(&sig, git_remote_owner(self -> remote));
-		git_check_error(rc);
-
-		rc = git_remote_update_tips(self -> remote, sig, NULL);
-		git_signature_free(sig);
+		rc = git_remote_update_tips(self -> remote, NULL);
 		git_check_error(rc);
 
 void

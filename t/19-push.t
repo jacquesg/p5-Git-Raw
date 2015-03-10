@@ -152,7 +152,7 @@ isa_ok $branch, 'Git::Raw::Branch';
 
 $repo -> checkout($repo -> head($branch), {
 	'checkout_strategy' => {
-		'safe_create' => 1
+		'safe' => 1
 	}
 });
 

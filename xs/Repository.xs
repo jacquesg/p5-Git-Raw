@@ -234,26 +234,16 @@ head(self, ...)
 
 		Reference head;
 		Repository repo;
-		Signature sig;
 
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 
 		if (items >= 2) {
-			const char *reflog_message = "reset";
 			Reference new_head = GIT_SV_TO_PTR(Reference, ST(1));
 
-			if (items >= 3)
-				reflog_message = git_ensure_pv(ST(2), "message");
-
-			rc = git_signature_default(&sig, repo -> repository);
-			git_check_error(rc);
-
 			rc = git_repository_set_head(
-				repo -> repository, git_reference_name(new_head),
-				sig, reflog_message
+				repo -> repository, git_reference_name(new_head)
 			);
-			git_signature_free(sig);
 			git_check_error(rc);
 		}
 
@@ -267,7 +257,7 @@ head(self, ...)
 	OUTPUT: RETVAL
 
 void
-detach_head(self, commitish, ...)
+detach_head(self, commitish)
 	SV *self
 	SV *commitish
 
@@ -276,25 +266,16 @@ detach_head(self, commitish, ...)
 		int rc;
 
 		Repository repo;
-		Signature sig;
 		git_oid id;
 
-		const char *reflog_message = "reset";
-
 	CODE:
-		if (items == 3)
-			reflog_message = git_ensure_pv(ST(2), "message");
-
 		repo = GIT_SV_TO_PTR(Repository, self);
 
 		if (git_sv_to_commitish(repo -> repository, commitish, &id) == NULL)
 			croak_resolve("Could not resolve 'commitish' to a commit id");
 
-		rc = git_signature_default(&sig, repo -> repository);
-		git_check_error(rc);
-
 		rc = git_repository_set_head_detached(repo -> repository,
-			&id, sig, reflog_message);
+			&id);
 		git_check_error(rc);
 
 SV *
@@ -363,7 +344,6 @@ reset(self, target, opts)
 	PREINIT:
 		int rc;
 
-		Signature sig;
 		SV *opt;
 		AV *lopt;
 
@@ -402,11 +382,7 @@ reset(self, target, opts)
 					"Valid values: 'soft', 'mixed' or 'hard'",
 					type_str);
 
-			rc = git_signature_default(&sig, self -> repository);
-			git_check_error(rc);
-
-			rc = git_reset(self -> repository, git_sv_to_obj(target), reset, NULL, sig, NULL);
-			git_signature_free(sig);
+			rc = git_reset(self -> repository, git_sv_to_obj(target), reset, NULL);
 			git_check_error(rc);
 		}
 

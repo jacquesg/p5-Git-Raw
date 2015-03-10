@@ -47,7 +47,7 @@ my $commit1 = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> targ
 my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
 $repo -> checkout($repo -> head($master), {
 	'checkout_strategy' => {
-		'safe_create' => 1
+		'safe' => 1
 	}
 });
 
@@ -306,7 +306,7 @@ $repo -> merge($branch3, {
 	'favor' => 'theirs',
 	}, {
 	checkout_strategy => {
-		'safe_create' => 1
+		'safe' => 1
 	}
 });
 

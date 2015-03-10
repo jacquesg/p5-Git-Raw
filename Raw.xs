@@ -907,8 +907,6 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 
 	git_flag_opt(strategy, "safe", GIT_CHECKOUT_SAFE, &out);
 
-	git_flag_opt(strategy, "safe_create", GIT_CHECKOUT_SAFE_CREATE, &out);
-
 	git_flag_opt(
 		strategy, "allow_conflicts",
 		GIT_CHECKOUT_ALLOW_CONFLICTS, &out

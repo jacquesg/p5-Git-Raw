@@ -19,22 +19,18 @@ create(class, repo, name, target)
 		Commit obj;
 		Reference ref;
 		Repository repo_ptr;
-		Signature sig;
 
 	INIT:
 		obj = (Commit) git_sv_to_obj(target);
 
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
-		rc = git_signature_default(&sig, repo_ptr -> repository);
-		git_check_error(rc);
 
 		rc = git_branch_create(
 			&ref, repo_ptr -> repository,
-			SvPVbyte_nolen(name), obj, 0, sig, NULL
+			SvPVbyte_nolen(name), obj, 0
 		);
 
-		git_signature_free(sig);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -87,8 +83,6 @@ move(self, name, force)
 	PREINIT:
 		int rc;
 
-		Signature sig;
-
 		Branch new_branch;
 		Branch old_branch;
 
@@ -96,16 +90,10 @@ move(self, name, force)
 		old_branch = GIT_SV_TO_PTR(Branch, self);
 
 	CODE:
-		rc = git_signature_default(&sig, git_reference_owner(
-			GIT_SV_TO_PTR(Reference, self)));
-		git_check_error(rc);
-
 		rc = git_branch_move(
-			&new_branch, old_branch, SvPVbyte_nolen(name), force,
-			sig, NULL
+			&new_branch, old_branch, SvPVbyte_nolen(name), force
 		);
 
-		git_signature_free(sig);
 		git_check_error(rc);
 
 SV *
