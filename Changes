@@ -2,9 +2,13 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to d7c8194 (GH#158)
+ - Update libgit2 to 89ba9f1 (GH#158,GH#159)
  - The 'safe_create' checkout strategy has been removed from libgit2 (use 'safe') (Incompatible change)
  - Repository -> head() and Repository -> detach_head() no longer accept reflog messages (Incompatible change)
+ - Repository -> merge() and friends' merge options 'flag' member has been
+   renamed to 'tree_flags'. (Incompatible change) (GH#159)
+ - Repository -> merge() and friends' merge options gained a 'file_flags' member. (GH#159)
+ - Added additional file merge flags. (GH#159)
 
 0.51      2015-02-09 09:55:03+02:00 Africa/Johannesburg
 
