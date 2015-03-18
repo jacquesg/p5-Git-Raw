@@ -187,6 +187,26 @@ Create diff3-style files.
 
 Condense non-alphanumeric regions for simplified diff file.
 
+=item * "ignore_whitespace"
+
+Ignore all whitespace.
+
+=item * "ignore_whitespace_change"
+
+Ignore changes in amount of whitespace.
+
+=item * "ignore_whitespace_eol"
+
+Ignore whitespace at end of line.
+
+=item * "patience"
+
+Use the C<"patience diff"> algorithm.
+
+=item * "minimal"
+
+Take extra time to find minimal diff.
+
 =back
 
 =back

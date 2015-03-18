@@ -1895,28 +1895,40 @@ STATIC void git_hv_to_diff_opts(HV *opts, git_diff_options *diff_options, git_tr
 	}
 }
 
+STATIC unsigned git_hv_to_merge_tree_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "find_renames", GIT_MERGE_TREE_FIND_RENAMES, &out);
+
+	return out;
+}
+
+STATIC unsigned git_hv_to_merge_file_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "merge", GIT_MERGE_FILE_STYLE_MERGE, &out);
+	git_flag_opt(flags, "diff3", GIT_MERGE_FILE_STYLE_DIFF3, &out);
+	git_flag_opt(flags, "simplify_alnum", GIT_MERGE_FILE_SIMPLIFY_ALNUM, &out);
+
+	git_flag_opt(flags, "ignore_whitespace", GIT_MERGE_FILE_IGNORE_WHITESPACE, &out);
+	git_flag_opt(flags, "ignore_whitespace_change", GIT_MERGE_FILE_IGNORE_WHITESPACE_CHANGE, &out);
+	git_flag_opt(flags, "ignore_whitespace_eol", GIT_MERGE_FILE_IGNORE_WHITESPACE_EOL, &out);
+
+	git_flag_opt(flags, "patience", GIT_MERGE_FILE_DIFF_PATIENCE, &out);
+	git_flag_opt(flags, "minimal", GIT_MERGE_FILE_DIFF_MINIMAL, &out);
+
+	return out;
+}
+
 STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
-	AV *lopt;
+	HV *hopt;
 	SV *opt;
 
-	if ((lopt = git_hv_list_entry(opts, "flags"))) {
-		size_t i = 0, count = 0;
-		SV **flag;
+	if ((hopt = git_hv_hash_entry(opts, "tree_flags")))
+		merge_options -> tree_flags |= git_hv_to_merge_tree_flag(hopt);
 
-		while ((flag = av_fetch(lopt, i++, 0))) {
-			const char *value = NULL;
-
-			if (!SvOK(*flag))
-				continue;
-
-			value = git_ensure_pv(*flag, "flag");
-
-			if (strcmp(value, "find_renames") == 0)
-				merge_options -> flags |= GIT_MERGE_TREE_FIND_RENAMES;
-			else
-				croak_usage("Invalid 'flags' value");
-		}
-	}
+	if ((hopt = git_hv_hash_entry(opts, "file_flags")))
+		merge_options -> file_flags |= git_hv_to_merge_file_flag(hopt);
 
 	if ((opt = git_hv_string_entry(opts, "favor"))) {
 		const char *favor = SvPVbyte_nolen(opt);
@@ -1938,16 +1950,6 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 
 	if ((opt = git_hv_int_entry(opts, "target_limit")))
 		merge_options -> target_limit = SvIV(opt);
-}
-
-STATIC unsigned git_hv_to_merge_file_flag(HV *flags) {
-	unsigned out = 0;
-
-	git_flag_opt(flags, "merge", GIT_MERGE_FILE_STYLE_MERGE, &out);
-	git_flag_opt(flags, "diff3", GIT_MERGE_FILE_STYLE_DIFF3, &out);
-	git_flag_opt(flags, "simplify_alnum", GIT_MERGE_FILE_SIMPLIFY_ALNUM, &out);
-
-	return out;
 }
 
 STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_options) {

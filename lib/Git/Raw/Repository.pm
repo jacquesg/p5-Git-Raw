@@ -513,9 +513,9 @@ C<%checkout_opts> values.  Valid fields for C<%merge_opts> are
 
 =over 4
 
-=item * "flags"
+=item * "tree_flags"
 
-An array of flags for the tree, including:
+Merge tree flags. Valid values include:
 
 =over 8
 
@@ -524,6 +524,10 @@ An array of flags for the tree, including:
 Detect renames.
 
 =back
+
+=item * "file_flags"
+
+See C<Git::Raw::Index-E<gt>merge()> for options.
 
 =item * "favor"
 

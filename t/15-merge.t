@@ -70,10 +70,11 @@ my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
 
 ok (!eval { $repo -> merge($branch1, {
-	'flags' => [
-		undef,
-		'bogus_flag'
-	]
+	'tree_flags' => []
+})});
+
+ok (!eval { $repo -> merge($branch1, {
+	'tree_flags' => 'scalar'
 })});
 
 ok (!eval { $repo -> merge($branch1, {
@@ -81,6 +82,14 @@ ok (!eval { $repo -> merge($branch1, {
 })});
 
 $repo -> merge($branch1, {
+		'tree_flags'       => {
+			'find_renames' => 1,
+		},
+		'file_flags'       => {
+			'ignore_whitespace'        => 1,
+			'ignore_whitespace_change' => 1,
+			'ignore_whitespace_eol'    => 1,
+		},
 		'rename_threshold' => 50,
 		'target_limit'     => 200,
 	}, {
