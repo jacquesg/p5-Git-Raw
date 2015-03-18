@@ -3,6 +3,10 @@ v0.22 + 1
 
 ### Changes or improvements
 
+* Patience and minimal diff drivers can now be used for merges.
+
+* Merges can now ignore whitespace changes.
+
 * Updated binary identification in CRLF filtering to avoid false positives in
   UTF-8 files.
 
@@ -15,7 +19,18 @@ v0.22 + 1
   removed. Use `git_repository_set_ident()` and
   `git_repository_ident()` to override the signature to be used.
 
+* The local transport now auto-scales the number of threads to use
+  when creating the packfile instead of sticking to one.
+
+* Reference renaming now uses the right id for the old value.
+
+* The annotated version of branch creation, HEAD detaching and reset
+  allow for specifying the expression from the user to be put into the
+  reflog.
+
 ### API additions
+
+* The `git_merge_options` gained a `file_flags` member.
 
 * Parsing and retrieving a configuration value as a path is exposed
   via `git_config_parse_path()` and `git_config_get_path()`
@@ -30,11 +45,27 @@ v0.22 + 1
 * `git_config_get_string_buf()` provides a way to safely retrieve a
   string from a non-snapshot configuration.
 
-* Reference renaming now uses the right id for the old value.
+* `git_annotated_commit_from_revspec()` allows to get an annotated
+  commit from an extended sha synatx string.
+
+* `git_repository_set_head_detached_from_annotated()`,
+  `git_branch_create_from_annotated()` and
+  `git_reset_from_annotated()` allow for the caller to provide an
+  annotated commit through which they can control what expression is
+  put into the reflog as the source/target.
+
+* `git_index_add_frombuffer()` can now create a blob from memory
+   buffer and add it to the index which is attached to a repository.
 
 ### API removals
 
 ### Breaking API changes
+
+* The `git_merge_options` structure member `flags` has been renamed
+  to `tree_flags`.
+
+* The `git_merge_file_options` structure member `tree_flags` is now
+  an unsigned int. It was previously a `git_merge_file_flags_t`.
 
 * `GIT_CHECKOUT_SAFE_CREATE` has been removed.  Most users will generally
   be able to switch to `GIT_CHECKOUT_SAFE`, but if you require missing
