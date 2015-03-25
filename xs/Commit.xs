@@ -13,7 +13,8 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 	PREINIT:
 		int rc;
 
-		int count;
+		SV **c;
+		size_t i = 0, count = 0;
 		git_oid oid;
 
 		Repository repo_ptr;
@@ -32,19 +33,12 @@ create(class, repo, msg, author, committer, parents, tree, ...)
 				update_ref = NULL;
 		}
 
-		count = av_len(parents) + 1;
+		while ((c = av_fetch(parents, i++, 0))) {
+			if (!c || !SvOK(*c))
+				continue;
 
-		if (count > 0) {
-			int i;
-			SV *iter;
-
-			Newx(commit_parents, count, git_commit *);
-
-			for (i = 0; i < count; i++) {
-				iter = av_shift(parents);
-
-				commit_parents[i] = GIT_SV_TO_PTR(Commit, iter);
-			}
+			Renew(commit_parents, count + 1, git_commit *);
+			commit_parents[count++] = GIT_SV_TO_PTR(Commit, *c);
 		}
 
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
