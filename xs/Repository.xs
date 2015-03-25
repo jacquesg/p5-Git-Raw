@@ -544,15 +544,16 @@ ignore(self, rules)
 		rc = git_ignore_add_rule(self -> repository, git_ensure_pv(rules, "rules"));
 		git_check_error(rc);
 
-Diff
+SV *
 diff(self, ...)
-	Repository self
+	SV *self
 
 	PROTOTYPE: $;$
 
 	PREINIT:
 		int rc;
 
+		Repository repo_ptr;
 		Diff diff;
 		Index index;
 
@@ -561,7 +562,9 @@ diff(self, ...)
 		git_diff_options diff_opts = GIT_DIFF_OPTIONS_INIT;
 
 	CODE:
-		rc = git_repository_index(&index, self -> repository);
+		repo_ptr = GIT_SV_TO_PTR(Repository, self);
+
+		rc = git_repository_index(&index, repo_ptr -> repository);
 		git_check_error(rc);
 
 		if (items == 2) {
@@ -571,11 +574,11 @@ diff(self, ...)
 
 		if (tree) {
 			rc = git_diff_tree_to_index(
-				&diff, self -> repository, tree, index, &diff_opts
+				&diff, repo_ptr -> repository, tree, index, &diff_opts
 			);
 		} else {
 			rc = git_diff_index_to_workdir(
-				&diff, self -> repository, index, &diff_opts
+				&diff, repo_ptr -> repository, index, &diff_opts
 			);
 		}
 
@@ -584,7 +587,9 @@ diff(self, ...)
 			Safefree(diff_opts.pathspec.strings);
 		git_check_error(rc);
 
-		RETVAL = diff;
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Diff", diff, SvRV(self)
+		);
 
 	OUTPUT: RETVAL
 

@@ -155,7 +155,8 @@ patches(self)
 
 void
 DESTROY(self)
-	Diff self
+	SV *self
 
 	CODE:
-		git_diff_free(self);
+		git_diff_free(GIT_SV_TO_PTR(Diff, self));
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
