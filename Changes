@@ -11,6 +11,7 @@ Revision history for Git-Raw
    renamed to 'tree_flags'. (Incompatible change) (GH#159)
  - Repository -> merge() and friends' merge options gained a 'file_flags' member. (GH#159)
  - Added additional file merge flags. (GH#159)
+ - Fixed reference counting issues in Diff and Commit objects. (GH#160)
 
 0.51      2015-02-09 09:55:03+02:00 Africa/Johannesburg
 
