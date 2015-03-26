@@ -64,7 +64,7 @@ v0.22 + 1
 * The `git_merge_options` structure member `flags` has been renamed
   to `tree_flags`.
 
-* The `git_merge_file_options` structure member `tree_flags` is now
+* The `git_merge_file_options` structure member `flags` is now
   an unsigned int. It was previously a `git_merge_file_flags_t`.
 
 * `GIT_CHECKOUT_SAFE_CREATE` has been removed.  Most users will generally
@@ -97,6 +97,9 @@ v0.22 + 1
 * `git_config_get_string()` will return an error if used on a
   non-snapshot configuration, as there can be no guarantee that the
   returned pointer is valid.
+
+* `git_note_default_ref()` now uses a `git_buf` to return the string,
+  as the string is otherwise not guaranteed to stay allocated.
 
 v0.22
 ------
