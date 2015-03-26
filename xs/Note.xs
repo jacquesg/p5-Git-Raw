@@ -181,10 +181,11 @@ default_ref(class, repo)
 
 	PREINIT:
 		int rc;
-		const char *ref_name = NULL;
 
 		Repository repo_ptr;
 		Reference ref;
+
+		git_buf ref_name = GIT_BUF_INIT_CONST(NULL, 0);
 
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
@@ -193,8 +194,9 @@ default_ref(class, repo)
 		git_check_error(rc);
 
 		rc = git_reference_lookup(
-			&ref, repo_ptr -> repository, ref_name
+			&ref, repo_ptr -> repository, ref_name.ptr
 		);
+		git_buf_free(&ref_name);
 
 		RETVAL = &PL_sv_undef;
 		if (rc != GIT_ENOTFOUND) {
