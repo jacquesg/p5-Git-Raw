@@ -32,8 +32,15 @@ path(self)
 
 void
 DESTROY(self)
-	Merge_File_Result self
+	SV *self
+
+	PREINIT:
+		Merge_File_Result result;
 
 	CODE:
-		git_merge_file_result_free(self);
-		Safefree(self);
+		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+
+		result = GIT_SV_TO_PTR(Merge::File::Result, self);
+		git_merge_file_result_free(result);
+		Safefree(result);
+
