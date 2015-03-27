@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to de355f2 (GH#161)
+ - Fixed reference counting issues in Diff and Commit objects. (GH#160)
+
 0.52      2015-03-19 13:45:38+02:00 Africa/Johannesburg
 
  - Update libgit2 to 89ba9f1 (GH#158,GH#159)
@@ -11,7 +14,6 @@ Revision history for Git-Raw
    renamed to 'tree_flags'. (Incompatible change) (GH#159)
  - Repository -> merge() and friends' merge options gained a 'file_flags' member. (GH#159)
  - Added additional file merge flags. (GH#159)
- - Fixed reference counting issues in Diff and Commit objects. (GH#160)
 
 0.51      2015-02-09 09:55:03+02:00 Africa/Johannesburg
 
