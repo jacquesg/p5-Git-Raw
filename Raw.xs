@@ -94,6 +94,9 @@
 #pragma warning (disable : 4244 4267 )
 #endif
 
+#undef assert
+#define assert(expr) ((expr) ? (void)0 : croak("Assertion %s failed (%s:%d)", #expr, __FILE__, __LINE__))
+
 typedef struct {
 	SV *progress;
 	SV *credentials;
