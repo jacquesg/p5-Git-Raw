@@ -54,6 +54,8 @@
 #define EMODIFIED         GIT_EMODIFIED
 #define EAUTH             GIT_EAUTH
 #define ECERTIFICATE      GIT_ECERTIFICATE
+#define EAPPLIED          GIT_EAPPLIED
+#define EPEEL             GIT_EPEEL
 #define PASSTHROUGH       GIT_PASSTHROUGH
 #define ITEROVER          GIT_ITEROVER
 
