@@ -913,6 +913,12 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	git_flag_opt(strategy, "safe", GIT_CHECKOUT_SAFE, &out);
 
 	git_flag_opt(
+		strategy,
+		"recreate_missing",
+		GIT_CHECKOUT_RECREATE_MISSING, &out
+	);
+
+	git_flag_opt(
 		strategy, "allow_conflicts",
 		GIT_CHECKOUT_ALLOW_CONFLICTS, &out
 	);
@@ -946,6 +952,10 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	git_flag_opt(strategy, "use_theirs", GIT_CHECKOUT_USE_THEIRS, &out);
 
 	git_flag_opt(
+		strategy, "disable_pathspec_match",
+		GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH, &out);
+
+	git_flag_opt(
 		strategy, "skip_locked_directories",
 		GIT_CHECKOUT_SKIP_LOCKED_DIRECTORIES, &out);
 
@@ -962,8 +972,12 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 		GIT_CHECKOUT_CONFLICT_STYLE_DIFF3, &out);
 
 	git_flag_opt(
-		strategy, "disable_pathspec_match",
-		GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH, &out);
+		strategy, "dont_remove_existing",
+		GIT_CHECKOUT_DONT_REMOVE_EXISTING, &out);
+
+	git_flag_opt(
+		strategy, "dont_write_index",
+		GIT_CHECKOUT_DONT_WRITE_INDEX, &out);
 
 	return out;
 }

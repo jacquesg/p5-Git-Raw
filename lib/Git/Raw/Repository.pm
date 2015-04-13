@@ -162,6 +162,10 @@ conflicts.
 Take any action to make the working directory match the target (pretty much the
 opposite of C<"none">.
 
+=item * "safe_create"
+
+Recreate missing files.
+
 =item * "safe"
 
 Make only modifications that will not lose changes (to be used in order to
@@ -186,6 +190,14 @@ Only update files that already exists (files won't be created not deleted).
 =item * "dont_update_index"
 
 Do not write the updated files' info to the index.
+
+=item * "dont_remove_existing"
+
+Don not overwrite existing files or folders.
+
+=item * "dont_write_index"
+
+Prevent writing of the index upon completion.
 
 =item * "no_refresh"
 
