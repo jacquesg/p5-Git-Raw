@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.53      2015-04-14 20:23:42+02:00 Africa/Johannesburg
+
  - Update libgit2 to 623fbd9 (GH#161,GH#162)
  - Fixed reference counting issues in Diff, Commit and Merge::File::Result objects. (GH#160)
  - Added extra checkout flags. (GH#162)
