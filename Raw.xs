@@ -436,19 +436,20 @@ STATIC git_object *git_sv_to_obj(SV *sv) {
 	return NULL;
 }
 
-STATIC void *git_sv_to_ptr(const char *type, SV *sv) {
+STATIC void *git_sv_to_ptr(const char *type, SV *sv, const char *file, int line) {
 	SV *full_type = sv_2mortal(newSVpvf("Git::Raw::%s", type));
 
 	if (sv_isobject(sv) && sv_derived_from(sv, SvPV_nolen(full_type)))
 		return INT2PTR(void *, SvIV((SV *) SvRV(sv)));
 
-	croak_usage("Argument is not of type %s", SvPV_nolen(full_type));
+	croak_usage("Argument is not of type %s @ (%s:%d)",
+		SvPV_nolen(full_type), file, line);
 
 	return NULL;
 }
 
 #define GIT_SV_TO_PTR(type, sv) \
-	git_sv_to_ptr(#type, sv)
+	git_sv_to_ptr(#type, sv, __FILE__, __LINE__)
 
 STATIC SV *git_oid_to_sv(const git_oid *oid) {
 	char out[41];
