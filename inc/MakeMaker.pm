@@ -84,7 +84,7 @@ my @library_tests = (
 
 my %library_opts = (
 	'ssl' => {
-		'defines' => ' -DGIT_SSL',
+		'defines' => ' -DGIT_OPENSSL',
 		'libs'    => ' -lssl -lcrypto',
 	},
 	'ssh2' => {
