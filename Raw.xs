@@ -292,7 +292,7 @@ STATIC void croak_error_obj(Error e) {
 	croak_sv(res);
 }
 
-STATIC void git_check_error(int err) {
+STATIC void S_git_check_error(int err, const char *file, int line) {
 	if (err != GIT_OK && err != GIT_ITEROVER) {
 		const git_error *error;
 		Error e;
@@ -305,12 +305,14 @@ STATIC void git_check_error(int err) {
 		} else if (SvTRUE(ERRSV)) {
 			e -> message = newSVpv(SvPVbyte_nolen(ERRSV), 0);
 		} else {
-			e -> message = newSVpv("Unknown error!", 0);
+			e -> message = newSVpvf("Unknown error! (%s:%d)", file, line);
 		}
 
 		croak_error_obj(e);
 	}
 }
+
+#define git_check_error(e) S_git_check_error(e, __FILE__, __LINE__)
 
 STATIC void croak_assert(const char *pat, ...) {
 	Error e;
