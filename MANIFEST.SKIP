@@ -6,8 +6,10 @@ dll.base
 dll.exp
 const-c-category.inc
 const-c-error.inc
+const-c-packbuilder.inc
 const-xs-category.inc
 const-xs-error.inc
+const-xs-packbuilder.inc
 t/test_repo
 t/merge_repo
 t/callbacks_repo

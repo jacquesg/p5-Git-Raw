@@ -343,6 +343,12 @@ my @category_constants = (qw(
 	INTERNAL
 ));
 
+my @packbuilder_constants = (qw(
+	ADDING_OBJECTS
+	DELTAFICATION
+));
+
+
 ExtUtils::Constant::WriteConstants(
 	NAME         => 'Git::Raw::Error',
 	NAMES        => [@error_constants],
@@ -361,6 +367,16 @@ ExtUtils::Constant::WriteConstants(
 	XS_FILE      => 'const-xs-category.inc',
 	XS_SUBNAME   => '_constant',
 	C_SUBNAME    => '_category_constant',
+);
+
+ExtUtils::Constant::WriteConstants(
+	NAME         => 'Git::Raw::Packbuilder',
+	NAMES        => [@packbuilder_constants],
+	DEFAULT_TYPE => 'IV',
+	C_FILE       => 'const-c-packbuilder.inc',
+	XS_FILE      => 'const-xs-packbuilder.inc',
+	XS_SUBNAME   => '_constant',
+	C_SUBNAME    => '_packbuilder_constant',
 );
 
 WriteMakefile(%WriteMakefileArgs);

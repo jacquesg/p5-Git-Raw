@@ -89,8 +89,13 @@
 #define CALLBACK      GITERR_CALLBACK
 #define CHERRYPICK    GITERR_CHERRYPICK
 
+/* remap packbuilder enum's to defines */
+#define ADDING_OBJECTS   GIT_PACKBUILDER_ADDING_OBJECTS
+#define DELTAFICATION    GIT_PACKBUILDER_DELTAFICATION
+
 #include "const-c-error.inc"
 #include "const-c-category.inc"
+#include "const-c-packbuilder.inc"
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4244 4267 )
@@ -2108,6 +2113,7 @@ INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
+INCLUDE: xs/Packbuilder.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs
 INCLUDE: xs/PathSpec/MatchList.xs
