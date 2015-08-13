@@ -26,6 +26,8 @@ my $email = 'git-xs@example.com';
 is $config -> str('user.name', $name), $name;
 is $config -> str('user.email', $email), $email;
 
+$config -> str('merge.conflictstyle', 'merge');
+
 my $me = Git::Raw::Signature -> default($repo);
 
 my $commit = $repo -> commit("initial commit\n", $me, $me, [],
