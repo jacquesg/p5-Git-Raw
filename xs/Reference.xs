@@ -128,7 +128,7 @@ type(self)
 				break;
 
 			default:
-				assert("Unexpected reference type" == NULL);
+				croak_assert("Unexpected reference type: %d", rt);
 				break;
 		}
 
@@ -218,7 +218,7 @@ target(self, ...)
 				}
 
 				default:
-					assert("Unexpected reference type" == NULL);
+					croak_assert("Unexpected reference type: %d", rt);
 					break;
 			}
 		}

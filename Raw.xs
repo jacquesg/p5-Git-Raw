@@ -96,9 +96,6 @@
 #pragma warning (disable : 4244 4267 )
 #endif
 
-#undef assert
-#define assert(expr) ((expr) ? (void)0 : croak("Assertion %s failed (%s:%d)", #expr, __FILE__, __LINE__))
-
 typedef struct {
 	SV *progress;
 	SV *credentials;
@@ -270,9 +267,7 @@ STATIC Error create_error_obj(int code, int category, SV *message) {
 	Newxz(e, 1, git_raw_error);
 	e -> code = code;
 	e -> category = category;
-
-	if (message)
-		e -> message = message;
+	e -> message = message;
 
 	return e;
 }
@@ -289,6 +284,7 @@ STATIC Error create_error_obj_fmt(int code, int category, const char *prefix, co
 STATIC void croak_error_obj(Error e) {
 	SV *res = NULL;
 	GIT_NEW_OBJ(res, "Git::Raw::Error", e);
+	SvREFCNT_inc(e -> message);
 	croak_sv(res);
 }
 
@@ -314,16 +310,21 @@ STATIC void S_git_check_error(int err, const char *file, int line) {
 
 #define git_check_error(e) S_git_check_error(e, __FILE__, __LINE__)
 
-STATIC void croak_assert(const char *pat, ...) {
+STATIC void S_croak_assert(const char *pat, const char *file, int line, ...) {
 	Error e;
 	va_list list;
 
-	va_start(list, pat);
-	e = create_error_obj_fmt(ASSERT, INTERNAL, "Assertion failed. Please file a bug report: ", pat, &list);
+	va_start(list, line);
+	e = create_error_obj_fmt(ASSERT, INTERNAL,
+		form("Assertion failed @ (%s:%d). Please file a bug report.\n\n", file, line),
+		pat, &list
+	);
 	va_end(list);
 
 	croak_error_obj(e);
 }
+
+#define croak_assert(pat, ...) S_croak_assert (pat, __FILE__, __LINE__, __VA_ARGS__)
 
 STATIC void croak_usage(const char *pat, ...) {
 	Error e;
@@ -2119,6 +2120,7 @@ INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
 INCLUDE: xs/Stash.xs
 INCLUDE: xs/Tag.xs
+INCLUDE: xs/Test.xs
 INCLUDE: xs/Tree.xs
 INCLUDE: xs/Tree/Builder.xs
 INCLUDE: xs/Tree/Entry.xs

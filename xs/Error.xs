@@ -7,6 +7,7 @@ message(self)
 	Error self
 
 	CODE:
+		SvREFCNT_inc (self -> message);
 		RETVAL = self -> message;
 
 	OUTPUT: RETVAL
@@ -43,4 +44,5 @@ DESTROY(self)
 	Error self
 
 	CODE:
+		SvREFCNT_dec(self -> message);
 		Safefree(self);
