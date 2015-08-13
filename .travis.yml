@@ -1,5 +1,8 @@
 language: perl
 
+os:
+ - linux
+
 perl:
  - "5.10"
  - "5.12"
@@ -13,6 +16,7 @@ env:
 
 cache:
  - apt
+ - ccache
 
 install:
  - sudo apt-get -qq update
