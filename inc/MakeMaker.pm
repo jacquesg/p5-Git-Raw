@@ -29,7 +29,7 @@ my $is_linux = ($^O =~ /linux/i) ? 1 : 0;
 my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
 my $is_gkfreebsd = ($^O =~ /gnukfreebsd/i) ? 1 : 0;
 
-# allow the user to override/specify the locations of OpenSSL and libssh2
+# allow the user to override/specify the locations of OpenSSL, libssh2 and libcurl
 our $opt = {};
 
 Getopt::Long::GetOptions(
@@ -38,6 +38,8 @@ Getopt::Long::GetOptions(
 	'with-openssl-libs=s@'   => \$opt->{'ssl'}->{'libs'},
 	'with-libssh2-include=s' => \$opt->{'ssh2'}->{'incdir'},
 	'with-libssh2-lib=s@'    => \$opt->{'ssh2'}->{'libs'},
+	'with-libcurl-include=s' => \$opt->{'curl'}->{'incdir'},
+	'with-libcurl-lib=s@'    => \$opt->{'curl'}->{'libs'},
 ) || die &usage();
 
 my $def = '';
@@ -80,6 +82,10 @@ my @library_tests = (
 		'lib'     => 'ssl',
 		'header'  => 'openssl/opensslconf.h',
 	},
+	{
+		'lib'     => 'curl',
+		'header'  => 'curl/curl.h',
+	},
 );
 
 my %library_opts = (
@@ -90,6 +96,10 @@ my %library_opts = (
 	'ssh2' => {
 		'defines' => ' -DGIT_SSH',
 		'libs'    => ' -lssh2',
+	},
+	'curl' => {
+		'defines' => ' -DGIT_CURL',
+		'libs'    => ' -lcurl',
 	}
 );
 

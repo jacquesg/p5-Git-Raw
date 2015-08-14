@@ -2,6 +2,12 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Enable support for libcurl at build-time
+ - Users can now specify the libcurl to use as argument
+    to Makefile.PL:
+    + --with-curl-include
+    + --with-curl-libs
+
 0.53      2015-04-14 20:23:42+02:00 Africa/Johannesburg
 
  - Update libgit2 to 623fbd9 (GH#161,GH#162)
