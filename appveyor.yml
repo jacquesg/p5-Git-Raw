@@ -9,10 +9,6 @@ install:
  - ps: Start-FileDownload http://strawberryperl.com/download/5.20.1.1/strawberry-perl-5.20.1.1-64bit.msi
  - msiexec /i "C:\projects\sources\strawberry-perl-5.20.1.1-64bit.msi" /qn INSTALLDIR="C:\projects\perl"
 
- # OpenSSL
- - ps: Start-FileDownload http://slproweb.com/download/Win64OpenSSL-1_0_1j.exe
- #- msiexec /i "C:\projects\sources\Win64OpenSSL-1_0_1j.exe" /silent /verysilent /sp- /suppressmsgboxes DIR="C:\projects\openssl"
-
  - set PATH=C:\projects\perl\perl\bin;C:\projects\perl\perl\site\bin;C:\projects\perl\c\bin;%PATH%
  - cd C:\projects\p5-Git-Raw
 
