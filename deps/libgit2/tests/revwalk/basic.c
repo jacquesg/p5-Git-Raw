@@ -314,6 +314,23 @@ void test_revwalk_basic__disallow_non_commit(void)
 	cl_git_fail(git_revwalk_push(_walk, &oid));
 }
 
+void test_revwalk_basic__hide_then_push(void)
+{
+	git_oid oid;
+	int i = 0;
+
+	revwalk_basic_setup_walk(NULL);
+	cl_git_pass(git_oid_fromstr(&oid, "5b5b025afb0b4c913b4c338a42934a3863bf3644"));
+
+	cl_git_pass(git_revwalk_hide(_walk, &oid));
+	cl_git_pass(git_revwalk_push(_walk, &oid));
+
+	while (git_revwalk_next(&oid, _walk) == 0)
+		i++;
+
+	cl_assert_equal_i(i, 0);
+}
+
 void test_revwalk_basic__push_range(void)
 {
 	revwalk_basic_setup_walk(NULL);
@@ -419,4 +436,40 @@ void test_revwalk_basic__mimic_git_rev_list(void)
    cl_assert(!git_oid_streq(&oid, "8496071c1b46c854b31185ea97743be6a8774479"));
 
    cl_git_fail_with(git_revwalk_next(&oid, _walk), GIT_ITEROVER);
+}
+
+void test_revwalk_basic__big_timestamp(void)
+{
+	git_reference *head;
+	git_commit *tip;
+	git_signature *sig;
+	git_tree *tree;
+	git_oid id;
+	int error;
+
+	revwalk_basic_setup_walk("testrepo.git");
+
+	cl_git_pass(git_repository_head(&head, _repo));
+	cl_git_pass(git_reference_peel((git_object **) &tip, head, GIT_OBJ_COMMIT));
+
+	/* Commit with a far-ahead timestamp, we should be able to parse it in the revwalk */
+	cl_git_pass(git_signature_new(&sig, "Joe", "joe@example.com", 2399662595, 0));
+	cl_git_pass(git_commit_tree(&tree, tip));
+
+	cl_git_pass(git_commit_create(&id, _repo, "HEAD", sig, sig, NULL, "some message", tree, 1,
+		(const git_commit **)&tip));
+
+	cl_git_pass(git_revwalk_push_head(_walk));
+
+	while ((error = git_revwalk_next(&id, _walk)) == 0) {
+		/* nothing */
+	}
+
+	cl_assert_equal_i(GIT_ITEROVER, error);
+
+	git_tree_free(tree);
+	git_commit_free(tip);
+	git_reference_free(head);
+	git_signature_free(sig);
+
 }

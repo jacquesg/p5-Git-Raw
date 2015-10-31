@@ -67,10 +67,23 @@ static void check_counts(walk_data *d)
 	}
 }
 
+static int update_count(name_data *data, const char *name)
+{
+	name_data *n;
+
+	for (n = data; n->name; n++) {
+		if (!strcmp(n->name, name)) {
+			n->count++;
+			return 0;
+		}
+	}
+
+	return GIT_ERROR;
+}
+
 static int one_entry(void *state, git_buf *path)
 {
 	walk_data *d = (walk_data *) state;
-	name_data *n;
 
 	if (state != state_loc)
 		return GIT_ERROR;
@@ -78,14 +91,7 @@ static int one_entry(void *state, git_buf *path)
 	if (path != &d->path)
 		return GIT_ERROR;
 
-	for (n = d->names; n->name; n++) {
-		if (!strcmp(n->name, path->ptr)) {
-			n->count++;
-			return 0;
-		}
-	}
-
-	return GIT_ERROR;
+	return update_count(d->names, path->ptr);
 }
 
 
@@ -233,4 +239,68 @@ void test_core_dirent__empty_dir(void)
 	cl_must_pass(p_rmdir("empty_dir/content"));
 
 	cl_must_pass(p_rmdir("empty_dir"));
+}
+
+static void handle_next(git_path_diriter *diriter, walk_data *walk)
+{
+	const char *fullpath, *filename;
+	size_t fullpath_len, filename_len;
+
+	cl_git_pass(git_path_diriter_fullpath(&fullpath, &fullpath_len, diriter));
+	cl_git_pass(git_path_diriter_filename(&filename, &filename_len, diriter));
+
+	cl_assert_equal_strn(fullpath, "sub/", 4);
+	cl_assert_equal_s(fullpath+4, filename);
+
+	update_count(walk->names, fullpath);
+}
+
+/* test directory iterator */
+void test_core_dirent__diriter_with_fullname(void)
+{
+	git_path_diriter diriter = GIT_PATH_DIRITER_INIT;
+	int error;
+
+	cl_set_cleanup(&dirent_cleanup__cb, &sub);
+	setup(&sub);
+
+	cl_git_pass(git_path_diriter_init(&diriter, sub.path.ptr, 0));
+
+	while ((error = git_path_diriter_next(&diriter)) == 0)
+		handle_next(&diriter, &sub);
+
+	cl_assert_equal_i(error, GIT_ITEROVER);
+
+	git_path_diriter_free(&diriter);
+
+	check_counts(&sub);
+}
+
+void test_core_dirent__diriter_at_directory_root(void)
+{
+	git_path_diriter diriter = GIT_PATH_DIRITER_INIT;
+	const char *sandbox_path, *path;
+	char *root_path;
+	size_t path_len;
+	int root_offset, error;
+
+	sandbox_path = clar_sandbox_path();
+	cl_assert((root_offset = git_path_root(sandbox_path)) >= 0);
+
+	cl_assert(root_path = git__calloc(1, root_offset + 2));
+	strncpy(root_path, sandbox_path, root_offset + 1);
+
+	cl_git_pass(git_path_diriter_init(&diriter, root_path, 0));
+
+	while ((error = git_path_diriter_next(&diriter)) == 0) {
+		cl_git_pass(git_path_diriter_fullpath(&path, &path_len, &diriter));
+
+		cl_assert(path_len > (size_t)(root_offset + 1));
+		cl_assert(path[root_offset+1] != '/');
+	}
+
+	cl_assert_equal_i(error, GIT_ITEROVER);
+
+	git_path_diriter_free(&diriter);
+	git__free(root_path);
 }

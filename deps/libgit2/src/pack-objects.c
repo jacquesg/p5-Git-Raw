@@ -41,7 +41,7 @@ struct pack_write_context {
 	git_transfer_progress *stats;
 };
 
-GIT__USE_OIDMAP;
+GIT__USE_OIDMAP
 
 #ifdef GIT_THREADS
 
@@ -135,8 +135,7 @@ int git_packbuilder_new(git_packbuilder **out, git_repository *repo)
 	if (!pb->walk_objects)
 		goto on_error;
 
-	if (git_pool_init(&pb->object_pool, sizeof(git_walk_object), 0) < 0)
-		goto on_error;
+	git_pool_init(&pb->object_pool, sizeof(git_walk_object));
 
 	pb->repo = repo;
 	pb->nr_threads = 1; /* do not spawn any thread by default */
@@ -893,6 +892,29 @@ static unsigned long free_unpacked(struct unpacked *n)
 	return freed_mem;
 }
 
+static int report_delta_progress(git_packbuilder *pb, uint32_t count, bool force)
+{
+	int ret;
+
+	if (pb->progress_cb) {
+		double current_time = git__timer();
+		double elapsed = current_time - pb->last_progress_report_time;
+
+		if (force || elapsed >= MIN_PROGRESS_UPDATE_INTERVAL) {
+			pb->last_progress_report_time = current_time;
+
+			ret = pb->progress_cb(
+				GIT_PACKBUILDER_DELTAFICATION,
+				count, pb->nr_objects, pb->progress_cb_payload);
+
+			if (ret)
+				return giterr_set_after_callback(ret);
+		}
+	}
+
+	return 0;
+}
+
 static int find_deltas(git_packbuilder *pb, git_pobject **list,
 		       unsigned int *list_size, unsigned int window,
 		       int depth)
@@ -917,6 +939,9 @@ static int find_deltas(git_packbuilder *pb, git_pobject **list,
 			git_packbuilder__progress_unlock(pb);
 			break;
 		}
+
+		pb->nr_deltified += 1;
+		report_delta_progress(pb, pb->nr_deltified, false);
 
 		po = *list++;
 		(*list_size)--;
@@ -1289,6 +1314,8 @@ static int prepare_pack(git_packbuilder *pb)
 			return -1;
 		}
 	}
+
+	report_delta_progress(pb, pb->nr_objects, true);
 
 	pb->done = true;
 	git__free(delta_list);

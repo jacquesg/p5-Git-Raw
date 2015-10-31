@@ -9,6 +9,9 @@
 #include "path.h"
 #include "path_w32.h"
 #include "utf-conv.h"
+#include "posix.h"
+#include "reparse.h"
+#include "dir.h"
 
 #define PATH__NT_NAMESPACE     L"\\\\?\\"
 #define PATH__NT_NAMESPACE_LEN 4
@@ -195,13 +198,13 @@ int git_win32_path_from_utf8(git_win32_path out, const char *src)
 	/* See if this is an absolute path (beginning with a drive letter) */
 	if (path__is_absolute(src)) {
 		if (git__utf8_to_16(dest, MAX_PATH, src) < 0)
-			return -1;
+			goto on_error;
 	}
 	/* File-prefixed NT-style paths beginning with \\?\ */
 	else if (path__is_nt_namespace(src)) {
 		/* Skip the NT prefix, the destination already contains it */
 		if (git__utf8_to_16(dest, MAX_PATH, src + PATH__NT_NAMESPACE_LEN) < 0)
-			return -1;
+			goto on_error;
 	}
 	/* UNC paths */
 	else if (path__is_unc(src)) {
@@ -210,36 +213,43 @@ int git_win32_path_from_utf8(git_win32_path out, const char *src)
 
 		/* Skip the leading "\\" */
 		if (git__utf8_to_16(dest, MAX_PATH - 2, src + 2) < 0)
-			return -1;
+			goto on_error;
 	}
 	/* Absolute paths omitting the drive letter */
 	else if (src[0] == '\\' || src[0] == '/') {
 		if (path__cwd(dest, MAX_PATH) < 0)
-			return -1;
+			goto on_error;
 
 		if (!path__is_absolute(dest)) {
 			errno = ENOENT;
-			return -1;
+			goto on_error;
 		}
 
 		/* Skip the drive letter specification ("C:") */	
 		if (git__utf8_to_16(dest + 2, MAX_PATH - 2, src) < 0)
-			return -1;
+			goto on_error;
 	}
 	/* Relative paths */
 	else {
 		int cwd_len;
 
 		if ((cwd_len = git_win32_path__cwd(dest, MAX_PATH)) < 0)
-			return -1;
+			goto on_error;
 
 		dest[cwd_len++] = L'\\';
 
 		if (git__utf8_to_16(dest + cwd_len, MAX_PATH - cwd_len, src) < 0)
-			return -1;
+			goto on_error;
 	}
 
 	return git_win32_path_canonicalize(out);
+
+on_error:
+	/* set windows error code so we can use its error message */
+	if (errno == ENAMETOOLONG)
+		SetLastError(ERROR_FILENAME_EXCED_RANGE);
+
+	return -1;
 }
 
 int git_win32_path_to_utf8(git_win32_utf8_path dest, const wchar_t *src)
@@ -302,4 +312,76 @@ char *git_win32_path_8dot3_name(const char *path)
 		return NULL;
 
 	return shortname;
+}
+
+static bool path_is_volume(wchar_t *target, size_t target_len)
+{
+	return (target_len && wcsncmp(target, L"\\??\\Volume{", 11) == 0);
+}
+
+/* On success, returns the length, in characters, of the path stored in dest.
+* On failure, returns a negative value. */
+int git_win32_path_readlink_w(git_win32_path dest, const git_win32_path path)
+{
+	BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+	GIT_REPARSE_DATA_BUFFER *reparse_buf = (GIT_REPARSE_DATA_BUFFER *)buf;
+	HANDLE handle = NULL;
+	DWORD ioctl_ret;
+	wchar_t *target;
+	size_t target_len;
+
+	int error = -1;
+
+	handle = CreateFileW(path, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
+		FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+	if (handle == INVALID_HANDLE_VALUE) {
+		errno = ENOENT;
+		return -1;
+	}
+
+	if (!DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, NULL, 0,
+		reparse_buf, sizeof(buf), &ioctl_ret, NULL)) {
+		errno = EINVAL;
+		goto on_error;
+	}
+
+	switch (reparse_buf->ReparseTag) {
+	case IO_REPARSE_TAG_SYMLINK:
+		target = reparse_buf->SymbolicLinkReparseBuffer.PathBuffer +
+			(reparse_buf->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(WCHAR));
+		target_len = reparse_buf->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(WCHAR);
+	break;
+	case IO_REPARSE_TAG_MOUNT_POINT:
+		target = reparse_buf->MountPointReparseBuffer.PathBuffer +
+			(reparse_buf->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR));
+		target_len = reparse_buf->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR);
+	break;
+	default:
+		errno = EINVAL;
+		goto on_error;
+	}
+
+	if (path_is_volume(target, target_len)) {
+		/* This path is a reparse point that represents another volume mounted
+		* at this location, it is not a symbolic link our input was canonical.
+		*/
+		errno = EINVAL;
+		error = -1;
+	} else if (target_len) {
+		/* The path may need to have a prefix removed. */
+		target_len = git_win32__canonicalize_path(target, target_len);
+
+		/* Need one additional character in the target buffer
+		* for the terminating NULL. */
+		if (GIT_WIN_PATH_UTF16 > target_len) {
+			wcscpy(dest, target);
+			error = (int)target_len;
+		}
+	}
+
+on_error:
+	CloseHandle(handle);
+	return error;
 }

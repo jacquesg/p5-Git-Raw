@@ -6,6 +6,7 @@
 #include "util.h"
 #include "path.h"
 #include "../diff/diff_helpers.h"
+#include "../checkout/checkout_helpers.h"
 #include "git2/sys/diff.h"
 
 /**
@@ -194,7 +195,7 @@ void test_status_worktree__swap_subdir_with_recurse_and_pathspec(void)
 	cl_git_pass(p_rename("status/subdir", "status/current_file"));
 	cl_git_pass(p_rename("status/swap", "status/subdir"));
 	cl_git_mkfile("status/.new_file", "dummy");
-	cl_git_pass(git_futils_mkdir_r("status/zzz_new_dir", NULL, 0777));
+	cl_git_pass(git_futils_mkdir_r("status/zzz_new_dir", 0777));
 	cl_git_mkfile("status/zzz_new_dir/new_file", "dummy");
 	cl_git_mkfile("status/zzz_new_file", "dummy");
 
@@ -461,14 +462,17 @@ void test_status_worktree__conflict_with_diff3(void)
 	memset(&their_entry, 0x0, sizeof(git_index_entry));
 
 	ancestor_entry.path = "modified_file";
+	ancestor_entry.mode = 0100644;
 	git_oid_fromstr(&ancestor_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
 
 	our_entry.path = "modified_file";
+	our_entry.mode = 0100644;
 	git_oid_fromstr(&our_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
 
 	their_entry.path = "modified_file";
+	their_entry.mode = 0100644;
 	git_oid_fromstr(&their_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
 
@@ -484,7 +488,7 @@ void test_status_worktree__conflict_with_diff3(void)
 
 	cl_git_pass(git_status_file(&status, repo, "modified_file"));
 
-	cl_assert_equal_i(GIT_STATUS_INDEX_DELETED | GIT_STATUS_WT_NEW, status);
+	cl_assert_equal_i(GIT_STATUS_CONFLICTED, status);
 }
 
 static const char *filemode_paths[] = {
@@ -614,14 +618,17 @@ void test_status_worktree__conflicted_item(void)
 	memset(&our_entry, 0x0, sizeof(git_index_entry));
 	memset(&their_entry, 0x0, sizeof(git_index_entry));
 
+	ancestor_entry.mode = 0100644;
 	ancestor_entry.path = "modified_file";
 	git_oid_fromstr(&ancestor_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
 
+	our_entry.mode = 0100644;
 	our_entry.path = "modified_file";
 	git_oid_fromstr(&our_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
 
+	their_entry.mode = 0100644;
 	their_entry.path = "modified_file";
 	git_oid_fromstr(&their_entry.id,
 		"452e4244b5d083ddf0460acf1ecc74db9dcfa11a");
@@ -634,9 +641,55 @@ void test_status_worktree__conflicted_item(void)
 		&our_entry, &their_entry));
 
 	cl_git_pass(git_status_file(&status, repo, "modified_file"));
-	cl_assert_equal_i(GIT_STATUS_WT_MODIFIED, status);
+	cl_assert_equal_i(GIT_STATUS_CONFLICTED, status);
 
 	git_index_free(index);
+}
+
+void test_status_worktree__conflict_has_no_oid(void)
+{
+	git_repository *repo = cl_git_sandbox_init("status");
+	git_index *index;
+	git_index_entry entry = {{0}};
+	git_status_list *statuslist;
+	const git_status_entry *status;
+	git_oid zero_id = {{0}};
+
+	entry.mode = 0100644;
+	entry.path = "modified_file";
+	git_oid_fromstr(&entry.id, "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
+
+	cl_git_pass(git_repository_index(&index, repo));
+	cl_git_pass(git_index_conflict_add(index, &entry, &entry, &entry));
+
+	git_status_list_new(&statuslist, repo, NULL);
+
+	cl_assert_equal_i(16, git_status_list_entrycount(statuslist));
+
+	status = git_status_byindex(statuslist, 2);
+
+	cl_assert_equal_i(GIT_STATUS_CONFLICTED, status->status);
+	cl_assert_equal_s("modified_file", status->head_to_index->old_file.path);
+	cl_assert(!git_oid_equal(&zero_id, &status->head_to_index->old_file.id));
+	cl_assert(0 != status->head_to_index->old_file.mode);
+	cl_assert_equal_s("modified_file", status->head_to_index->new_file.path);
+	cl_assert_equal_oid(&zero_id, &status->head_to_index->new_file.id);
+	cl_assert_equal_i(0, status->head_to_index->new_file.mode);
+	cl_assert_equal_i(0, status->head_to_index->new_file.size);
+
+	cl_assert_equal_s("modified_file", status->index_to_workdir->old_file.path);
+	cl_assert_equal_oid(&zero_id, &status->index_to_workdir->old_file.id);
+	cl_assert_equal_i(0, status->index_to_workdir->old_file.mode);
+	cl_assert_equal_i(0, status->index_to_workdir->old_file.size);
+	cl_assert_equal_s("modified_file", status->index_to_workdir->new_file.path);
+	cl_assert(
+		!git_oid_equal(&zero_id, &status->index_to_workdir->new_file.id) ||
+		!(status->index_to_workdir->new_file.flags & GIT_DIFF_FLAG_VALID_ID));
+	cl_assert(0 != status->index_to_workdir->new_file.mode);
+	cl_assert(0 != status->index_to_workdir->new_file.size);
+
+	git_index_free(index);
+	git_status_list_free(statuslist);
 }
 
 static void stage_and_commit(git_repository *repo, const char *path)
@@ -864,7 +917,7 @@ void test_status_worktree__long_filenames(void)
 
 	// Create directory with amazingly long filename
 	sprintf(path, "empty_standard_repo/%s", longname);
-	cl_git_pass(git_futils_mkdir_r(path, NULL, 0777));
+	cl_git_pass(git_futils_mkdir_r(path, 0777));
 	sprintf(path, "empty_standard_repo/%s/foo", longname);
 	cl_git_mkfile(path, "dummy");
 
@@ -904,6 +957,7 @@ void test_status_worktree__update_stat_cache_0(void)
 	git_status_options opts = GIT_STATUS_OPTIONS_INIT;
 	git_status_list *status;
 	git_diff_perfdata perf = GIT_DIFF_PERFDATA_INIT;
+	git_index *index;
 
 	opts.flags = GIT_STATUS_OPT_DEFAULTS;
 
@@ -914,6 +968,10 @@ void test_status_worktree__update_stat_cache_0(void)
 	cl_assert_equal_sz(5, perf.oid_calculations);
 
 	git_status_list_free(status);
+
+	/* tick the index so we avoid recalculating racily-clean entries */
+	cl_git_pass(git_repository_index__weakptr(&index, repo));
+	tick_index(index);
 
 	opts.flags |= GIT_STATUS_OPT_UPDATE_INDEX;
 
@@ -927,6 +985,8 @@ void test_status_worktree__update_stat_cache_0(void)
 
 	opts.flags &= ~GIT_STATUS_OPT_UPDATE_INDEX;
 
+	/* tick again as the index updating from the previous diff might have reset the timestamp */
+	tick_index(index);
 	cl_git_pass(git_status_list_new(&status, repo, &opts));
 	check_status0(status);
 	cl_git_pass(git_status_list_get_perfdata(&perf, status));
@@ -947,7 +1007,7 @@ void test_status_worktree__unreadable(void)
 	status_entry_counts counts = {0};
 
 	/* Create directory with no read permission */
-	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", NULL, 0777));
+	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", 0777));
 	cl_git_mkfile("empty_standard_repo/no_permission/foo", "dummy");
 	p_chmod("empty_standard_repo/no_permission", 0644);
 
@@ -981,7 +1041,7 @@ void test_status_worktree__unreadable_not_included(void)
 	status_entry_counts counts = {0};
 
 	/* Create directory with no read permission */
-	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", NULL, 0777));
+	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", 0777));
 	cl_git_mkfile("empty_standard_repo/no_permission/foo", "dummy");
 	p_chmod("empty_standard_repo/no_permission", 0644);
 
@@ -1014,7 +1074,7 @@ void test_status_worktree__unreadable_as_untracked(void)
 	status_entry_counts counts = {0};
 
 	/* Create directory with no read permission */
-	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", NULL, 0777));
+	cl_git_pass(git_futils_mkdir_r("empty_standard_repo/no_permission", 0777));
 	cl_git_mkfile("empty_standard_repo/no_permission/foo", "dummy");
 	p_chmod("empty_standard_repo/no_permission", 0644);
 
@@ -1036,5 +1096,53 @@ void test_status_worktree__unreadable_as_untracked(void)
 	cl_assert_equal_i(counts.expected_entry_count, counts.entry_count);
 	cl_assert_equal_i(0, counts.wrong_status_flags_count);
 	cl_assert_equal_i(0, counts.wrong_sorted_path);
+}
+
+void test_status_worktree__update_index_with_symlink_doesnt_change_mode(void)
+{
+	git_repository *repo = cl_git_sandbox_init("testrepo");
+	git_reference *head;
+	git_object *head_object;
+	git_index *index;
+	const git_index_entry *idx_entry;
+	git_status_options opts = GIT_STATUS_OPTIONS_INIT;
+	status_entry_counts counts = {0};
+	const char *expected_paths[] = { "README" };
+	const unsigned int expected_statuses[] = {GIT_STATUS_WT_NEW};
+
+	opts.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+	opts.flags = GIT_STATUS_OPT_DEFAULTS | GIT_STATUS_OPT_UPDATE_INDEX;
+
+	cl_git_pass(git_repository_head(&head, repo));
+	cl_git_pass(git_reference_peel(&head_object, head, GIT_OBJ_COMMIT));
+
+	cl_git_pass(git_reset(repo, head_object, GIT_RESET_HARD, NULL));
+
+	cl_git_rewritefile("testrepo/README", "This was rewritten.");
+
+	/* this status rewrites the index because we have changed the
+	 * contents of a tracked file
+	 */
+	counts.expected_entry_count = 1;
+	counts.expected_paths = expected_paths;
+	counts.expected_statuses = expected_statuses;
+
+	cl_git_pass(
+		git_status_foreach_ext(repo, &opts, cb_status__normal, &counts));
+	cl_assert_equal_i(1, counts.entry_count);
+
+	/* now ensure that the status's rewrite of the index did not screw
+	 * up the mode of the symlink `link_to_new.txt`, particularly
+	 * on platforms that don't support symlinks
+	 */
+	cl_git_pass(git_repository_index(&index, repo));
+	cl_git_pass(git_index_read(index, true));
+
+	cl_assert(idx_entry = git_index_get_bypath(index, "link_to_new.txt", 0));
+	cl_assert(S_ISLNK(idx_entry->mode));
+
+	git_index_free(index);
+	git_object_free(head_object);
+	git_reference_free(head);
 }
 

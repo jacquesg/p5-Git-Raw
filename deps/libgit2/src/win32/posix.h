@@ -20,6 +20,9 @@ typedef SOCKET GIT_SOCKET;
 extern int p_lstat(const char *file_name, struct stat *buf);
 extern int p_stat(const char* path, struct stat* buf);
 
+extern int p_utimes(const char *filename, const struct timeval times[2]);
+extern int p_futimes(int fd, const struct timeval times[2]);
+
 extern int p_readlink(const char *path, char *buf, size_t bufsiz);
 extern int p_symlink(const char *old, const char *new);
 extern int p_link(const char *old, const char *new);
@@ -49,7 +52,7 @@ extern int p_ftruncate(int fd, git_off_t size);
  */
 extern int p_lstat_posixly(const char *filename, struct stat *buf);
 
-extern struct tm * p_localtime_r (const time_t *timer, struct tm *result);
-extern struct tm * p_gmtime_r (const time_t *timer, struct tm *result);
+extern struct tm * p_localtime_r(const time_t *timer, struct tm *result);
+extern struct tm * p_gmtime_r(const time_t *timer, struct tm *result);
 
 #endif

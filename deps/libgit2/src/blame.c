@@ -331,7 +331,7 @@ static int blame_internal(git_blame *blame)
 
 	blame->ent = ent;
 
-	git_blame__like_git(blame, blame->options.flags);
+	error = git_blame__like_git(blame, blame->options.flags);
 
 cleanup:
 	for (ent = blame->ent; ent; ) {
@@ -496,8 +496,8 @@ int git_blame_buffer(
 
 	/* Diff to the reference blob */
 	git_diff_blob_to_buffer(reference->final_blob, blame->path,
-			buffer, buffer_len, blame->path,
-			&diffopts, NULL, buffer_hunk_cb, buffer_line_cb, blame);
+		buffer, buffer_len, blame->path, &diffopts,
+		NULL, NULL, buffer_hunk_cb, buffer_line_cb, blame);
 
 	*out = blame;
 	return 0;

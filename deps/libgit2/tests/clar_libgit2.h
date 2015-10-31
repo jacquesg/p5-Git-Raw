@@ -119,6 +119,7 @@ bool cl_is_chmod_supported(void);
 
 /* Environment wrappers */
 char *cl_getenv(const char *name);
+bool cl_is_env_set(const char *name);
 int cl_setenv(const char *name, const char *value);
 
 /* Reliable rename */
@@ -127,6 +128,7 @@ int cl_rename(const char *source, const char *dest);
 /* Git sandbox setup helpers */
 
 git_repository *cl_git_sandbox_init(const char *sandbox);
+git_repository *cl_git_sandbox_init_new(const char *name);
 void cl_git_sandbox_cleanup(void);
 git_repository *cl_git_sandbox_reopen(void);
 

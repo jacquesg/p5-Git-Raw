@@ -1,4 +1,42 @@
-v0.22 + 1
+v0.23 + 1
+-------
+
+### Changes or improvements
+
+* Custom filters can now be registered with wildcard attributes, for
+  example `filter=*`.  Consumers should examine the attributes parameter
+  of the `check` function for details.
+
+* Symlinks are now followed when locking a file, which can be
+  necessary when multiple worktrees share a base repository.
+
+### API additions
+
+* `git_config_lock()` has been added, which allow for
+  transactional/atomic complex updates to the configuration, removing
+  the opportunity for concurrent operations and not committing any
+  changes until the unlock.
+
+### API removals
+
+### Breaking API changes
+
+* `git_cert` descendent types now have a proper `parent` member
+
+* It is the responsibility of the refdb backend to decide what to do
+  with the reflog on ref deletion. The file-based backend must delete
+  it, a database-backed one may wish to archive it.
+
+* `git_config_backend` has gained two entries. `lock` and `unlock`
+  with which to implement the transactional/atomic semantics for the
+  configuration backend.
+
+* `git_index_add` will now use the case as provided by the caller on
+  case insensitive systems.  Previous versions would keep the case as
+  it existed in the index.  This does not affect the higher-level
+  `git_index_add_bypath` or `git_index_add_frombuffer` functions.
+
+v0.23
 ------
 
 ### Changes or improvements
@@ -28,6 +66,57 @@ v0.22 + 1
   allow for specifying the expression from the user to be put into the
   reflog.
 
+* `git_rebase_commit` now returns `GIT_EUNMERGED` when you attempt to
+  commit with unstaged changes.
+
+* On Mac OS X, we now use SecureTransport to provide the cryptographic
+  support for HTTPS connections insead of OpenSSL.
+
+* Checkout can now accept an index for the baseline computations via the
+  `baseline_index` member.
+
+* The configuration for fetching is no longer stored inside the
+  `git_remote` struct but has been moved to a `git_fetch_options`. The
+  remote functions now take these options or the callbacks instead of
+  setting them beforehand.
+
+* `git_submodule` instances are no longer cached or shared across
+  lookup. Each submodule represents the configuration at the time of
+  loading.
+
+* The index now uses diffs for `add_all()` and `update_all()` which
+  gives it a speed boost and closer semantics to git.
+
+* The ssh transport now reports the stderr output from the server as
+  the error message, which allows you to get the "repository not
+  found" messages.
+
+* `git_index_conflict_add()` will remove staged entries that exist for
+  conflicted paths.
+
+* The flags for a `git_diff_file` will now have the `GIT_DIFF_FLAG_EXISTS`
+  bit set when a file exists on that side of the diff.  This is useful
+  for understanding whether a side of the diff exists in the presence of
+  a conflict.
+
+* The constructor for a write-stream into the odb now takes
+  `git_off_t` instead of `size_t` for the size of the blob, which
+  allows putting large files into the odb on 32-bit systems.
+
+* The remote's push and pull URLs now honor the url.$URL.insteadOf
+  configuration. This allows modifying URL prefixes to a custom
+  value via gitconfig.
+
+* `git_diff_foreach`, `git_diff_blobs`, `git_diff_blob_to_buffer`,
+  and `git_diff_buffers` now accept a new binary callback of type
+  `git_diff_binary_cb` that includes the binary diff information.
+
+* The race condition mitigations described in `racy-git.txt` have been
+  implemented.
+
+* If libcurl is installed, we will use it to connect to HTTP(S)
+  servers.
+
 ### API additions
 
 * The `git_merge_options` gained a `file_flags` member.
@@ -55,11 +144,83 @@ v0.22 + 1
   put into the reflog as the source/target.
 
 * `git_index_add_frombuffer()` can now create a blob from memory
-   buffer and add it to the index which is attached to a repository.
+  buffer and add it to the index which is attached to a repository.
+
+* The structure `git_fetch_options` has been added to determine the
+  runtime configuration for fetching, such as callbacks, pruning and
+  autotag behaviour. It has the runtime initializer
+  `git_fetch_init_options()`.
+
+* The enum `git_fetch_prune_t` has been added, letting you specify the
+  pruning behaviour for a fetch.
+
+* A push operation will notify the caller of what updates it indends
+  to perform on the remote, which provides similar information to
+  git's pre-push hook.
+
+* `git_stash_apply()` can now apply a stashed state from the stash list,
+  placing the data into the working directory and index.
+
+* `git_stash_pop()` will apply a stashed state (like `git_stash_apply()`)
+  but will remove the stashed state after a successful application.
+
+* A new error code `GIT_EEOF` indicates an early EOF from the
+  server. This typically indicates an error with the URL or
+  configuration of the server, and tools can use this to show messages
+  about failing to communicate with the server.
+
+* A new error code `GIT_EINVALID` indicates that an argument to a
+  function is invalid, or an invalid operation was requested.
+
+* `git_diff_index_to_workdir()` and `git_diff_tree_to_index()` will now
+  produce deltas of type `GIT_DELTA_CONFLICTED` to indicate that the index
+  side of the delta is a conflict.
+
+* The `git_status` family of functions will now produce status of type
+  `GIT_STATUS_CONFLICTED` to indicate that a conflict exists for that file
+  in the index.
+
+* `git_index_entry_is_conflict()` is a utility function to determine if
+  a given index entry has a non-zero stage entry, indicating that it is
+  one side of a conflict.
+
+* It is now possible to pass a keypair via a buffer instead of a
+  path. For this, `GIT_CREDTYPE_SSH_MEMORY` and
+  `git_cred_ssh_key_memory_new()` have been added.
+
+* `git_filter_list_contains` will indicate whether a particular
+  filter will be run in the given filter list.
+
+* `git_commit_header_field()` has been added, which allows retrieving
+  the contents of an arbitrary header field.
+
+* `git_submodule_set_branch()` allows to set the configured branch for
+  a submodule.
 
 ### API removals
 
+* `git_remote_save()` and `git_remote_clear_refspecs()` have been
+  removed. Remote's configuration is changed via the configuration
+  directly or through a convenience function which performs changes to
+  the configuration directly.
+
+* `git_remote_set_callbacks()`, `git_remote_get_callbacks()` and
+  `git_remote_set_transport()` have been removed and the remote no
+  longer stores this configuration.
+
+* `git_remote_set_fetch_refpecs()` and
+  `git_remote_set_push_refspecs()` have been removed. There is no
+  longer a way to set the base refspecs at run-time.
+
+* `git_submodule_save()` has been removed. The submodules are no
+  longer configured via the objects.
+
+* `git_submodule_reload_all()` has been removed as we no longer cache
+  submodules.
+
 ### Breaking API changes
+
+* `git_smart_subtransport_cb` now has a `param` parameter.
 
 * The `git_merge_options` structure member `flags` has been renamed
   to `tree_flags`.
@@ -100,6 +261,79 @@ v0.22 + 1
 
 * `git_note_default_ref()` now uses a `git_buf` to return the string,
   as the string is otherwise not guaranteed to stay allocated.
+
+* `git_rebase_operation_current()` will return `GIT_REBASE_NO_OPERATION`
+  if it is called immediately after creating a rebase session but before
+  you have applied the first patch.
+
+* `git_rebase_options` now contains a `git_checkout_options` struct
+  that will be used for functions that modify the working directory,
+  namely `git_checkout_init`, `git_checkout_next` and
+  `git_checkout_abort`.  As a result, `git_rebase_open` now also takes
+  a `git_rebase_options` and only the `git_rebase_init` and
+  `git_rebase_open` functions take a `git_rebase_options`, where they
+  will persist the options to subsequent `git_rebase` calls.
+
+* The `git_clone_options` struct now has fetch options in a
+  `fetch_opts` field instead of remote callbacks in
+  `remote_callbacks`.
+
+* The remote callbacks has gained a new member `push_negotiation`
+  which gets called before sending the update commands to the server.
+
+* The following functions no longer act on a remote instance but
+  change the repository's configuration. Their signatures have changed
+  accordingly:
+
+    * `git_remote_set_url()`, `git_remote_seturl()`
+    * `git_remote_add_fetch()`, `git_remote_add_push()` and
+    * `git_remote_set_autotag()`
+
+* `git_remote_connect()` and `git_remote_prune()` now take a pointer
+  to the callbacks.
+
+* `git_remote_fetch()` and `git_remote_download()` now take a pointer
+  to fetch options which determine the runtime configuration.
+
+* The `git_remote_autotag_option_t` values have been changed. It has
+  gained a `_UNSPECIFIED` default value to specify no override for the
+  configured setting.
+
+* `git_remote_update_tips()` now takes a pointer to the callbacks as
+  well as a boolean whether to write `FETCH_HEAD` and the autotag
+  setting.
+
+* `git_remote_create_anonymous()` no longer takes a fetch refspec as
+  url-only remotes cannot have configured refspecs.
+
+* The `git_submodule_update_options` struct now has fetch options in
+  the `fetch_opts` field instead of callbacks in the
+  `remote_callbacks` field.
+
+* The following functions no longer act on a submodule instance but
+  change the repository's configuration. Their signatures have changed
+  accordingly:
+
+    * `git_submodule_set_url()`, `git_submodule_set_ignore()`,
+      `git_submodule_set_update()`,
+      `git_submodule_set_fetch_recurse_submodules()`.
+
+* `git_submodule_status()` no longer takes a submodule instance but a
+  repsitory, a submodule name and an ignore setting.
+
+* The `push` function in the `git_transport` interface now takes a
+  pointer to the remote callbacks.
+
+* The `git_index_entry` struct's fields' types have been changed to
+  more accurately reflect what is in fact stored in the
+  index. Specifically, time and file size are 32 bits intead of 64, as
+  these values are truncated.
+
+* `GIT_EMERGECONFLICT` is now `GIT_ECONFLICT`, which more accurately
+  describes the nature of the error.
+
+* It is no longer allowed to call `git_buf_grow()` on buffers
+  borrowing the memory they point to.
 
 v0.22
 ------

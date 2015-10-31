@@ -30,8 +30,6 @@ typedef enum {
 	GIT_TRANSPORTFLAGS_NONE = 0,
 } git_transport_flags_t;
 
-typedef struct git_transport git_transport;
-
 struct git_transport {
 	unsigned int version;
 	/* Set progress and error callbacks */
@@ -41,6 +39,11 @@ struct git_transport {
 		git_transport_message_cb error_cb,
 		git_transport_certificate_check_cb certificate_check_cb,
 		void *payload);
+
+	/* Set custom headers for HTTP requests */
+	int (*set_custom_headers)(
+		git_transport *transport,
+		const git_strarray *custom_headers);
 
 	/* Connect the transport to the remote repository, using the given
 	 * direction. */
@@ -61,7 +64,7 @@ struct git_transport {
 		git_transport *transport);
 
 	/* Executes the push whose context is in the git_push object. */
-	int (*push)(git_transport *transport, git_push *push);
+	int (*push)(git_transport *transport, git_push *push, const git_remote_callbacks *callbacks);
 
 	/* This function may be called after a successful call to connect(), when
 	 * the direction is FETCH. The function performs a negotiation to calculate
@@ -142,9 +145,6 @@ GIT_EXTERN(int) git_transport_new(git_transport **out, git_remote *owner, const 
  */
 GIT_EXTERN(int) git_transport_ssh_with_paths(git_transport **out, git_remote *owner, void *payload);
 
-/* Signature of a function which creates a transport */
-typedef int (*git_transport_cb)(git_transport **out, git_remote *owner, void *param);
-
 /**
  * Add a custom transport definition, to be used in addition to the built-in
  * set of transports that come with libgit2.
@@ -215,6 +215,28 @@ GIT_EXTERN(int) git_transport_smart(
 	git_transport **out,
 	git_remote *owner,
 	/* (git_smart_subtransport_definition *) */ void *payload);
+
+/**
+ * Call the certificate check for this transport.
+ *
+ * @param transport a smart transport
+ * @param cert the certificate to pass to the caller
+ * @param valid whether we believe the certificate is valid
+ * @param hostname the hostname we connected to
+ * @return the return value of the callback
+ */
+GIT_EXTERN(int) git_transport_smart_certificate_check(git_transport *transport, git_cert *cert, int valid, const char *hostname);
+
+/**
+ * Call the credentials callback for this transport
+ *
+ * @param out the pointer where the creds are to be stored
+ * @param transport a smart transport
+ * @param user the user we saw on the url (if any)
+ * @param methods available methods for authentication
+ * @return the return value of the callback
+ */
+GIT_EXTERN(int) git_transport_smart_credentials(git_cred **out, git_transport *transport, const char *user, int methods);
 
 /*
  *** End of base transport interface ***
@@ -352,21 +374,6 @@ GIT_EXTERN(int) git_smart_subtransport_ssh(
 	git_smart_subtransport **out,
 	git_transport* owner,
 	void *param);
-
-/**
- * Sets a custom transport factory for the remote. The caller can use this
- * function to override the transport used for this remote when performing
- * network operations.
- *
- * @param remote the remote to configure
- * @param transport_cb the function to use to create a transport
- * @param payload opaque parameter passed to transport_cb
- * @return 0 or an error code
- */
-GIT_EXTERN(int) git_remote_set_transport(
-	git_remote *remote,
-	git_transport_cb transport_cb,
-	void *payload);
 
 /** @} */
 GIT_END_DECL

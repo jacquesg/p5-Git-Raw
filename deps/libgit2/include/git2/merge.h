@@ -72,6 +72,18 @@ typedef enum {
 	 * the ability to merge between a modified and renamed file.
 	 */
 	GIT_MERGE_TREE_FIND_RENAMES = (1 << 0),
+
+	/**
+	 * If a conflict occurs, exit immediately instead of attempting to
+	 * continue resolving conflicts.  The merge operation will fail with
+	 * GIT_EMERGECONFLICT and no index will be returned.
+	 */
+	GIT_MERGE_TREE_FAIL_ON_CONFLICT = (1 << 1),
+
+	/**
+	 * Do not write the REUC extension on the generated index
+	 */
+	GIT_MERGE_TREE_SKIP_REUC = (1 << 2),
 } git_merge_tree_flag_t;
 
 /**
@@ -169,7 +181,7 @@ typedef struct {
 	/** The file to favor in region conflicts. */
 	git_merge_file_favor_t favor;
 
-	/** Merge file flags. */
+	/** see `git_merge_file_flags_t` above */
 	unsigned int flags;
 } git_merge_file_options;
 
@@ -246,6 +258,7 @@ typedef struct {
 	/** Flags for handling conflicting content. */
 	git_merge_file_favor_t file_favor;
 
+	/** see `git_merge_file_flags_t` above */
 	unsigned int file_flags;
 } git_merge_options;
 

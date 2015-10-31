@@ -20,6 +20,8 @@
  *
  */
 
+#include "../util.h"
+
 #if !defined(XDIFF_H)
 #define XDIFF_H
 
@@ -32,14 +34,14 @@ extern "C" {
 #define XDF_IGNORE_WHITESPACE (1 << 2)
 #define XDF_IGNORE_WHITESPACE_CHANGE (1 << 3)
 #define XDF_IGNORE_WHITESPACE_AT_EOL (1 << 4)
-#define XDF_PATIENCE_DIFF (1 << 5)
-#define XDF_HISTOGRAM_DIFF (1 << 6)
 #define XDF_WHITESPACE_FLAGS (XDF_IGNORE_WHITESPACE | XDF_IGNORE_WHITESPACE_CHANGE | XDF_IGNORE_WHITESPACE_AT_EOL)
 
-#define XDL_PATCH_NORMAL '-'
-#define XDL_PATCH_REVERSE '+'
-#define XDL_PATCH_MODEMASK ((1 << 8) - 1)
-#define XDL_PATCH_IGNOREBSPACE (1 << 8)
+#define XDF_PATIENCE_DIFF (1 << 5)
+#define XDF_HISTOGRAM_DIFF (1 << 6)
+#define XDF_DIFF_ALGORITHM_MASK (XDF_PATIENCE_DIFF | XDF_HISTOGRAM_DIFF)
+#define XDF_DIFF_ALG(x) ((x) & XDF_DIFF_ALGORITHM_MASK)
+
+#define XDF_IGNORE_BLANK_LINES (1 << 7)
 
 #define XDL_EMIT_FUNCNAMES (1 << 0)
 #define XDL_EMIT_COMMON (1 << 1)
@@ -88,13 +90,17 @@ typedef struct s_xdemitcb {
 
 typedef long (*find_func_t)(const char *line, long line_len, char *buffer, long buffer_size, void *priv);
 
+typedef int (*xdl_emit_hunk_consume_func_t)(long start_a, long count_a,
+					    long start_b, long count_b,
+					    void *cb_data);
+
 typedef struct s_xdemitconf {
 	long ctxlen;
 	long interhunkctxlen;
 	unsigned long flags;
 	find_func_t find_func;
 	void *find_func_priv;
-	void (*emit_func)(void);
+	xdl_emit_hunk_consume_func_t hunk_func;
 } xdemitconf_t;
 
 typedef struct s_bdiffparam {
@@ -102,9 +108,9 @@ typedef struct s_bdiffparam {
 } bdiffparam_t;
 
 
-#define xdl_malloc(x) malloc(x)
-#define xdl_free(ptr) free(ptr)
-#define xdl_realloc(ptr,x) realloc(ptr,x)
+#define xdl_malloc(x) git__malloc(x)
+#define xdl_free(ptr) git__free(ptr)
+#define xdl_realloc(ptr,x) git__realloc(ptr,x)
 
 void *xdl_mmfile_first(mmfile_t *mmf, long *size);
 long xdl_mmfile_size(mmfile_t *mmf);
