@@ -9,16 +9,16 @@
 
 static git_repository *_repo;
 
-static char *_remote_url;
+static char *_remote_url = NULL;
 
-static char *_remote_ssh_key;
-static char *_remote_ssh_pubkey;
-static char *_remote_ssh_passphrase;
+static char *_remote_user = NULL;
+static char *_remote_pass = NULL;
 
-static char *_remote_user;
-static char *_remote_pass;
+static char *_remote_ssh_key = NULL;
+static char *_remote_ssh_pubkey = NULL;
+static char *_remote_ssh_passphrase = NULL;
 
-static char *_remote_default;
+static char *_remote_default = NULL;
 
 static int cred_acquire_cb(git_cred **,	const char *, const char *, unsigned int, void *);
 
@@ -91,7 +91,6 @@ static int cred_acquire_cb(
 
 /**
  * git_push_status_foreach callback that records status entries.
- * @param data (git_vector *) of push_status instances
  */
 static int record_push_status_cb(const char *ref, const char *msg, void *payload)
 {
@@ -299,7 +298,7 @@ static void verify_update_tips_callback(git_remote *remote, expected_ref expecte
 			goto failed;
 		}
 
-		if (git_oid_cmp(expected_refs[i].oid, tip->new_oid) != 0) {
+		if (git_oid_cmp(expected_refs[i].oid, &tip->new_oid) != 0) {
 			git_buf_printf(&msg, "Updated tip ID does not match expected ID");
 			failed = 1;
 			goto failed;
@@ -319,6 +318,8 @@ void test_online_push__initialize(void)
 	git_vector delete_specs = GIT_VECTOR_INIT;
 	const git_remote_head **heads;
 	size_t heads_len;
+	git_push_options push_opts = GIT_PUSH_OPTIONS_INIT;
+	git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
 
 	_repo = cl_git_sandbox_init("push_src");
 
@@ -353,6 +354,7 @@ void test_online_push__initialize(void)
 	git_oid_fromstr(&_tag_tag, "eea4f2705eeec2db3813f2430829afce99cd00b5");
 
 	/* Remote URL environment variable must be set.  User and password are optional.  */
+
 	_remote_url = cl_getenv("GITTEST_REMOTE_URL");
 	_remote_user = cl_getenv("GITTEST_REMOTE_USER");
 	_remote_pass = cl_getenv("GITTEST_REMOTE_PASS");
@@ -369,9 +371,8 @@ void test_online_push__initialize(void)
 	cl_git_pass(git_remote_create(&_remote, _repo, "test", _remote_url));
 
 	record_callbacks_data_clear(&_record_cbs_data);
-	git_remote_set_callbacks(_remote, &_record_cbs);
 
-	cl_git_pass(git_remote_connect(_remote, GIT_DIRECTION_PUSH));
+	cl_git_pass(git_remote_connect(_remote, GIT_DIRECTION_PUSH, &_record_cbs, NULL));
 
 	/* Clean up previously pushed branches.  Fails if receive.denyDeletes is
 	 * set on the remote.  Also, on Git 1.7.0 and newer, you must run
@@ -387,17 +388,16 @@ void test_online_push__initialize(void)
 			delete_specs.length,
 		};
 
-		cl_git_pass(git_remote_upload(_remote, &arr, NULL));
+		memcpy(&push_opts.callbacks, &_record_cbs, sizeof(git_remote_callbacks));
+		cl_git_pass(git_remote_upload(_remote, &arr, &push_opts));
 	}
 
 	git_remote_disconnect(_remote);
 	git_vector_free(&delete_specs);
 
 	/* Now that we've deleted everything, fetch from the remote */
-	cl_git_pass(git_remote_connect(_remote, GIT_DIRECTION_FETCH));
-	cl_git_pass(git_remote_download(_remote, NULL));
-	cl_git_pass(git_remote_update_tips(_remote, NULL));
-	git_remote_disconnect(_remote);
+	memcpy(&fetch_opts.callbacks, &_record_cbs, sizeof(git_remote_callbacks));
+	cl_git_pass(git_remote_fetch(_remote, NULL, &fetch_opts, NULL));
 }
 
 void test_online_push__cleanup(void)
@@ -405,6 +405,14 @@ void test_online_push__cleanup(void)
 	if (_remote)
 		git_remote_free(_remote);
 	_remote = NULL;
+
+	git__free(_remote_url);
+	git__free(_remote_user);
+	git__free(_remote_pass);
+	git__free(_remote_ssh_key);
+	git__free(_remote_ssh_pubkey);
+	git__free(_remote_ssh_passphrase);
+	git__free(_remote_default);
 
 	/* Freed by cl_git_sandbox_cleanup */
 	_repo = NULL;
@@ -459,20 +467,18 @@ static void do_push(
 	size_t i;
 	int error;
 	git_strarray specs = {0};
-	git_remote_callbacks callbacks;
 	record_callbacks_data *data;
 
 	if (_remote) {
 		/* Auto-detect the number of threads to use */
 		opts.pb_parallelism = 0;
 
-		memcpy(&callbacks, git_remote_get_callbacks(_remote), sizeof(callbacks));
-		data = callbacks.payload;
+		memcpy(&opts.callbacks, &_record_cbs, sizeof(git_remote_callbacks));
+		data = opts.callbacks.payload;
 
-		callbacks.pack_progress = push_pack_progress_cb;
-		callbacks.push_transfer_progress = push_transfer_progress_cb;
-		callbacks.push_update_reference = record_push_status_cb;
-		cl_git_pass(git_remote_set_callbacks(_remote, &callbacks));
+		opts.callbacks.pack_progress = push_pack_progress_cb;
+		opts.callbacks.push_transfer_progress = push_transfer_progress_cb;
+		opts.callbacks.push_update_reference = record_push_status_cb;
 
 		if (refspecs_len) {
 			specs.count = refspecs_len;
@@ -867,6 +873,7 @@ void test_online_push__configured(void)
 {
 	git_oid note_oid, *target_oid, expected_oid;
 	git_signature *signature;
+	git_remote *old_remote;
 	const char *specs[] = { "refs/notes/commits:refs/notes/commits" };
 	push_status exp_stats[] = { { "refs/notes/commits", 1 } };
 	expected_ref exp_refs[] = { { "refs/notes/commits", &expected_oid } };
@@ -876,7 +883,10 @@ void test_online_push__configured(void)
 
 	target_oid = &_oid_b6;
 
-	cl_git_pass(git_remote_add_push(_remote, specs[0]));
+	cl_git_pass(git_remote_add_push(_repo, git_remote_name(_remote), specs[0]));
+	old_remote = _remote;
+	cl_git_pass(git_remote_lookup(&_remote, _repo, git_remote_name(_remote)));
+	git_remote_free(old_remote);
 
 	/* Create note to push */
 	cl_git_pass(git_signature_new(&signature, "nulltoken", "emeric.fermas@gmail.com", 1323847743, 60)); /* Wed Dec 14 08:29:03 2011 +0100 */

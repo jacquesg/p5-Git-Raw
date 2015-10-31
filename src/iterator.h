@@ -11,6 +11,7 @@
 #include "git2/index.h"
 #include "vector.h"
 #include "buffer.h"
+#include "ignore.h"
 
 typedef struct git_iterator git_iterator;
 
@@ -33,7 +34,24 @@ typedef enum {
 	GIT_ITERATOR_DONT_AUTOEXPAND  = (1u << 3),
 	/** convert precomposed unicode to decomposed unicode */
 	GIT_ITERATOR_PRECOMPOSE_UNICODE = (1u << 4),
+	/** include conflicts */
+	GIT_ITERATOR_INCLUDE_CONFLICTS = (1u << 5),
 } git_iterator_flag_t;
+
+typedef struct {
+	const char *start;
+	const char *end;
+
+	/* paths to include in the iterator (literal).  if set, any paths not
+	 * listed here will be excluded from iteration.
+	 */
+	git_strarray pathlist;
+
+	/* flags, from above */
+	unsigned int flags;
+} git_iterator_options;
+
+#define GIT_ITERATOR_OPTIONS_INIT {0}
 
 typedef struct {
 	int (*current)(const git_index_entry **, git_iterator *);
@@ -51,6 +69,10 @@ struct git_iterator {
 	git_repository *repo;
 	char *start;
 	char *end;
+	git_vector pathlist;
+	size_t pathlist_walk_idx;
+	int (*strcomp)(const char *a, const char *b);
+	int (*strncomp)(const char *a, const char *b, size_t n);
 	int (*prefixcomp)(const char *str, const char *prefix);
 	size_t stat_calls;
 	unsigned int flags;
@@ -58,9 +80,7 @@ struct git_iterator {
 
 extern int git_iterator_for_nothing(
 	git_iterator **out,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end);
+	git_iterator_options *options);
 
 /* tree iterators will match the ignore_case value from the index of the
  * repository, unless you override with a non-zero flag value
@@ -68,9 +88,7 @@ extern int git_iterator_for_nothing(
 extern int git_iterator_for_tree(
 	git_iterator **out,
 	git_tree *tree,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end);
+	git_iterator_options *options);
 
 /* index iterators will take the ignore_case value from the index; the
  * ignore_case flags are not used
@@ -78,9 +96,7 @@ extern int git_iterator_for_tree(
 extern int git_iterator_for_index(
 	git_iterator **out,
 	git_index *index,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end);
+	git_iterator_options *options);
 
 extern int git_iterator_for_workdir_ext(
 	git_iterator **out,
@@ -88,9 +104,7 @@ extern int git_iterator_for_workdir_ext(
 	const char *repo_workdir,
 	git_index *index,
 	git_tree *tree,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end);
+	git_iterator_options *options);
 
 /* workdir iterators will match the ignore_case value from the index of the
  * repository, unless you override with a non-zero flag value
@@ -100,11 +114,9 @@ GIT_INLINE(int) git_iterator_for_workdir(
 	git_repository *repo,
 	git_index *index,
 	git_tree *tree,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end)
+	git_iterator_options *options)
 {
-	return git_iterator_for_workdir_ext(out, repo, NULL, index, tree, flags, start, end);
+	return git_iterator_for_workdir_ext(out, repo, NULL, index, tree, options);
 }
 
 /* for filesystem iterators, you have to explicitly pass in the ignore_case
@@ -113,9 +125,7 @@ GIT_INLINE(int) git_iterator_for_workdir(
 extern int git_iterator_for_filesystem(
 	git_iterator **out,
 	const char *root,
-	git_iterator_flag_t flags,
-	const char *start,
-	const char *end);
+	git_iterator_options *options);
 
 extern void git_iterator_free(git_iterator *iter);
 
@@ -268,7 +278,8 @@ extern git_index *git_iterator_get_index(git_iterator *iter);
 typedef enum {
 	GIT_ITERATOR_STATUS_NORMAL = 0,
 	GIT_ITERATOR_STATUS_IGNORED = 1,
-	GIT_ITERATOR_STATUS_EMPTY = 2
+	GIT_ITERATOR_STATUS_EMPTY = 2,
+	GIT_ITERATOR_STATUS_FILTERED = 3
 } git_iterator_status_t;
 
 /* Advance over a directory and check if it contains no files or just
@@ -283,5 +294,27 @@ typedef enum {
  */
 extern int git_iterator_advance_over_with_status(
 	const git_index_entry **entry, git_iterator_status_t *status, git_iterator *iter);
+
+/**
+ * Retrieve the index stored in the iterator.
+ *
+ * Only implemented for the workdir iterator
+ */
+extern int git_iterator_index(git_index **out, git_iterator *iter);
+
+typedef int (*git_iterator_walk_cb)(
+	const git_index_entry **entries,
+	void *data);
+
+/**
+ * Walk the given iterators in lock-step.  The given callback will be
+ * called for each unique path, with the index entry in each iterator
+ * (or NULL if the given iterator does not contain that path).
+ */
+extern int git_iterator_walk(
+	git_iterator **iterators,
+	size_t cnt,
+	git_iterator_walk_cb cb,
+	void *data);
 
 #endif

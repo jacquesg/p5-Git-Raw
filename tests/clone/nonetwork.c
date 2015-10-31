@@ -1,6 +1,8 @@
 #include "clar_libgit2.h"
 
 #include "git2/clone.h"
+#include "git2/sys/commit.h"
+#include "../submodule/submodule_helpers.h"
 #include "remote.h"
 #include "fileops.h"
 #include "repository.h"
@@ -15,7 +17,7 @@ static git_remote* g_remote;
 void test_clone_nonetwork__initialize(void)
 {
 	git_checkout_options dummy_opts = GIT_CHECKOUT_OPTIONS_INIT;
-	git_remote_callbacks dummy_callbacks = GIT_REMOTE_CALLBACKS_INIT;
+	git_fetch_options dummy_fetch = GIT_FETCH_OPTIONS_INIT;
 
 	g_repo = NULL;
 
@@ -23,7 +25,7 @@ void test_clone_nonetwork__initialize(void)
 	g_options.version = GIT_CLONE_OPTIONS_VERSION;
 	g_options.checkout_opts = dummy_opts;
 	g_options.checkout_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
-	g_options.remote_callbacks = dummy_callbacks;
+	g_options.fetch_opts = dummy_fetch;
 }
 
 void test_clone_nonetwork__cleanup(void)
@@ -179,7 +181,7 @@ void test_clone_nonetwork__can_cancel_clone_in_fetch(void)
 {
 	g_options.checkout_branch = "test";
 
-	g_options.remote_callbacks.transfer_progress =
+	g_options.fetch_opts.callbacks.transfer_progress =
 		clone_cancel_fetch_transfer_progress_cb;
 
 	cl_git_fail_with(git_clone(
@@ -295,16 +297,19 @@ static void assert_correct_reflog(const char *name)
 {
 	git_reflog *log;
 	const git_reflog_entry *entry;
-	char expected_log_message[128] = {0};
+	git_buf expected_message = GIT_BUF_INIT;
 
-	sprintf(expected_log_message, "clone: from %s", cl_git_fixture_url("testrepo.git"));
+	git_buf_printf(&expected_message,
+		"clone: from %s", cl_git_fixture_url("testrepo.git"));
 
 	cl_git_pass(git_reflog_read(&log, g_repo, name));
 	cl_assert_equal_i(1, git_reflog_entrycount(log));
 	entry = git_reflog_entry_byindex(log, 0);
-	cl_assert_equal_s(expected_log_message, git_reflog_entry_message(entry));
+	cl_assert_equal_s(expected_message.ptr, git_reflog_entry_message(entry));
 
 	git_reflog_free(log);
+
+	git_buf_free(&expected_message);
 }
 
 void test_clone_nonetwork__clone_updates_reflog_properly(void)
@@ -346,4 +351,57 @@ void test_clone_nonetwork__clone_from_empty_sets_upstream(void)
 	git_config_free(config);
 	git_repository_free(repo);
 	cl_fixture_cleanup("./repowithunborn");
+}
+
+static int just_return_origin(git_remote **out, git_repository *repo, const char *name, const char *url, void *payload)
+{
+	GIT_UNUSED(url); GIT_UNUSED(payload);
+
+	return git_remote_lookup(out, repo, name);
+}
+
+static int just_return_repo(git_repository **out, const char *path, int bare, void *payload)
+{
+	git_submodule *sm = payload;
+
+	GIT_UNUSED(path); GIT_UNUSED(bare);
+
+	return git_submodule_open(out, sm);
+}
+
+void test_clone_nonetwork__clone_submodule(void)
+{
+	git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
+	git_index *index;
+	git_oid tree_id, commit_id;
+	git_submodule *sm;
+	git_signature *sig;
+	git_repository *sm_repo;
+
+	cl_git_pass(git_repository_init(&g_repo, "willaddsubmodule", false));
+
+
+	/* Create the submodule structure, clone into it and finalize */
+	cl_git_pass(git_submodule_add_setup(&sm, g_repo, cl_fixture("testrepo.git"), "testrepo", true));
+
+	clone_opts.repository_cb = just_return_repo;
+	clone_opts.repository_cb_payload = sm;
+	clone_opts.remote_cb = just_return_origin;
+	clone_opts.remote_cb_payload = sm;
+	cl_git_pass(git_clone(&sm_repo, cl_fixture("testrepo.git"), "testrepo", &clone_opts));
+	cl_git_pass(git_submodule_add_finalize(sm));
+	git_repository_free(sm_repo);
+	git_submodule_free(sm);
+
+	cl_git_pass(git_repository_index(&index, g_repo));
+	cl_git_pass(git_index_write_tree(&tree_id, index));
+	git_index_free(index);
+
+	cl_git_pass(git_signature_now(&sig, "Submoduler", "submoduler@local"));
+	cl_git_pass(git_commit_create_from_ids(&commit_id, g_repo, "HEAD", sig, sig, NULL, "A submodule\n",
+					       &tree_id, 0, NULL));
+
+	git_signature_free(sig);
+
+	assert_submodule_exists(g_repo, "testrepo");
 }

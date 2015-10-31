@@ -63,7 +63,7 @@ void test_checkout_index__can_remove_untracked_files(void)
 {
 	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
 
-	git_futils_mkdir("./testrepo/dir/subdir/subsubdir", NULL, 0755, GIT_MKDIR_PATH);
+	git_futils_mkdir("./testrepo/dir/subdir/subsubdir", 0755, GIT_MKDIR_PATH);
 	cl_git_mkfile("./testrepo/dir/one", "one\n");
 	cl_git_mkfile("./testrepo/dir/subdir/two", "two\n");
 
@@ -145,7 +145,7 @@ void test_checkout_index__honor_coresymlinks_default(void)
 
 	const char *url = git_repository_path(g_repo);
 
-	getcwd(cwd, sizeof(cwd));
+	cl_assert(getcwd(cwd, sizeof(cwd)) != NULL);
 	cl_assert_equal_i(0, p_mkdir("readonly", 0555)); // Read-only directory
 	cl_assert_equal_i(0, chdir("readonly"));
 	cl_git_pass(git_repository_init(&repo, "../symlink.git", true));
@@ -154,9 +154,7 @@ void test_checkout_index__honor_coresymlinks_default(void)
 	cl_git_pass(git_repository_set_workdir(repo, "symlink", 1));
 
 	cl_git_pass(git_remote_create(&origin, repo, GIT_REMOTE_ORIGIN, url));
-	cl_git_pass(git_remote_connect(origin, GIT_DIRECTION_FETCH));
-	cl_git_pass(git_remote_download(origin, NULL));
-	cl_git_pass(git_remote_update_tips(origin, NULL));
+	cl_git_pass(git_remote_fetch(origin, NULL, NULL, NULL));
 	git_remote_free(origin);
 
 	cl_git_pass(git_revparse_single(&target, repo, "remotes/origin/master"));
@@ -687,15 +685,15 @@ static void add_conflict(git_index *index, const char *path)
 	entry.path = path;
 
 	git_oid_fromstr(&entry.id, "d427e0b2e138501a3d15cc376077a3631e15bd46");
-	entry.flags = (1 << GIT_IDXENTRY_STAGESHIFT);
+	GIT_IDXENTRY_STAGE_SET(&entry, 1);
 	cl_git_pass(git_index_add(index, &entry));
 
 	git_oid_fromstr(&entry.id, "4e886e602529caa9ab11d71f86634bd1b6e0de10");
-	entry.flags = (2 << GIT_IDXENTRY_STAGESHIFT);
+	GIT_IDXENTRY_STAGE_SET(&entry, 2);
 	cl_git_pass(git_index_add(index, &entry));
 
 	git_oid_fromstr(&entry.id, "2bd0a343aeef7a2cf0d158478966a6e587ff3863");
-	entry.flags = (3 << GIT_IDXENTRY_STAGESHIFT);
+	GIT_IDXENTRY_STAGE_SET(&entry, 3);
 	cl_git_pass(git_index_add(index, &entry));
 }
 

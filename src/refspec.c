@@ -42,6 +42,12 @@ int git_refspec__parse(git_refspec *refspec, const char *input, bool is_fetch)
 	 */
 	if (!is_fetch && rhs == lhs && rhs[1] == '\0') {
 		refspec->matching = 1;
+		refspec->string = git__strdup(input);
+		GITERR_CHECK_ALLOC(refspec->string);
+		refspec->src = git__strdup("");
+		GITERR_CHECK_ALLOC(refspec->src);
+		refspec->dst = git__strdup("");
+		GITERR_CHECK_ALLOC(refspec->dst);
 		return 0;
 	}
 
@@ -136,6 +142,7 @@ int git_refspec__parse(git_refspec *refspec, const char *input, bool is_fetch)
         giterr_set(
                 GITERR_INVALID,
                 "'%s' is not a valid refspec.", input);
+        git_refspec__free(refspec);
 	return -1;
 }
 
@@ -147,6 +154,8 @@ void git_refspec__free(git_refspec *refspec)
 	git__free(refspec->src);
 	git__free(refspec->dst);
 	git__free(refspec->string);
+
+	memset(refspec, 0x0, sizeof(git_refspec));
 }
 
 const char *git_refspec_src(const git_refspec *refspec)

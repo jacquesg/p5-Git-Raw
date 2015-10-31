@@ -20,6 +20,9 @@
  */
 GIT_BEGIN_DECL
 
+/** Signature of a function which creates a transport */
+typedef int (*git_transport_cb)(git_transport **out, git_remote *owner, void *param);
+
 /**
  * Type of SSH host fingerprint
  */
@@ -34,39 +37,32 @@ typedef enum {
  * Hostkey information taken from libssh2
  */
 typedef struct {
+	git_cert parent;
+
 	/**
-	 * Type of certificate. Here to share the header with
-	 * `git_cert`.
+	 * A hostkey type from libssh2, either
+	 * `GIT_CERT_SSH_MD5` or `GIT_CERT_SSH_SHA1`
 	 */
-	git_cert_t cert_type;
-        /**
-         * A hostkey type from libssh2, either
-         * `GIT_CERT_SSH_MD5` or `GIT_CERT_SSH_SHA1`
-         */
 	git_cert_ssh_t type;
 
-        /**
-         * Hostkey hash. If type has `GIT_CERT_SSH_MD5` set, this will
-         * have the MD5 hash of the hostkey.
-         */
+	/**
+	 * Hostkey hash. If type has `GIT_CERT_SSH_MD5` set, this will
+	 * have the MD5 hash of the hostkey.
+	 */
 	unsigned char hash_md5[16];
 
-        /**
-         * Hostkey hash. If type has `GIT_CERT_SSH_SHA1` set, this will
-         * have the SHA-1 hash of the hostkey.
-         */
-        unsigned char hash_sha1[20];
+	/**
+	 * Hostkey hash. If type has `GIT_CERT_SSH_SHA1` set, this will
+	 * have the SHA-1 hash of the hostkey.
+	 */
+	unsigned char hash_sha1[20];
 } git_cert_hostkey;
 
 /**
  * X.509 certificate information
  */
 typedef struct {
-	/**
-	 * Type of certificate. Here to share the header with
-	 * `git_cert`.
-	 */
-	git_cert_t cert_type;
+	git_cert parent;
 	/**
 	 * Pointer to the X.509 certificate data
 	 */
@@ -105,6 +101,13 @@ typedef enum {
 	 * it will ask via this credential type.
 	 */
 	GIT_CREDTYPE_USERNAME = (1u << 5),
+
+	/**
+	 * Credentials read from memory.
+	 *
+	 * Only available for libssh2+OpenSSL for now.
+	 */
+	GIT_CREDTYPE_SSH_MEMORY = (1u << 6),
 } git_credtype_t;
 
 /* The base structure for all credential types */
@@ -286,6 +289,34 @@ GIT_EXTERN(int) git_cred_default_new(git_cred **out);
  * none is specified in the url.
  */
 GIT_EXTERN(int) git_cred_username_new(git_cred **cred, const char *username);
+
+/**
+ * Create a new ssh key credential object reading the keys from memory.
+ *
+ * @param out The newly created credential object.
+ * @param username username to use to authenticate.
+ * @param publickey The public key of the credential.
+ * @param privatekey The private key of the credential.
+ * @param passphrase The passphrase of the credential.
+ * @return 0 for success or an error code for failure
+ */
+GIT_EXTERN(int) git_cred_ssh_key_memory_new(
+	git_cred **out,
+	const char *username,
+	const char *publickey,
+	const char *privatekey,
+	const char *passphrase);
+
+
+/**
+ * Free a credential.
+ *
+ * This is only necessary if you own the object; that is, if you are a
+ * transport.
+ *
+ * @param cred the object to free
+ */
+GIT_EXTERN(void) git_cred_free(git_cred *cred);
 
 /**
  * Signature of a function which acquires a credential object.

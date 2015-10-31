@@ -88,7 +88,7 @@ Under Unix-like systems, like Linux, \*BSD and Mac OS X, libgit2 expects `pthrea
 they should be installed by default on all systems. Under Windows, libgit2 uses the native Windows API
 for threading.
 
-The `libgit2` library is built using [CMake](<http://www.cmake.org>) (version 2.6 or newer) on all platforms.
+The `libgit2` library is built using [CMake](<http://www.cmake.org>) (version 2.8 or newer) on all platforms.
 
 On most systems you can build the library using the following commands
 
@@ -163,7 +163,7 @@ with full path to the toolchain):
 	SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 	SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-Add `-DCMAKE_TOOLCHAIN_FILE={pathToToolchainFile} -DANDROID=1` to cmake command
+Add `-DCMAKE_TOOLCHAIN_FILE={pathToToolchainFile}` to cmake command
 when configuring.
 
 Language Bindings
@@ -176,7 +176,7 @@ Here are the bindings to libgit2 that are currently available:
 * Chicken Scheme
     * chicken-git <https://wiki.call-cc.org/egg/git>
 * D
-    * dlibgit <https://github.com/AndrejMitrovic/dlibgit>
+    * dlibgit <https://github.com/s-ludwig/dlibgit>
 * Delphi
     * GitForDelphi <https://github.com/libgit2/GitForDelphi>
 * Erlang
@@ -201,7 +201,7 @@ Here are the bindings to libgit2 that are currently available:
 * Objective-C
     * objective-git <https://github.com/libgit2/objective-git>
 * OCaml
-    * libgit2-ocaml <https://github.com/burdges/libgit2-ocaml>
+    * ocaml-libgit2 <https://github.com/fxfactorial/ocaml-libgit2>
 * Parrot Virtual Machine
     * parrot-libgit2 <https://github.com/letolabs/parrot-libgit2>
 * Perl

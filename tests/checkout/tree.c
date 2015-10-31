@@ -306,7 +306,7 @@ void test_checkout_tree__conflict_on_ignored_when_not_overwriting(void)
 	cl_git_fail(error = checkout_tree_with_blob_ignored_in_workdir(
 		GIT_CHECKOUT_SAFE | GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, false));
 
-	cl_assert_equal_i(GIT_EMERGECONFLICT, error);
+	cl_assert_equal_i(GIT_ECONFLICT, error);
 }
 
 void test_checkout_tree__can_overwrite_ignored_by_default(void)
@@ -327,7 +327,7 @@ void test_checkout_tree__conflict_on_ignored_folder_when_not_overwriting(void)
 	cl_git_fail(error = checkout_tree_with_blob_ignored_in_workdir(
 		GIT_CHECKOUT_SAFE | GIT_CHECKOUT_DONT_OVERWRITE_IGNORED, true));
 
-	cl_assert_equal_i(GIT_EMERGECONFLICT, error);
+	cl_assert_equal_i(GIT_ECONFLICT, error);
 }
 
 void test_checkout_tree__can_overwrite_ignored_folder_by_default(void)
@@ -512,7 +512,7 @@ void assert_conflict(
 
 	g_opts.checkout_strategy = GIT_CHECKOUT_SAFE;
 	cl_assert_equal_i(
-		GIT_EMERGECONFLICT, git_checkout_tree(g_repo, g_object, &g_opts));
+		GIT_ECONFLICT, git_checkout_tree(g_repo, g_object, &g_opts));
 
 	/* Stage the conflicting change */
 	cl_git_pass(git_index_add_bypath(index, entry_path));
@@ -520,10 +520,10 @@ void assert_conflict(
 	git_index_free(index);
 
 	cl_assert_equal_i(
-		GIT_EMERGECONFLICT, git_checkout_tree(g_repo, g_object, &g_opts));
+		GIT_ECONFLICT, git_checkout_tree(g_repo, g_object, &g_opts));
 }
 
-void test_checkout_tree__checking_out_a_conflicting_type_change_returns_EMERGECONFLICT(void)
+void test_checkout_tree__checking_out_a_conflicting_type_change_returns_ECONFLICT(void)
 {
 	/*
 	 * 099faba adds a symlink named 'link_to_new.txt'
@@ -533,7 +533,7 @@ void test_checkout_tree__checking_out_a_conflicting_type_change_returns_EMERGECO
 	assert_conflict("link_to_new.txt", "old.txt", "a65fedf", "099faba");
 }
 
-void test_checkout_tree__checking_out_a_conflicting_type_change_returns_EMERGECONFLICT_2(void)
+void test_checkout_tree__checking_out_a_conflicting_type_change_returns_ECONFLICT_2(void)
 {
 	/*
 	 * cf80f8d adds a directory named 'a/'
@@ -543,7 +543,7 @@ void test_checkout_tree__checking_out_a_conflicting_type_change_returns_EMERGECO
 	assert_conflict("a", "hello\n", "a4a7dce", "cf80f8d");
 }
 
-void test_checkout_tree__checking_out_a_conflicting_content_change_returns_EMERGECONFLICT(void)
+void test_checkout_tree__checking_out_a_conflicting_content_change_returns_ECONFLICT(void)
 {
 	/*
 	 * c47800c adds a symlink named 'branch_file.txt'
@@ -646,7 +646,14 @@ void test_checkout_tree__can_cancel_checkout_from_notify(void)
 	cl_git_fail_with(git_checkout_tree(g_repo, obj, &opts), -5555);
 
 	cl_assert(!git_path_exists("testrepo/new.txt"));
-	cl_assert_equal_i(4, ca.count);
+
+	/* on case-insensitive FS = a/b.txt, branch_file.txt, new.txt */
+	/* on case-sensitive FS   = README, then above */
+
+	if (git_path_exists("testrepo/.git/CoNfIg")) /* case insensitive */
+		cl_assert_equal_i(3, ca.count);
+	else
+		cl_assert_equal_i(4, ca.count);
 
 	/* and again with a different stopping point and return code */
 	ca.filename = "README";
@@ -656,7 +663,11 @@ void test_checkout_tree__can_cancel_checkout_from_notify(void)
 	cl_git_fail_with(git_checkout_tree(g_repo, obj, &opts), 123);
 
 	cl_assert(!git_path_exists("testrepo/new.txt"));
-	cl_assert_equal_i(1, ca.count);
+
+	if (git_path_exists("testrepo/.git/CoNfIg")) /* case insensitive */
+		cl_assert_equal_i(4, ca.count);
+	else
+		cl_assert_equal_i(1, ca.count);
 
 	git_object_free(obj);
 }
@@ -882,16 +893,16 @@ static void create_conflict(const char *path)
 
 	memset(&entry, 0x0, sizeof(git_index_entry));
 	entry.mode = 0100644;
-	entry.flags = 1 << GIT_IDXENTRY_STAGESHIFT;
+	GIT_IDXENTRY_STAGE_SET(&entry, 1);
 	git_oid_fromstr(&entry.id, "d427e0b2e138501a3d15cc376077a3631e15bd46");
 	entry.path = path;
 	cl_git_pass(git_index_add(index, &entry));
 
-	entry.flags = 2 << GIT_IDXENTRY_STAGESHIFT;
+	GIT_IDXENTRY_STAGE_SET(&entry, 2);
 	git_oid_fromstr(&entry.id, "ee3fa1b8c00aff7fe02065fdb50864bb0d932ccf");
 	cl_git_pass(git_index_add(index, &entry));
 
-	entry.flags = 3 << GIT_IDXENTRY_STAGESHIFT;
+	GIT_IDXENTRY_STAGE_SET(&entry, 3);
 	git_oid_fromstr(&entry.id, "2bd0a343aeef7a2cf0d158478966a6e587ff3863");
 	cl_git_pass(git_index_add(index, &entry));
 
@@ -925,19 +936,122 @@ void test_checkout_tree__filemode_preserved_in_index(void)
 	git_index *index;
 	const git_index_entry *entry;
 
+	opts.checkout_strategy = GIT_CHECKOUT_FORCE;
+
 	cl_git_pass(git_repository_index(&index, g_repo));
 
+	/* test a freshly added executable */
 	cl_git_pass(git_oid_fromstr(&executable_oid, "afe4393b2b2a965f06acf2ca9658eaa01e0cd6b6"));
 	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
 
-	opts.checkout_strategy = GIT_CHECKOUT_FORCE;
-
 	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
 	cl_assert(entry = git_index_get_bypath(index, "executable.txt", 0));
-	cl_assert_equal_i(0100755, entry->mode);
+	cl_assert(GIT_PERMS_IS_EXEC(entry->mode));
 
 	git_commit_free(commit);
+
+
+	/* Now start with a commit which has a text file */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "cf80f8de9f1185bf3a05f993f6121880dd0cfbc9"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(entry = git_index_get_bypath(index, "a/b.txt", 0));
+	cl_assert(!GIT_PERMS_IS_EXEC(entry->mode));
+
+	git_commit_free(commit);
+
+
+	/* And then check out to a commit which converts the text file to an executable */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "144344043ba4d4a405da03de3844aa829ae8be0e"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(entry = git_index_get_bypath(index, "a/b.txt", 0));
+	cl_assert(GIT_PERMS_IS_EXEC(entry->mode));
+
+	git_commit_free(commit);
+
+
+	/* Finally, check out the text file again and check that the exec bit is cleared */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "cf80f8de9f1185bf3a05f993f6121880dd0cfbc9"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(entry = git_index_get_bypath(index, "a/b.txt", 0));
+	cl_assert(!GIT_PERMS_IS_EXEC(entry->mode));
+
+	git_commit_free(commit);
+
+
 	git_index_free(index);
+}
+
+mode_t read_filemode(const char *path)
+{
+	git_buf fullpath = GIT_BUF_INIT;
+	struct stat st;
+	mode_t result;
+
+	git_buf_joinpath(&fullpath, "testrepo", path);
+	cl_must_pass(p_stat(fullpath.ptr, &st));
+
+	result = GIT_PERMS_IS_EXEC(st.st_mode) ?
+		GIT_FILEMODE_BLOB_EXECUTABLE : GIT_FILEMODE_BLOB;
+
+	git_buf_free(&fullpath);
+
+	return result;
+}
+
+void test_checkout_tree__filemode_preserved_in_workdir(void)
+{
+#ifndef GIT_WIN32
+	git_oid executable_oid;
+	git_commit *commit;
+	git_checkout_options opts = GIT_CHECKOUT_OPTIONS_INIT;
+
+	opts.checkout_strategy = GIT_CHECKOUT_FORCE;
+
+	/* test a freshly added executable */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "afe4393b2b2a965f06acf2ca9658eaa01e0cd6b6"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(GIT_PERMS_IS_EXEC(read_filemode("executable.txt")));
+
+	git_commit_free(commit);
+
+
+	/* Now start with a commit which has a text file */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "cf80f8de9f1185bf3a05f993f6121880dd0cfbc9"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(!GIT_PERMS_IS_EXEC(read_filemode("a/b.txt")));
+
+	git_commit_free(commit);
+
+
+	/* And then check out to a commit which converts the text file to an executable */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "144344043ba4d4a405da03de3844aa829ae8be0e"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(GIT_PERMS_IS_EXEC(read_filemode("a/b.txt")));
+
+	git_commit_free(commit);
+
+
+	/* Finally, check out the text file again and check that the exec bit is cleared */
+	cl_git_pass(git_oid_fromstr(&executable_oid, "cf80f8de9f1185bf3a05f993f6121880dd0cfbc9"));
+	cl_git_pass(git_commit_lookup(&commit, g_repo, &executable_oid));
+
+	cl_git_pass(git_checkout_tree(g_repo, (const git_object *)commit, &opts));
+	cl_assert(!GIT_PERMS_IS_EXEC(read_filemode("a/b.txt")));
+
+	git_commit_free(commit);
+#endif
 }
 
 void test_checkout_tree__removes_conflicts(void)

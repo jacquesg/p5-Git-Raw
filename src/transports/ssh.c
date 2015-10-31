@@ -66,6 +66,8 @@ static int gen_proto(git_buf *request, const char *cmd, const char *url)
 	if (!git__prefixcmp(url, prefix_ssh)) {
 		url = url + strlen(prefix_ssh);
 		repo = strchr(url, '/');
+		if (repo && repo[1] == '~')
+			++repo;
 	} else {
 		repo = strchr(url, ':');
 		if (repo) repo++;
@@ -125,9 +127,20 @@ static int ssh_stream_read(
 		return -1;
 
 	if ((rc = libssh2_channel_read(s->channel, buffer, buf_size)) < LIBSSH2_ERROR_NONE) {
-		ssh_error(s->session, "SSH could not read data");;
+		ssh_error(s->session, "SSH could not read data");
 		return -1;
 	}
+
+	/*
+	 * If we can't get anything out of stdout, it's typically a
+	 * not-found error, so read from stderr and signal EOF on
+	 * stderr.
+	 */
+	if (rc == 0 && (rc = libssh2_channel_read_stderr(s->channel, buffer, buf_size)) > 0) {
+		giterr_set(GITERR_SSH, "%*s", rc, buffer);
+		return GIT_EEOF;
+	}
+
 
 	*bytes_read = rc;
 
@@ -166,11 +179,12 @@ static int ssh_stream_write(
 static void ssh_stream_free(git_smart_subtransport_stream *stream)
 {
 	ssh_stream *s = (ssh_stream *)stream;
-	ssh_subtransport *t = OWNING_SUBTRANSPORT(s);
-	int ret;
+	ssh_subtransport *t;
 
-	GIT_UNUSED(ret);
+	if (!stream)
+		return;
 
+	t = OWNING_SUBTRANSPORT(s);
 	t->current_stream = NULL;
 
 	if (s->channel) {
@@ -282,8 +296,14 @@ static int ssh_agent_auth(LIBSSH2_SESSION *session, git_cred_ssh_key *c) {
 		if (rc < 0)
 			goto shutdown;
 
-		if (rc == 1)
+		/* rc is set to 1 whenever the ssh agent ran out of keys to check.
+		 * Set the error code to authentication failure rather than erroring
+		 * out with an untranslatable error code.
+		 */
+		if (rc == 1) {
+			rc = LIBSSH2_ERROR_AUTHENTICATION_FAILED;
 			goto shutdown;
+		}
 
 		rc = libssh2_agent_userauth(agent, c->username, curr);
 
@@ -359,6 +379,25 @@ static int _git_ssh_authenticate_session(
 				session, c->username, c->prompt_callback);
 			break;
 		}
+#ifdef GIT_SSH_MEMORY_CREDENTIALS
+		case GIT_CREDTYPE_SSH_MEMORY: {
+			git_cred_ssh_key *c = (git_cred_ssh_key *)cred;
+
+			assert(c->username);
+			assert(c->privatekey);
+
+			rc = libssh2_userauth_publickey_frommemory(
+				session,
+				c->username,
+				strlen(c->username),
+				c->publickey,
+				c->publickey ? strlen(c->publickey) : 0,
+				c->privatekey,
+				strlen(c->privatekey),
+				c->passphrase);
+			break;
+		}
+#endif
 		default:
 			rc = LIBSSH2_ERROR_AUTHENTICATION_FAILED;
 		}
@@ -488,10 +527,10 @@ static int _git_ssh_setup_conn(
 		goto done;
 
 	if (t->owner->certificate_check_cb != NULL) {
-		git_cert_hostkey cert = { 0 }, *cert_ptr;
+		git_cert_hostkey cert = {{ 0 }}, *cert_ptr;
 		const char *key;
 
-		cert.cert_type = GIT_CERT_HOSTKEY_LIBSSH2;
+		cert.parent.cert_type = GIT_CERT_HOSTKEY_LIBSSH2;
 
 		key = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
 		if (key != NULL) {
@@ -585,8 +624,7 @@ static int _git_ssh_setup_conn(
 
 done:
 	if (error < 0) {
-		if (*stream)
-			ssh_stream_free(*stream);
+		ssh_stream_free(*stream);
 
 		if (session)
 			libssh2_session_free(session);
@@ -718,8 +756,10 @@ static int list_auth_methods(int *out, LIBSSH2_SESSION *session, const char *use
 	list = libssh2_userauth_list(session, username, strlen(username));
 
 	/* either error, or the remote accepts NONE auth, which is bizarre, let's punt */
-	if (list == NULL && !libssh2_userauth_authenticated(session))
+	if (list == NULL && !libssh2_userauth_authenticated(session)) {
+		ssh_error(session, "Failed to retrieve list of SSH authentication methods");
 		return -1;
+	}
 
 	ptr = list;
 	while (ptr) {
@@ -729,6 +769,9 @@ static int list_auth_methods(int *out, LIBSSH2_SESSION *session, const char *use
 		if (!git__prefixcmp(ptr, SSH_AUTH_PUBLICKEY)) {
 			*out |= GIT_CREDTYPE_SSH_KEY;
 			*out |= GIT_CREDTYPE_SSH_CUSTOM;
+#ifdef GIT_SSH_MEMORY_CREDENTIALS
+			*out |= GIT_CREDTYPE_SSH_MEMORY;
+#endif
 			ptr += strlen(SSH_AUTH_PUBLICKEY);
 			continue;
 		}

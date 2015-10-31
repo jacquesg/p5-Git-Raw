@@ -13,6 +13,7 @@
 #include "vector.h"
 #include "buf_text.h"
 #include "config_file.h"
+#include "transaction.h"
 #if GIT_WIN32
 # include <windows.h>
 #endif
@@ -343,7 +344,6 @@ typedef struct {
 	git_config_iterator *current;
 	const git_config *cfg;
 	regex_t regex;
-	int has_regex;
 	size_t i;
 } all_iter;
 
@@ -480,7 +480,6 @@ int git_config_iterator_glob_new(git_config_iterator **out, const git_config *cf
 
 	if ((result = regcomp(&iter->regex, regexp, REG_EXTENDED)) != 0) {
 		giterr_set_regex(&iter->regex, result);
-		regfree(&iter->regex);
 		git__free(iter);
 		return -1;
 	}
@@ -983,7 +982,8 @@ void multivar_iter_free(git_config_iterator *_iter)
 	iter->iter->free(iter->iter);
 
 	git__free(iter->name);
-	regfree(&iter->regex);
+	if (iter->have_regex)
+		regfree(&iter->regex);
 	git__free(iter);
 }
 
@@ -1086,6 +1086,12 @@ int git_config_find_system(git_buf *path)
 	return git_sysdir_find_system_file(path, GIT_CONFIG_FILENAME_SYSTEM);
 }
 
+int git_config_find_programdata(git_buf *path)
+{
+	git_buf_sanitize(path);
+	return git_sysdir_find_programdata_file(path, GIT_CONFIG_FILENAME_PROGRAMDATA);
+}
+
 int git_config__global_location(git_buf *buf)
 {
 	const git_buf *paths;
@@ -1133,6 +1139,10 @@ int git_config_open_default(git_config **out)
 		error = git_config_add_file_ondisk(cfg, buf.ptr,
 			GIT_CONFIG_LEVEL_SYSTEM, 0);
 
+	if (!error && !git_config_find_programdata(&buf))
+		error = git_config_add_file_ondisk(cfg, buf.ptr,
+			GIT_CONFIG_LEVEL_PROGRAMDATA, 0);
+
 	git_buf_free(&buf);
 
 	if (error) {
@@ -1143,6 +1153,41 @@ int git_config_open_default(git_config **out)
 	*out = cfg;
 
 	return error;
+}
+
+int git_config_lock(git_transaction **out, git_config *cfg)
+{
+	int error;
+	git_config_backend *file;
+	file_internal *internal;
+
+	internal = git_vector_get(&cfg->files, 0);
+	if (!internal || !internal->file) {
+		giterr_set(GITERR_CONFIG, "cannot lock; the config has no backends/files");
+		return -1;
+	}
+	file = internal->file;
+
+	if ((error = file->lock(file)) < 0)
+		return error;
+
+	return git_transaction_config_new(out, cfg);
+}
+
+int git_config_unlock(git_config *cfg, int commit)
+{
+	git_config_backend *file;
+	file_internal *internal;
+
+	internal = git_vector_get(&cfg->files, 0);
+	if (!internal || !internal->file) {
+		giterr_set(GITERR_CONFIG, "cannot lock; the config has no backends/files");
+		return -1;
+	}
+
+	file = internal->file;
+
+	return file->unlock(file, commit);
 }
 
 /***********
@@ -1193,6 +1238,26 @@ int git_config_lookup_map_value(
 fail_parse:
 	giterr_set(GITERR_CONFIG, "Failed to map '%s'", value);
 	return -1;
+}
+
+int git_config_lookup_map_enum(git_cvar_t *type_out, const char **str_out,
+			       const git_cvar_map *maps, size_t map_n, int enum_val)
+{
+	size_t i;
+
+	for (i = 0; i < map_n; i++) {
+		const git_cvar_map *m = &maps[i];
+
+		if (m->map_value != enum_val)
+			continue;
+
+		*type_out = m->cvar_type;
+		*str_out = m->str_match;
+		return 0;
+	}
+
+	giterr_set(GITERR_CONFIG, "invalid enum value");
+	return GIT_ENOTFOUND;
 }
 
 int git_config_parse_bool(int *out, const char *value)

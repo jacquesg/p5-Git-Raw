@@ -68,7 +68,7 @@ int diff_file_cb(
 	if ((delta->flags & GIT_DIFF_FLAG_BINARY) != 0)
 		e->files_binary++;
 
-	cl_assert(delta->status <= GIT_DELTA_TYPECHANGE);
+	cl_assert(delta->status <= GIT_DELTA_CONFLICTED);
 
 	e->file_status[delta->status] += 1;
 
@@ -89,6 +89,18 @@ int diff_print_file_cb(
 		fprintf_delta(stderr, delta, progress);
 
 	return diff_file_cb(delta, progress, payload);
+}
+
+int diff_binary_cb(
+	const git_diff_delta *delta,
+	const git_diff_binary *binary,
+	void *payload)
+{
+	GIT_UNUSED(delta);
+	GIT_UNUSED(binary);
+	GIT_UNUSED(payload);
+
+	return 0;
 }
 
 int diff_hunk_cb(
@@ -145,11 +157,14 @@ int diff_line_cb(
 int diff_foreach_via_iterator(
 	git_diff *diff,
 	git_diff_file_cb file_cb,
+	git_diff_binary_cb binary_cb,
 	git_diff_hunk_cb hunk_cb,
 	git_diff_line_cb line_cb,
 	void *data)
 {
 	size_t d, num_d = git_diff_num_deltas(diff);
+
+	GIT_UNUSED(binary_cb);
 
 	for (d = 0; d < num_d; ++d) {
 		git_patch *patch;
