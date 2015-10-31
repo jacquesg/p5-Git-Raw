@@ -44,6 +44,7 @@ Getopt::Long::GetOptions(
 
 my $def = '';
 my $lib = '';
+my $otherldflags = '';
 my $inc = '';
 my $ccflags = '';
 
@@ -170,6 +171,10 @@ if ($is_gcc) {
 		if ($Config{gccversion} =~ /LLVM/) {
 			$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
 		}
+
+		# Secure transport (HTTPS)
+		$def .= ' -DGIT_SECURE_TRANSPORT';
+		$otherldflags .= ' -framework CoreFoundation -framework Security';
 	}
 
 	if ($is_solaris) {
@@ -274,6 +279,9 @@ $WriteMakefileArgs{LIBS}    .= $lib;
 $WriteMakefileArgs{INC}     .= $inc;
 $WriteMakefileArgs{CCFLAGS} .= $Config{ccflags} . ' '. $ccflags;
 $WriteMakefileArgs{OBJECT}  .= ' ' . join ' ', @objs;
+$WriteMakefileArgs{dynamic_lib} = {
+	OTHERLDFLAGS => $otherldflags
+};
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
 	my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
