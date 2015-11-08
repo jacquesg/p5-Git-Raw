@@ -303,6 +303,7 @@ Hc$@<O00001
 
 literal 16
 Xc$`bgOiNS9P1R9I%1kUt&fo$7F2V&(
+
 EOS
 
 is $patches[0] -> buffer, $expected;
