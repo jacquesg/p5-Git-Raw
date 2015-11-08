@@ -12,7 +12,10 @@ my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
 $repo -> config -> bool('diff.mnemonicprefix', 0);
-$repo -> config -> str('core.autocrlf', "true");
+
+if ($^O eq 'MSWin32') {
+	$repo -> config -> str('core.autocrlf', "true");
+}
 
 my $file  = $repo -> workdir . 'diff';
 write_file($file, "diff me, biatch\n");
