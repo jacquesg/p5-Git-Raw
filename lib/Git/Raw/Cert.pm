@@ -18,7 +18,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 type( )
 
-Type of certificate, either C<"x509"> or C<"hostkey">.
+Type of certificate, C<"x509">, C<"hostkey">, C<"strarray"> or C<"none">.
 
 =head1 AUTHOR
 
