@@ -1476,6 +1476,8 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 		av_push(types, newSVpv("ssh_interactive", 0));
 	if (allow & GIT_CREDTYPE_USERNAME)
 		av_push(types, newSVpv("username", 0));
+	if (allow & GIT_CREDTYPE_SSH_MEMORY)
+		av_push(types, newSVpv("ssh_memory", 0));
 
 	ENTER;
 	SAVETMPS;
