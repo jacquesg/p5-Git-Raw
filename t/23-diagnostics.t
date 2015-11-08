@@ -37,7 +37,7 @@ is -9,  Git::Raw::Error->EUNBORNBRANCH;
 is -10, Git::Raw::Error->EUNMERGED;
 is -11, Git::Raw::Error->ENONFASTFORWARD;
 is -12, Git::Raw::Error->EINVALIDSPEC;
-is -13, Git::Raw::Error->EMERGECONFLICT;
+is -13, Git::Raw::Error->ECONFLICT;
 is -14, Git::Raw::Error->ELOCKED;
 is -15, Git::Raw::Error->EMODIFIED;
 is -30, Git::Raw::Error->PASSTHROUGH;
