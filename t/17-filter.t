@@ -9,6 +9,10 @@ use Cwd qw(abs_path);
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
+if ($^O ne 'MSWin32') {
+	$repo -> config -> str('core.autocrlf', "true");
+}
+
 my $old_head = $repo -> head;
 my $branch_name = 'filter_branch';
 my $branch = $repo -> branch($branch_name, $old_head -> target);
@@ -49,13 +53,17 @@ $odb_filter -> callbacks({
 	'check' => sub {
 		my ($source) = @_;
 		isa_ok $source, 'Git::Raw::Filter::Source';
-		is $source -> id, '';
-		is $source -> path, 'filterfile';
-		is $source -> mode, 'to_odb';
-		is $source -> file_mode, 0;
 
-		$check = 1;
-		return Git::Raw::Error -> OK;
+		if ($source -> path eq 'filterfile') {
+			is $source -> id, '';
+			is $source -> mode, 'to_odb';
+			is $source -> file_mode, 0;
+			$check = 1;
+
+			return Git::Raw::Error -> OK;
+		}
+
+		return Git::Raw::Error -> PASSTHROUGH;
 	},
 	'apply' => sub {
 		my ($source, $from, $to) = @_;
@@ -63,11 +71,15 @@ $odb_filter -> callbacks({
 		isa_ok $source, 'Git::Raw::Filter::Source';
 		isa_ok $to, 'SCALAR';
 
-		ok length ($from) > 0;
+		if ($source -> path eq 'filterfile') {
+			ok length ($from) > 0;
 
-		$$to = (split (/:/, $from))[1];
-		$apply = 1;
-		return Git::Raw::Error -> OK;
+			$$to = (split (/:/, $from))[1];
+			$apply = 1;
+			return Git::Raw::Error -> OK;
+		}
+
+		return Git::Raw::Error -> PASSTHROUGH;
 	},
 });
 
@@ -162,17 +174,26 @@ my $worktree_filter = Git::Raw::Filter -> create ("worktree", "text");
 $worktree_filter -> callbacks({
 	'check' => sub {
 		my ($source) = @_;
-		is $source -> mode, 'to_worktree';
 
-		$check = 1;
-		0;
+		if ($source -> mode eq 'to_worktree') {
+			$check = 1;
+
+			return Git::Raw::Error -> OK;
+		}
+
+		return Git::Raw::Error -> PASSTHROUGH;
 	},
 	'apply' => sub {
 		my ($source, $from, $to) = @_;
 
-		$$to = (split (/:/, $from))[1];
-		$apply = 1;
-		0;
+		if ($source -> mode eq 'to_worktree') {
+			$$to = (split (/:/, $from))[1];
+			$apply = 1;
+
+			return Git::Raw::Error -> OK;
+		}
+
+		return Git::Raw::Error -> PASSTHROUGH;
 	},
 });
 
@@ -256,11 +277,7 @@ is $new_content, $out_data;
 
 # ODB to worktree
 $in_data = "blah\n";
-$out_data = "blah\n";
-
-if ($^O eq 'MSWin32') {
-	$out_data = "blah\r\n";
-}
+$out_data = "blah\r\n";
 
 write_file($file, $in_data, binmode => ':raw');
 $list = Git::Raw::Filter::List -> load($repo, 'code.txt', "to_worktree");
@@ -275,5 +292,9 @@ is $new_content, $out_data;
 $blob = Git::Raw::Blob -> create($repo, $in_data);
 $new_content = $list -> apply_to_blob($blob);
 is $new_content, $out_data;
+
+if ($^O ne 'MSWin32') {
+	$repo -> config -> str('core.autocrlf', "input");
+}
 
 done_testing;
