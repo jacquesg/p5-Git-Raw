@@ -198,9 +198,6 @@ url(self, ...)
 
 			rc = git_remote_set_url(self -> remote, url);
 			git_check_error(rc);
-
-			rc = git_remote_save(self -> remote);
-			git_check_error(rc);
 		}
 
 		RETVAL = &PL_sv_undef;
@@ -224,9 +221,6 @@ pushurl(self, ...)
 			pushurl = git_ensure_pv(ST(1), "pushurl");
 
 			rc = git_remote_set_pushurl(self -> remote, pushurl);
-			git_check_error(rc);
-
-			rc = git_remote_save(self -> remote);
 			git_check_error(rc);
 		}
 
@@ -429,17 +423,6 @@ prune(self)
 
 	CODE:
 		rc = git_remote_prune(self -> remote);
-		git_check_error(rc);
-
-void
-save(self)
-	Remote self
-
-	PREINIT:
-		int rc;
-
-	CODE:
-		rc = git_remote_save(self -> remote);
 		git_check_error(rc);
 
 void

@@ -266,10 +266,6 @@ that need to be uploaded.
 
 Prune tracking refs that are no longer present on remote.
 
-=head2 save( )
-
-Save the remote to its repository's config.
-
 =head2 update_tips( )
 
 Update the tips to the new status.

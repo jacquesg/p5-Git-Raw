@@ -8,6 +8,8 @@ Revision history for Git-Raw
     + --with-curl-include
     + --with-curl-libs
  - Enable support for OS X's Security framework
+ - Removed Remote methods: (Incompatible change)
+    - save()
 
 0.53      2015-04-14 20:23:42+02:00 Africa/Johannesburg
 
