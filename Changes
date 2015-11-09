@@ -13,7 +13,18 @@ Revision history for Git-Raw
  - Try to support WinHTTP on Windows
  - Removed Remote methods: (Incompatible change)
     - save()
+    - callbacks()
  - Remote -> create_anonymous() no longer accepts a 'fetch_refspecs' parameter (Incompatible change)
+ - The following Remote methods now take a callbacks parameter (Incompatible change)
+    - connect()
+    - prune()
+    - update_tips()
+ - Remote -> fetch() and Remote -> download() now takes a 'fetch_opts' parameter (Incompatible change)
+ - Repository -> clone() now takes a 'fetch_opts' parameter (Incompatible change)
+ - Repository -> clone() now takes an optional 'checkout_opts" parameter
+ - Remote -> push() and Remote -> upload() now takes a 'push_opts' parameter (Incompatible change)
+ - Added Remote callbacks:
+    + push_negotation
 
 0.53      2015-04-14 20:23:42+02:00 Africa/Johannesburg
 

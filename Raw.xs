@@ -112,18 +112,6 @@
 #endif
 
 typedef struct {
-	SV *progress;
-	SV *credentials;
-	SV *certificate_check;
-	SV *transfer_progress;
-	SV *update_tips;
-	SV *pack_progress;
-	SV *push_transfer_progress;
-	SV *push_update_reference;
-	int push_success;
-} git_raw_remote_callbacks;
-
-typedef struct {
 	SV *initialize;
 	SV *shutdown;
 	SV *check;
@@ -192,7 +180,6 @@ typedef git_filter_list * Filter_List;
 
 typedef struct {
 	git_remote *remote;
-	git_raw_remote_callbacks callbacks;
 	int owned;
 } git_raw_remote;
 
@@ -208,6 +195,7 @@ typedef git_raw_repository * Repository;
 typedef struct {
 	git_cred *cred;
 	SV *callback;
+	int fail_count;
 } git_raw_cred;
 
 typedef git_raw_cred * Cred;
@@ -540,59 +528,6 @@ on_error:
 	git_object_free(obj);
 	git_reference_free(ref);
 	return result;
-}
-
-STATIC void git_init_remote_callbacks(git_raw_remote_callbacks *cbs) {
-	cbs -> credentials = NULL;
-	cbs -> certificate_check = NULL;
-	cbs -> progress = NULL;
-	cbs -> transfer_progress = NULL;
-	cbs -> update_tips = NULL;
-	cbs -> pack_progress = NULL;
-	cbs -> push_transfer_progress = NULL;
-	cbs -> push_update_reference = NULL;
-}
-
-STATIC void git_clean_remote_callbacks(git_raw_remote_callbacks *cbs) {
-	if (cbs -> credentials) {
-		SvREFCNT_dec(cbs -> credentials);
-		cbs -> credentials = NULL;
-	}
-
-	if (cbs -> certificate_check) {
-		SvREFCNT_dec(cbs -> certificate_check);
-		cbs -> certificate_check = NULL;
-	}
-
-	if (cbs -> progress) {
-		SvREFCNT_dec(cbs -> progress);
-		cbs -> progress = NULL;
-	}
-
-	if (cbs -> transfer_progress) {
-		SvREFCNT_dec(cbs -> transfer_progress);
-		cbs -> transfer_progress = NULL;
-	}
-
-	if (cbs -> update_tips) {
-		SvREFCNT_dec(cbs -> update_tips);
-		cbs -> update_tips = NULL;
-	}
-
-	if (cbs -> pack_progress) {
-		SvREFCNT_dec(cbs -> pack_progress);
-		cbs -> pack_progress = NULL;
-	}
-
-	if (cbs -> push_transfer_progress) {
-		SvREFCNT_dec(cbs -> push_transfer_progress);
-		cbs -> push_transfer_progress = NULL;
-	}
-
-	if (cbs -> push_update_reference) {
-		SvREFCNT_dec(cbs -> push_update_reference);
-		cbs -> push_update_reference = NULL;
-	}
 }
 
 STATIC void git_clean_filter_callbacks(git_filter_callbacks *cbs) {
@@ -1269,7 +1204,7 @@ STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
 	LEAVE;
 }
 
-STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
+STATIC int git_sideband_progress_cbb(const char *str, int len, void *cbs) {
 	dSP;
 
 	ENTER;
@@ -1279,7 +1214,7 @@ STATIC int git_progress_cbb(const char *str, int len, void *cbs) {
 	mXPUSHs(newSVpv(str, len));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> progress, G_DISCARD);
+	call_sv(git_hv_code_entry((HV *)cbs, "sideband_progress"), G_DISCARD);
 
 	SPAGAIN;
 
@@ -1304,7 +1239,7 @@ STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *c
 	mXPUSHs(newSVuv(stats -> received_bytes));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> transfer_progress, G_DISCARD);
+	call_sv(git_hv_code_entry((HV *)cbs, "transfer_progress"), G_DISCARD);
 
 	SPAGAIN;
 
@@ -1326,7 +1261,7 @@ STATIC int git_push_transfer_progress_cbb(unsigned int current, unsigned int tot
 	mXPUSHs(newSVuv(bytes));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> push_transfer_progress, G_DISCARD);
+	call_sv(git_hv_code_entry((HV *)cbs, "push_transfer_progress"), G_VOID|G_DISCARD);
 
 	SPAGAIN;
 
@@ -1348,7 +1283,7 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	mXPUSHs(newSVuv(total));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> pack_progress, G_DISCARD);
+	call_sv(git_hv_code_entry((HV *)cbs, "pack_progress"), G_VOID|G_DISCARD);
 
 	SPAGAIN;
 
@@ -1358,19 +1293,13 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 	return 0;
 }
 
-STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void *p) {
+STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void *cbs) {
 	dSP;
 	int rv = 0;
-	git_raw_remote_callbacks *callbacks = (git_raw_remote_callbacks *) p;
-	SV *cb = callbacks -> push_update_reference;
 
 	if (msg != NULL) {
 		rv = GIT_EUSER;
-		callbacks -> push_success = 0;
 	}
-
-	if (!cb)
-		return 0;
 
 	ENTER;
 	SAVETMPS;
@@ -1380,9 +1309,91 @@ STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void 
 	mXPUSHs(newSVpv(msg, 0));
 	PUTBACK;
 
-	call_sv(cb, G_VOID);
+	call_sv(git_hv_code_entry((HV *)cbs, "push_update_reference"), G_VOID|G_DISCARD);
 
 	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
+STATIC int git_push_negotiation_cbb(const git_push_update **updates, size_t len, void *cbs) {
+	dSP;
+	int rv = 0;
+	size_t i = 0;
+
+	AV *u = newAV();
+	for (i = 0; i < len; ++i) {
+		const git_push_update *update = updates[i];
+
+		HV *value = newHV();
+		hv_stores(value, "src_refname", newSVpv(update->src_refname, 0));
+		hv_stores(value, "dst_refname", newSVpv(update->dst_refname, 0));
+		hv_stores(value, "src", git_oid_to_sv(&update->src));
+		hv_stores(value, "dst", git_oid_to_sv(&update->dst));
+		av_push(u, newRV_noinc((SV *)value));
+	}
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(newRV_noinc((SV *)u));
+	PUTBACK;
+
+	call_sv(git_hv_code_entry((HV *)cbs, "push_negotiation"), G_EVAL|G_SCALAR);
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else
+		rv = POPi;
+
+	SPAGAIN;
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
+STATIC int git_transport_cbb(git_transport **out, git_remote *owner, void *cbs) {
+	dSP;
+
+	int rv = 0;
+	Remote remote = NULL;
+	SV *remote_sv = NULL;
+
+	Newxz(remote, 1, git_raw_remote);
+	git_remote_dup(&remote -> remote, owner);
+	remote -> owned = 1;
+
+	GIT_NEW_OBJ(
+		remote_sv, "Git::Raw::Remote", remote
+	);
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(remote_sv);
+	PUTBACK;
+
+	call_sv(git_hv_code_entry((HV *)cbs, "transport"), G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+
+		*out = NULL;
+	} else {
+		/* TODO: assign the transport */
+		*out = NULL;
+	}
 
 	FREETMPS;
 	LEAVE;
@@ -1403,7 +1414,7 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 	XPUSHs((b != NULL && !git_oid_iszero(b)) ? sv_2mortal(git_oid_to_sv(b)) : &PL_sv_undef);
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> update_tips, G_DISCARD);
+	call_sv(git_hv_code_entry((HV *)cbs, "update_tips"), G_DISCARD);
 
 	SPAGAIN;
 
@@ -1498,7 +1509,7 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 	mXPUSHs(newRV_noinc((SV *)types));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> credentials, G_EVAL|G_SCALAR);
+	call_sv(git_hv_code_entry((HV *)cbs, "credentials"), G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
@@ -1548,7 +1559,7 @@ STATIC int git_certificate_check_cbb(git_cert *cert, int valid, const char *host
 	mXPUSHs(newSVpv(host, 0));
 	PUTBACK;
 
-	call_sv(((git_raw_remote_callbacks *) cbs) -> certificate_check, G_EVAL|G_SCALAR);
+	call_sv(git_hv_code_entry((HV *)cbs, "certificate_check"), G_EVAL|G_SCALAR);
 
 	SPAGAIN;
 
@@ -1800,6 +1811,29 @@ STATIC void git_list_to_paths(AV *list, git_strarray *paths) {
 	paths->count = count;
 }
 
+STATIC void git_hv_to_clone_opts(HV *opts, git_clone_options *clone_opts) {
+	SV *opt;
+	HV *callbacks;
+
+	if ((opt = git_hv_int_entry(opts, "bare")) && SvIV(opt))
+		clone_opts->bare = 1;
+
+	if ((opt = git_hv_string_entry(opts, "checkout_branch")))
+		clone_opts->checkout_branch = git_ensure_pv(opt, "checkout_branch");
+
+	if ((opt = git_hv_int_entry(opts, "disable_checkout")) && SvIV(opt))
+		clone_opts->checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
+
+	/* Callbacks */
+	if ((callbacks = git_hv_hash_entry(opts, "callbacks"))) {
+		SV *remote_cb = NULL;
+
+		if ((remote_cb = get_callback_option(callbacks, "remote_create"))) {
+			clone_opts->remote_cb = git_remote_create_cbb;
+			clone_opts->remote_cb_payload = remote_cb;
+		}
+	}
+}
 
 STATIC void git_hv_to_checkout_opts(HV *opts, git_checkout_options *checkout_opts) {
 	char **paths = NULL;
@@ -1933,6 +1967,54 @@ STATIC void git_hv_to_diff_opts(HV *opts, git_diff_options *diff_options, git_tr
 			diff_options->pathspec.count   = count;
 		}
 	}
+}
+
+STATIC void git_hv_to_remote_callbacks(HV *opts, git_remote_callbacks *callbacks) {
+	callbacks->payload = (void *)opts;
+
+	if (get_callback_option(opts, "credentials"))
+		callbacks->credentials = git_credentials_cbb;
+
+	if (get_callback_option(opts, "certificate_check"))
+		callbacks->certificate_check = git_certificate_check_cbb;
+
+	if (get_callback_option(opts, "sideband_progress"))
+		callbacks->sideband_progress = git_sideband_progress_cbb;
+
+	if (get_callback_option(opts, "transfer_progress"))
+		callbacks->transfer_progress = git_transfer_progress_cbb;
+
+	if (get_callback_option(opts, "update_tips"))
+		callbacks->update_tips = git_update_tips_cbb;
+
+	if (get_callback_option(opts, "pack_progress"))
+		callbacks->pack_progress = git_packbuilder_progress_cbb;
+
+	if (get_callback_option(opts, "push_transfer_progress"))
+		callbacks->push_transfer_progress = git_push_transfer_progress_cbb;
+
+	if (get_callback_option(opts, "push_update_reference"))
+		callbacks->push_update_reference = git_push_update_reference_cbb;
+
+	if (get_callback_option(opts, "push_negotiation"))
+		callbacks->push_negotiation = git_push_negotiation_cbb;
+
+	if (get_callback_option(opts, "transport"))
+		callbacks->transport = git_transport_cbb;
+}
+
+STATIC void git_hv_to_fetch_opts(HV *opts, git_fetch_options *fetch_opts) {
+	HV *hopt;
+
+	if ((hopt = git_hv_hash_entry(opts, "callbacks")))
+		git_hv_to_remote_callbacks(hopt, &fetch_opts->callbacks);
+}
+
+STATIC void git_hv_to_push_opts(HV *opts, git_push_options *push_opts) {
+	HV *hopt;
+
+	if ((hopt = git_hv_hash_entry(opts, "callbacks")))
+		git_hv_to_remote_callbacks(hopt, &push_opts->callbacks);
 }
 
 STATIC unsigned git_hv_to_merge_tree_flag(HV *flags) {

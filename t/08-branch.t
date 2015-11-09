@@ -51,7 +51,7 @@ is $look -> name, 'refs/heads/some_branch';
 
 my $reflog = $look -> reflog;
 my @entries = $reflog -> entries;
-is scalar(@entries), 2;
+is scalar(@entries), 1;
 
 ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_local', 1)));
 ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_remote', 0)));
@@ -69,14 +69,6 @@ ok $entries[0] -> committer -> time <= $signature -> time;
 ok $entries[0] -> committer -> time >= $signature -> time - 2;
 is $entries[0] -> committer -> offset, $signature -> offset;
 ok $entries[0] -> message =~ /^Branch: renamed/i;
-
-isa_ok $entries[1] -> committer, 'Git::Raw::Signature';
-is $entries[1] -> committer -> name, $signature -> name;
-is $entries[1] -> committer -> email, $signature -> email;
-ok $entries[1] -> committer -> time <= $signature -> time;
-ok $entries[1] -> committer -> time >= $signature -> time - 2;
-is $entries[1] -> committer -> offset, $signature -> offset;
-ok $entries[1] -> message =~ /^Branch: created/i;
 
 my $branches = [ $repo -> branches('local') ];
 is scalar(@$branches), 2;

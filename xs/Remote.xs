@@ -23,7 +23,6 @@ create(class, repo, name, url)
 		git_check_error(rc);
 
 		Newxz(remote, 1, git_raw_remote);
-		git_init_remote_callbacks(&remote -> callbacks);
 		remote -> remote = r;
 		remote -> owned = 1;
 
@@ -57,7 +56,6 @@ create_anonymous(class, repo, url)
 		git_check_error(rc);
 
 		Newx(remote, 1, git_raw_remote);
-		git_init_remote_callbacks(&remote -> callbacks);
 		remote -> remote = r;
 
 		GIT_NEW_OBJ_WITH_MAGIC(
@@ -90,7 +88,6 @@ load(class, repo, name)
 			git_check_error(rc);
 
 			Newx(remote, 1, git_raw_remote);
-			git_init_remote_callbacks(&remote -> callbacks);
 			remote -> remote = r;
 
 			GIT_NEW_OBJ_WITH_MAGIC(
@@ -180,7 +177,7 @@ rename(class, repo, old_name, new_name, ...)
 
 SV *
 url(self, ...)
-	Remote self
+	SV *self
 
 	PROTOTYPE: $;$
 
@@ -188,23 +185,33 @@ url(self, ...)
 		int rc;
 		const char *url;
 
+		Remote remote = NULL;
+
 	CODE:
+		remote = GIT_SV_TO_PTR(Remote, self);
+
 		if (items == 2) {
 			url = git_ensure_pv(ST(1), "url");
 
-			rc = git_remote_set_url(self -> remote, url);
+			rc = git_remote_set_url(
+				git_remote_owner(remote -> remote),
+				git_remote_name(remote -> remote),
+				url
+			);
 			git_check_error(rc);
+			RETVAL = newSVpv(url, 0);
+		} else {
+			RETVAL = &PL_sv_undef;
+			if ((url = git_remote_url(remote -> remote)))
+				RETVAL = newSVpv(url, 0);
 		}
 
-		RETVAL = &PL_sv_undef;
-		if ((url = git_remote_url(self -> remote)))
-			RETVAL = newSVpv(url, 0);
 
 	OUTPUT: RETVAL
 
 SV *
 pushurl(self, ...)
-	Remote self
+	SV *self
 
 	PROTOTYPE: $;$
 
@@ -212,51 +219,67 @@ pushurl(self, ...)
 		int rc;
 		const char *pushurl;
 
+		Remote remote = NULL;
+
 	CODE:
+		remote = GIT_SV_TO_PTR(Remote, self);
+
 		if (items == 2) {
 			pushurl = git_ensure_pv(ST(1), "pushurl");
 
-			rc = git_remote_set_pushurl(self -> remote, pushurl);
+			rc = git_remote_set_pushurl(
+				git_remote_owner(remote -> remote),
+				git_remote_name(remote -> remote),
+				pushurl
+			);
 			git_check_error(rc);
+			RETVAL = newSVpv(pushurl, 0);
+		} else {
+			RETVAL = &PL_sv_undef;
+			if ((pushurl = git_remote_pushurl(remote -> remote)))
+				RETVAL = newSVpv(pushurl, 0);
 		}
 
-		if ((pushurl = git_remote_pushurl(self -> remote)))
-			RETVAL = newSVpv(pushurl, 0);
-		else
-			RETVAL = &PL_sv_undef;
 
 	OUTPUT: RETVAL
 
 void
 add_fetch(self, spec)
-	Remote self
+	SV *self
 	SV *spec
 
 	PREINIT:
 		int rc;
 
+		Remote remote = NULL;
+
 	CODE:
-		rc = git_remote_add_fetch(self -> remote, git_ensure_pv(spec, "spec"));
+		remote = GIT_SV_TO_PTR(Remote, self);
+
+		rc = git_remote_add_fetch(
+			git_remote_owner(remote -> remote),
+			git_remote_name(remote -> remote),
+			git_ensure_pv(spec, "spec"));
 		git_check_error(rc);
 
 void
 add_push(self, spec)
-	Remote self
+	SV *self
 	SV *spec
 
 	PREINIT:
 		int rc;
 
+		Remote remote = NULL;
+
 	CODE:
-		rc = git_remote_add_push(self -> remote, git_ensure_pv(spec, "spec"));
+		remote = GIT_SV_TO_PTR(Remote, self);
+
+		rc = git_remote_add_push(
+			git_remote_owner(remote -> remote),
+			git_remote_name(remote -> remote),
+			git_ensure_pv(spec, "spec"));
 		git_check_error(rc);
-
-void
-clear_refspecs(self)
-	Remote self
-
-	CODE:
-		git_remote_clear_refspecs(self -> remote);
 
 void
 refspecs(self)
@@ -300,25 +323,34 @@ refspec_count(self)
 	OUTPUT: RETVAL
 
 void
-fetch(self)
+fetch(self, ...)
 	Remote self
 
 	PREINIT:
 		int rc;
 
+		git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
+
 	CODE:
-		rc = git_remote_fetch(self -> remote, NULL, NULL);
+		if (items >= 2) {
+			HV *opts = git_ensure_hv(ST(1), "fetch_opts");
+			git_hv_to_fetch_opts(opts, &fetch_opts);
+		}
+
+		rc = git_remote_fetch(self -> remote, NULL,
+			&fetch_opts, NULL
+		);
 		git_check_error(rc);
 
 SV *
-push(self, refspecs)
+push(self, refspecs, ...)
 	Remote self
 	SV *refspecs
 
 	PREINIT:
 		int rc;
 
-		git_push_options opts = GIT_PUSH_OPTIONS_INIT;
+		git_push_options push_opts = GIT_PUSH_OPTIONS_INIT;
 		git_strarray specs = {NULL, 0};
 
 	CODE:
@@ -327,20 +359,23 @@ push(self, refspecs)
 			&specs
 		);
 
-		/* Reset the push success marker */
-		self -> callbacks.push_success = 1;
+		if (items >= 3) {
+			HV *opts = git_ensure_hv(ST(2), "push_opts");
+			git_hv_to_push_opts(opts, &push_opts);
+		}
 
-		rc = git_remote_push(self -> remote, &specs, &opts);
+		rc = git_remote_push(self -> remote, &specs, &push_opts);
 		Safefree(specs.strings);
+
 		if (rc != GIT_OK && rc != GIT_EUSER)
 			git_check_error(rc);
 
-		RETVAL = newSViv(self -> callbacks.push_success);
+		RETVAL = newSViv(1);
 
 	OUTPUT: RETVAL
 
 void
-connect(self, direction)
+connect(self, direction, ...)
 	Remote self
 	SV *direction
 
@@ -349,6 +384,7 @@ connect(self, direction)
 
 		const char *dir;
 		git_direction direct = GIT_DIRECTION_FETCH;
+		git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
 		dir = git_ensure_pv(direction, "direction");
@@ -361,7 +397,14 @@ connect(self, direction)
 			croak_usage("Invalid direction '%s'. "
 				"Valid values: 'fetch' or 'push'", dir);
 
-		rc = git_remote_connect(self -> remote, direct);
+		if (items >= 3) {
+			git_hv_to_remote_callbacks(
+				git_ensure_hv(ST(2), "callbacks"),
+				&callbacks
+			);
+		}
+
+		rc = git_remote_connect(self -> remote, direct, &callbacks, NULL);
 		git_check_error(rc);
 
 void
@@ -372,24 +415,33 @@ disconnect(self)
 		git_remote_disconnect(self -> remote);
 
 void
-download(self)
+download(self, ...)
 	Remote self
 
 	PREINIT:
 		int rc;
 
+		git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
+
 	CODE:
-		rc = git_remote_download(self -> remote, NULL);
+		if (items >= 2) {
+			HV *opts = git_ensure_hv(ST(1), "fetch_opts");
+			git_hv_to_fetch_opts(opts, &fetch_opts);
+		}
+
+		rc = git_remote_download(self -> remote, NULL,
+			&fetch_opts
+		);
 		git_check_error(rc);
 
 SV *
-upload(self, refspecs)
+upload(self, refspecs, ...)
 	Remote self
 	SV *refspecs
 
 	PREINIT:
 		int rc;
-		git_push_options opts = GIT_PUSH_OPTIONS_INIT;
+		git_push_options push_opts = GIT_PUSH_OPTIONS_INIT;
 		git_strarray specs = {NULL, 0};
 
 	CODE:
@@ -398,93 +450,60 @@ upload(self, refspecs)
 			&specs
 		);
 
-		/* Reset the push success marker */
-		self -> callbacks.push_success = 1;
+		if (items >= 3) {
+			HV *opts = git_ensure_hv(ST(2), "push_opts");
+			git_hv_to_push_opts(opts, &push_opts);
+		}
 
-		rc = git_remote_upload(self -> remote, &specs, &opts);
+		rc = git_remote_upload(self -> remote, &specs, &push_opts);
 		Safefree(specs.strings);
 
 		if (rc != GIT_OK && rc != GIT_EUSER)
 			git_check_error(rc);
-		RETVAL = newSViv(self -> callbacks.push_success);
+		RETVAL = newSViv(1);
 
 	OUTPUT: RETVAL
 
 void
-prune(self)
+prune(self, ...)
 	Remote self
 
 	PREINIT:
 		int rc;
 
+		git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
+
 	CODE:
-		rc = git_remote_prune(self -> remote);
+		if (items >= 2) {
+			git_hv_to_remote_callbacks(
+				git_ensure_hv(ST(1), "callbacks"),
+				&callbacks
+			);
+		}
+
+		rc = git_remote_prune(self -> remote, &callbacks);
 		git_check_error(rc);
 
 void
-update_tips(self)
+update_tips(self, ...)
 	Remote self
 
 	PREINIT:
 		int rc;
 
-	CODE:
-		rc = git_remote_update_tips(self -> remote, NULL);
-		git_check_error(rc);
-
-void
-callbacks(self, callbacks)
-	SV *self
-	HV *callbacks
-
-	PREINIT:
-		int rc;
-
-		Remote remote;
-
-		git_remote_callbacks rcallbacks = GIT_REMOTE_CALLBACKS_INIT;
+		git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
 
 	CODE:
-		remote = GIT_SV_TO_PTR(Remote, self);
+		if (items >= 2) {
+			git_hv_to_remote_callbacks(
+				git_ensure_hv(ST(1), "callbacks"),
+				&callbacks
+			);
+		}
 
-		git_clean_remote_callbacks(&remote -> callbacks);
-
-		if ((remote -> callbacks.credentials =
-			get_callback_option(callbacks, "credentials")))
-			rcallbacks.credentials = git_credentials_cbb;
-
-		if ((remote -> callbacks.certificate_check =
-			get_callback_option(callbacks, "certificate_check")))
-			rcallbacks.certificate_check = git_certificate_check_cbb;
-
-		if ((remote -> callbacks.progress =
-			get_callback_option(callbacks, "sideband_progress")))
-			rcallbacks.sideband_progress = git_progress_cbb;
-
-		if ((remote -> callbacks.transfer_progress =
-			get_callback_option(callbacks, "transfer_progress")))
-			rcallbacks.transfer_progress = git_transfer_progress_cbb;
-
-		if ((remote -> callbacks.update_tips =
-			get_callback_option(callbacks, "update_tips")))
-			rcallbacks.update_tips = git_update_tips_cbb;
-
-		if ((remote -> callbacks.pack_progress =
-			get_callback_option(callbacks, "pack_progress")))
-			rcallbacks.pack_progress = git_packbuilder_progress_cbb;
-
-		if ((remote -> callbacks.push_transfer_progress =
-			get_callback_option(callbacks, "push_transfer_progress")))
-			rcallbacks.push_transfer_progress = git_push_transfer_progress_cbb;
-
-		/* This callback should always fire */
-		remote -> callbacks.push_update_reference =
-			get_callback_option(callbacks, "push_update_reference");
-		rcallbacks.push_update_reference = git_push_update_reference_cbb;
-
-		rcallbacks.payload = &remote -> callbacks;
-
-		rc = git_remote_set_callbacks(remote -> remote, &rcallbacks);
+		rc = git_remote_update_tips(self -> remote, &callbacks,
+			1, GIT_REMOTE_DOWNLOAD_TAGS_NONE, NULL
+		);
 		git_check_error(rc);
 
 SV *
@@ -552,7 +571,6 @@ DESTROY(self)
 	CODE:
 		remote = GIT_SV_TO_PTR(Remote, self);
 
-		git_clean_remote_callbacks(&remote -> callbacks);
 		if (remote -> owned)
 			git_remote_free(remote -> remote);
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));

@@ -26,7 +26,7 @@ init(class, path, is_bare)
 	OUTPUT: RETVAL
 
 Repository
-clone(class, url, path, opts)
+clone(class, url, path, opts, ...)
 	SV *class
 	SV *url
 	SV *path
@@ -40,64 +40,32 @@ clone(class, url, path, opts)
 		git_repository *r = NULL;
 		Repository repo = NULL;
 
-		SV *remote_cb = NULL;
-		git_raw_remote_callbacks cbs = {0, 0, 0, 0};
 		git_clone_options clone_opts = GIT_CLONE_OPTIONS_INIT;
 
 	CODE:
-		clone_opts.remote_callbacks.payload = &cbs;
+		/* Clone options */
+		git_hv_to_clone_opts(opts, &clone_opts);
 
-		if ((opt = git_hv_int_entry(opts, "bare")) && SvIV(opt))
-			clone_opts.bare = 1;
+		/* Fetch options */
+		if (items >= 5) {
+			git_hv_to_fetch_opts(
+				git_ensure_hv(ST(4), "fetch_opts"),
+				&clone_opts.fetch_opts
+			);
+		}
 
-		if ((opt = git_hv_string_entry(opts, "checkout_branch")))
-			clone_opts.checkout_branch = git_ensure_pv(opt, "checkout_branch");
-
-		if ((opt = git_hv_int_entry(opts, "disable_checkout")) && SvIV(opt))
-			clone_opts.checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
-
-		/* Callbacks */
-		if ((callbacks = git_hv_hash_entry(opts, "callbacks"))) {
-			/* Clone callbacks */
-			if ((remote_cb = get_callback_option(callbacks, "remote_create"))) {
-				clone_opts.remote_cb = git_remote_create_cbb;
-				clone_opts.remote_cb_payload = remote_cb;
-			}
-
-			/* Remote callbacks */
-			if ((cbs.credentials =
-				get_callback_option(callbacks, "credentials")))
-				clone_opts.remote_callbacks.credentials =
-					git_credentials_cbb;
-
-			if ((cbs.certificate_check =
-				get_callback_option(callbacks, "certificate_check")))
-				clone_opts.remote_callbacks.certificate_check =
-					git_certificate_check_cbb;
-
-			if ((cbs.progress =
-				get_callback_option(callbacks, "sideband_progress")))
-				clone_opts.remote_callbacks.sideband_progress =
-					git_progress_cbb;
-
-			if ((cbs.transfer_progress =
-				get_callback_option(callbacks, "transfer_progress")))
-				clone_opts.remote_callbacks.transfer_progress =
-					git_transfer_progress_cbb;
-
-			if ((cbs.update_tips =
-				get_callback_option(callbacks, "update_tips")))
-				clone_opts.remote_callbacks.update_tips =
-					git_update_tips_cbb;
+		/* Checkout options */
+		if (items >= 6) {
+			git_hv_to_checkout_opts(
+				git_ensure_hv(ST(5), "checkout_opts"),
+				&clone_opts.checkout_opts
+			);
 		}
 
 		rc = git_clone(
 			&r, git_ensure_pv(url, "url"), git_ensure_pv(path, "path"),
 			&clone_opts
 		);
-
-		git_clean_remote_callbacks(&cbs);
-		SvREFCNT_dec(remote_cb);
 		Safefree(clone_opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
@@ -800,7 +768,6 @@ remotes(self)
 			git_check_error(rc);
 
 			Newxz(remote, 1, git_raw_remote);
-			git_init_remote_callbacks(&remote -> callbacks);
 			remote -> remote = r;
 
 			GIT_NEW_OBJ_WITH_MAGIC(

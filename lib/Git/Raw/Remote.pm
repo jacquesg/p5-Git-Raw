@@ -19,21 +19,21 @@ Git::Raw::Remote - Git remote class
     # add a new remote
     my $remote = Git::Raw::Remote -> create($repo, 'origin', $url);
 
-    # set the acquire credentials callback
-    $remote -> callbacks({
-      'credentials' => sub { Git::Raw::Cred -> userpass($usr, $pwd) },
+    # connect the remote and set the acquire credentials callback
+    $remote -> connect('fetch', {
+      'credentials' => sub {
+        Git::Raw::Cred -> userpass($usr, $pwd)
+      },
+    });
+
+    # fetch from the remote and update the local tips
+    $remote -> download;
+    $remote -> update_tips({
       'update_tips' => sub {
         my ($ref, $a, $b) = @_;
         print "Updated $ref: $a -> $b", "\n";
       }
     });
-
-    # connect the remote
-    $remote -> connect('fetch');
-
-    # fetch from the remote and update the local tips
-    $remote -> download;
-    $remote -> update_tips;
 
     # disconnect
     $remote -> disconnect;
@@ -76,7 +76,7 @@ HEAD points to. If the remote does not support reporting this information
 directly, it performs the guess as git does, that is, if there are multiple
 branches which point to the same commit, the first one is chosen. If the master
 branch is a candidate, it wins. If the information cannot be determined, this
-function will return C<undef>. Note, this function should only be called after
+function will return C<undef>. B<Note>, this function should only be called after
 the remote has established a connection.
 
 =head2 name( )
@@ -140,21 +140,96 @@ The local OID of the reference (optional).
 
 =back
 
-=head2 callbacks( \%callbacks )
+=head2 fetch( [ \%fetch_opts ] )
+
+Download new data and update tips. Convenience function to connect to a remote,
+download the data, disconnect and update the remote-tracking branches. Valid fields for
+the C<%fetch_opts> hash are:
 
 =over 4
 
-=item * "credentials"
+=item * "callbacks"
+
+See L<C<CALLBACKS>>.
+
+=item * "prune"
+
+NOT IMPLEMENTED.
+
+=item * "update_fetchead"
+
+NOT IMPLEMENTED.
+
+=item * "download_tags"
+
+NOT IMPLEMENTED.
+
+=item * "custom_headers"
+
+NOT IMPLEMENTED.
+
+=back
+
+=head2 push( \@refspecs, [ \%push_opts ] )
+
+Perform all the steps of a push, including uploading new data and updating the
+remote tracking-branches. Valid fields for the C<%push_opts> hash are:
+
+=over 4
+
+=item * "callbacks"
+
+See L<C<CALLBACKS>>.
+
+=item * "custom_headers"
+
+NOT IMPLEMENTED.
+
+=back
+
+=head2 connect( $direction, [ \%callbacks ] )
+
+Connect to the remote. The C<$direction> should either be C<"fetch"> or C<"push">.
+
+=head2 disconnect( )
+
+Disconnect the remote.
+
+=head2 download( [ \%fetch_opts ] )
+
+Download the remote packfile. See C<Git::Raw::Remote-E<gt>fetch()> for valid
+C<%fetch_opts> values.
+
+=head2 upload( \@refspecs, [ \%push_opts ] )
+
+Create a packfile and send it to the server. C<@refspecs> is a list of refspecs
+to use for the negotiation with the server to determine the missing objects
+that need to be uploaded.
+
+=head2 prune( [ \%callbacks ] )
+
+Prune tracking refs that are no longer present on remote.
+
+=head2 update_tips( [ \%callbacks ] )
+
+Update the tips to the new status.
+
+=head2 is_connected( )
+
+Check if the remote is connected.
+
+=head1 CALLBACKS
+
+=head2 credentials
 
 The callback to be called any time authentication is required to connect to the
 remote repository. The callback receives a string C<$url> containing the URL of
 the remote, the C<$user> extracted from the URL and a list of supported
 authentication C<$types>. The callback should return either a L<Git::Raw::Cred>
-object or alternatively C<undef> to abort the authentication process. B<Note:>
-this callback may be invoked more than once. C<$types> may contain one or more
-of the following:
+object or alternatively C<undef> to abort the authentication process. C<$types>
+may contain one or more of the following:
 
-=over 8
+=over 4
 
 =item * "userpass_plaintext"
 
@@ -182,29 +257,30 @@ A key for NTLM/Kerberos default credentials.
 
 =back
 
-=item * "certificate_check"
+B<Note:> this callback may be invoked more than once.
+
+=head2 certificate_check
 
 Callback to be invoked if cert verification fails. The callback receives a
 L<Git::Raw::Cert::X509> or L<Git::Raw::Cert::HostKey> object, a truthy
-value C<$valid> and C<$host>. This callback should return 1 to allow the
-connection to proceed or 0 to abort. Returning a negative number indicates
-an error.
+value C<$valid> and C<$host>. This callback should return a negative number to
+abort.
 
-=item * "sideband_progress"
+=head2 sideband_progress
 
 Textual progress from the remote. Text sent over the progress side-band will be
 passed to this function (this is the 'counting objects' output or any other
 information the remote sends). The callback receives a string C<$msg>
 containing the progress information.
 
-=item * "transfer_progress"
+=head2 transfer_progress
 
 During the download of new data, this will be regularly called with the current
 count of progress done by the indexer. The callback receives the following integers:
 C<$total_objects>, C<$received_objects>, C<$local_objects>, C<$total_deltas>,
 C<$indexed_deltas> and C<$received_bytes>.
 
-=item * "update_tips"
+=head2 update_tips
 
 Each time a reference is updated locally, this function will be called with
 information about it. The callback receives a string containing the reference
@@ -212,67 +288,31 @@ C<$ref> of the reference that was updated, and the two OID's C<$a> before and
 after C<$b> the update. C<$a> will be C<undef> if the reference was created,
 likewise C<$b> will be C<undef> if the reference was removed.
 
-=item * "push_transfer_progress"
+=head2 push_transfer_progress
 
-During the upload of new data, this will reguarly be called with the transfer
+During the upload of new data, this will regularly be called with the transfer
 progress. The callback receives the following integers:
 C<$current>, C<$total> and C<$bytes>.
 
-=item * "push_update_reference"
+=head2 push_update_reference
 
 For each of the updated references, this will be called with a status report
 for the reference. The callback receives C<$ref> and C<$msg> as strings. If
 C<$msg> is defined, the reference mentioned in C<$ref> has not been updated.
 
-=item * "pack_progress"
+=head2 push_negotation
 
-During the packing of new data, this will reguarly be called with the progress
+The callbacks receives a list of updates that will be sent to the destination.
+Each items consists of C<$src_refname>, C<$dst_refname> as well as their OIDs,
+C<$src> and C<$dst>. This callback should return a negative number to abort.
+
+=head2 pack_progress
+
+During the packing of new data, this will regularly be called with the progress
 of the pack operation. Be aware that this is called inline with pack
 building operations, so performance may be affected. The callback receives the
 following integers:
 C<$stage>, C<$current> and C<$total>.
-
-=back
-
-=head2 fetch( )
-
-Download new data and update tips. Convenience function to connect to a remote,
-download the data, disconnect and update the remote-tracking branches.
-
-=head2 push( \@refspecs )
-
-Perform all the steps of a push, including uploading new data and updating the
-remote tracking-branches.
-
-=head2 connect( $direction )
-
-Connect to the remote. The C<$direction> should either be C<"fetch"> or C<"push">.
-
-=head2 disconnect( )
-
-Disconnect the remote.
-
-=head2 download( )
-
-Download the remote packfile.
-
-=head2 upload( \@refspecs )
-
-Create a packfile and send it to the server. C<@refspecs> is a list of refspecs
-to use for the negotiation with the server to determine the the missing objects
-that need to be uploaded.
-
-=head2 prune( )
-
-Prune tracking refs that are no longer present on remote.
-
-=head2 update_tips( )
-
-Update the tips to the new status.
-
-=head2 is_connected( )
-
-Check if the remote is connected.
 
 =head1 AUTHOR
 

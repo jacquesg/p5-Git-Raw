@@ -117,7 +117,7 @@ my $received_bytes = 0;
 my $states = [];
 
 $path = File::Spec -> rel2abs('t/test_repo_clone_callbacks');
-$repo = Git::Raw::Repository -> clone($url, $path, {
+$repo = Git::Raw::Repository -> clone($url, $path, {}, {
 	'callbacks' => {
 		'sideband_progress' => sub {
 			my $description = shift;
@@ -207,7 +207,7 @@ $url = 'https://github.com/libgit2/TestGitRepository.git';
 $path = File::Spec -> rel2abs('t/test_repo_clone');
 
 my ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
-$repo = Git::Raw::Repository -> clone($url, $path, {
+$repo = Git::Raw::Repository -> clone($url, $path, {}, {
 	'callbacks' => {
 		'certificate_check' => sub {
 			my ($cert, $valid, $host) = @_;
@@ -223,7 +223,7 @@ $repo = Git::Raw::Repository -> clone($url, $path, {
 			is $valid, 1;
 			is $host, 'github.com';
 
-			1;
+			0;
 		},
 		'update_tips' => sub {
 			my ($ref, $a, $b) = @_;
@@ -264,7 +264,7 @@ my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
 $path = File::Spec -> rel2abs('t/test_repo_ssh');
 
 # Not a CV for callback
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => 'blah'
 		}
@@ -274,7 +274,7 @@ rmtree $path;
 ok ! -e $path;
 
 # Die'ing inside the callback
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => sub { die "Shouldn't break!" }
 		}
@@ -284,7 +284,7 @@ rmtree $path;
 ok ! -e $path;
 
 # Returning undef inside the callback
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => sub { return undef; }
 		}
@@ -294,7 +294,7 @@ rmtree $path;
 ok ! -e $path;
 
 # Invalid key files
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => sub {
 				my ($url, $user) = @_;
@@ -308,25 +308,12 @@ rmtree $path;
 ok ! -e $path;
 
 # Incorrect authentication type (username and password)
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => sub {
-				my ($url, $user) = @_;
-					return Git::Raw::Cred -> userpass(
-						$user, 'password');
-			}
-		}
-	});
-});
-rmtree $path;
-ok ! -e $path;
-
-# Incorrect authentication type (SSH agent)
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
-		'callbacks' => {
-			'credentials' => sub {
-				my ($url, $user) = @_;
-					return Git::Raw::Cred -> sshagent($user);
+				my ($url, $user, $types) = @_;
+				return Git::Raw::Cred -> userpass(
+					$user, 'password');
 			}
 		}
 	});
@@ -335,14 +322,31 @@ rmtree $path;
 ok ! -e $path;
 
 # Incorrect authentication type (SSH interactive)
-ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 		'callbacks' => {
 			'credentials' => sub {
-				my ($url, $user) = @_;
-					return Git::Raw::Cred -> sshinteractive(
-						'metheunknownuser', sub {
-							return ('badpassword');
-						});
+				my ($url, $user, $types) = @_;
+				return Git::Raw::Cred -> sshinteractive(
+					'metheunknownuser', sub {
+						return ('badpassword');
+					});
+			}
+		}
+	});
+});
+rmtree $path;
+ok ! -e $path;
+
+# Incorrect authentication type (SSH agent)
+my $badCount = 0;
+ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
+		'callbacks' => {
+			'credentials' => sub {
+				my ($url, $user, $types) = @_;
+				if (++$badCount >= 2) {
+					die "Skipping...";
+				}
+				return Git::Raw::Cred -> sshagent($user);
 			}
 		}
 	});
@@ -352,7 +356,8 @@ ok ! -e $path;
 
 ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
 $repo = Git::Raw::Repository -> clone($remote_url, $path, {
-	'checkout_branch' => 'master',
+		'checkout_branch' => 'master'
+	}, {
 	'callbacks' => {
 		'credentials' => sub {
 			my ($url, $user) = @_;

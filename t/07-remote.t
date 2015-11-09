@@ -47,9 +47,6 @@ $rename = Git::Raw::Remote -> load($repo, 'post_rename');
 
 @refspecs = $rename -> refspecs;
 is scalar(@refspecs), 1;
-$rename -> clear_refspecs;
-@refspecs = $rename -> refspecs;
-is scalar(@refspecs), 0;
 
 $rename = undef;
 
@@ -151,28 +148,21 @@ $repo = Git::Raw::Repository -> init ($path, 0);
 
 $github = Git::Raw::Remote -> create($repo, $name, $url);
 
-my ($sideband_progress, $transfer_progress, $update_tips);
-$github -> callbacks({
-	'sideband_progress' => sub {
-		$sideband_progress = 1;
-	},
-	'transfer_progress' => sub {
-		$transfer_progress = 1;
-	},
-	'update_tips' => sub {
-		my ($ref, $a, $b) = @_;
-		ok $ref =~ /^refs\//;
-		ok (!defined($a));
-		ok length($b) == 40;
+my ($sideband_progress, $transfer_progress);
 
-		$update_tips = 1;
+is $github -> is_connected, 0;
+
+$github -> download ({
+	'callbacks' => {
+		'sideband_progress' => sub {
+			$sideband_progress = 1;
+		},
+		'transfer_progress' => sub {
+			$transfer_progress = 1;
+		},
 	}
 });
 
-$github -> connect('fetch');
-is $github -> is_connected, 1;
-
-$github -> download;
 ok $sideband_progress;
 ok $transfer_progress;
 
@@ -184,7 +174,17 @@ $email = 'git-xs@example.com';
 is $config -> str('user.name', $name), $name;
 is $config -> str('user.email', $email), $email;
 
-$github -> update_tips;
+my $update_tips;
+$github -> update_tips({
+	'update_tips' => sub {
+		my ($ref, $a, $b) = @_;
+		ok $ref =~ /^refs\//;
+		ok (!defined($a));
+		ok length($b) == 40;
+
+		$update_tips = 1;
+	}
+});
 ok $update_tips;
 
 $repo = undef;

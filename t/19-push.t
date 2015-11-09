@@ -19,18 +19,27 @@ my $remote = Git::Raw::Remote -> create_anonymous($repo, $local_path);
 isa_ok $remote, 'Git::Raw::Remote';
 
 my $total_packed = 0;
-$remote -> callbacks({
-	'pack_progress' => sub {
-		my ($stage, $current, $total) = @_;
+is $remote -> upload(['refs/heads/master:refs/heads/master'], {
+		'callbacks' => {
+			'pack_progress' => sub {
+				my ($stage, $current, $total) = @_;
 
-		is $stage, 0;
-		is $total, 0;
-		ok ($current > $total_packed);
-		$total_packed++;
-	}
-});
-
-is $remote -> upload(['refs/heads/master:refs/heads/master']), 1;
+				ok ($stage == Git::Raw::Packbuilder->ADDING_OBJECTS ||
+					$stage == Git::Raw::Packbuilder->DELTAFICATION);
+				if ($stage == Git::Raw::Packbuilder->ADDING_OBJECTS)
+				{
+					is $current, 1;
+					is $total, 0;
+				}
+				else
+				{
+					ok ($current <= $total);
+					ok ($total > 0);
+				}
+				$total_packed++;
+			}
+		}
+	}), 1;
 ok ($total_packed > 0);
 
 $remote = undef;
@@ -49,27 +58,35 @@ $local_repo = Git::Raw::Repository -> init($local_path, 1);
 $remote = Git::Raw::Remote -> create_anonymous($repo, $local_url);
 
 my $updated_ref;
-
-$remote -> callbacks({
-	'pack_progress' => sub {
-		my ($stage, $current, $total) = @_;
-
-		is $stage, 0;
-		is $total, 0;
-		ok ($current > $total_packed);
-		$total_packed++;
-	},
-	'push_update_reference' => sub {
-		my ($ref, $msg) = @_;
-
-		ok (defined($ref));
-		ok (!defined($msg));
-		$updated_ref = $ref;
-	}
-});
-
 $total_packed = 0;
-is $remote -> upload(['refs/heads/master:refs/heads/master']), 1;
+is $remote -> upload(['refs/heads/master:refs/heads/master'], {
+		'callbacks' => {
+			'pack_progress' => sub {
+				my ($stage, $current, $total) = @_;
+
+				ok ($stage == 0 || $stage == 1);
+				if ($stage == 0)
+				{
+					is $current, 1;
+					is $total, 0;
+				}
+				else
+				{
+					ok ($current <= $total);
+					ok ($total > 0);
+				}
+
+				$total_packed++;
+			},
+			'push_update_reference' => sub {
+				my ($ref, $msg) = @_;
+
+				ok (defined($ref));
+				ok (!defined($msg));
+				$updated_ref = $ref;
+			}
+		}
+	}), 1;
 ok ($total_packed > 0);
 is $updated_ref, "refs/heads/master";
 
@@ -134,7 +151,7 @@ my $credentials = sub {
 	return Git::Raw::Cred -> sshkey($user, $public_key, $private_key);
 };
 
-$repo = Git::Raw::Repository -> clone($remote_url, $path, {
+$repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
 	'callbacks' => {
 		'credentials' => $credentials
 	}
@@ -172,8 +189,9 @@ $remote = shift @remotes;
 
 my ($credentials_fired, $sideband_fired, $update_tips_fired) = (0, 0, 0);
 my ($pack_progress_fired, $transfer_progress_fired, $status_fired) = (0, 0, 0);
+my ($negotation_fired, $transport_fired) = (0, 0);
 
-$remote -> callbacks({
+my $callbacks = {
 	'credentials' => sub {
 		$credentials_fired = 1;
 		return &{$credentials}(@_);
@@ -203,11 +221,37 @@ $remote -> callbacks({
 		like $msg, qr/pre-receive hook/;
 		$status_fired = 1;
 	},
+	'push_negotiation' => sub {
+		my ($values) = @_;
+
+		isa_ok $values, 'ARRAY';
+		is scalar(@$values), 1;
+
+		my $info = shift @$values;
+		is_deeply $info, {
+			'src_refname' => 'refs/heads/ssh_branch',
+			'dst_refname' => 'refs/heads/ssh_branch',
+			'src'         => '0' x 40,
+			'dst'         => $commit -> id,
+		};
+
+		$negotation_fired = 1;
+		return 0;
+	},
 	'update_tips' => sub {
 		my ($ref, $a, $b) = @_;
 		$update_tips_fired = 1;
 	},
-});
+	'transport' => sub {
+		my ($remote) = @_;
+
+		isa_ok $remote, 'Git::Raw::Remote';
+		is $remote -> url, $remote_url;
+		$transport_fired = 1;
+
+		#TODO: Return a transport here
+	},
+};
 
 # setup a pre-receive hook that fails
 my $pre_receive_content = <<'EOS';
@@ -229,10 +273,11 @@ ok -e $pre_receive_file;
 chmod 0755, $pre_receive_file;
 
 # pre-receive hook kick
-$remote -> connect('push');
-is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"]), 0;
+$remote -> connect('push', $callbacks);
+is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"], {
+	'callbacks' => $callbacks
+}), 1;
 diag("Pre-receive hook (successfully) declined the push");
-#$remote -> disconnect;
 
 is $sideband_fired, 1;
 is $credentials_fired, 1;
@@ -240,6 +285,8 @@ is $pack_progress_fired, 1;
 is $transfer_progress_fired, 1;
 is $status_fired, 1;
 is $update_tips_fired, 0;
+is $negotation_fired, 1;
+is $transport_fired, 1;
 
 # setup a pre-receive hook that succeeds
 $pre_receive_content = <<'EOS';
@@ -253,7 +300,7 @@ EOS
 
 write_file($pre_receive_file, $pre_receive_content);
 
-$remote -> callbacks({
+$callbacks = {
 	'credentials' => sub {
 		$credentials_fired = 1;
 		return &{$credentials}(@_);
@@ -281,12 +328,14 @@ $remote -> callbacks({
 		ok !defined($msg);
 		$status_fired = 1;
 	}
-});
+};
 
 $sideband_fired = 0;
 $update_tips_fired = 0;
 $status_fired = 0;
-is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"]), 1;
+is $remote -> push(["refs/heads/ssh_branch:refs/heads/ssh_branch"], {
+	'callbacks' => $callbacks
+}), 1;
 is $sideband_fired, 1;
 is $status_fired, 1;
 is $update_tips_fired, 1;

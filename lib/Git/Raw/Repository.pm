@@ -14,17 +14,18 @@ Git::Raw::Repository - Git repository class
     use Git::Raw;
 
     # clone a Git repository
-    my $url  = 'git://github.com/ghedo/p5-Git-Raw.git';
-    my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', {
-      'callbacks' => {
-        'transfer_progress' => sub {
-          my ($total_objects, $received_objects, $local_objects, $total_deltas,
-            $indexed_deltas, $received_bytes) = @_;
+    my $url  = 'git://github.com/jacquesg/p5-Git-Raw.git';
+    my $callbacks = {
+      'transfer_progress' => sub {
+        my ($total_objects, $received_objects, $local_objects, $total_deltas,
+          $indexed_deltas, $received_bytes) = @_;
 
-          print "Objects: $received_objects/$total_objects", "\n";
-          print "Received: ", int($received_bytes/1024), "KB", "\n";
-        }
+        print "Objects: $received_objects/$total_objects", "\n";
+        print "Received: ", int($received_bytes/1024), "KB", "\n";
       }
+    };
+    my $repo = Git::Raw::Repository -> clone($url, 'p5-Git-Raw', {}, {
+      'callbacks' => $callbacks
     });
 
     # print all the tags of the repository
@@ -45,7 +46,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Initialize a new repository at C<$path>.
 
-=head2 clone( $url, $path, \%opts )
+=head2 clone( $url, $path, \%opts, [\%fetch_opts, \%checkout_opts])
 
 Clone the repository at C<$url> to C<$path>. Valid fields for the C<%opts> hash
 are:
@@ -78,29 +79,12 @@ This callbacks should return a L<Git::Raw::Remote> object. The returned object a
 the repository object passed to this callback is ephemeral. B<Note:> Do not take any
 references to it as it may be freed internally.
 
-=item * "credentials"
-
-See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
-
-=item * "certificate_check"
-
-See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
-
-=item * "sideband_progress"
-
-See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
-
-=item * "transfer_progress"
-
-See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
-
-=item * "update_tips"
-
-See C<Git::Raw::Remote-E<gt>callbacks()> for information about this callback.
-
 =back
 
 =back
+
+See C<Git::Raw::Remote-E<gt>fetch()> for valid C<%fetch_opts> values and
+C<Git::Raw::Repository-E<gt>checkout()> for valid C<%checkout_opts> values.
 
 =head2 open( $path )
 
