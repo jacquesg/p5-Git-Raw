@@ -15,7 +15,7 @@ is $local_repo -> is_bare, 1;
 my $path = abs_path('t/test_repo');
 my $repo = Git::Raw::Repository -> open($path);
 
-my $remote = Git::Raw::Remote -> create_anonymous($repo, $local_path, undef);
+my $remote = Git::Raw::Remote -> create_anonymous($repo, $local_path);
 isa_ok $remote, 'Git::Raw::Remote';
 
 my $total_packed = 0;
@@ -46,7 +46,7 @@ if ($^O eq 'MSWin32') {
 	$local_url = "file://$local_path";
 }
 $local_repo = Git::Raw::Repository -> init($local_path, 1);
-$remote = Git::Raw::Remote -> create_anonymous($repo, $local_url, undef);
+$remote = Git::Raw::Remote -> create_anonymous($repo, $local_url);
 
 my $updated_ref;
 

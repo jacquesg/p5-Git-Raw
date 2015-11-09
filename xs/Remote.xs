@@ -34,11 +34,10 @@ create(class, repo, name, url)
 	OUTPUT: RETVAL
 
 SV *
-create_anonymous(class, repo, url, fetch)
+create_anonymous(class, repo, url)
 	SV *class
 	SV *repo
 	SV *url
-	SV *fetch
 
 	PREINIT:
 		int rc;
@@ -50,13 +49,10 @@ create_anonymous(class, repo, url, fetch)
 		const char *f = NULL;
 
 	CODE:
-		if (SvOK(fetch))
-			f = git_ensure_pv(fetch, "fetch");
-
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 		rc = git_remote_create_anonymous(
 			&r, repo_ptr -> repository,
-			git_ensure_pv(url, "url"), f
+			git_ensure_pv(url, "url")
 		);
 		git_check_error(rc);
 

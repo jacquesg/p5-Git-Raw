@@ -137,11 +137,7 @@ is $entries[0] -> old_id, '0000000000000000000000000000000000000000';
 is $entries[0] -> new_id, $ref -> target -> id;
 
 $repo = Git::Raw::Repository -> new();
-$github = Git::Raw::Remote -> create_anonymous($repo, $url, undef);
-ok (!eval { $github -> save }, "can't save an anonymous remote");
-
-ok (!eval { Git::Raw::Remote -> create_anonymous($repo, $url, $ref) }, "fetch should be a 'string'");
-
+$github = Git::Raw::Remote -> create_anonymous($repo, $url);
 $github -> connect('fetch');
 is $github -> is_connected, 1;
 
