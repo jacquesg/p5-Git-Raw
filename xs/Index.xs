@@ -307,6 +307,7 @@ checkout(self, ...)
 			GIT_SV_TO_PTR(Index, self),
 			&checkout_opts
 		);
+		Safefree(checkout_opts.paths.strings);
 		git_check_error(rc);
 
 void

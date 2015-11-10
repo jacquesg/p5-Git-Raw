@@ -98,6 +98,7 @@ clone(class, url, path, opts)
 
 		git_clean_remote_callbacks(&cbs);
 		SvREFCNT_dec(remote_cb);
+		Safefree(clone_opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
 		Newxz(repo, 1, git_raw_repository);
@@ -948,6 +949,7 @@ cherry_pick(self, commit, ...)
 			commit,
 			&opts
 		);
+		Safefree(opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
 void
@@ -990,6 +992,7 @@ revert(self, commit, ...)
 			commit,
 			&opts
 		);
+		Safefree(opts.checkout_opts.paths.strings);
 		git_check_error(rc);
 
 SV *
