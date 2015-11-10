@@ -338,7 +338,7 @@ returns a hash reference with an entry for each C<$file>, or all files if no fil
 parameters are provided. Each C<$file> entry has a list of C<"flags">, which may
 include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renamed">,
 C<"worktree_new">, C<"worktree_modified">, C<"worktree_deleted">,
-C<"worktree_renamed">, C<"worktree_unreadable"> and C<"ignored">.
+C<"worktree_renamed">, C<"worktree_unreadable">, C<"conflicted"> and C<"ignored">.
 
 If C<$file> has been renamed in either the index or worktree or both, C<$file>
 will also have a corresponding entry C<"index"> and/or C<"worktree">, containing

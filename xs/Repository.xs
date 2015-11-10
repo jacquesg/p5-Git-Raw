@@ -480,6 +480,9 @@ status(self, opts, ...)
 			if (entry -> status & GIT_STATUS_IGNORED)
 				av_push(flags, newSVpv("ignored", 0));
 
+			if (entry -> status & GIT_STATUS_CONFLICTED)
+				av_push(flags, newSVpv("conflicted", 0));
+
 			file_status_hv = newHV();
 
 			if (entry -> index_to_workdir) {
