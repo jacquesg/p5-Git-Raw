@@ -40,6 +40,16 @@ is -12, Git::Raw::Error->EINVALIDSPEC;
 is -13, Git::Raw::Error->ECONFLICT;
 is -14, Git::Raw::Error->ELOCKED;
 is -15, Git::Raw::Error->EMODIFIED;
+is -16, Git::Raw::Error->EAUTH;
+is -17, Git::Raw::Error->ECERTIFICATE;
+is -18, Git::Raw::Error->EAPPLIED;
+is -19, Git::Raw::Error->EPEEL;
+is -20, Git::Raw::Error->EEOF;
+is -21, Git::Raw::Error->EINVALID;
+is -22, Git::Raw::Error->EUNCOMMITTED;
+is -23, Git::Raw::Error->EDIRECTORY;
+is -24, Git::Raw::Error->EMERGECONFLICT;
+
 is -30, Git::Raw::Error->PASSTHROUGH;
 is -31, Git::Raw::Error->ITEROVER;
 
