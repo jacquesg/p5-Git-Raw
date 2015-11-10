@@ -64,6 +64,10 @@ The type of the entry changed between the old and new versions.
 
 The entry is unreadable.
 
+=item * "conflicted"
+
+The entry represents a conflict.
+
 =back
 
 =head2 flags( )

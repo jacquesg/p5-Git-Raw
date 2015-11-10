@@ -28,6 +28,8 @@ status(self)
 			status = "type_change";
 		else if (self -> status == GIT_DELTA_UNREADABLE)
 			status = "unreadable";
+		else if (self -> status == GIT_DELTA_CONFLICTED)
+			status = "conflicted";
 
 		RETVAL = newSVpv (status, 0);
 
