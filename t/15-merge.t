@@ -156,6 +156,10 @@ isa_ok $our_entry -> blob, 'Git::Raw::Blob';
 isa_ok $their_entry, 'Git::Raw::Index::Entry';
 isa_ok $their_entry -> blob, 'Git::Raw::Blob';
 
+ok $ancestor_entry -> is_conflict;
+ok $our_entry -> is_conflict;
+ok $their_entry -> is_conflict;
+
 my $merge_result = $index -> merge ($ancestor_entry,
 	$their_entry, $our_entry, {
 		'ancestor_label' => 'test1',

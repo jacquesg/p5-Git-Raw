@@ -10,6 +10,15 @@ id(self)
 	OUTPUT: RETVAL
 
 SV *
+is_conflict(self)
+	Index_Entry self
+
+	CODE:
+		RETVAL = newSViv(git_index_entry_is_conflict(self));
+
+	OUTPUT: RETVAL
+
+SV *
 path(self)
 	Index_Entry self
 

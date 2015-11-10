@@ -22,6 +22,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Retrieve the id of the index entry as a string.
 
+=head2 is_conflict( )
+
+Check if the entry has a non-zero stage entry.
+
 =head2 path( )
 
 Retrieve the path of the index entry.
