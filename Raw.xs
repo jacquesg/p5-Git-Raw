@@ -296,7 +296,7 @@ STATIC Error create_error_obj_fmt(int code, int category, const char *prefix, co
 	return e;
 }
 
-STATIC void croak_error_obj(Error e) {
+STATIC void __attribute__noreturn__ croak_error_obj(Error e) {
 	SV *res = NULL;
 	GIT_NEW_OBJ(res, "Git::Raw::Error", e);
 	SvREFCNT_inc(e -> message);
