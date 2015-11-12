@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.54      2015-11-12 21:28:02+02:00 Africa/Johannesburg (TRIAL RELEASE)
+
  - Enable support for libcurl at build-time
  - Users can now specify the libcurl to use as argument
     to Makefile.PL:
