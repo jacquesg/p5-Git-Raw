@@ -153,13 +153,15 @@ int git_futils_readbuffer_fd(git_buf *buf, git_file fd, size_t len)
 }
 
 int git_futils_readbuffer_updated(
-	git_buf *buf, const char *path, time_t *mtime, size_t *size, int *updated)
+	git_buf *out, const char *path, git_oid *checksum, int *updated)
 {
+	int error;
 	git_file fd;
 	struct stat st;
-	bool changed = false;
+	git_buf buf = GIT_BUF_INIT;
+	git_oid checksum_new;
 
-	assert(buf && path && *path);
+	assert(out && path && *path);
 
 	if (updated != NULL)
 		*updated = 0;
@@ -178,45 +180,50 @@ int git_futils_readbuffer_updated(
 		return -1;
 	}
 
-	/*
-	 * If we were given a time and/or a size, we only want to read the file
-	 * if it has been modified.
-	 */
-	if (size && *size != (size_t)st.st_size)
-		changed = true;
-	if (mtime && *mtime != (time_t)st.st_mtime)
-		changed = true;
-	if (!size && !mtime)
-		changed = true;
-
-	if (!changed) {
-		return 0;
-	}
-
-	if (mtime != NULL)
-		*mtime = st.st_mtime;
-	if (size != NULL)
-		*size = (size_t)st.st_size;
-
 	if ((fd = git_futils_open_ro(path)) < 0)
 		return fd;
 
-	if (git_futils_readbuffer_fd(buf, fd, (size_t)st.st_size) < 0) {
+	if (git_futils_readbuffer_fd(&buf, fd, (size_t)st.st_size) < 0) {
 		p_close(fd);
 		return -1;
 	}
 
 	p_close(fd);
 
+	if ((error = git_hash_buf(&checksum_new, buf.ptr, buf.size)) < 0) {
+		git_buf_free(&buf);
+		return error;
+	}
+
+	/*
+	 * If we were given a checksum, we only want to use it if it's different
+	 */
+	if (checksum && !git_oid__cmp(checksum, &checksum_new)) {
+		git_buf_free(&buf);
+		if (updated)
+			*updated = 0;
+
+		return 0;
+	}
+
+	/*
+	 * If we're here, the file did change, or the user didn't have an old version
+	 */
+	if (checksum)
+		git_oid_cpy(checksum, &checksum_new);
+
 	if (updated != NULL)
 		*updated = 1;
+
+	git_buf_swap(out, &buf);
+	git_buf_free(&buf);
 
 	return 0;
 }
 
 int git_futils_readbuffer(git_buf *buf, const char *path)
 {
-	return git_futils_readbuffer_updated(buf, path, NULL, NULL, NULL);
+	return git_futils_readbuffer_updated(buf, path, NULL, NULL);
 }
 
 int git_futils_writebuffer(
@@ -359,7 +366,7 @@ GIT_INLINE(int) mkdir_validate_mode(
 
 	return 0;
 }
-	
+
 GIT_INLINE(int) mkdir_canonicalize(
 	git_buf *path,
 	uint32_t flags)
@@ -1027,6 +1034,11 @@ int git_futils_filestamp_check(
 	git_futils_filestamp *stamp, const char *path)
 {
 	struct stat st;
+#if defined(__APPLE__)
+	const struct timespec *statmtime = &st.st_mtimespec;
+#else
+	const struct timespec *statmtime = &st.st_mtim;
+#endif
 
 	/* if the stamp is NULL, then always reload */
 	if (stamp == NULL)
@@ -1035,12 +1047,18 @@ int git_futils_filestamp_check(
 	if (p_stat(path, &st) < 0)
 		return GIT_ENOTFOUND;
 
-	if (stamp->mtime == (git_time_t)st.st_mtime &&
+	if (stamp->mtime.tv_sec == statmtime->tv_sec &&
+#if defined(GIT_USE_NSEC)
+		stamp->mtime.tv_nsec == statmtime->tv_nsec &&
+#endif
 		stamp->size  == (git_off_t)st.st_size   &&
 		stamp->ino   == (unsigned int)st.st_ino)
 		return 0;
 
-	stamp->mtime = (git_time_t)st.st_mtime;
+	stamp->mtime.tv_sec = statmtime->tv_sec;
+#if defined(GIT_USE_NSEC)
+	stamp->mtime.tv_nsec = statmtime->tv_nsec;
+#endif
 	stamp->size  = (git_off_t)st.st_size;
 	stamp->ino   = (unsigned int)st.st_ino;
 
@@ -1062,8 +1080,17 @@ void git_futils_filestamp_set(
 void git_futils_filestamp_set_from_stat(
 	git_futils_filestamp *stamp, struct stat *st)
 {
+#if defined(__APPLE__)
+	const struct timespec *statmtime = &st->st_mtimespec;
+#else
+	const struct timespec *statmtime = &st->st_mtim;
+#endif
+
 	if (st) {
-		stamp->mtime = (git_time_t)st->st_mtime;
+		stamp->mtime = *statmtime;
+#if !defined(GIT_USE_NSEC)
+		stamp->mtime.tv_nsec = 0;
+#endif
 		stamp->size  = (git_off_t)st->st_size;
 		stamp->ino   = (unsigned int)st->st_ino;
 	} else {
