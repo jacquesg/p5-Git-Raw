@@ -25,7 +25,7 @@ use Git::Raw;
 
 =head1 NAME
 
-Git::Raw::Packbuilder - Packbuilder class
+Git::Raw::Packbuilder - Git packbuilder class
 
 =head1 AUTHOR
 
