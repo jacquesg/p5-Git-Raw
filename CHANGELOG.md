@@ -10,12 +10,25 @@ v0.23 + 1
 * Symlinks are now followed when locking a file, which can be
   necessary when multiple worktrees share a base repository.
 
+* You can now set your own user-agent to be sent for HTTP requests by
+  using the `GIT_OPT_SET_USER_AGENT` with `git_libgit2_opts()`.
+
 ### API additions
 
 * `git_config_lock()` has been added, which allow for
   transactional/atomic complex updates to the configuration, removing
   the opportunity for concurrent operations and not committing any
   changes until the unlock.
+
+
+* `git_diff_options` added a new callback `progress_cb` to report on the
+  progress of the diff as files are being compared. The documentation of
+  the existing callback `notify_cb` was updated to reflect that it only
+  gets called when new deltas are added to the diff.
+
+* `git_stream_register_tls()` lets you register a callback to be used
+  as the constructor for a TLS stream instead of the libgit2 built-in
+  one.
 
 ### API removals
 
@@ -31,10 +44,14 @@ v0.23 + 1
   with which to implement the transactional/atomic semantics for the
   configuration backend.
 
-* `git_index_add` will now use the case as provided by the caller on
-  case insensitive systems.  Previous versions would keep the case as
-  it existed in the index.  This does not affect the higher-level
-  `git_index_add_bypath` or `git_index_add_frombuffer` functions.
+* `git_index_add` and `git_index_conflict_add()` will now use the case
+  as provided by the caller on case insensitive systems.  Previous
+  versions would keep the case as it existed in the index.  This does
+  not affect the higher-level `git_index_add_bypath` or
+  `git_index_add_frombuffer` functions.
+
+* The `notify_payload` field of `git_diff_options` was renamed to `payload`
+  to reflect that it's also the payload for the new progress callback.
 
 v0.23
 ------

@@ -101,8 +101,9 @@ GIT_EXTERN(void) git_libgit2_version(int *major, int *minor, int *rev);
  */
 typedef enum {
 	GIT_FEATURE_THREADS	= (1 << 0),
-	GIT_FEATURE_HTTPS = (1 << 1),
-	GIT_FEATURE_SSH = (1 << 2),
+	GIT_FEATURE_HTTPS	= (1 << 1),
+	GIT_FEATURE_SSH		= (1 << 2),
+	GIT_FEATURE_NSEC	= (1 << 3),
 } git_feature_t;
 
 /**
@@ -145,6 +146,7 @@ typedef enum {
 	GIT_OPT_GET_TEMPLATE_PATH,
 	GIT_OPT_SET_TEMPLATE_PATH,
 	GIT_OPT_SET_SSL_CERT_LOCATIONS,
+	GIT_OPT_SET_USER_AGENT,
 } git_libgit2_opt_t;
 
 /**
@@ -239,6 +241,8 @@ typedef enum {
  *		>   certificates, one per file.
  *		>
  * 		> Either parameter may be `NULL`, but not both.
+ *
+ *	* opts(GIT_OPT_SET_USER_AGENT, const char *user_agent)
  *
  * @param option Option key
  * @param ... value to set the option
