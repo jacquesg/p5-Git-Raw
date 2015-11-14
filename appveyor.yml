@@ -18,6 +18,7 @@ install:
  - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
  - dzil listdeps --missing | cpanm --notest
+ - dzil authordeps --missing | cpanm --notest
 
 build_script:
  - dzil test --all

@@ -26,6 +26,7 @@ install:
  - cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
  - dzil listdeps --missing | cpanm --quiet --notest
+ - dzil authordeps --missing | cpanm --quiet --notest
 
 script:
  - ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
