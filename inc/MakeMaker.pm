@@ -28,6 +28,7 @@ my $is_windows = ($^O =~ /MSWin32/i) ? 1 : 0;
 my $is_linux = ($^O =~ /linux/i) ? 1 : 0;
 my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
 my $is_gkfreebsd = ($^O =~ /gnukfreebsd/i) ? 1 : 0;
+my $is_netbsd = ($^O =~ /netbsd/i) ? 1 : 0;
 
 # allow the user to override/specify the locations of OpenSSL, libssh2 and libcurl
 our $opt = {};
@@ -159,6 +160,9 @@ $def .= ' -DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 # supported on Solaris
 if ($is_solaris) {
 	$def .= ' -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS';
+} elsif ($is_netbsd) {
+	# Needed for stat.st_mtim (atleast on NetBSD)
+	$def .= ' -D_POSIX_C_SOURCE=200809L';
 }
 
 if ($is_gcc) {
