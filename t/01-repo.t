@@ -64,7 +64,7 @@ ok exists $caps{'ignore_case'};
 ok exists $caps{'no_filemode'};
 ok exists $caps{'no_symlinks'};
 
-is $caps{ignore_case}, 1 if ($^O eq 'darwin' || $^O eq 'MSWin32' || $^O eq 'cygwin');
+is $caps{ignore_case}, 1 if ($^O eq 'darwin' || $^O eq 'MSWin32');
 
 my $triggered_add = 0;
 $index -> add_all({
