@@ -162,7 +162,7 @@ if ($is_solaris) {
 	$def .= ' -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS';
 } elsif ($is_netbsd) {
 	# Needed for stat.st_mtim (atleast on NetBSD)
-	$def .= ' -D_POSIX_C_SOURCE=200809L';
+	$def .= ' -D_NETBSD_SOURCE';
 }
 
 if ($is_gcc) {
