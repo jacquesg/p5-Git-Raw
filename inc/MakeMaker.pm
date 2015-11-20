@@ -61,15 +61,29 @@ my %os_specific = (
 			'inc' => ['/usr/local/include'],
 			'lib' => ['/usr/local/lib']
 		}
+	},
+	'netbsd' => {
+		'ssh2' => {
+			'inc' => ['/usr/pkg/include'],
+			'lib' => ['/usr/pkg/lib']
+		},
+		'curl' => {
+			'inc' => ['/usr/pkg/include'],
+			'lib' => ['/usr/pkg/lib']
+		}
 	}
 );
 
-my $ssh2_libpath;
-my $ssh2_incpath;
+my ($ssh2_libpath, $ssh2_incpath);
+my ($curl_libpath, $curl_incpath);
 if (my $os_params = $os_specific{$^O}) {
 	if (my $ssh2 = $os_params -> {'ssh2'}) {
 		$ssh2_libpath = $ssh2 -> {'lib'};
 		$ssh2_incpath = $ssh2 -> {'inc'};
+	}
+	if (my $curl = $os_params -> {'curl'}) {
+		$curl_libpath = $curl -> {'lib'};
+		$curl_incpath = $curl -> {'inc'};
 	}
 }
 
@@ -86,6 +100,8 @@ my @library_tests = (
 	},
 	{
 		'lib'     => 'curl',
+		'libpath' => $curl_libpath,
+		'incpath' => $curl_incpath,
 		'header'  => 'curl/curl.h',
 	},
 );
