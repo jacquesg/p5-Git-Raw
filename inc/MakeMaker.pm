@@ -177,8 +177,14 @@ $def .= ' -DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 if ($is_solaris) {
 	$def .= ' -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS';
 } elsif ($is_netbsd) {
-	# Needed for stat.st_mtim (atleast on NetBSD)
+	# Needed for stat.st_mtim / stat.st_mtimespec
 	$def .= ' -D_NETBSD_SOURCE';
+
+	if ((split (m|\.|, $Config{osvers}))[0] < 7) {
+		$def .= ' -DGIT_USE_STAT_ATIMESPEC';
+	}
+} elsif ($is_osx) {
+	$def .= ' -DGIT_USE_STAT_ATIMESPEC';
 }
 
 if ($is_gcc) {
