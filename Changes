@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to c4f6054
+ - Restored NetBSD 6 support
+
 0.56      2015-11-17 13:51:37+02:00 Africa/Johannesburg (TRIAL RELEASE)
 
  - Set the minimum required version of perl to 5.8.9
