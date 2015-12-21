@@ -27,6 +27,16 @@ use Git::Raw;
 
 Git::Raw::Packbuilder - Git packbuilder class
 
+=head1 CONSTANTS
+
+=head2 ADDING_OBJECTS
+
+Objects are being added to the object database.
+
+=head2 DELTAFICATION
+
+Deltas are calculated/resolved.
+
 =head1 AUTHOR
 
 Jacques Germishuys <jacquesg@striata.com>

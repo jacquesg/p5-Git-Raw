@@ -13,6 +13,8 @@ use Git::Raw::Blob;
 use Git::Raw::Commit;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
+use Git::Raw::Stash;
+use Git::Raw::Stash::Progress;
 use Git::Raw::Tree;
 
 =for HTML

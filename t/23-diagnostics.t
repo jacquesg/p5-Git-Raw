@@ -31,7 +31,6 @@ is -3,  Git::Raw::Error->ENOTFOUND;
 is -4,  Git::Raw::Error->EEXISTS;
 is -5,  Git::Raw::Error->EAMBIGUOUS;
 is -6,  Git::Raw::Error->EBUFS;
-is -7,  Git::Raw::Error->EUSER;
 is -8,  Git::Raw::Error->EBAREREPO;
 is -9,  Git::Raw::Error->EUNBORNBRANCH;
 is -10, Git::Raw::Error->EUNMERGED;
@@ -51,7 +50,6 @@ is -23, Git::Raw::Error->EDIRECTORY;
 is -24, Git::Raw::Error->EMERGECONFLICT;
 
 is -30, Git::Raw::Error->PASSTHROUGH;
-is -31, Git::Raw::Error->ITEROVER;
 
 ok (!eval { Git::Raw::Error->RANDOM_CONSTANT });
 

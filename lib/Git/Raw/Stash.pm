@@ -18,6 +18,49 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 apply( $repo, $index, [\%stash_apply_opts] )
+
+Apply a single stashed state from the stash list. If local changes in the
+working directory conflict with changes in the stash this function will throw a
+C<Git::Raw::Error> exception with a C<Git::Raw::Error::EMERGECONFLICT> error
+code. If you are restoring untracked files or ignored files and there is a
+conflict when applying the modified files, then those files will remain in the
+working directory. Valid fields for C<%stash_apply_opts> include:
+
+=over 4
+
+=item * "checkout_opts"
+
+See C<Git::Raw::Repository-E<gt>checkout()>.
+
+=item * "flags"
+
+=over 8
+
+=item * "reinstate_index"
+
+Try to reinstate not only the working tree's changes, but also the index's changes.
+
+=back
+
+=item * "callbacks"
+
+=over 8
+
+=item * "apply_progress"
+
+Progress notification function. The callback receives a single C<$progress> value which
+may be any constant provided by C<Git::Raw::Stash::Progress>.
+
+=back
+
+=back
+
+=head2 pop( $repo, $index, [\%stash_apply_opts] )
+
+Apply a single stashed state from the stash list and remove it from the list if
+successful.
+
 =head2 save( $repo, $stasher, $msg [, \@opts] )
 
 Save the local modifications to a new stash. Non-default options may be

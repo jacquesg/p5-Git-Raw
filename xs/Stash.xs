@@ -1,5 +1,53 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Stash
 
+void
+apply(class, repo, index, ...)
+	SV *class
+	Repository repo
+	size_t index
+
+	PREINIT:
+		int rc;
+
+		git_stash_apply_options stash_apply_opts = GIT_STASH_APPLY_OPTIONS_INIT;
+
+	CODE:
+		if (items >= 4) {
+			HV *opts = git_ensure_hv(ST(3), "stash_apply_opts");
+			git_hv_to_stash_apply_opts(opts, &stash_apply_opts);
+		}
+
+		rc = git_stash_apply(
+			repo -> repository,
+			index,
+			&stash_apply_opts
+		);
+		git_check_error(rc);
+
+void
+pop(class, repo, index, ...)
+	SV *class
+	Repository repo
+	size_t index
+
+	PREINIT:
+		int rc;
+
+		git_stash_apply_options stash_apply_opts = GIT_STASH_APPLY_OPTIONS_INIT;
+
+	CODE:
+		if (items >= 4) {
+			HV *opts = git_ensure_hv(ST(3), "stash_apply_opts");
+			git_hv_to_stash_apply_opts(opts, &stash_apply_opts);
+		}
+
+		rc = git_stash_pop(
+			repo -> repository,
+			index,
+			&stash_apply_opts
+		);
+		git_check_error(rc);
+
 SV *
 save(class, repo, stasher, msg, ...)
 	SV *class

@@ -26,86 +26,10 @@
 /* internally generated classes */
 #define INTERNAL          -20000
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#undef ERROR
-#undef PASSTHROUGH
-#undef CALLBACK
-#endif
-
-/* remap libgit2 error enum's to defines */
-#ifdef EAUTH
-#undef EAUTH
-#endif
-
-#define OK                GIT_OK
-#define ERROR             GIT_ERROR
-#define ENOTFOUND         GIT_ENOTFOUND
-#define EEXISTS           GIT_EEXISTS
-#define EAMBIGUOUS        GIT_EAMBIGUOUS
-#define EBUFS             GIT_EBUFS
-#define EUSER             GIT_EUSER
-#define EBAREREPO         GIT_EBAREREPO
-#define EUNBORNBRANCH     GIT_EUNBORNBRANCH
-#define EUNMERGED         GIT_EUNMERGED
-#define ENONFASTFORWARD   GIT_ENONFASTFORWARD
-#define EINVALIDSPEC      GIT_EINVALIDSPEC
-#define ECONFLICT         GIT_ECONFLICT
-#define ELOCKED           GIT_ELOCKED
-#define EMODIFIED         GIT_EMODIFIED
-#define EAUTH             GIT_EAUTH
-#define ECERTIFICATE      GIT_ECERTIFICATE
-#define EAPPLIED          GIT_EAPPLIED
-#define EPEEL             GIT_EPEEL
-#define EEOF              GIT_EEOF
-#define EINVALID          GIT_EINVALID
-#define EUNCOMMITTED      GIT_EUNCOMMITTED
-#define EDIRECTORY        GIT_EDIRECTORY
-#define EMERGECONFLICT    GIT_EMERGECONFLICT
-
-
-#define PASSTHROUGH       GIT_PASSTHROUGH
-#define ITEROVER          GIT_ITEROVER
-
-/* remap libgit2 class enum's to defines */
-#define NONE          GITERR_NONE
-#define NOMEMORY      GITERR_NOMEMORY
-#define OS            GITERR_OS
-#define INVALID       GITERR_INVALID
-#define REFERENCE     GITERR_REFERENCE
-#define ZLIB          GITERR_ZLIB
-#define REPOSITORY    GITERR_REPOSITORY
-#define CONFIG        GITERR_CONFIG
-#define REGEX         GITERR_REGEX
-#define ODB           GITERR_ODB
-#define INDEX         GITERR_INDEX
-#define OBJECT        GITERR_OBJECT
-#define NET           GITERR_NET
-#define TAG           GITERR_TAG
-#define TREE          GITERR_TREE
-#define INDEXER       GITERR_INDEXER
-#define SSL           GITERR_SSL
-#define SUBMODULE     GITERR_SUBMODULE
-#define THREAD        GITERR_THREAD
-#define STASH         GITERR_STASH
-#define CHECKOUT      GITERR_CHECKOUT
-#define FETCHHEAD     GITERR_FETCHHEAD
-#define MERGE         GITERR_MERGE
-#define SSH           GITERR_SSH
-#define FILTER        GITERR_FILTER
-#define REVERT        GITERR_REVERT
-#define CALLBACK      GITERR_CALLBACK
-#define CHERRYPICK    GITERR_CHERRYPICK
-#define DESCRIBE      GITERR_DESCRIBE
-#define REBASE        GITERR_REBASE
-#define FILESYSTEM    GITERR_FILESYSTEM
-
-/* remap packbuilder enum's to defines */
-#define ADDING_OBJECTS   GIT_PACKBUILDER_ADDING_OBJECTS
-#define DELTAFICATION    GIT_PACKBUILDER_DELTAFICATION
-
-#include "const-c-error.inc"
-#include "const-c-category.inc"
-#include "const-c-packbuilder.inc"
+#include "constants-error-code.h"
+#include "constants-error-category.h"
+#include "constants-packbuilder.h"
+#include "constants-stash-progress.h"
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4244 4267 )
@@ -296,7 +220,7 @@ STATIC void S_git_check_error(int err, const char *file, int line) {
 		const git_error *error;
 		Error e;
 
-		e = create_error_obj(err, NONE, NULL);
+		e = create_error_obj(err, GITERR_NONE, NULL);
 
 		if ((error = giterr_last()) != NULL) {
 			e -> category = error -> klass;
@@ -1796,6 +1720,37 @@ STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, vo
 	return rv;
 }
 
+STATIC int git_stash_apply_progress_cbb(git_stash_apply_progress_t progress, void *payload)
+{
+	dSP;
+	int rv = 0;
+	SV *callback = (SV *) payload;
+
+	if (callback == NULL)
+		return rv;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(newSViv (progress));
+	PUTBACK;
+
+	call_sv(callback, G_VOID|G_EVAL);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	}
+
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
 STATIC void git_list_to_paths(AV *list, git_strarray *paths) {
 	size_t i = 0, count = 0;
 	SV **path;
@@ -1966,6 +1921,28 @@ STATIC void git_hv_to_diff_opts(HV *opts, git_diff_options *diff_options, git_tr
 			diff_options->pathspec.strings = paths;
 			diff_options->pathspec.count   = count;
 		}
+	}
+}
+
+STATIC void git_hv_to_stash_apply_opts(HV *opts, git_stash_apply_options *stash_opts) {
+	HV *hopt;
+
+	if ((hopt = git_hv_hash_entry(opts, "checkout_opts")))
+		git_hv_to_checkout_opts(hopt, &stash_opts->checkout_options);
+
+	if ((hopt = git_hv_hash_entry(opts, "flags"))) {
+		unsigned flags = 0;
+
+		git_flag_opt(hopt, "reinstate_index", GIT_STASH_APPLY_REINSTATE_INDEX, &flags);
+
+		stash_opts->flags = flags;
+	}
+
+	if ((hopt = git_hv_hash_entry(opts, "callbacks"))) {
+		if ((stash_opts->progress_payload = get_callback_option(hopt, "apply_progress")))
+			stash_opts->progress_cb = git_stash_apply_progress_cbb;
+
+		SAVEFREESV(MUTABLE_SV(stash_opts->progress_payload));
 	}
 }
 
@@ -2219,6 +2196,7 @@ INCLUDE: xs/Remote.xs
 INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
 INCLUDE: xs/Stash.xs
+INCLUDE: xs/Stash/Progress.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Test.xs
 INCLUDE: xs/Tree.xs

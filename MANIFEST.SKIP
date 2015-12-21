@@ -7,9 +7,11 @@ dll.exp
 const-c-category.inc
 const-c-error.inc
 const-c-packbuilder.inc
+const-c-stash-progress.inc
 const-xs-category.inc
 const-xs-error.inc
 const-xs-packbuilder.inc
+const-xs-stash-progress.inc
 t/test_repo
 t/merge_repo
 t/callbacks_repo

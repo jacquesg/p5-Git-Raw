@@ -55,6 +55,104 @@ Error code.
 
 The category (class) or source of the error.
 
+=head1 CONSTANTS
+
+=head2 OK
+
+No error.
+
+=head2 ERROR
+
+Generic error.
+
+=head2 ENOTFOUND
+
+The eequested object could not be found.
+
+=head2 EEXISTS
+
+The object already exists.
+
+=head2 EAMBIGUOUS
+
+More than one object matches.
+
+=head2 EBUFS
+
+Output buffer too short to hold data.
+
+=head2 EBAREREPO
+
+The operation is is not allowed on a bare repository.
+
+=head2 EUNBORNBRANCH
+
+C<HEAD> refers to a branch with no commits.
+
+=head2 EUNMERGED
+
+A merge is in progress.
+
+=head2 ENONFASTFORWARD
+
+Reference was not fast-forwardable.
+
+=head2 EINVALIDSPEC
+
+Name/ref spec was not in a valid format.
+
+=head2 ECONFLICT
+
+Checkout conflicts prevented operation.
+
+=head2 ELOCKED
+
+Lock file prevented operation.
+
+=head2 EMODIFIED
+
+Reference value does not match expected.
+
+=head2 EAUTH
+
+Authentication error.
+
+=head2 ECERTIFICATE
+
+Server certificate is invalid.
+
+=head2 EAPPLIED
+
+Patch/merge has already been applied.
+
+=head2 EPEEL
+
+The requested peel operation is not possible.
+
+=head2 EEOF
+
+Unepected C<EOF>.
+
+=head2 EINVALID
+
+Invalid operation or input.
+
+=head2 EUNCOMMITTED
+
+Uncommited changes in index prevented operation.
+
+=head2 EDIRECTORY
+
+The operation is not valid for a directory.
+
+=head2 EMERGECONFLICT
+
+A merge conflict exists and cannot continue.
+
+=head2 PASSTHROUGH
+
+Passthrough
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

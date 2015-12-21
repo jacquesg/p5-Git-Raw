@@ -348,7 +348,6 @@ my @error_constants = (qw(
 	EEXISTS
 	EAMBIGUOUS
 	EBUFS
-	EUSER
 	EBAREREPO
 	EUNBORNBRANCH
 	EUNMERGED
@@ -367,7 +366,6 @@ my @error_constants = (qw(
 	EDIRECTORY
 	EMERGECONFLICT
 	PASSTHROUGH
-	ITEROVER
 
 	ASSERT
 	USAGE
@@ -415,6 +413,17 @@ my @packbuilder_constants = (qw(
 	DELTAFICATION
 ));
 
+my @stash_progress_constants = (qw(
+	NONE
+	LOADING_STASH
+	ANALYZE_INDEX
+	ANALYZE_MODIFIED
+	ANALYZE_UNTRACKED
+	CHECKOUT_UNTRACKED
+	CHECKOUT_MODIFIED
+	DONE
+));
+
 
 ExtUtils::Constant::WriteConstants(
 	NAME         => 'Git::Raw::Error',
@@ -444,6 +453,16 @@ ExtUtils::Constant::WriteConstants(
 	XS_FILE      => 'const-xs-packbuilder.inc',
 	XS_SUBNAME   => '_constant',
 	C_SUBNAME    => '_packbuilder_constant',
+);
+
+ExtUtils::Constant::WriteConstants(
+	NAME         => 'Git::Raw::Stash::Progress',
+	NAMES        => [@stash_progress_constants],
+	DEFAULT_TYPE => 'IV',
+	C_FILE       => 'const-c-stash-progress.inc',
+	XS_FILE      => 'const-xs-stash-progress.inc',
+	XS_SUBNAME   => '_constant',
+	C_SUBNAME    => '_stash_progress_constant',
 );
 
 WriteMakefile(%WriteMakefileArgs);

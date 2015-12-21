@@ -1,4 +1,4 @@
-package Git::Raw::Error::Category;
+package Git::Raw::Stash::Progress;
 
 use strict;
 use warnings;
@@ -11,7 +11,7 @@ sub AUTOLOAD {
     my $constname;
     our $AUTOLOAD;
     ($constname = $AUTOLOAD) =~ s/.*:://;
-    croak "&Git::Raw::Error::Category::constant not defined" if $constname eq '_constant';
+    croak "&Git::Raw::Stash::Progress::constant not defined" if $constname eq '_constant';
     my ($error, $val) = _constant($constname);
     if ($error) { croak $error; }
     {
@@ -25,11 +25,11 @@ use Git::Raw;
 
 =head1 NAME
 
-Git::Raw::Error::Category - Error category class
+Git::Raw::Stash::Progress - Git stash progress
 
 =head1 DESCRIPTION
 
-A L<Git::Raw::Error::Category> represents an error category or classification.
+L<Git::Raw::Stash::Progress> provides a namespace for stash progress constants.
 
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
@@ -38,75 +38,43 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 NONE
 
-=head2 NOMEMORY
+None.
 
-=head2 OS
+=head2 LOADING_STASH
 
-=head2 INVALID
+Stashed data is being loaded from the object database.
 
-=head2 REFERENCE
+=head2 ANALYZE_INDEX
 
-=head2 ZLIB
+The stored index is being analyzed.
 
-=head2 REPOSITORY
+=head2 ANALYZE_MODIFIED
 
-=head2 CONFIG
+The modified files are being analyzed.
 
-=head2 REGEX
+=head2 ANALYZE_UNTRACKED
 
-=head2 ODB
+The untracked and ignored files are being analyzed.
 
-=head2 INDEX
+=head2 CHECKOUT_UNTRACKED
 
-=head2 OBJECT
+The untracked files are being written to disk.
 
-=head2 NET
+=head2 CHECKOUT_MODIFIED
 
-=head2 TAG
+The modified files are being written to disk.
 
-=head2 TREE
+=head2 DONE
 
-=head2 INDEXER
-
-=head2 SSL
-
-=head2 SUBMODULE
-
-=head2 THREAD
-
-=head2 STASH
-
-=head2 CHECKOUT
-
-=head2 FETCHHEAD
-
-=head2 MERGE
-
-=head2 SSH
-
-=head2 FILTER
-
-=head2 REVERT
-
-=head2 CALLBACK
-
-=head2 CHERRYPICK
-
-=head2 DESCRIBE
-
-=head2 REBASE
-
-=head2 FILESYSTEM
+The stash was successfully applied.
 
 =head1 AUTHOR
-
-Alessandro Ghedini <alexbio@cpan.org>
 
 Jacques Germishuys <jacquesg@striata.com>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 Alessandro Ghedini.
+Copyright 2016 Jacques Germishuys.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
@@ -116,4 +84,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Git::Raw::Error::Category
+1; # End of Git::Raw::Stash::Progress
