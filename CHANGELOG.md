@@ -13,6 +13,13 @@ v0.23 + 1
 * You can now set your own user-agent to be sent for HTTP requests by
   using the `GIT_OPT_SET_USER_AGENT` with `git_libgit2_opts()`.
 
+* You can set custom HTTP header fields to be sent along with requests
+  by passing them in the fetch and push options.
+
+* Tree objects are now assumed to be sorted. If a tree is not
+  correctly formed, it will give bad results. This is the git approach
+  and cuts a significant amount of time when reading the trees.
+
 ### API additions
 
 * `git_config_lock()` has been added, which allow for
@@ -20,11 +27,14 @@ v0.23 + 1
   the opportunity for concurrent operations and not committing any
   changes until the unlock.
 
-
 * `git_diff_options` added a new callback `progress_cb` to report on the
   progress of the diff as files are being compared. The documentation of
   the existing callback `notify_cb` was updated to reflect that it only
   gets called when new deltas are added to the diff.
+
+* `git_fetch_options` and `git_push_options` have gained a `custom_headers`
+  field to set the extra HTTP header fields to send.
+
 
 * `git_stream_register_tls()` lets you register a callback to be used
   as the constructor for a TLS stream instead of the libgit2 built-in
@@ -33,6 +43,14 @@ v0.23 + 1
 ### API removals
 
 ### Breaking API changes
+
+* The `git_merge_tree_flag_t` is now `git_merge_flag_t`.  Subsequently,
+  its members are no longer prefixed with `GIT_MERGE_TREE_FLAG` but are
+  now prefixed with `GIT_MERGE_FLAG`, and the `tree_flags` field of the
+  `git_merge_options` structure is now named `flags`.
+
+* The `git_merge_file_flags_t` enum is now `git_merge_file_flag_t` for
+  consistency with other enum type names.
 
 * `git_cert` descendent types now have a proper `parent` member
 
@@ -52,6 +70,10 @@ v0.23 + 1
 
 * The `notify_payload` field of `git_diff_options` was renamed to `payload`
   to reflect that it's also the payload for the new progress callback.
+
+* The `git_config_level_t` enum has gained a higher-priority value
+  `GIT_CONFIG_LEVEL_PROGRAMDATA` which represent a rough Windows equivalent
+  to the system level configuration.
 
 v0.23
 ------
