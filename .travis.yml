@@ -10,6 +10,7 @@ perl:
  - "5.16"
  - "5.18"
  - "5.20"
+ - "5.22"
 
 env:
  - RELEASE_TESTING=1 NETWORK_TESTING=1 AUTOMATED_TESTING=1
