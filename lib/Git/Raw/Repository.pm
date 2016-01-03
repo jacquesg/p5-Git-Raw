@@ -509,9 +509,9 @@ C<%checkout_opts> values.  Valid fields for C<%merge_opts> are
 
 =over 4
 
-=item * "tree_flags"
+=item * "flags"
 
-Merge tree flags. Valid values include:
+Merge flags. Valid values include:
 
 =over 8
 

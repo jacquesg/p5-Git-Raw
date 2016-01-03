@@ -2017,10 +2017,10 @@ STATIC void git_hv_to_push_opts(HV *opts, git_push_options *push_opts) {
 		git_hv_to_remote_callbacks(hopt, &push_opts->callbacks);
 }
 
-STATIC unsigned git_hv_to_merge_tree_flag(HV *flags) {
+STATIC unsigned git_hv_to_merge_flag(HV *flags) {
 	unsigned out = 0;
 
-	git_flag_opt(flags, "find_renames", GIT_MERGE_TREE_FIND_RENAMES, &out);
+	git_flag_opt(flags, "find_renames", GIT_MERGE_FIND_RENAMES, &out);
 
 	return out;
 }
@@ -2046,8 +2046,8 @@ STATIC void git_hv_to_merge_opts(HV *opts, git_merge_options *merge_options) {
 	HV *hopt;
 	SV *opt;
 
-	if ((hopt = git_hv_hash_entry(opts, "tree_flags")))
-		merge_options -> tree_flags |= git_hv_to_merge_tree_flag(hopt);
+	if ((hopt = git_hv_hash_entry(opts, "flags")))
+		merge_options -> flags |= git_hv_to_merge_flag(hopt);
 
 	if ((hopt = git_hv_hash_entry(opts, "file_flags")))
 		merge_options -> file_flags |= git_hv_to_merge_file_flag(hopt);

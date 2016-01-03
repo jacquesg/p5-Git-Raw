@@ -79,7 +79,7 @@ void test_index_racy__write_index_just_after_file(void)
 
 	cl_git_mkfile(path.ptr, "B");
 	/*
-	 * Pretend this index' modification happend a second after the
+	 * Pretend this index' modification happened a second after the
 	 * file update, and rewrite the file in that same second.
 	 */
 	times[0].tv_sec = index->stamp.mtime.tv_sec + 2;
@@ -178,7 +178,7 @@ static void setup_uptodate_files(void)
 {
 	git_buf path = GIT_BUF_INIT;
 	git_index *index;
-	git_index_entry new_entry = {0};
+	git_index_entry new_entry = {{0}};
 
 	cl_git_pass(git_repository_index(&index, g_repo));
 

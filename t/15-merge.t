@@ -72,11 +72,11 @@ my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
 
 ok (!eval { $repo -> merge($branch1, {
-	'tree_flags' => []
+	'flags' => []
 })});
 
 ok (!eval { $repo -> merge($branch1, {
-	'tree_flags' => 'scalar'
+	'flags' => 'scalar'
 })});
 
 ok (!eval { $repo -> merge($branch1, {
@@ -84,7 +84,7 @@ ok (!eval { $repo -> merge($branch1, {
 })});
 
 $repo -> merge($branch1, {
-		'tree_flags'       => {
+		'flags'            => {
 			'find_renames' => 1,
 		},
 		'file_flags'       => {
