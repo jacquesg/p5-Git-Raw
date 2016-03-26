@@ -41,6 +41,11 @@ OPTION( USE_SSH				"Link with libssh to enable SSH support" ON )
 OPTION( USE_GSSAPI			"Link with libgssapi for SPNEGO auth"   OFF )
 OPTION( VALGRIND			"Configure build for valgrind"			OFF )
 OPTION( CURL			"User curl for HTTP if available" ON)
+OPTION( DEBUG_POOL			"Enable debug pool allocator"			OFF )
+
+IF(DEBUG_POOL)
+	ADD_DEFINITIONS(-DGIT_DEBUG_POOL)
+ENDIF()
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	SET( USE_ICONV ON )
@@ -86,21 +91,25 @@ IF (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	OPTION( USE_OPENSSL                     "Link with and use openssl library"             ON )
 ENDIF()
 
-CHECK_STRUCT_HAS_MEMBER ("struct stat" st_atim "sys/types.h;sys/stat.h"
-	HAVE_STRUCT_STAT_ST_ATIM LANGUAGE C)
-CHECK_STRUCT_HAS_MEMBER ("struct stat" st_atimespec "sys/types.h;sys/stat.h"
-	HAVE_STRUCT_STAT_ST_ATIMESPEC LANGUAGE C)
+CHECK_STRUCT_HAS_MEMBER ("struct stat" st_mtim "sys/types.h;sys/stat.h"
+	HAVE_STRUCT_STAT_ST_MTIM LANGUAGE C)
+CHECK_STRUCT_HAS_MEMBER ("struct stat" st_mtimespec "sys/types.h;sys/stat.h"
+	HAVE_STRUCT_STAT_ST_MTIMESPEC LANGUAGE C)
+CHECK_STRUCT_HAS_MEMBER("struct stat" st_mtime_nsec sys/stat.h
+	HAVE_STRUCT_STAT_MTIME_NSEC LANGUAGE C)
 
-IF (HAVE_STRUCT_STAT_ST_ATIM)
+IF (HAVE_STRUCT_STAT_ST_MTIM)
 	CHECK_STRUCT_HAS_MEMBER("struct stat" st_mtim.tv_nsec sys/stat.h
 		HAVE_STRUCT_STAT_NSEC LANGUAGE C)
-ELSEIF (HAVE_STRUCT_STAT_ST_ATIMESPEC)
+ELSEIF (HAVE_STRUCT_STAT_ST_MTIMESPEC)
 	CHECK_STRUCT_HAS_MEMBER("struct stat" st_mtimespec.tv_nsec sys/stat.h
 		HAVE_STRUCT_STAT_NSEC LANGUAGE C)
+ELSE ()
+	SET( HAVE_STRUCT_STAT_NSEC ON )
 ENDIF()
 
 IF (HAVE_STRUCT_STAT_NSEC OR WIN32)
-	OPTION( USE_NSEC		"Care about sub-second file mtimes and ctimes"	OFF )
+	OPTION( USE_NSEC		"Care about sub-second file mtimes and ctimes"	ON  )
 ENDIF()
 
 # This variable will contain the libraries we need to put into
@@ -257,7 +266,8 @@ IF (WIN32 AND WINHTTP)
 		LINK_DIRECTORIES(${LIBWINHTTP_PATH})
 	ENDIF ()
 
-	LINK_LIBRARIES(winhttp rpcrt4 crypt32)
+	LINK_LIBRARIES(winhttp rpcrt4 crypt32 ole32)
+	LIST(APPEND LIBGIT2_PC_LIBS "-lwinhttp" "-lrpcrt4" "-lcrypt32" "-lole32")
 ELSE ()
 	IF (CURL)
 		PKG_CHECK_MODULES(CURL libcurl)
@@ -402,7 +412,7 @@ IF (MSVC)
 	# /MTd - Statically link the multithreaded debug version of the CRT
 	# /MDd - Dynamically link the multithreaded debug version of the CRT
 	# /RTC1 - Run time checks
-	SET(CMAKE_C_FLAGS_DEBUG "/Zi /Od /D_DEBUG /RTC1 ${CRT_FLAG_DEBUG}")
+	SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /D_DEBUG /RTC1 ${CRT_FLAG_DEBUG}")
 
 	# /DNDEBUG - Disables asserts
 	# /MT - Statically link the multithreaded release version of the CRT
@@ -454,7 +464,7 @@ ELSE ()
 	ENDIF()
 
 	IF (WIN32 AND NOT CYGWIN)
-		SET(CMAKE_C_FLAGS_DEBUG "-D_DEBUG")
+		SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 	ENDIF ()
 
 	IF (MINGW) # MinGW always does PIC and complains if we tell it to
@@ -538,8 +548,12 @@ IF (USE_NSEC)
 	ADD_DEFINITIONS(-DGIT_USE_NSEC)
 ENDIF()
 
-IF (HAVE_STRUCT_STAT_ST_ATIMESPEC)
-	ADD_DEFINITIONS(-DGIT_USE_STAT_ATIMESPEC)
+IF (HAVE_STRUCT_STAT_ST_MTIM)
+	ADD_DEFINITIONS(-DGIT_USE_STAT_MTIM)
+ELSEIF (HAVE_STRUCT_STAT_ST_MTIMESPEC)
+	ADD_DEFINITIONS(-DGIT_USE_STAT_MTIMESPEC)
+ELSEIF (HAVE_STRUCT_STAT_ST_MTIME_NSEC)
+	ADD_DEFINITIONS(-DGIT_USE_STAT_MTIME_NSEC)
 ENDIF()
 
 ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64)
@@ -567,7 +581,7 @@ IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
 ELSEIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
 	ADD_DEFINITIONS(-DGIT_ARCH_32)
 ELSE()
-	MESSAGE(FATAL_ERROR "Unsupported architecture")
+	MESSAGE(FATAL_ERROR "Unsupported architecture (pointer size is ${CMAKE_SIZEOF_VOID_P} bytes)")
 ENDIF()
 
 # Compile and link libgit2
@@ -594,6 +608,8 @@ IF (SONAME)
 	IF (LIBGIT2_FILENAME)
 		ADD_DEFINITIONS(-DLIBGIT2_FILENAME=\"${LIBGIT2_FILENAME}\")
 		SET_TARGET_PROPERTIES(git2 PROPERTIES OUTPUT_NAME ${LIBGIT2_FILENAME})
+	ELSEIF (DEFINED LIBGIT2_PREFIX)
+		SET_TARGET_PROPERTIES(git2 PROPERTIES PREFIX "${LIBGIT2_PREFIX}")
 	ENDIF()
 ENDIF()
 STRING(REPLACE ";" " " LIBGIT2_PC_LIBS "${LIBGIT2_PC_LIBS}")
@@ -668,6 +684,10 @@ IF (BUILD_CLAR)
 	ELSE ()
 		ADD_TEST(libgit2_clar libgit2_clar -v)
 	ENDIF ()
+
+	# Add a test target which runs the cred callback tests, to be
+	# called after setting the url and user
+	ADD_TEST(libgit2_clar-cred_callback libgit2_clar -v -sonline::clone::cred_callback)
 ENDIF ()
 
 IF (TAGS)

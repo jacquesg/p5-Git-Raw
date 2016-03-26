@@ -273,7 +273,16 @@ typedef struct {
 	 */
 	unsigned int recursion_limit;
 
-	/** Flags for handling conflicting content. */
+	/**
+	 * Default merge driver to be used when both sides of a merge have
+	 * changed.  The default is the `text` driver.
+	 */
+	const char *default_driver;
+
+	/**
+	 * Flags for handling conflicting content, to be used with the standard
+	 * (`text`) merge driver.
+	 */
 	git_merge_file_favor_t file_favor;
 
 	/** see `git_merge_file_flag_t` above */
@@ -527,10 +536,6 @@ GIT_EXTERN(int) git_merge_trees(
  * or checked out.  If the index is to be converted to a tree, the caller
  * should resolve any conflicts that arose as part of the merge.
  *
- * The merge performed uses the first common ancestor, unlike the
- * `git-merge-recursive` strategy, which may produce an artificial common
- * ancestor tree when there are multiple ancestors.
- *
  * The returned index must be freed explicitly with `git_index_free`.
  *
  * @param out pointer to store the index result in
@@ -552,10 +557,6 @@ GIT_EXTERN(int) git_merge_commits(
  * directory.  Any changes are staged for commit and any conflicts are written
  * to the index.  Callers should inspect the repository's index after this
  * completes, resolve any conflicts and prepare a commit.
- *
- * The merge performed uses the first common ancestor, unlike the
- * `git-merge-recursive` strategy, which may produce an artificial common
- * ancestor tree when there are multiple ancestors.
  *
  * For compatibility with git, the repository is put into a merging
  * state. Once the commit is done (or if the uses wishes to abort),
