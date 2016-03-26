@@ -717,7 +717,7 @@ static int loose_lock(git_filebuf *file, refdb_fs_backend *backend, const char *
 
 	assert(file && backend && name);
 
-	if (!git_path_isvalid(backend->repo, name, GIT_PATH_REJECT_DEFAULTS)) {
+	if (!git_path_isvalid(backend->repo, name, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
 		giterr_set(GITERR_INVALID, "Invalid reference name '%s'.", name);
 		return GIT_EINVALIDSPEC;
 	}
@@ -962,6 +962,7 @@ static int packed_write(refdb_fs_backend *backend)
 
 	for (i = 0; i < git_sortedcache_entrycount(refcache); ++i) {
 		struct packref *ref = git_sortedcache_entry(refcache, i);
+		assert(ref);
 
 		if (packed_find_peel(backend, ref) < 0)
 			goto fail;
@@ -1512,8 +1513,7 @@ static int reflog_parse(git_reflog *log, const char *buf, size_t buf_size)
 #undef seek_forward
 
 fail:
-	if (entry)
-		git_reflog_entry__free(entry);
+	git_reflog_entry__free(entry);
 
 	return -1;
 }
@@ -1672,7 +1672,7 @@ static int lock_reflog(git_filebuf *file, refdb_fs_backend *backend, const char 
 
 	repo = backend->repo;
 
-	if (!git_path_isvalid(backend->repo, refname, GIT_PATH_REJECT_DEFAULTS)) {
+	if (!git_path_isvalid(backend->repo, refname, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
 		giterr_set(GITERR_INVALID, "Invalid reference name '%s'.", refname);
 		return GIT_EINVALIDSPEC;
 	}

@@ -54,7 +54,7 @@ void test_index_racy__write_index_just_after_file(void)
 	git_index *index;
 	git_diff *diff;
 	git_buf path = GIT_BUF_INIT;
-	struct timeval times[2];
+	struct p_timeval times[2];
 
 	/* Make sure we do have a timestamp */
 	cl_git_pass(git_repository_index(&index, g_repo));
@@ -105,8 +105,8 @@ static void setup_race(void)
 {
 	git_buf path = GIT_BUF_INIT;
 	git_index *index;
-	const git_index_entry *entry;
-	int i, found_race = 0;
+	git_index_entry *entry;
+	struct stat st;
 
 	/* Make sure we do have a timestamp */
 	cl_git_pass(git_repository_index__weakptr(&index, g_repo));
@@ -114,27 +114,20 @@ static void setup_race(void)
 
 	cl_git_pass(git_buf_joinpath(&path, git_repository_workdir(g_repo), "A"));
 
-	/* Make sure writing the file, adding and rewriting happen in the same second */
-	for (i = 0; i < 10; i++) {
-		struct stat st;
-		cl_git_mkfile(path.ptr, "A");
+	cl_git_mkfile(path.ptr, "A");
+	cl_git_pass(git_index_add_bypath(index, "A"));
 
-		cl_git_pass(git_index_add_bypath(index, "A"));
-		cl_git_mkfile(path.ptr, "B");
-		cl_git_pass(git_index_write(index));
+	cl_git_mkfile(path.ptr, "B");
+	cl_git_pass(git_index_write(index));
 
-		cl_git_mkfile(path.ptr, "");
+	cl_git_mkfile(path.ptr, "");
 
-		cl_git_pass(p_stat(path.ptr, &st));
-		cl_assert(entry = git_index_get_bypath(index, "A", 0));
-		if (entry->mtime.seconds == (int32_t) st.st_mtime) {
-			found_race = 1;
-			break;
-		}
-	}
+	cl_git_pass(p_stat(path.ptr, &st));
+	cl_assert(entry = (git_index_entry *)git_index_get_bypath(index, "A", 0));
 
-	if (!found_race)
-		cl_fail("failed to find race after 10 attempts");
+	/* force a race */
+	entry->mtime.seconds = st.st_mtime;
+	entry->mtime.nanoseconds = st.st_mtime_nsec;
 
 	git_buf_free(&path);
 }
@@ -178,6 +171,7 @@ static void setup_uptodate_files(void)
 {
 	git_buf path = GIT_BUF_INIT;
 	git_index *index;
+	const git_index_entry *a_entry;
 	git_index_entry new_entry = {{0}};
 
 	cl_git_pass(git_repository_index(&index, g_repo));
@@ -188,9 +182,12 @@ static void setup_uptodate_files(void)
 	/* Put 'A' into the index */
 	cl_git_pass(git_index_add_bypath(index, "A"));
 
+	cl_assert((a_entry = git_index_get_bypath(index, "A", 0)));
+
 	/* Put 'B' into the index */
 	new_entry.path = "B";
 	new_entry.mode = GIT_FILEMODE_BLOB;
+	git_oid_cpy(&new_entry.id, &a_entry->id);
 	cl_git_pass(git_index_add(index, &new_entry));
 
 	/* Put 'C' into the index */

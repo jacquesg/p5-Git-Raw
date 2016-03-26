@@ -85,9 +85,11 @@ void test_diff_workdir__to_index_with_conflicts(void)
 	/* Adding an entry that represents a rename gets two files in conflict */
 	our_entry.path = "subdir/modified_file";
 	our_entry.mode = 0100644;
+	git_oid_fromstr(&our_entry.id, "ee3fa1b8c00aff7fe02065fdb50864bb0d932ccf");
 
 	their_entry.path = "subdir/rename_conflict";
 	their_entry.mode = 0100644;
+	git_oid_fromstr(&their_entry.id, "2bd0a343aeef7a2cf0d158478966a6e587ff3863");
 
 	cl_git_pass(git_repository_index(&index, g_repo));
 	cl_git_pass(git_index_conflict_add(index, NULL, &our_entry, &their_entry));
@@ -1755,7 +1757,7 @@ void test_diff_workdir__with_stale_index(void)
 static int touch_file(void *payload, git_buf *path)
 {
 	struct stat st;
-	struct timeval times[2];
+	struct p_timeval times[2];
 
 	GIT_UNUSED(payload);
 	if (git_path_isdir(path->ptr))
@@ -1975,9 +1977,9 @@ void test_diff_workdir__to_index_conflicted(void) {
 
 	ancestor.path = ours.path = theirs.path = "_file";
 	ancestor.mode = ours.mode = theirs.mode = 0100644;
-	git_oid_fromstr(&ancestor.id, "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
-	git_oid_fromstr(&ours.id, "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
-	git_oid_fromstr(&theirs.id, "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef");
+	git_oid_fromstr(&ancestor.id, "d427e0b2e138501a3d15cc376077a3631e15bd46");
+	git_oid_fromstr(&ours.id, "ee3fa1b8c00aff7fe02065fdb50864bb0d932ccf");
+	git_oid_fromstr(&theirs.id, "2bd0a343aeef7a2cf0d158478966a6e587ff3863");
 	cl_git_pass(git_index_conflict_add(index, &ancestor, &ours, &theirs));
 
 	cl_git_pass(git_diff_tree_to_index(&diff1, g_repo, a, index, NULL));
@@ -2006,7 +2008,7 @@ void test_diff_workdir__only_writes_index_when_necessary(void)
 	git_oid initial, first, second;
 	git_buf path = GIT_BUF_INIT;
 	struct stat st;
-	struct timeval times[2];
+	struct p_timeval times[2];
 
 	opts.flags |= GIT_DIFF_INCLUDE_UNTRACKED | GIT_DIFF_UPDATE_INDEX;
 
