@@ -424,6 +424,15 @@ my @stash_progress_constants = (qw(
 	DONE
 ));
 
+my @object_constants = (qw(
+	ANY
+	BAD
+	COMMIT
+	TREE
+	BLOB
+	TAG
+));
+
 
 ExtUtils::Constant::WriteConstants(
 	NAME         => 'Git::Raw::Error',
@@ -463,6 +472,16 @@ ExtUtils::Constant::WriteConstants(
 	XS_FILE      => 'const-xs-stash-progress.inc',
 	XS_SUBNAME   => '_constant',
 	C_SUBNAME    => '_stash_progress_constant',
+);
+
+ExtUtils::Constant::WriteConstants(
+	NAME         => 'Git::Raw::Object',
+	NAMES        => [@object_constants],
+	DEFAULT_TYPE => 'IV',
+	C_FILE       => 'const-c-object.inc',
+	XS_FILE      => 'const-xs-object.inc',
+	XS_SUBNAME   => '_constant',
+	C_SUBNAME    => '_object_constant',
 );
 
 WriteMakefile(%WriteMakefileArgs);

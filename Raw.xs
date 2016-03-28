@@ -28,6 +28,7 @@
 
 #include "constants-error-code.h"
 #include "constants-error-category.h"
+#include "constants-object.h"
 #include "constants-packbuilder.h"
 #include "constants-stash-progress.h"
 
@@ -2184,6 +2185,7 @@ INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
+INCLUDE: xs/Object.xs
 INCLUDE: xs/Packbuilder.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs
