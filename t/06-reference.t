@@ -33,7 +33,7 @@ ok !$ref -> is_tag;
 
 $head = $ref -> target;
 isa_ok $head, 'Git::Raw::Commit';
-is $head -> message, "third commit\n";
+is $head -> summary, "third commit";
 
 ok(!eval { $ref -> peel('any') });
 

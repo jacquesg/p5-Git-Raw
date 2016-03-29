@@ -373,7 +373,7 @@ my @entries = $index -> entries();
 is scalar(@entries), 3;
 
 my $commit3 = $repo -> commit(
-	"third commit\n", $me, $me, [$repo -> head -> target], $tree
+	"third commit\n\n Hello World ", $me, $me, [$repo -> head -> target], $tree
 );
 
 is $commit3 -> ancestor(0) -> id, $commit3 -> id;
@@ -393,8 +393,9 @@ $head = $repo -> head -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
 
-is $head -> message, "third commit\n";
+is $head -> message, "third commit\n\n Hello World ";
 is $head -> summary, "third commit";
+is $head -> body, "Hello World";
 
 is $head -> author -> name, $name;
 is $head -> author -> email, $email;

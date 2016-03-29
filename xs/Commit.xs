@@ -148,6 +148,19 @@ summary(self)
 
 	OUTPUT: RETVAL
 
+SV *
+body(self)
+	Commit self
+
+	PREINIT:
+		const char *body;
+
+	CODE:
+		body = git_commit_body(self);
+		RETVAL = newSVpv(body, 0);
+
+	OUTPUT: RETVAL
+
 Signature
 author(self)
 	Commit self

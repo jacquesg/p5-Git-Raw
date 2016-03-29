@@ -14,7 +14,7 @@ ok (!eval { $walk -> sorting ([[], undef]) });
 
 $walk -> sorting (['time']);
 $walk -> push($repo -> head -> target);
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
 
@@ -30,7 +30,7 @@ is $count, 3;
 $walk -> push($repo -> head -> target);
 my @all = $walk->all();
 is scalar(@all), 3;
-is $all[0] -> message, "third commit\n";
+is $all[0] -> summary, "third commit";
 is $all[1] -> message, "second commit\n";
 is $all[2] -> message, "initial commit\n";
 
@@ -40,17 +40,17 @@ is $walk -> next, undef;
 
 $walk -> push($repo -> head -> target);
 $walk -> hide(($repo -> head -> target -> parents())[0]);
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next, undef;
 
 $walk -> push_glob('heads/*');
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
 is $walk -> next, undef;
 
 $walk -> push_head;
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next -> message, "initial commit\n";
 is $walk -> next, undef;
@@ -60,13 +60,13 @@ $walk -> push_head;
 $walk -> sorting (['reverse', 'topological']);
 is $walk -> next -> message, "initial commit\n";
 is $walk -> next -> message, "second commit\n";
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next, undef;
 $walk -> sorting (['none']);
 
 $walk -> push_ref('refs/heads/master');
 my $end = $walk -> next;
-is $end -> message, "third commit\n";
+is $end -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 
 my $start = $walk -> next;
@@ -77,7 +77,7 @@ $walk -> push_head;
 
 my $commit = $walk -> next;
 isnt $commit, undef;
-is   $commit -> message, "third commit\n";
+is   $commit -> summary, "third commit";
 isnt $commit -> tree, undef;
 isnt $commit -> parents, undef;
 
@@ -107,19 +107,19 @@ ok (!eval { $walk -> push_range($start, 'zzz') });
 
 $walk -> reset;
 $walk -> push_range($start, $end);
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_range($start -> id . ".." . $end -> id);
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_range(substr($start -> id, 0, 8), substr($end -> id, 0, 8));
-is $walk -> next -> message, "third commit\n";
+is $walk -> next -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
 is $walk -> next, undef;
 

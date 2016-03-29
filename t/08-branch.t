@@ -41,7 +41,7 @@ my $head = $branch -> target;
 
 isa_ok $head, 'Git::Raw::Commit';
 
-is $head -> message, "third commit\n";
+is $head -> summary, "third commit";
 
 my $look = Git::Raw::Branch -> lookup($repo, $branch_name, 1);
 ok !$look -> upstream;

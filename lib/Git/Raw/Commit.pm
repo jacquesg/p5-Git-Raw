@@ -99,7 +99,11 @@ Retrieve the message of the commit.
 
 =head2 summary( )
 
-Retrieve the summary of the commit.
+Retrieve the summary of the commit message.
+
+=head2 body( )
+
+Retrieve the body of the commit message.
 
 =head2 author( )
 

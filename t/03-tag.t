@@ -54,7 +54,7 @@ is $tag -> tagger -> offset, $off;
 
 my $target = $tag -> target;
 
-is $target -> message, "third commit\n";
+is $target -> summary, "third commit";
 
 is $target -> author -> name, $name;
 is $target -> author -> email, $email;
