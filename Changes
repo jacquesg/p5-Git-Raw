@@ -7,6 +7,12 @@ Revision history for Git-Raw
  - Update libgit2 to d4763c9
  - Added Repository methods (GH#124, GH#167):
     + revparse()
+ - Added Commit method:
+    + body()
+ - Added Stash methods:
+    + apply()
+    + pop()
+ - Numerous constants are now documented.
 
 0.58      2015-11-23 07:50:23+02:00 Africa/Johannesburg
 
