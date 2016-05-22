@@ -176,16 +176,26 @@ $def .= ' -DNO_VIZ -DSTDC -DNO_GZIP -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE';
 # supported on Solaris
 if ($is_solaris) {
 	$def .= ' -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS';
-} elsif ($is_netbsd) {
+}
+
+# Time structures
+if ($is_netbsd) {
 	# Needed for stat.st_mtim / stat.st_mtimespec
 	$def .= ' -D_NETBSD_SOURCE';
 
 	if ((split (m|\.|, $Config{osvers}))[0] < 7) {
-		$def .= ' -DGIT_USE_STAT_ATIMESPEC';
+		$def .= ' -DGIT_USE_STAT_MTIMESPEC';
+	} else {
+		$def .= ' -DGIT_USE_STAT_MTIM';
 	}
 } elsif ($is_osx) {
-	$def .= ' -DGIT_USE_STAT_ATIMESPEC';
+	$def .= ' -DGIT_USE_STAT_MTIMESPEC';
+} else {
+	$def .= ' -DGIT_USE_STAT_MTIM';
 }
+
+# Nanosecond resolution
+$def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
 if ($is_gcc) {
 	# gcc-like compiler

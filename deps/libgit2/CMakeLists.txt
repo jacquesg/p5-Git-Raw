@@ -161,6 +161,8 @@ FUNCTION(TARGET_OS_LIBRARIES target)
 
 	IF(THREADSAFE)
 		TARGET_LINK_LIBRARIES(${target} ${CMAKE_THREAD_LIBS_INIT})
+		LIST(APPEND LIBGIT2_PC_LIBS ${CMAKE_THREAD_LIBS_INIT})
+		SET(LIBGIT2_PC_LIBS ${LIBGIT2_PC_LIBS} PARENT_SCOPE)
 	ENDIF()
 ENDFUNCTION()
 
@@ -580,8 +582,10 @@ IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	ADD_DEFINITIONS(-DGIT_ARCH_64)
 ELSEIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
 	ADD_DEFINITIONS(-DGIT_ARCH_32)
-ELSE()
+ELSEIF (CMAKE_SIZEOF_VOID_P)
 	MESSAGE(FATAL_ERROR "Unsupported architecture (pointer size is ${CMAKE_SIZEOF_VOID_P} bytes)")
+ELSE()
+	MESSAGE(FATAL_ERROR "Unsupported architecture (CMAKE_SIZEOF_VOID_P is unset)")
 ENDIF()
 
 # Compile and link libgit2
@@ -688,6 +692,8 @@ IF (BUILD_CLAR)
 	# Add a test target which runs the cred callback tests, to be
 	# called after setting the url and user
 	ADD_TEST(libgit2_clar-cred_callback libgit2_clar -v -sonline::clone::cred_callback)
+	ADD_TEST(libgit2_clar-proxy_credentials_in_url libgit2_clar -v -sonline::clone::proxy_credentials_in_url)
+	ADD_TEST(libgit2_clar-proxy_credentials_request libgit2_clar -v	-sonline::clone::proxy_credentials_request)
 ENDIF ()
 
 IF (TAGS)
