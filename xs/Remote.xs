@@ -404,7 +404,7 @@ connect(self, direction, ...)
 			);
 		}
 
-		rc = git_remote_connect(self -> remote, direct, &callbacks, NULL);
+		rc = git_remote_connect(self -> remote, direct, &callbacks, NULL, NULL);
 		git_check_error(rc);
 
 void
