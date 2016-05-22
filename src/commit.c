@@ -104,7 +104,7 @@ static int validate_tree_and_parents(git_array_oid_t *parents, git_repository *r
 		i++;
 	}
 
-	if (current_id && git_oid_cmp(current_id, git_array_get(*parents, 0))) {
+	if (current_id && (parents->size == 0 || git_oid_cmp(current_id, git_array_get(*parents, 0)))) {
 		giterr_set(GITERR_OBJECT, "failed to create commit: current tip is not the first parent");
 		error = GIT_EMODIFIED;
 		goto on_error;
@@ -615,7 +615,7 @@ int git_commit_nth_gen_ancestor(
 
 	assert(ancestor && commit);
 
-	if (git_object_dup((git_object **) &current, (git_object *) commit) < 0)
+	if (git_commit_dup(&current, (git_commit *)commit) < 0)
 		return -1;
 
 	if (n == 0) {
