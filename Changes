@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.59      2016-05-23 06:43:28+02:00 Africa/Johannesburg (TRIAL RELEASE)
+
  - Repository -> merge() and friends' merge options 'tree_flags' member has been
    renamed to 'flags'. (Incompatible change)
  - Update libgit2 to 1b56cda
