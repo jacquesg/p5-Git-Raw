@@ -24,8 +24,11 @@ install:
  - sudo apt-get -qq install libssl-dev libssh2-1-dev openssh-client openssh-server
  - git config --global user.name "p5-Git-Raw"
  - git config --global user.email "jacquesg@cpan.org"
- - cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
- - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
+ - cpanm --quiet --notest Dist::Zilla~">= 5.0000, < 6.0000"
+ - cpanm --quiet --notest Dist::Zilla::PluginBundle::Author::ALEXBIO
+ - cpanm --quiet --notest Pod::Coverage::TrustPod
+ - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+ - cpanm --quiet --notest Dist::Zilla::App::Command::cover
  - dzil authordeps --missing | cpanm --quiet --notest
  - dzil listdeps --missing | cpanm --quiet --notest
 
