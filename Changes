@@ -3,6 +3,8 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Perl 5.8.9 *should* work again
+ - Added Index method:
+    + checksum()
 
 0.59      2016-05-23 06:43:28+02:00 Africa/Johannesburg (TRIAL RELEASE)
 
