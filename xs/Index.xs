@@ -61,6 +61,15 @@ clear(self)
 	CODE:
 		git_index_clear(self);
 
+SV *
+checksum(self)
+	Index self
+
+	CODE:
+		RETVAL = git_oid_to_sv(git_index_checksum(self));
+
+	OUTPUT: RETVAL
+
 void
 read(self, ...)
 	Index self

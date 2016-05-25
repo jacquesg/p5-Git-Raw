@@ -508,4 +508,8 @@ like $entries[1] -> message, qr/^checkout: moving from master to/;
 
 ok (!eval {$repo -> detach_head()});
 
+my $checksum = $index -> checksum;
+is length ($checksum), 40;
+isnt $checksum, '0' x 40;
+
 done_testing;

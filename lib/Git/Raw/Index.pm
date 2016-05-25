@@ -84,6 +84,11 @@ valid C<%opts> values.
 
 Retrieve the full path to the index file on disk.
 
+=head2 checksum( )
+
+Retrieve the SHA-1 checksum over the index file, except for the last 20 bytes which is the checksum content itself.
+In the index does not exist on-disk an empty OID will be returned.
+
 =head2 clear( )
 
 Clear the index.
