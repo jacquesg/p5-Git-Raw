@@ -45,7 +45,7 @@ GIT_INLINE(git_filemode_t) normalize_filemode(git_filemode_t filemode)
 	if (GIT_MODE_TYPE(filemode) == GIT_FILEMODE_COMMIT)
 		return GIT_FILEMODE_COMMIT;
 
-	/* 12XXXX means commit */
+	/* 12XXXX means symlink */
 	if (GIT_MODE_TYPE(filemode) == GIT_FILEMODE_LINK)
 		return GIT_FILEMODE_LINK;
 
@@ -1093,6 +1093,15 @@ static int create_popped_tree(tree_stack_entry *current, tree_stack_entry *poppe
 	git_oid new_tree;
 
 	git_tree_free(popped->tree);
+
+	/* If the tree would be empty, remove it from the one higher up */
+	if (git_treebuilder_entrycount(popped->bld) == 0) {
+		git_treebuilder_free(popped->bld);
+		error = git_treebuilder_remove(current->bld, popped->name);
+		git__free(popped->name);
+		return error;
+	}
+
 	error = git_treebuilder_write(&new_tree, popped->bld);
 	git_treebuilder_free(popped->bld);
 
@@ -1216,22 +1225,29 @@ int git_tree_create_updated(git_oid *out, git_repository *repo, git_tree *baseli
 			{
 				/* Make sure we're replacing something of the same type */
 				tree_stack_entry *last = git_array_last(stack);
-				const char *basename = git_path_basename(update->path);
+				char *basename = git_path_basename(update->path);
 				const git_tree_entry *e = git_treebuilder_get(last->bld, basename);
 				if (e && git_tree_entry_type(e) != git_object__type_from_filemode(update->filemode)) {
+					git__free(basename);
 					giterr_set(GITERR_TREE, "Cannot replace '%s' with '%s' at '%s'",
 						   git_object_type2string(git_tree_entry_type(e)),
 						   git_object_type2string(git_object__type_from_filemode(update->filemode)),
 						   update->path);
-					return -1;
+					error = -1;
+					goto cleanup;
 				}
 
 				error = git_treebuilder_insert(NULL, last->bld, basename, &update->id, update->filemode);
+				git__free(basename);
 				break;
 			}
 			case GIT_TREE_UPDATE_REMOVE:
-				error = git_treebuilder_remove(git_array_last(stack)->bld, update->path);
+			{
+				char *basename = git_path_basename(update->path);
+				error = git_treebuilder_remove(git_array_last(stack)->bld, basename);
+				git__free(basename);
 				break;
+			}
 			default:
 				giterr_set(GITERR_TREE, "unkown action for update");
 				error = -1;
@@ -1275,6 +1291,7 @@ cleanup:
 		}
 	}
 
+	git_buf_free(&component);
 	git_array_clear(stack);
 	git_vector_free(&entries);
 	return error;
