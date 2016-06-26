@@ -381,9 +381,9 @@ is $tree_diff -> delta_count, 1;
 
 $expected = <<'EOS';
 diff --git a/diff b/diff.moved
-index 6afc8a6..6afc8a6 100644
---- a/diff
-+++ b/diff.moved
+similarity index 100%
+rename from diff
+rename to diff.moved
 EOS
 
 is $patches[0] -> buffer, $expected;
@@ -484,6 +484,9 @@ is $tree_diff -> delta_count, 1;
 
 $expected = <<'EOS';
 diff --git a/diff.moved b/diff
+similarity index 80%
+rename from diff.moved
+rename to diff
 index 5b96873..f97fd8f 100644
 --- a/diff.moved
 +++ b/diff
