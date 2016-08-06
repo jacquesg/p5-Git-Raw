@@ -9,6 +9,7 @@ create(class, name, repo, object, ...)
 
 	PREINIT:
 		int rc, force = 0;
+		int symbolic = 0;
 
 		Repository repo_ptr;
 		Reference ref;
@@ -18,21 +19,41 @@ create(class, name, repo, object, ...)
 		if (items > 4)
 			force = SvTRUE(ST(4));
 
-		if (sv_isobject(object) &&
-		    sv_derived_from(object, "Git::Raw::Blob"))
-			oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
-		else if (sv_isobject(object) &&
-		         sv_derived_from(object, "Git::Raw::Commit"))
-			oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
-		else
-			oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
+		if (items > 5)
+			symbolic = SvTRUE(ST(5));
 
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
 
-		rc = git_reference_create(
-			&ref, repo_ptr -> repository,
-			name, oid, force, NULL
-		);
+		if (symbolic) {
+			const char *target_ref_name;
+
+			if (sv_isobject(object))
+				target_ref_name = git_reference_name(GIT_SV_TO_PTR(Reference, object));
+			else {
+				target_ref_name = git_ensure_pv(object, "object");
+			}
+
+			rc = git_reference_symbolic_create(
+				&ref, repo_ptr -> repository,
+				name, target_ref_name, force, NULL
+			);
+		}
+		else {
+			if (sv_isobject(object) &&
+			    sv_derived_from(object, "Git::Raw::Blob"))
+				oid = git_blob_id(GIT_SV_TO_PTR(Blob, object));
+			else if (sv_isobject(object) &&
+			         sv_derived_from(object, "Git::Raw::Commit"))
+				oid = git_commit_id(GIT_SV_TO_PTR(Commit, object));
+			else
+				oid = git_tree_id(GIT_SV_TO_PTR(Tree, object));
+
+			rc = git_reference_create(
+				&ref, repo_ptr -> repository,
+				name, oid, force, NULL
+			);
+		}
+
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(RETVAL, class, ref, SvRV(repo));

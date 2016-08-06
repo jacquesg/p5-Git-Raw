@@ -22,13 +22,16 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Retrieve the reference with name C<$name> in C<$repo>.
 
-=head2 create( $name, $repo, $object [, $force] )
+=head2 create( $name, $repo, $object [, $force, $symbolic] )
 
-Creates and returns a new direct reference named C<$name> in C<$repo> pointing
+Creates and returns a new reference named C<$name> in C<$repo> pointing
 to C<$object>. C<$object> can be a L<Git::Raw::Blob>, L<Git::Raw::Commit>,
 or a L<Git::Raw::Tree> object.  If C<$force> is a truthy value, any existing
 reference is overwritten.  If C<$force> is falsy (the default) and a reference
-named C<$name> already exists, an error is thrown.
+named C<$name> already exists, an error is thrown. If C<$symbolic> is a truthy
+value, then a symbolic reference is created. If C<$symbolic> is falsy
+(the default), then a direct reference is created. If C<$symbolic> is a truthy
+value, then C<$object> can be a L<Git::Raw::Reference> or a string.
 
 =head2 delete( )
 
