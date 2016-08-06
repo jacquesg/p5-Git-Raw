@@ -107,4 +107,74 @@ my @ref_names = sort map { $_ -> name() } @refs;
 
 is_deeply \@ref_names, [ 'refs/commit-test-ref', 'refs/heads/master' ];
 
+my $symbolic = 1;
+my $symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 0, $symbolic);
+
+my $master_ref = Git::Raw::Reference->lookup('refs/heads/master', $repo);
+
+is $symbolic_ref -> type, 'symbolic';
+is $symbolic_ref -> name, 'refs/test-symbolic-ref';
+is $symbolic_ref -> target -> name, $master_ref -> name;
+ok !$symbolic_ref -> is_branch;
+ok !$symbolic_ref -> is_remote;
+ok !$symbolic_ref -> is_note;
+ok !$symbolic_ref -> is_tag;
+
+# should fail to overwrite existing ref is overwrite is falsy
+eval {
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 0, $symbolic);
+	fail q{Should've raised an error!};
+} or do {
+	like $@, qr/Failed to write reference/;
+};
+
+# shouldn't die with force argument
+$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 1, $symbolic);
+
+# should still reject Git::Raw::Reference as object when creating direct ref
+eval {
+	Git::Raw::Reference -> create('refs/test-ref', $repo, $master_ref, not $symbolic);
+	fail q{Should've raised an error!};
+} or do {
+	like $@, qr/Argument is not of type/;
+};
+
+# should reject Git::Raw::Blob as target for symbolic ref
+eval {
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $empty_blob, 1, $symbolic);
+	fail q{Should've raised an error!};
+} or do {
+	like $@, qr/Argument is not of type Git::Raw::Reference/;
+};
+
+# should reject Git::Raw::Commit as target for symbolic ref
+eval {
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $master_ref -> target, 1, $symbolic);
+	fail q{Should've raised an error!};
+} or do {
+	like $@, qr/Argument is not of type Git::Raw::Reference/;
+};
+
+# should reject Git::Raw::Tree as target for symbolic ref
+eval {
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $tree, 1, $symbolic);
+	fail q{Should've raised an error!};
+} or do {
+	like $@, qr/Argument is not of type Git::Raw::Reference/;
+};
+
+# and we can also use an existing Git::Raw::Reference object as the target
+$symbolic_ref -> delete;
+$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $master_ref, 0, $symbolic);
+
+is $symbolic_ref -> type, 'symbolic';
+is $symbolic_ref -> name, 'refs/test-symbolic-ref';
+is $symbolic_ref -> target -> name, $master_ref -> name;
+ok !$symbolic_ref -> is_branch;
+ok !$symbolic_ref -> is_remote;
+ok !$symbolic_ref -> is_note;
+ok !$symbolic_ref -> is_tag;
+
+$symbolic_ref -> delete;
+
 done_testing;
