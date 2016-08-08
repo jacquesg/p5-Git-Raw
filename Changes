@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to d824346
+ - Update libgit2 to 97e57e8
  - Reference -> create() can now create symbolic references (GH#168) (thanks, @richardipsum!)
 
 0.60      2016-06-09 19:46:33+02:00 Africa/Johannesburg (TRIAL RELEASE)
