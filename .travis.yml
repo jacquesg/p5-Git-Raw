@@ -11,6 +11,12 @@ perl:
  - "5.18"
  - "5.20"
  - "5.22"
+ - "5.24"
+ - "dev"
+
+matrix:
+  allow_failures:
+    - perl: dev
 
 env:
  - RELEASE_TESTING=1 NETWORK_TESTING=1 AUTOMATED_TESTING=1
@@ -18,6 +24,12 @@ env:
 cache:
  - apt
  - ccache
+
+before_install:
+ - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+ - source ~/travis-perl-helpers/init
+ - build-perl
+ - perl -V
 
 install:
  - sudo apt-get -qq update
