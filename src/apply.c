@@ -38,7 +38,7 @@ static void patch_line_init(
 	out->content_offset = in_offset;
 }
 
-#define PATCH_IMAGE_INIT { {0} }
+#define PATCH_IMAGE_INIT { GIT_POOL_INIT, GIT_VECTOR_INIT }
 
 static int patch_image_init_fromstr(
 	patch_image *out, const char *in, size_t in_len)
@@ -53,7 +53,10 @@ static int patch_image_init_fromstr(
 	for (start = in; start < in + in_len; start = end) {
 		end = memchr(start, '\n', in_len);
 
-		if (end < in + in_len)
+		if (end == NULL)
+			end = in + in_len;
+
+		else if (end < in + in_len)
 			end++;
 
 		line = git_pool_mallocz(&out->pool, 1);
@@ -97,7 +100,7 @@ static bool match_hunk(
 		git_diff_line *preimage_line = git_vector_get(&preimage->lines, i);
 		git_diff_line *image_line = git_vector_get(&image->lines, linenum + i);
 
-		if (preimage_line->content_len != preimage_line->content_len ||
+		if (preimage_line->content_len != image_line->content_len ||
 			memcmp(preimage_line->content, image_line->content, image_line->content_len) != 0) {
 			match = 0;
 			break;
