@@ -206,11 +206,12 @@ $index -> write;
 
 $tree = $index -> write_tree;
 
-$time = time();
-$me = Git::Raw::Signature -> default($repo);
+$time += 1;
 
 my @current_time = localtime($time);
 $off = (timegm(@current_time) - timelocal(@current_time))/60;
+
+$me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $head = $repo -> head -> target;
 isa_ok $head, 'Git::Raw::Commit';
@@ -234,7 +235,7 @@ Subject: [PATCH] second commit
 
 ---
  test2 | 1 +
- 1 file changed, 1 insertion(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
  create mode 100644 test2
 
 diff --git a/test2 b/test2
@@ -246,7 +247,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 0.24.0
+libgit2 0.25.0
 };
 
 is $patch, $expected_patch;
@@ -264,7 +265,7 @@ Subject: [PATCH 1/2] second commit
 
 ---
  test2 | 1 +
- 1 file changed, 1 insertion(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
  create mode 100644 test2
 
 diff --git a/test2 b/test2
@@ -276,7 +277,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 0.24.0
+libgit2 0.25.0
 };
 
 is $patch, $expected_patch;
@@ -293,7 +294,7 @@ Subject: second commit
 
 ---
  test2 | 1 +
- 1 file changed, 1 insertion(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
  create mode 100644 test2
 
 diff --git a/test2 b/test2
@@ -305,7 +306,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 0.24.0
+libgit2 0.25.0
 };
 
 is $patch, $expected_patch;
@@ -371,6 +372,9 @@ $tree = $index -> write_tree;
 $index -> read_tree($tree);
 my @entries = $index -> entries();
 is scalar(@entries), 3;
+
+$time += 1;
+$me   = Git::Raw::Signature -> new($name, $email, $time, $off);
 
 my $commit3 = $repo -> commit(
 	"third commit\n\n Hello World ", $me, $me, [$repo -> head -> target], $tree
