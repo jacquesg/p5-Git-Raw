@@ -1311,7 +1311,7 @@ static int filesystem_iterator_frame_push(
 
 	if (iter->frames.size == FILESYSTEM_MAX_DEPTH) {
 		giterr_set(GITERR_REPOSITORY,
-			"directory nesting too deep (%d)", iter->frames.size);
+			"directory nesting too deep (%"PRIuZ")", iter->frames.size);
 		return -1;
 	}
 
@@ -1834,6 +1834,9 @@ static int iterator_for_filesystem(
 	iter = git__calloc(1, sizeof(filesystem_iterator));
 	GITERR_CHECK_ALLOC(iter);
 
+	iter->base.type = type;
+	iter->base.cb = &callbacks;
+
 	root_len = strlen(root);
 
 	iter->root = git__malloc(root_len+2);
@@ -1850,9 +1853,6 @@ static int iterator_for_filesystem(
 
 	if ((error = git_buf_puts(&iter->current_path, iter->root)) < 0)
 		goto on_error;
-
-	iter->base.type = type;
-	iter->base.cb = &callbacks;
 
 	if ((error = iterator_init_common(&iter->base, repo, index, options)) < 0)
 		goto on_error;
@@ -1877,8 +1877,6 @@ static int iterator_for_filesystem(
 	return 0;
 
 on_error:
-	git__free(iter->root);
-	git_buf_free(&iter->current_path);
 	git_iterator_free(&iter->base);
 	return error;
 }
