@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to a6763ff
+ - Update libgit2 to 5c18ece35f
  - Reference -> create() can now create symbolic references (GH#168) (thanks, @richardipsum!)
  - Removed documentation for previously removed Remote -> clear_refspecs method (GH#169)
  - Documentation cleanup
