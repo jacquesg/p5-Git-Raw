@@ -106,10 +106,6 @@ Add a fetch spec to the remote.
 
 Add a push spec to the remote.
 
-=head2 clear_refspecs( )
-
-Clear the remote's refspecs.
-
 =head2 refspec_count( )
 
 Retrieve the refspec count.
