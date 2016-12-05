@@ -33,6 +33,13 @@ Git::Raw::Repository - Git repository class
       say $tag -> name;
     }
 
+    # merge a reference
+    my $ref = Git::Raw::Reference -> lookup('HEAD', $repo);
+    $repo -> merge ($ref);
+
+    my @conflicts = $repo -> index -> conflicts;
+    print "Got ", scalar (@conflicts), " conflicts!\n";
+
 =head1 DESCRIPTION
 
 A L<Git::Raw::Repository> represents a Git repository.
@@ -502,10 +509,11 @@ HEAD to the target commit(s).
 
 =head2 merge( $ref, [\%merge_opts, \%checkout_opts])
 
-Merge the given C<$ref> into HEAD. This function returns a hash reference
-with members C<"up_to_date">, C<"fast_forward"> and C<"id"> if the merge
-was fast-forward.  See C<Git::Raw::Repository-E<gt>checkout()> for valid
-C<%checkout_opts> values.  Valid fields for C<%merge_opts> are
+Merge the given C<$ref> into HEAD, writing the results into the working
+directory. Any changes are staged for commit and any conflicts are written
+to the index. The index should be inspected for conflicts after this method
+completes and any conflicts should be resolved. At this stage a commit
+may be created to finalise the merge.
 
 =over 4
 
