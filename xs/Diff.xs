@@ -53,6 +53,55 @@ delta_count(self)
 	OUTPUT: RETVAL
 
 void
+deltas(self, ...)
+	SV *self
+
+	PROTOTYPE: $;$
+
+	PREINIT:
+		int ctx;
+		size_t start = 0, end, num_deltas;
+
+	PPCODE:
+		ctx = GIMME_V;
+
+		if (ctx == G_VOID)
+			XSRETURN_EMPTY;
+
+		num_deltas = git_diff_num_deltas(GIT_SV_TO_PTR(Diff, self));
+
+		if (items == 2) {
+			SV *index = ST(1);
+
+			if (!SvIOK(index) || SvIV(index) < 0)
+				croak_usage("Invalid type for 'index'");
+
+			start = SvUV(index);
+			if (start >= num_deltas)
+				croak_usage("index %" PRIuZ " out of range", start);
+
+			num_deltas = 1;
+		}
+
+		end = start + num_deltas;
+
+		for (; start < end; ++start) {
+			SV *delta;
+			const git_diff_delta *d = git_diff_get_delta(
+				GIT_SV_TO_PTR(Diff, self), start
+			);
+
+			GIT_NEW_OBJ_WITH_MAGIC(
+				delta, "Git::Raw::Diff::Delta",
+				(Diff_Delta) d, SvRV(self)
+			);
+
+			mXPUSHs(delta);
+		}
+
+		XSRETURN(num_deltas);
+
+void
 find_similar(self, ...)
 	Diff self
 

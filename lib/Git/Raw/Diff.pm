@@ -26,6 +26,11 @@ Merge the given diff with the L<Git::Raw::Diff> C<$from>.
 
 Query how many diff records there are in the diff.
 
+=head2 deltas( [$index] )
+
+Returns a list of L<Git::Raw::Diff::Delta> objects. If C<$index> is specified
+only the delta at the specified index will be returned.
+
 =head2 find_similar( [\%options] )
 
 Transform the diff marking file renames, copies, etc.  Valid fields for the

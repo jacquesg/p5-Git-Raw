@@ -163,6 +163,22 @@ $output = capture_stdout { $diff -> print("patch_header", $printer) };
 is $output, $expected;
 
 is $diff -> delta_count, 2;
+$diff -> deltas; # void context
+my @deltas = $diff -> deltas;
+is scalar(@deltas), 2;
+
+foreach my $delta (@deltas) {
+	isa_ok $delta, 'Git::Raw::Diff::Delta';
+	is $delta -> file_count, 1;
+}
+
+my $delta1 = $diff -> deltas(0);
+isa_ok $delta1, 'Git::Raw::Diff::Delta';
+my $delta2 = $diff -> deltas(1);
+isa_ok $delta2, 'Git::Raw::Diff::Delta';
+
+ok (!eval { $diff -> delta(2) });
+
 $diff -> patches; # void context
 my $patch_count = $diff -> patches;
 is $patch_count, 2;
