@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Diff method:
+    + deltas()
+
 0.61      2016-12-05 19:49:33+02:00 Africa/Johannesburg
 
  - Update libgit2 to 5c18ece35f
