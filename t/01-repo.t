@@ -52,6 +52,10 @@ my $repo2 = $index -> owner;
 isa_ok $repo2, 'Git::Raw::Repository';
 is $repo2 -> path, $repo -> path;
 
+is $index -> version, 2;
+$index -> version(4);
+is $index -> version, 4;
+
 ok (eval { $index -> capabilities });
 
 my $caps_count = $index -> capabilities;

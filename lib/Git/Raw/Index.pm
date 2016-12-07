@@ -241,6 +241,10 @@ Retrieve the index's capabilities. Returns a hash with members C<"ignore_case">,
 C<"no_filemode"> and C<"no_symlinks">, each indicating if the L<Git::Raw::Index>
 supports the capability.
 
+=head2 version( [$version] )
+
+Retrieve or set the index version.
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>

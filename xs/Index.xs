@@ -528,6 +528,23 @@ capabilities(self)
 		} else
 			XSRETURN_EMPTY;
 
+SV *
+version(self, ...)
+	Index self
+
+	PROTOTYPE: $;$
+
+	CODE:
+		if (items == 2) {
+			int rc = git_index_set_version(self,
+				(unsigned int)git_ensure_iv(ST(1), "version"));
+			git_check_error(rc);
+		}
+
+		RETVAL = newSViv (git_index_version(self));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV* self
