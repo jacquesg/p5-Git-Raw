@@ -41,6 +41,7 @@ Returns C<undef> if no such entry exists.
 
 Adds (or updates) an entry in this tree builder.  C<$object>
 can be either a L<Git::Raw::Tree> or L<Git::Raw::Blob> object.
+Returns a L<Git::Raw::Tree::Entry> object on success.
 
 =head2 remove( $filename )
 
@@ -50,6 +51,7 @@ builder.
 =head2 write( )
 
 Writes the tree object we've been building into the repository.
+Returns a L<Git::Raw::Tree> object on success.
 
 =head1 AUTHOR
 
