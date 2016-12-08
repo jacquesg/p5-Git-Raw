@@ -6,6 +6,7 @@ Revision history for Git-Raw
     + version()
     + add_frombuffer()
  - Documentation fixes
+ - Update libgit2 to 8339c66068
 
 0.62      2016-12-06 18:55:19+02:00 Africa/Johannesburg
 
