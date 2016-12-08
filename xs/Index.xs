@@ -1,5 +1,24 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Index
 
+SV *
+new(class)
+	SV *class
+
+	PREINIT:
+		int rc;
+		Index index;
+
+	CODE:
+		rc = git_index_new(&index);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ(
+			RETVAL, "Git::Raw::Index", index
+		);
+
+	OUTPUT: RETVAL
+
+
 void
 add(self, entry)
 	Index self
@@ -16,6 +35,28 @@ add(self, entry)
 			rc = git_index_add(self, e);
 		}
 
+		git_check_error(rc);
+
+void
+add_frombuffer(self, path, buffer)
+	Index self
+	SV *path
+	SV *buffer
+
+	PREINIT:
+		int rc;
+		git_index_entry entry;
+
+	CODE:
+		if (!SvOK(buffer))
+			croak_usage("Buffer not provided");
+
+		memset(&entry, 0x0, sizeof(git_index_entry));
+		entry.mode = GIT_FILEMODE_BLOB;
+		entry.path = git_ensure_pv(path, "path");
+
+		rc = git_index_add_frombuffer(self, &entry,
+			SvPVX(buffer), SvCUR(buffer));
 		git_check_error(rc);
 
 void

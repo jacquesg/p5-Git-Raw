@@ -18,6 +18,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 new( )
+
+Create a new in memory index. This is currently of little use.
+
 =head2 owner( )
 
 Retrieve the L<Git::Raw::Repository> owning the index.
@@ -26,6 +30,11 @@ Retrieve the L<Git::Raw::Repository> owning the index.
 
 Add C<$entry> to the index. C<$entry> should either be the path of a file
 or alternatively a L<Git::Raw::Index::Entry>.
+
+=head2 add_frombuffer( $path, $buffer )
+
+Add or update an entry from an in memory file. The entry will be placed at C<$path>
+with the contents of C<$buffer>.
 
 =head2 add_all( \%opts )
 
