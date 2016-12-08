@@ -14,6 +14,8 @@ isa_ok $index, 'Git::Raw::Index';
 my $index = $repo -> index;
 $index -> clear;
 
+ok(!eval {$index -> add_frombuffer('blah', undef)});
+
 $index -> add_frombuffer ('d.txt', 'content4');
 $index -> add_frombuffer ('a/b.txt', 'content2');
 $index -> add_frombuffer ('a.txt', 'content1');
