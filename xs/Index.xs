@@ -327,7 +327,10 @@ owner(self)
 
 	CODE:
 		repo = GIT_SV_TO_MAGIC(self);
-		RETVAL = newRV_inc(repo);
+		if (repo == NULL)
+			RETVAL = &PL_sv_undef;
+		else
+			RETVAL = newRV_inc(repo);
 
 	OUTPUT: RETVAL
 

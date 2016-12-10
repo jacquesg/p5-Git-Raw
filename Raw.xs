@@ -113,6 +113,7 @@ typedef git_raw_remote * Remote;
 typedef struct {
 	git_repository *repository;
 	int owned;
+	SV *custom_index;
 } git_raw_repository;
 
 typedef git_raw_repository * Repository;

@@ -172,7 +172,7 @@ config(self)
 	OUTPUT: RETVAL
 
 SV *
-index(self)
+index(self, ...)
 	SV *self
 
 	PREINIT:
@@ -183,6 +183,17 @@ index(self)
 
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
+		if (items >= 2) {
+			SV *i = ST(1);
+			git_repository_set_index(repo -> repository,
+				GIT_SV_TO_PTR(Index, i)
+			);
+
+			SvREFCNT_dec(repo -> custom_index);
+			repo -> custom_index = SvRV(i);
+			SvREFCNT_inc_NN(repo -> custom_index);
+		}
+
 		rc = git_repository_index(&index, repo -> repository);
 		git_check_error(rc);
 
@@ -1145,4 +1156,5 @@ DESTROY(self)
 	CODE:
 		if (self -> owned)
 			git_repository_free(self -> repository);
+		SvREFCNT_dec(self -> custom_index);
 		Safefree(self);

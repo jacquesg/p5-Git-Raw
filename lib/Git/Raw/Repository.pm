@@ -109,9 +109,10 @@ Create a new repository with neither backends nor config object.
 
 Retrieve the default L<Git::Raw::Config> of the repository.
 
-=head2 index( )
+=head2 index( [$new_index] )
 
-Retrieve the default L<Git::Raw::Index> of the repository.
+Retrieve the index of the repository. If C<$new_index> is passed, it will be used
+as the index of the repository. Returns a L<Git::Raw::Index> object.
 
 =head2 head( [$new_head] )
 
