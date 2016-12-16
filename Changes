@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.64      2016-12-16 14:54:58+02:00 Africa/Johannesburg
+
  - Repository -> index() now allows for the index to be set.
 
 0.63      2016-12-08 20:30:21+02:00 Africa/Johannesburg
