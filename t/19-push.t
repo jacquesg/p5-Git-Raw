@@ -6,9 +6,11 @@ use Git::Raw;
 use Cwd qw(abs_path);
 use File::Slurp::Tiny qw(write_file);
 use File::Basename qw(dirname);
+use File::Spec::Unix;
 use File::Path 2.07 qw(make_path remove_tree);
 
-my $local_path = abs_path('t').'/local_bare_repo';
+my $local_path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t/local_bare_repo'));
+make_path($local_path);
 my $local_repo = Git::Raw::Repository -> init($local_path, 1);
 is $local_repo -> is_bare, 1;
 

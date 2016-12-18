@@ -4,11 +4,13 @@ use Test::More;
 
 use Git::Raw;
 use File::Spec;
+use File::Path qw(make_path);
 use File::Slurp::Tiny qw(write_file read_file);
 use Cwd qw(abs_path);
 use File::Path qw(rmtree);
 
 my $path = abs_path('t').'/merge_repo';
+make_path($path);
 my $repo = Git::Raw::Repository -> init($path, 0);
 
 my $file1 = $repo -> workdir . 'test1';
