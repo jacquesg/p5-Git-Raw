@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Repository -> write_tree() no longer crashes when invoked on an index that
+   does not have a repository associated (GH#173).
+
 0.64      2016-12-16 14:54:58+02:00 Africa/Johannesburg
 
  - Repository -> index() now allows for the index to be set.
