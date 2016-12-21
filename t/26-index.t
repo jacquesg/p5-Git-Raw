@@ -11,7 +11,17 @@ my $repo = Git::Raw::Repository -> open($path);
 my $index = Git::Raw::Index -> new;
 isa_ok $index, 'Git::Raw::Index';
 
+# no repository associated yet
+ok(!eval {$index -> write_tree});
+
+my $r = $index -> owner;
+is $r, undef;
+
 $repo -> index($index);
+
+$r = $index -> owner;
+isa_ok $r, 'Git::Raw::Repository';
+is $index -> path, undef;
 
 $index -> clear;
 
@@ -21,10 +31,7 @@ $index -> add_frombuffer ('d.txt', 'content4');
 $index -> add_frombuffer ('a/b.txt', 'content2');
 $index -> add_frombuffer ('a.txt', 'content1');
 $index -> add_frombuffer ('a/b/c.txt', 'content3');
-
-my $r = $index -> owner;
-is $r, undef;
-is $index -> path, undef;
+$index -> write_tree;
 
 my $tree = $index -> write_tree($repo);
 

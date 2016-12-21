@@ -113,7 +113,6 @@ typedef git_raw_remote * Remote;
 typedef struct {
 	git_repository *repository;
 	int owned;
-	SV *custom_index;
 } git_raw_repository;
 
 typedef git_raw_repository * Repository;
@@ -187,6 +186,13 @@ STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 								\
 		xs_object_magic_attach_struct(			\
 			aTHX_ SvRV(rv), SvREFCNT_inc_NN(magic)	\
+		);						\
+	} STMT_END
+
+#define GIT_OBJ_SET_MAGIC(sv, magic) \
+	STMT_START {						\
+		xs_object_magic_attach_struct(			\
+			aTHX_ SvRV(sv), SvREFCNT_inc_NN(magic)	\
 		);						\
 	} STMT_END
 
@@ -382,6 +388,19 @@ STATIC void *git_sv_to_ptr(const char *type, SV *sv, const char *file, int line)
 
 #define GIT_SV_TO_PTR(type, sv) \
 	git_sv_to_ptr(#type, sv, __FILE__, __LINE__)
+
+STATIC void git_sv_set_ptr(const char *type, SV *sv, void *ptr, const char *file, int line) {
+	SV *full_type = sv_2mortal(newSVpvf("Git::Raw::%s", type));
+
+	if (!(sv_isobject(sv) && sv_derived_from(sv, SvPV_nolen(full_type))))
+		croak_assert("Argument is not of type %s @ (%s:%d)",
+			SvPV_nolen(full_type), file, line);
+
+	sv_setiv(SvRV(sv), PTR2IV(ptr));
+}
+
+#define GIT_SV_SET_PTR(type, sv, ptr) \
+	git_sv_set_ptr(#type, sv, ptr, __FILE__, __LINE__)
 
 STATIC SV *git_oid_to_sv(const git_oid *oid) {
 	char out[41];

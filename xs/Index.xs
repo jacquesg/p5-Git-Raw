@@ -175,6 +175,9 @@ write_tree(self, ...)
 			);
 		} else {
 			repo = GIT_SV_TO_MAGIC(self);
+			if (repo == NULL)
+				croak_usage("No repository associated with this index");
+
 			repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
 			rc = git_index_write_tree(&oid, index);

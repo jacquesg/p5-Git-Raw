@@ -184,14 +184,16 @@ index(self, ...)
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 		if (items >= 2) {
-			SV *i = ST(1);
-			git_repository_set_index(repo -> repository,
-				GIT_SV_TO_PTR(Index, i)
-			);
+			Index index = GIT_SV_TO_PTR(Index, ST(1));
+			git_repository_set_index(repo -> repository, index);
 
-			SvREFCNT_dec(repo -> custom_index);
-			repo -> custom_index = SvRV(i);
-			SvREFCNT_inc_NN(repo -> custom_index);
+			rc = git_repository_index(&index, repo -> repository);
+			git_check_error(rc);
+
+			/* replace the underlying index pointer and associate it with this repository */
+			git_index_free(index);
+			GIT_SV_SET_PTR(Index, ST(1), index);
+			GIT_OBJ_SET_MAGIC(ST(1), SvRV(self));
 		}
 
 		rc = git_repository_index(&index, repo -> repository);
@@ -1156,5 +1158,4 @@ DESTROY(self)
 	CODE:
 		if (self -> owned)
 			git_repository_free(self -> repository);
-		SvREFCNT_dec(self -> custom_index);
 		Safefree(self);
