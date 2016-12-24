@@ -172,12 +172,13 @@ foreach my $delta (@deltas) {
 	is $delta -> file_count, 1;
 }
 
+ok(!eval { $diff -> deltas('xyz') });
+ok(!eval { $diff -> deltas(2) });
+
 my $delta1 = $diff -> deltas(0);
 isa_ok $delta1, 'Git::Raw::Diff::Delta';
 my $delta2 = $diff -> deltas(1);
 isa_ok $delta2, 'Git::Raw::Diff::Delta';
-
-ok (!eval { $diff -> delta(2) });
 
 $diff -> patches; # void context
 my $patch_count = $diff -> patches;
