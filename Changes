@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Diff methods:
+    + buffer()
+    + new()
+
 0.65      2016-12-21 18:00:44+02:00 Africa/Johannesburg
 
  - Repository -> write_tree() no longer crashes when invoked on an index that
