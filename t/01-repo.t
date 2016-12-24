@@ -22,6 +22,9 @@ is $disc -> path, "$path/.git/";
 is $repo -> workdir, "$path/";
 is $disc -> workdir, "$path/";
 
+is $repo -> workdir($path), "$path/";
+is $disc -> workdir($path), "$path/";
+
 is $repo -> is_empty, 1;
 is $disc -> is_empty, 1;
 
