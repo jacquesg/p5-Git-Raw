@@ -1,5 +1,26 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Diff
 
+Diff
+new(class, buffer)
+	SV *class
+	SV *buffer
+
+	PREINIT:
+		int rc;
+		Diff diff;
+		const char *b;
+		STRLEN len;
+
+	CODE:
+		b = git_ensure_pv_with_len(buffer, "buffer", &len);
+		rc = git_diff_from_buffer(&diff,
+			b, len);
+		git_check_error(rc);
+
+		RETVAL = diff;
+
+	OUTPUT: RETVAL
+
 void
 merge(self, from)
 	Diff self

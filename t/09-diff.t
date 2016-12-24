@@ -541,4 +541,49 @@ $tree_diff -> find_similar;
 is $tree_diff -> delta_count, 1;
 @patches = $tree_diff -> patches;
 
+$content = <<'EOS';
+From 5e3ed60de0985b4c6d1a049718930704077525ba Mon Sep 17 00:00:00 2001
+From: Jacques Germishuys <jacquesg@striata.com>
+Date: Sat, 24 Dec 2016 10:01:28 +0200
+Subject: [PATCH] Second
+
+---
+ a.txt | 1 +
+ b.txt | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 100644 b.txt
+
+diff --git a/a.txt b/a.txt
+index 7898192..7e8a165 100644
+--- a/a.txt
++++ b/a.txt
+@@ -1 +1,2 @@
+ a
++a
+diff --git a/b.txt b/b.txt
+new file mode 100644
+index 0000000..6178079
+--- /dev/null
++++ b/b.txt
+@@ -0,0 +1 @@
++b
+-- 
+2.11.0
+
+EOS
+
+$diff = Git::Raw::Diff -> new($content);
+isa_ok $diff, 'Git::Raw::Diff';
+
+is $diff -> delta_count, 2;
+$delta1 = $diff -> deltas(0);
+isa_ok $delta1, 'Git::Raw::Diff::Delta';
+is $delta1 -> new_file -> path, 'a.txt';
+is $delta1 -> status, 'modified';
+
+$delta2 = $diff -> deltas(1);
+isa_ok $delta2, 'Git::Raw::Diff::Delta';
+is $delta2 -> new_file -> path, 'b.txt';
+is $delta2 -> status, 'added';
+
 done_testing;
