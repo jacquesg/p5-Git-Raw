@@ -4,11 +4,11 @@ use Test::More;
 
 use Git::Raw;
 use File::Copy;
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
-use Cwd qw(abs_path);
 use Capture::Tiny 'capture_stdout';
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
 $repo -> config -> bool('diff.mnemonicprefix', 0);

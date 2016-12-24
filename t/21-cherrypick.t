@@ -4,9 +4,9 @@ use Test::More;
 
 use Git::Raw;
 use File::Slurp::Tiny qw(write_file);
-use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile rel2abs);
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
 my $initial_head = $repo -> head;

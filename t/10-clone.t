@@ -9,22 +9,20 @@ BEGIN {
 
 use Test::More;
 
-use File::Spec;
+use File::Spec::Functions qw(catfile rel2abs);
 use Git::Raw;
-use Cwd qw(abs_path);
 use File::Path qw(rmtree);
 
-my $path;
 my $url = 'git://github.com/libgit2/TestGitRepository.git';
 
-$path = File::Spec -> rel2abs('t/test_repo_clone_bare');
+my $path = rel2abs(catfile('t', 'test_repo_clone_bare'));
 my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
 
 ok $bare -> is_bare;
 ok !$bare -> is_empty;
 $bare = undef;
 
-$path = File::Spec -> rel2abs('t/test_repo_clone');
+$path = rel2abs(catfile('t', 'test_repo_clone'));
 my $repo = Git::Raw::Repository -> clone($url, $path, { });
 
 ok !$repo -> is_bare;
@@ -54,7 +52,7 @@ is $head -> author -> name, 'A U Thor';
 $head = undef;
 $ref = undef;
 
-$path = File::Spec->rel2abs('t/test_repo_remote_name_die');
+$path = rel2abs(catfile('t', 'test_repo_remote_name_die'));
 ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'remote_create' => sub {
@@ -65,7 +63,7 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 })});
 rmtree $path if (-e $path);
 
-$path = File::Spec->rel2abs('t/test_repo_remote_name_undef');
+$path = rel2abs(catfile('t', 'test_repo_remote_name_undef'));
 ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'remote_create' => sub {
@@ -77,7 +75,7 @@ ok (!eval { $repo = Git::Raw::Repository -> clone($url, $path, {
 rmtree $path if (-e $path);
 
 my $triggered_remote_create = 0;
-$path = File::Spec->rel2abs('t/test_repo_remote_name');
+$path = rel2abs(catfile('t', 'test_repo_remote_name'));
 $repo = Git::Raw::Repository -> clone($url, $path, {
 	'callbacks' => {
 		'remote_create' => sub {
@@ -101,10 +99,10 @@ is $remotes[1], undef;
 
 @remotes = ();
 
-$path = File::Spec->rel2abs('t/test_repo_disable_checkout');
+$path = rel2abs(catfile('t', 'test_repo_disable_checkout'));
 $repo = Git::Raw::Repository -> clone($url, $path, {'disable_checkout' => 1 });
 
-isnt -f File::Spec->catfile($repo -> workdir, 'Raw.xs'), 1;
+isnt -f catfile($repo -> workdir, 'Raw.xs'), 1;
 
 my $state = undef;
 my $total_objects = 0;
@@ -116,7 +114,7 @@ my $received_bytes = 0;
 
 my $states = [];
 
-$path = File::Spec -> rel2abs('t/test_repo_clone_callbacks');
+$path = rel2abs(catfile('t', 'test_repo_clone_callbacks'));
 $repo = Git::Raw::Repository -> clone($url, $path, {}, {
 	'callbacks' => {
 		'sideband_progress' => sub {
@@ -189,11 +187,11 @@ ok scalar(@$states) > 0;
 
 $repo = undef;
 
-rmtree abs_path('t/test_repo_clone');
-rmtree abs_path('t/test_repo_clone_bare');
-rmtree abs_path('t/test_repo_clone_callbacks');
-rmtree abs_path('t/test_repo_disable_checkout');
-rmtree abs_path('t/test_repo_remote_name');
+rmtree rel2abs(catfile('t', 'test_repo_clone'));
+rmtree rel2abs(catfile('t', 'test_repo_clone_bare'));
+rmtree rel2abs(catfile('t', 'test_repo_clone_callbacks'));
+rmtree rel2abs(catfile('t', 'test_repo_disable_checkout'));
+rmtree rel2abs(catfile('t', 'test_repo_remote_name'));
 
 
 my %features = Git::Raw -> features;
@@ -204,7 +202,7 @@ if ($features{'https'} == 0) {
 }
 
 $url = 'https://github.com/libgit2/TestGitRepository.git';
-$path = File::Spec -> rel2abs('t/test_repo_clone');
+$path = rel2abs(catfile('t', 'test_repo_clone'));
 
 my ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
 $repo = Git::Raw::Repository -> clone($url, $path, {}, {
@@ -244,7 +242,7 @@ is $update_tips_fired, 1;
 
 $repo = undef;
 
-rmtree abs_path('t/test_repo_clone');
+rmtree catfile('t', 'test_repo_clone');
 
 
 if ($^O eq 'MSWin32') {
@@ -259,9 +257,9 @@ if ($features{'ssh'} == 0) {
 	exit;
 }
 
-my $remote_path = File::Spec -> rel2abs('t/test_repo');
+my $remote_path = rel2abs(catfile('t', 'test_repo'));
 my $remote_url = "ssh://$ENV{USER}\@localhost$remote_path";
-$path = File::Spec -> rel2abs('t/test_repo_ssh');
+$path = rel2abs(catfile('t', 'test_repo_ssh'));
 
 # Not a CV for callback
 ok (!eval { $repo = Git::Raw::Repository -> clone($remote_url, $path, {}, {
@@ -363,11 +361,11 @@ $repo = Git::Raw::Repository -> clone($remote_url, $path, {
 			my ($url, $user) = @_;
 			$credentials_fired = 1;
 
-			my $ssh_dir = File::Spec -> catfile($ENV{HOME}, '.ssh');
+			my $ssh_dir = catfile($ENV{HOME}, '.ssh');
 			ok -e $ssh_dir;
 
-			my $public_key = File::Spec -> catfile($ssh_dir, 'id_rsa.pub');
-			my $private_key = File::Spec -> catfile($ssh_dir, 'id_rsa');
+			my $public_key = catfile($ssh_dir, 'id_rsa.pub');
+			my $private_key = catfile($ssh_dir, 'id_rsa');
 			ok -f $public_key;
 			ok -f $private_key;
 

@@ -2,10 +2,10 @@
 
 use Test::More;
 
-use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Path qw(rmtree);
 
-my $path = abs_path('t').'/test_repo';
+my $path = rel2abs(catfile('t', 'test_repo'));
 
 rmtree $path;
 ok ! -e $path;

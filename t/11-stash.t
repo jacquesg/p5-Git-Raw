@@ -3,8 +3,8 @@
 use Test::More;
 
 use Git::Raw;
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
-use Cwd qw(abs_path);
 
 is 0, Git::Raw::Stash::Progress->NONE;
 is 1, Git::Raw::Stash::Progress->LOADING_STASH;
@@ -15,7 +15,7 @@ is 5, Git::Raw::Stash::Progress->CHECKOUT_UNTRACKED;
 is 6, Git::Raw::Stash::Progress->CHECKOUT_MODIFIED;
 is 7, Git::Raw::Stash::Progress->DONE;
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
 my $file  = $repo -> workdir . 'test';

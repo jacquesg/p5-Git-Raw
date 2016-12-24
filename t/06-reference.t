@@ -3,10 +3,12 @@
 use Test::More;
 
 use Git::Raw;
-use Cwd qw(abs_path);
+use File::Spec::Unix;
+use File::Spec::Functions qw(catfile rel2abs);
 
-my $path = abs_path('t/test_repo');
-my $repo = Git::Raw::Repository -> open($path);
+my $native_path = rel2abs(catfile('t', 'test_repo'));
+my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t', 'test_repo'));
+my $repo = Git::Raw::Repository -> open($native_path);
 
 my $head = $repo -> head;
 isa_ok $head, 'Git::Raw::Reference';

@@ -5,12 +5,11 @@ use Test::More;
 use Git::Raw;
 use File::Copy;
 use File::Slurp::Tiny qw(write_file);
-use File::Spec::Functions qw(catfile canonpath);
-use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile canonpath rel2abs);
 use File::Path 2.07 qw(make_path remove_tree);
 use Time::Local;
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 $repo -> config -> bool('diff.mnemonicprefix', 0);
 

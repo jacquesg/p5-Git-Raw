@@ -4,17 +4,19 @@ use Test::More;
 
 use Git::Raw;
 use File::Spec::Unix;
-use File::Spec::Functions qw(catfile);
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
 use File::Path qw(make_path);
 
-my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t/test_repo'));
+my $native_path = rel2abs(catfile('t', 'test_repo'));
+my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t', 'test_repo'));
 make_path($path);
-my $repo = Git::Raw::Repository -> init($path, 0);
+
+my $repo = Git::Raw::Repository -> init($native_path, 0);
 isa_ok $repo, 'Git::Raw::Repository';
 
-mkdir "$path/subdir" or die "Can't create subdir: $!";
-my $disc = Git::Raw::Repository -> discover("$path/subdir");
+mkdir catfile($native_path, 'subdir') or die "Can't create subdir: $!";
+my $disc = Git::Raw::Repository -> discover(catfile($native_path, 'subdir'));
 
 is $repo -> path, "$path/.git/";
 is $disc -> path, "$path/.git/";

@@ -5,9 +5,9 @@ use warnings;
 
 use Test::More;
 use Git::Raw;
-use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile rel2abs);
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
 my $empty_blob = $repo -> blob('');

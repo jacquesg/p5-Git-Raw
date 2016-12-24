@@ -3,10 +3,10 @@
 use Test::More;
 
 use Git::Raw;
-use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile rel2abs);
 use File::Path qw(make_path rmtree);
 
-my $path = abs_path('t/test_repo');
+my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
 # my $name = 'some_remote';
@@ -142,8 +142,9 @@ my $ls = $github -> ls;
 
 is_deeply $ls -> {'HEAD'}, $ls -> {'refs/heads/master'};
 
-make_path ('t/callbacks_repo');
-$path = abs_path('t/callbacks_repo');
+$path = rel2abs(catfile('t', 'callbacks_repo'));
+make_path($path);
+
 $repo = Git::Raw::Repository -> init ($path, 0);
 
 $github = Git::Raw::Remote -> create($repo, $name, $url);
