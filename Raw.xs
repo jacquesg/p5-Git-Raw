@@ -881,6 +881,26 @@ STATIC unsigned git_hv_to_checkout_strategy(HV *strategy) {
 	return out;
 }
 
+STATIC git_diff_format_t git_sv_to_diff_format(SV *format) {
+	git_diff_format_t fmt = GIT_DIFF_FORMAT_PATCH;
+	const char *fmt_str = git_ensure_pv(format, "format");
+
+	if (!strcmp(fmt_str, "patch"))
+		fmt = GIT_DIFF_FORMAT_PATCH;
+	else if (!strcmp(fmt_str, "patch_header"))
+		fmt = GIT_DIFF_FORMAT_PATCH_HEADER;
+	else if (!strcmp(fmt_str, "raw"))
+		fmt = GIT_DIFF_FORMAT_RAW;
+	else if (!strcmp(fmt_str, "name_only"))
+		fmt = GIT_DIFF_FORMAT_NAME_ONLY;
+	else if (!strcmp(fmt_str, "name_status"))
+		fmt = GIT_DIFF_FORMAT_NAME_STATUS;
+	else
+		croak_usage("Invalid format");
+
+	return fmt;
+}
+
 STATIC int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 		const git_diff_line *line, void *data) {
 	dSP;

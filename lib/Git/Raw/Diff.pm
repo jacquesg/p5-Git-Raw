@@ -26,6 +26,11 @@ Create a diff from the content of a git patch.
 
 Merge the given diff with the L<Git::Raw::Diff> C<$from>.
 
+=head2 buffer( $format )
+
+Get the content of a diff as text. See C<Git::Raw::Diff-E<gt>print()> for valid
+C<$format> values.
+
 =head2 delta_count( )
 
 Query how many diff records there are in the diff.

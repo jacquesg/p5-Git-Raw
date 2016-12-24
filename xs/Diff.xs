@@ -33,6 +33,28 @@ merge(self, from)
 		rc = git_diff_merge(self, from);
 		git_check_error(rc);
 
+SV *
+buffer(self, format)
+	Diff self
+	SV *format
+
+	PREINIT:
+		int rc;
+
+		git_diff_format_t fmt;
+		git_buf buf = GIT_BUF_INIT_CONST(NULL, 0);
+
+	CODE:
+		fmt = git_sv_to_diff_format(format);
+		rc = git_diff_to_buf(&buf, self, fmt);
+		git_check_error(rc);
+
+		RETVAL = newSVpv(buf.ptr, buf.size);
+
+		git_buf_free(&buf);
+
+	OUTPUT: RETVAL
+
 void
 print(self, format, callback)
 	Diff self
@@ -41,26 +63,10 @@ print(self, format, callback)
 
 	PREINIT:
 		int rc;
-
-		const char *fmt_str;
-		git_diff_format_t fmt = GIT_DIFF_FORMAT_PATCH;
+		git_diff_format_t fmt;
 
 	CODE:
-		fmt_str = SvPVbyte_nolen(format);
-
-		if (!strcmp(fmt_str, "patch"))
-			fmt = GIT_DIFF_FORMAT_PATCH;
-		else if (!strcmp(fmt_str, "patch_header"))
-			fmt = GIT_DIFF_FORMAT_PATCH_HEADER;
-		else if (!strcmp(fmt_str, "raw"))
-			fmt = GIT_DIFF_FORMAT_RAW;
-		else if (!strcmp(fmt_str, "name_only"))
-			fmt = GIT_DIFF_FORMAT_NAME_ONLY;
-		else if (!strcmp(fmt_str, "name_status"))
-			fmt = GIT_DIFF_FORMAT_NAME_STATUS;
-		else
-			croak_usage("Invalid format");
-
+		fmt = git_sv_to_diff_format(format);
 		rc = git_diff_print(self, fmt, git_diff_cb, callback);
 		git_check_error(rc);
 

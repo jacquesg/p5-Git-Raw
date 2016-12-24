@@ -272,7 +272,20 @@ add => this is a third testdel =>
 EOS
 
 $output = capture_stdout { $diff -> print("patch", $printer) };
+is $output, $expected;
 
+$expected = <<'EOS';
+diff --git aaa/test3/under/the/tree/test3 bbb/test3/under/the/tree/test3
+new file mode 100644
+index 0000000..c7eaef2
+--- /dev/null
++++ bbb/test3/under/the/tree/test3
+@@ -0,0 +1 @@
++this is a third test
+\ No newline at end of file
+EOS
+
+$output = $diff -> buffer('patch');
 is $output, $expected;
 
 $expected = <<'EOS';
