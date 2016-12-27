@@ -12,6 +12,7 @@ my $repo = Git::Raw::Repository -> open($path);
 # my $name = 'some_remote';
 my $name = 'github';
 my $url  = 'git://github.com/ghedo/a_git_repository.git';
+my $pushurl  = 'git://github.com/ghedo/a_git_repository_push_only.git';
 
 my $github = Git::Raw::Remote -> create($repo, $name, $url);
 my $repo2 = $github -> owner;
@@ -21,7 +22,7 @@ is $repo2 -> path, $repo -> path;
 is $github -> name, $name;
 is $github -> url, $url;
 is $github -> pushurl, undef;
-is $github -> pushurl($url), $url;
+is $github -> pushurl($pushurl), $pushurl;
 is $github -> refspec_count, 1;
 my @refspecs = $github -> refspecs;
 is scalar(@refspecs), 1;
@@ -76,6 +77,8 @@ is $non_existent_remote, undef;
 
 $github = Git::Raw::Remote -> load($repo, 'github');
 isa_ok $github, 'Git::Raw::Remote';
+
+is $github -> pushurl, $pushurl;
 
 ok (!eval { $github -> default_branch });
 ok (!eval { $github -> connect('invalid_direction') });
