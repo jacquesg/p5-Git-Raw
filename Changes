@@ -6,6 +6,8 @@ Revision history for Git-Raw
     + buffer()
     + new()
  - Update libgit2 to 75db289a04
+ - Repository -> index() now allows the index to be disassociated by passing
+   undef.
 
 0.65      2016-12-21 18:00:44+02:00 Africa/Johannesburg
 
