@@ -17,6 +17,9 @@ ok(!eval {$index -> write_tree});
 my $r = $index -> owner;
 is $r, undef;
 
+$r = $repo -> index(undef);
+ok(!defined($r));
+
 $repo -> index($index);
 
 $r = $index -> owner;

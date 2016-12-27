@@ -112,7 +112,9 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 =head2 index( [$new_index] )
 
 Retrieve the index of the repository. If C<$new_index> is passed, it will be used
-as the index of the repository. Returns a L<Git::Raw::Index> object.
+as the index of the repository. If C<$new_index> is C<undef> the index associated
+with the repository will be disassociated. Returns a L<Git::Raw::Index> object or
+undef if index has been disassociated as part of the call.
 
 =head2 head( [$new_head] )
 

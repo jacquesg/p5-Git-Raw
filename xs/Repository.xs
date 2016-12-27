@@ -184,9 +184,14 @@ index(self, ...)
 	CODE:
 		repo = GIT_SV_TO_PTR(Repository, self);
 		if (items >= 2) {
-			Index index = GIT_SV_TO_PTR(Index, ST(1));
-			git_repository_set_index(repo -> repository, index);
+			/* it is possible to remove the index by passing undef */
+			if (!SvOK(ST(1))) {
+				git_repository_set_index(repo -> repository, NULL);
+				XSRETURN_UNDEF;
+			}
 
+			index = GIT_SV_TO_PTR(Index, ST(1));
+			git_repository_set_index(repo -> repository, index);
 			rc = git_repository_index(&index, repo -> repository);
 			git_check_error(rc);
 
