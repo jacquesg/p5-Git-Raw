@@ -5,7 +5,7 @@ Revision history for Git-Raw
  - Added Diff methods:
     + buffer()
     + new()
- - Update libgit2 to 75db289a04
+ - Update libgit2 to 7829b4118a
  - Repository -> index() now allows the index to be disassociated by passing
    undef.
 
