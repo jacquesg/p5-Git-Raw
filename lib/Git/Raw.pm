@@ -11,11 +11,16 @@ use Git::Raw::Error::Category;
 use Git::Raw::Packbuilder;
 use Git::Raw::Blob;
 use Git::Raw::Commit;
+use Git::Raw::Index;
+use Git::Raw::Indexer;
+use Git::Raw::Odb;
+use Git::Raw::Mempack;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
 use Git::Raw::Stash;
 use Git::Raw::Stash::Progress;
 use Git::Raw::Tree;
+use Git::Raw::TransferProgress;
 
 =for HTML
 <a href="https://travis-ci.org/jacquesg/p5-Git-Raw">
