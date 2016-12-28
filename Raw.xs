@@ -1257,16 +1257,20 @@ STATIC int git_sideband_progress_cbb(const char *str, int len, void *cbs) {
 STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *cbs) {
 	dSP;
 
+	SV *sv;
+	git_transfer_progress *tp;
+	Newx(tp, 1, git_transfer_progress);
+	Copy(stats, tp, 1, git_transfer_progress);
+
+	GIT_NEW_OBJ(
+		sv, "Git::Raw::TransferProgress", tp
+	);
+
 	ENTER;
 	SAVETMPS;
 
 	PUSHMARK(SP);
-	mXPUSHs(newSViv(stats -> total_objects));
-	mXPUSHs(newSViv(stats -> received_objects));
-	mXPUSHs(newSViv(stats -> local_objects));
-	mXPUSHs(newSViv(stats -> total_deltas));
-	mXPUSHs(newSViv(stats -> indexed_deltas));
-	mXPUSHs(newSVuv(stats -> received_bytes));
+	mXPUSHs(sv);
 	PUTBACK;
 
 	call_sv(git_hv_code_entry((HV *)cbs, "transfer_progress"), G_DISCARD);

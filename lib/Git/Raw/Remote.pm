@@ -272,9 +272,8 @@ containing the progress information.
 =head2 transfer_progress
 
 During the download of new data, this will be regularly called with the current
-count of progress done by the indexer. The callback receives the following integers:
-C<$total_objects>, C<$received_objects>, C<$local_objects>, C<$total_deltas>,
-C<$indexed_deltas> and C<$received_bytes>.
+count of progress done by the indexer. The callback receives a
+L<Git::Raw::TransferProgress> object.
 
 =head2 update_tips
 

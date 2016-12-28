@@ -156,27 +156,28 @@ $repo = Git::Raw::Repository -> clone($url, $path, {}, {
 		},
 
 		'transfer_progress' => sub {
-			my ($to, $ro, $lo, $td, $id, $rb) = @_;
+			my ($progress) = @_;
+			isa_ok $progress, 'Git::Raw::TransferProgress';
 
 			if ($total_objects == 0) {
-				$total_objects = $to;
+				$total_objects = $progress -> total_objects;
 			} else {
 				if ($received_objects < $total_objects) {
-					ok $ro >= $received_objects;
-					$received_objects = $ro;
+					ok $progress -> received_objects >= $received_objects;
+					$received_objects = $progress -> received_objects;
 				} else {
 					if ($total_deltas == 0) {
-						$total_deltas = $td;
+						$total_deltas = $progress -> total_deltas;
 					} else {
-						is $td, $total_deltas;
-						ok $id >= $indexed_deltas;
-						$indexed_deltas = $id;
+						is $progress -> total_deltas, $total_deltas;
+						ok $progress -> indexed_deltas >= $indexed_deltas;
+						$indexed_deltas = $progress -> indexed_deltas;
 					}
 				}
 			}
 
-			ok $rb >= $received_bytes;
-			$received_bytes = $rb;
+			ok $progress -> received_bytes >= $received_bytes;
+			$received_bytes = $progress -> received_bytes;
 		}
 	}
 });
