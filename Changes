@@ -5,10 +5,18 @@ Revision history for Git-Raw
  - Added Diff methods:
     + buffer()
     + new()
- - Update libgit2 to 7829b4118a
  - Repository -> index() now allows the index to be disassociated by passing
    undef.
  - The caller's information is now captured in Error objects
+ - Added Repository method:
+    + odb()
+ - Packbuilder has been completed
+ - Added Odb and Loose, Pack and OnePack backends
+ - Added Mempack backend
+ - Added Indexer
+ - The 'transfer_progress' callback used by a Remote and a Repository now receives
+   a single TransferProgress object instead of the individual items. (Incompatible change)
+ - Update libgit2 to 7829b4118a
 
 0.65      2016-12-21 18:00:44+02:00 Africa/Johannesburg
 
