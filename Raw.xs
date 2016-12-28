@@ -2,9 +2,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#define NEED_newRV_noinc
+#define NEED_sv_2pvbyte
 #define NEED_sv_2pv_flags
-#define NEED_sv_2pvbyte_GLOBAL
-#define NEED_newRV_noinc_GLOBAL
 
 #include "ppport.h"
 
@@ -227,7 +227,7 @@ STATIC const COP* git_closest_cop(pTHX_ const COP *cop, const OP *o, const OP *c
 
 	if (o->op_flags & OPf_KIDS) {
 		const OP *kid;
-		for (kid = cUNOPo->op_first; kid; kid = kid->op_sibling) {
+		for (kid = cUNOPo->op_first; kid; kid = OpSIBLING(kid)) {
 			const COP *new_cop;
 
 			if (kid->op_type == OP_NULL && kid->op_targ == OP_NEXTSTATE)
@@ -252,7 +252,7 @@ STATIC Error create_error_obj(int code, int category, SV *message) {
 	e -> category = category;
 	e -> message = message;
 
-	cop = git_closest_cop(aTHX_ PL_curcop, PL_curcop->op_sibling, PL_op, FALSE);
+	cop = git_closest_cop(aTHX_ PL_curcop, OpSIBLING(PL_curcop), PL_op, FALSE);
 	if (cop == NULL)
 		cop = PL_curcop;
 
