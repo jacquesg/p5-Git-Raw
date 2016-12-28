@@ -60,6 +60,7 @@ typedef git_diff_hunk * Diff_Hunk;
 typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
+typedef git_indexer * Indexer;
 typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 typedef git_patch * Patch;
@@ -2288,6 +2289,7 @@ INCLUDE: xs/Graph.xs
 INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
+INCLUDE: xs/Indexer.xs
 INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
 INCLUDE: xs/Object.xs
