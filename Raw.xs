@@ -71,6 +71,7 @@ typedef git_reflog_entry * Reflog_Entry;
 typedef git_refspec * RefSpec;
 typedef git_signature * Signature;
 typedef git_tag * Tag;
+typedef git_transfer_progress * TransferProgress;
 typedef git_tree * Tree;
 typedef git_treebuilder * Tree_Builder;
 typedef git_tree_entry * Tree_Entry;
@@ -2305,6 +2306,7 @@ INCLUDE: xs/Stash.xs
 INCLUDE: xs/Stash/Progress.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Test.xs
+INCLUDE: xs/TransferProgress.xs
 INCLUDE: xs/Tree.xs
 INCLUDE: xs/Tree/Builder.xs
 INCLUDE: xs/Tree/Entry.xs
