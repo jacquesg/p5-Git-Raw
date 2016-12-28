@@ -21,6 +21,7 @@ Index					T_GIT_REF
 Index_Conflict			T_GIT_REF
 Index_Entry				T_GIT_REF
 Indexer					T_GIT_REF
+Mempack				    T_GIT_REF
 Merge_File_Result		T_GIT_REF
 Note					T_GIT_REF
 Odb						T_GIT_REF

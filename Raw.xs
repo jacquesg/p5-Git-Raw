@@ -16,6 +16,7 @@
 
 #include <git2.h>
 #include <git2/sys/filter.h>
+#include <git2/sys/mempack.h>
 #include <git2/sys/repository.h>
 
 /* internally generated errors */
@@ -61,6 +62,7 @@ typedef git_diff_stats * Diff_Stats;
 typedef git_index * Index;
 typedef git_index_entry * Index_Entry;
 typedef git_indexer * Indexer;
+typedef git_odb_backend * Mempack;
 typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 
@@ -2305,6 +2307,7 @@ INCLUDE: xs/Index.xs
 INCLUDE: xs/Index/Conflict.xs
 INCLUDE: xs/Index/Entry.xs
 INCLUDE: xs/Indexer.xs
+INCLUDE: xs/Mempack.xs
 INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
 INCLUDE: xs/Object.xs
