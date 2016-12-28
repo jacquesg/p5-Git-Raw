@@ -137,7 +137,7 @@ is $content, "filter me";
 $odb_filter -> callbacks({
 	'apply' => sub {
 		$apply = 1;
-		die "Throwing an exception here!\n";
+		die "Throwing an exception here!";
 	},
 	'shutdown' => sub {
 		$shutdown = 1;
@@ -145,7 +145,7 @@ $odb_filter -> callbacks({
 });
 
 ok !eval { $index -> add('filterfile'); };
-is $@, "Throwing an exception here!\n";
+like $@, qr/Throwing an exception here!/;
 
 $shutdown = 0;
 $odb_filter -> unregister;

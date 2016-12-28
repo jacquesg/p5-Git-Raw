@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 use overload
-	'""'       => sub { return $_[0] -> message },
+	'""'       => sub { return $_[0] -> message.' at '.$_[0] -> file.' line '.$_[0] -> line },
 	'0+'       => sub { return $_[0] -> code },
 	'bool'     => sub { return $_[0] -> _is_error },
 	'fallback' => 1;
@@ -46,6 +46,14 @@ B<WARNING>: The API of this module is unstable and may change without warning
 =head2 message( )
 
 Error message.
+
+=head2 file( )
+
+Caller file.
+
+=head2 line( )
+
+Caller line.
 
 =head2 code( )
 

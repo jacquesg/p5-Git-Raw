@@ -88,6 +88,8 @@ typedef struct {
 	int code;
 	int category;
 	SV *message;
+	const char *file;
+	unsigned int line;
 } git_raw_error;
 
 typedef git_raw_error * Error;
@@ -196,13 +198,50 @@ STATIC void *xs_object_magic_get_struct(pTHX_ SV *sv) {
 		);						\
 	} STMT_END
 
+STATIC const COP* git_closest_cop(pTHX_ const COP *cop, const OP *o, const OP *curop, bool opnext) {
+	dVAR;
+
+	if (!o || !curop || (
+	opnext ? o->op_next == curop && o->op_type != OP_SCOPE : o == curop
+	))
+		return cop;
+
+	if (o->op_flags & OPf_KIDS) {
+		const OP *kid;
+		for (kid = cUNOPo->op_first; kid; kid = kid->op_sibling) {
+			const COP *new_cop;
+
+			if (kid->op_type == OP_NULL && kid->op_targ == OP_NEXTSTATE)
+				cop = (const COP *)kid;
+
+			/* Keep searching, and return when we've found something. */
+			new_cop = git_closest_cop(aTHX_ cop, kid, curop, opnext);
+			if (new_cop)
+				return new_cop;
+		}
+    }
+
+    return NULL;
+}
+
 STATIC Error create_error_obj(int code, int category, SV *message) {
 	Error e;
+	const COP *cop;
 
 	Newxz(e, 1, git_raw_error);
 	e -> code = code;
 	e -> category = category;
 	e -> message = message;
+
+	cop = git_closest_cop(aTHX_ PL_curcop, PL_curcop->op_sibling, PL_op, FALSE);
+	if (cop == NULL)
+		cop = PL_curcop;
+
+	if (CopLINE (cop)) {
+		e -> file = CopFILE (cop);
+		e -> line = CopLINE (cop);
+	} else
+		e -> file = "unknown";
 
 	return e;
 }

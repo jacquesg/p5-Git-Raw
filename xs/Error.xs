@@ -31,6 +31,24 @@ category(self)
 	OUTPUT: RETVAL
 
 SV *
+file(self)
+	Error self
+
+	CODE:
+		RETVAL = newSVpv(self -> file, 0);
+
+	OUTPUT: RETVAL
+
+SV *
+line(self)
+	Error self
+
+	CODE:
+		RETVAL = newSVuv(self -> line);
+
+	OUTPUT: RETVAL
+
+SV *
 _is_error(self)
 	Error self
 
