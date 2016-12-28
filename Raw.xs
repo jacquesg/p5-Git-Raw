@@ -65,6 +65,14 @@ typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
 
 typedef struct {
+	git_odb *odb;
+	AV *backends;
+} git_raw_odb;
+
+typedef git_raw_odb * Odb;
+typedef git_odb_backend * Odb_Backend;
+
+typedef struct {
 	git_packbuilder *packbuilder;
 	HV *callbacks;
 } git_raw_packbuilder;
@@ -2300,6 +2308,11 @@ INCLUDE: xs/Indexer.xs
 INCLUDE: xs/Merge/File/Result.xs
 INCLUDE: xs/Note.xs
 INCLUDE: xs/Object.xs
+INCLUDE: xs/Odb.xs
+INCLUDE: xs/Odb/Backend.xs
+INCLUDE: xs/Odb/Backend/Loose.xs
+INCLUDE: xs/Odb/Backend/OnePack.xs
+INCLUDE: xs/Odb/Backend/Pack.xs
 INCLUDE: xs/Packbuilder.xs
 INCLUDE: xs/Patch.xs
 INCLUDE: xs/PathSpec.xs

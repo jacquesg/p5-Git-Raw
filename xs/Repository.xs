@@ -211,6 +211,42 @@ index(self, ...)
 	OUTPUT: RETVAL
 
 SV *
+odb(self, ...)
+	SV *self
+
+	PROTOTYPE: $;$$
+
+	PREINIT:
+		int rc;
+		Odb out;
+		git_odb *odb;
+
+		Repository repo = NULL;
+
+	CODE:
+		repo = GIT_SV_TO_PTR(Repository, self);
+		if (items >= 2) {
+			Odb o = GIT_SV_TO_PTR(Odb, ST(1));
+			git_repository_set_odb(repo -> repository, o -> odb);
+
+			/* associate with this repository */
+			SvREFCNT_dec(GIT_SV_TO_MAGIC(ST(1)));
+			GIT_OBJ_SET_MAGIC(ST(1), SvRV(self));
+		}
+
+		rc = git_repository_odb(&odb, repo -> repository);
+		git_check_error(rc);
+
+		Newxz(out, 1, git_raw_odb);
+		out -> odb = odb;
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Odb", out, SvRV(self)
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 head(self, ...)
 	SV *self
 

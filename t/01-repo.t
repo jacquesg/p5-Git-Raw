@@ -33,6 +33,9 @@ is $disc -> is_empty, 1;
 my $head = eval { $repo -> head };
 is $head, undef;
 
+my $odb = $repo -> odb;
+isa_ok $odb, 'Git::Raw::Odb';
+
 my $file  = $repo -> workdir . 'ignore';
 write_file($file, 'this file should be ignored');
 
@@ -157,8 +160,8 @@ my $error = $@;
 ok ($error);
 isa_ok($error, 'Git::Raw::Error');
 is $error -> file, 't/01-repo.t';
-is $error -> line, 154;
-is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 154";
+is $error -> line, 157;
+is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 157";
 is $error -> code, Git::Raw::Error -> USAGE;
 like $error, qr/Invalid type/;
 is $error -> category, Git::Raw::Error::Category -> INTERNAL;

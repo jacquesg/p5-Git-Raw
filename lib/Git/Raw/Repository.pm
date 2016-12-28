@@ -116,6 +116,11 @@ as the index of the repository. If C<$new_index> is C<undef> the index associate
 with the repository will be disassociated. Returns a L<Git::Raw::Index> object or
 undef if index has been disassociated as part of the call.
 
+=head2 odb( [$new_odb] )
+
+Retrieve the object database of the repository. If C<$odb> is passed, it will be
+used as the object database. Returns a L<Git::Raw::Odb> object.
+
 =head2 head( [$new_head] )
 
 Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository. If
