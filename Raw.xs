@@ -991,6 +991,7 @@ STATIC int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 
 	call_sv(coderef, G_DISCARD);
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1024,6 +1025,7 @@ STATIC int git_config_foreach_cbb(const git_config_entry *entry, void *payload) 
 
 	rv = POPi;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1071,6 +1073,7 @@ STATIC int git_stash_foreach_cb(size_t i, const char *msg, const git_oid *oid, v
 			rv = GIT_EUSER;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1131,6 +1134,7 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 
 	rv = POPi;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1179,6 +1183,7 @@ STATIC int git_checkout_notify_cbb(git_checkout_notify_t why, const char *path, 
 
 	rv = POPi;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1204,6 +1209,7 @@ STATIC void git_checkout_progress_cbb(const char *path, size_t completed_steps,
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
@@ -1222,6 +1228,7 @@ STATIC int git_sideband_progress_cbb(const char *str, int len, void *cbs) {
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1247,6 +1254,7 @@ STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *c
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1269,6 +1277,7 @@ STATIC int git_push_transfer_progress_cbb(unsigned int current, unsigned int tot
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1291,6 +1300,7 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1317,6 +1327,7 @@ STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void 
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1357,6 +1368,7 @@ STATIC int git_push_negotiation_cbb(const git_push_update **updates, size_t len,
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1399,6 +1411,7 @@ STATIC int git_transport_cbb(git_transport **out, git_remote *owner, void *cbs) 
 		*out = NULL;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1422,6 +1435,7 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1476,6 +1490,7 @@ STATIC int git_remote_create_cbb(git_remote **out, git_repository *r,
 		}
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1529,6 +1544,7 @@ STATIC int git_credentials_cbb(git_cred **cred, const char *url,
 			rv = GIT_PASSTHROUGH;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1573,6 +1589,7 @@ STATIC int git_certificate_check_cbb(git_cert *cert, int valid, const char *host
 	} else
 		rv = POPi;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1621,6 +1638,7 @@ STATIC void git_ssh_interactive_cbb(const char *name, int name_len, const char *
 		responses[index].length = len;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
@@ -1647,6 +1665,7 @@ STATIC int git_filter_init_cbb(git_filter *filter) {
 		rv = POPi;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1666,6 +1685,7 @@ STATIC void git_filter_shutdown_cbb(git_filter *filter) {
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
@@ -1699,6 +1719,7 @@ STATIC int git_filter_check_cbb(git_filter *filter, void **payload,
 		rv = POPi;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1744,6 +1765,7 @@ STATIC int git_filter_apply_cbb(git_filter *filter, void **payload,
 		git_buf_set(to, ptr, len);
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1763,6 +1785,7 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload) {
 
 	SPAGAIN;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
@@ -1794,6 +1817,7 @@ STATIC int git_index_matched_path_cbb(const char *path, const char *pathspec, vo
 	} else
 		rv = POPi;
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1825,6 +1849,7 @@ STATIC int git_stash_apply_progress_cbb(git_stash_apply_progress_t progress, voi
 		(void) POPs;
 	}
 
+	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
