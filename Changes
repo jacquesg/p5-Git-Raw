@@ -8,6 +8,7 @@ Revision history for Git-Raw
  - Update libgit2 to 7829b4118a
  - Repository -> index() now allows the index to be disassociated by passing
    undef.
+ - The caller's information is now captured in Error objects
 
 0.65      2016-12-21 18:00:44+02:00 Africa/Johannesburg
 
