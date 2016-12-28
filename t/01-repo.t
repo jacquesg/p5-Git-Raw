@@ -76,7 +76,9 @@ ok exists $caps{'ignore_case'};
 ok exists $caps{'no_filemode'};
 ok exists $caps{'no_symlinks'};
 
-is $caps{ignore_case}, 1 if ($^O eq 'darwin' || $^O eq 'MSWin32');
+# darwin may be case-sensitive or case-insensitive, so lets not check it
+is $caps{ignore_case}, 1 if ($^O eq 'MSWin32');
+is $caps{ignore_case}, 0 if ($^O ne 'MSWin32' and $^O ne 'darwin');
 
 my $triggered_add = 0;
 $index -> add_all({
@@ -160,8 +162,8 @@ my $error = $@;
 ok ($error);
 isa_ok($error, 'Git::Raw::Error');
 is $error -> file, 't/01-repo.t';
-is $error -> line, 157;
-is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 157";
+is $error -> line, 159;
+is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 159";
 is $error -> code, Git::Raw::Error -> USAGE;
 like $error, qr/Invalid type/;
 is $error -> category, Git::Raw::Error::Category -> INTERNAL;
