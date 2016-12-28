@@ -23,6 +23,7 @@ Index_Entry				T_GIT_REF
 Indexer					T_GIT_REF
 Merge_File_Result		T_GIT_REF
 Note					T_GIT_REF
+Packbuilder				T_GIT_REF
 Patch					T_GIT_REF
 PathSpec				T_GIT_REF
 PathSpec_MatchList		T_GIT_REF

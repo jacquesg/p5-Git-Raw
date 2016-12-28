@@ -63,6 +63,13 @@ typedef git_index_entry * Index_Entry;
 typedef git_indexer * Indexer;
 typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
+
+typedef struct {
+	git_packbuilder *packbuilder;
+	HV *callbacks;
+} git_raw_packbuilder;
+
+typedef git_raw_packbuilder *Packbuilder;
 typedef git_patch * Patch;
 typedef git_pathspec * PathSpec;
 typedef git_pathspec_match_list * PathSpec_MatchList;
