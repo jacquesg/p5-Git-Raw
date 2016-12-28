@@ -83,7 +83,7 @@ parents and trees. See C<Git::Raw::Commit-E<gt>create()>
 
 Retrieve the commit corresponding to C<$id>. This function is pretty much the
 same as C<$repo-E<gt>lookup($id)> except that it only returns commits. If the
-commit doesn't exist, this function wil return C<undef>.
+commit doesn't exist, this function will return C<undef>.
 
 =head2 owner( )
 

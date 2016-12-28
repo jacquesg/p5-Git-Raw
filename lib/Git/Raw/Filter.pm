@@ -70,7 +70,7 @@ should be returned.
 
 =item * "cleanup"
 
-Opitional callback to clean up after filtering has been applied.
+Optional callback to clean up after filtering has been applied.
 
 =back
 

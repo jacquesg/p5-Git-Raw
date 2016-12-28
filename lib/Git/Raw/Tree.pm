@@ -25,7 +25,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Retrieve the tree corresponding to C<$id>. This function is pretty much the same
 as C<$repo-E<gt>lookup($id)> except that it only returns trees. If the tree
-doesn't exist, this function wil return C<undef>.
+doesn't exist, this function will return C<undef>.
 
 =head2 owner( )
 

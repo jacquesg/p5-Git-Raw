@@ -47,7 +47,7 @@ L<Git::Raw::Signature> representing the tagger and a target object.
 
 Retrieve the tag corresponding to C<$id>. This function is pretty much the same
 as C<$repo-E<gt>lookup($id)> except that it only returns tags. If the tag
-doesn't exist, this function wil return C<undef>.
+doesn't exist, this function will return C<undef>.
 
 =head2 owner( )
 

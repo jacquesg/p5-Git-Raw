@@ -18,11 +18,11 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 count( )
 
-Retrieve the number of succesful match entries.
+Retrieve the number of successful match entries.
 
 =head2 entries( )
 
-Retrieve the sucessful match entries. Returns a list of strings.
+Retrieve the successful match entries. Returns a list of strings.
 
 =head2 failed_count( )
 

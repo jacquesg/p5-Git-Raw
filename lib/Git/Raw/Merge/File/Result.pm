@@ -19,7 +19,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 =head2 automergeable( )
 
 Return a truthy value if the file was automerged, or a false value if the
-content containts conflict markers.
+content contains conflict markers.
 
 =head2 content( )
 
