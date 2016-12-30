@@ -37,33 +37,44 @@ add(self, entry)
 
 		git_check_error(rc);
 
-void
+SV *
 add_frombuffer(self, path, buffer)
-	Index self
+	SV *self
 	SV *path
 	SV *buffer
 
 	PREINIT:
 		int rc;
-		git_index_entry entry;
+		Index index;
+		git_index_entry *entry;
+		git_index_entry ientry;
 		const char *b;
 		STRLEN len;
 
 	CODE:
+		index = GIT_SV_TO_PTR(Index, self);
+
 		if (!SvOK(buffer))
 			croak_usage("Buffer not provided");
 
 		if (SvROK(buffer))
 			buffer = SvRV(buffer);
 
-		memset(&entry, 0x0, sizeof(git_index_entry));
-		entry.mode = GIT_FILEMODE_BLOB;
-		entry.path = git_ensure_pv(path, "path");
+		memset(&ientry, 0x0, sizeof(git_index_entry));
+		ientry.mode = GIT_FILEMODE_BLOB;
+		ientry.path = git_ensure_pv(path, "path");
 
 		b = git_ensure_pv_with_len(buffer, "buffer", &len);
-		rc = git_index_add_frombuffer(self, &entry,
+		rc = git_index_add_frombuffer(index, &ientry,
 			b, (size_t) len);
 		git_check_error(rc);
+
+		RETVAL = git_index_entry_to_sv(
+			git_index_get_bypath(index, ientry.path, 0),
+			NULL, GIT_SV_TO_MAGIC(self)
+		);
+
+	OUTPUT: RETVAL
 
 void
 add_all(self, opts)

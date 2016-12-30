@@ -35,7 +35,16 @@ $index -> add_frombuffer ('a/b.txt', 'content2');
 $index -> add_frombuffer ('a.txt', 'content1');
 
 my $content3 = 'content3';
-$index -> add_frombuffer ('a/b/c.txt', \$content3);
+my $blob_id = 'a2b32293aab475bf50798c7642f0fe0593c167f6';
+my $entry = $index -> add_frombuffer ('a/b/c.txt', \$content3);
+isa_ok $entry, 'Git::Raw::Index::Entry';
+is $entry -> id, $blob_id;
+is $entry -> path, 'a/b/c.txt';
+is $entry -> size, length($content3);
+is $entry -> stage, 0;
+is $entry -> blob, $blob_id;
+is $entry -> blob -> content, $content3;
+
 $index -> write_tree;
 
 my $tree = $index -> write_tree($repo);
