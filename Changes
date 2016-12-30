@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.70      2016-12-30 21:07:39+02:00 Africa/Johannesburg
+
  - Documentation fixes
  - Update libgit2 to 42ad85ef01
  - Fixes OpenBSD FTBFS (LibreSSL is API compatible with OpenSSL 1.0.1)
