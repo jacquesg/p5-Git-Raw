@@ -80,7 +80,7 @@ is_deeply $repo -> status({}) -> {'test'}, {'flags' => ['index_modified', 'workt
 ok ($repo -> stash($me, 'some stash'));
 is_deeply $repo -> status({}), {};
 
-my $count = 0;
+$count = 0;
 Git::Raw::Stash -> foreach($repo, sub { $count++ });
 is $count, 2;
 
@@ -110,7 +110,7 @@ is $stashes[0] -> {'msg'}, 'On master: stash untracked files';
 ok (! -f $untracked_file);
 
 write_file($untracked_file, 'this is an untracked file');
-my $index = $repo -> index;
+$index = $repo -> index;
 $index -> add('untracked');
 $index -> write;
 

@@ -6,7 +6,7 @@ use Git::Raw;
 use File::Copy;
 use File::Slurp::Tiny qw(write_file);
 use File::Spec::Functions qw(catfile canonpath rel2abs);
-use File::Path 2.07 qw(make_path remove_tree);
+use File::Path qw(make_path remove_tree);
 use Time::Local;
 
 my $path = rel2abs(catfile('t', 'test_repo'));

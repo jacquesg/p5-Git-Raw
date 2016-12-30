@@ -7,7 +7,7 @@ use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
 use File::Basename qw(dirname);
 use File::Spec::Unix;
-use File::Path 2.07 qw(make_path remove_tree);
+use File::Path qw(make_path remove_tree);
 
 my $local_path = rel2abs(catfile('t', 'local_bare_repo'));
 make_path($local_path);
