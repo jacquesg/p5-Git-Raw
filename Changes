@@ -3,6 +3,7 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Documentation fixes
+ - Update libgit2 to 42ad85ef01
 
 0.69      2016-12-30 10:09:34+02:00 Africa/Johannesburg
 
