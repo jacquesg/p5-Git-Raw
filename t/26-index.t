@@ -33,7 +33,9 @@ ok(!eval {$index -> add_frombuffer('blah', undef)});
 $index -> add_frombuffer ('d.txt', 'content4');
 $index -> add_frombuffer ('a/b.txt', 'content2');
 $index -> add_frombuffer ('a.txt', 'content1');
-$index -> add_frombuffer ('a/b/c.txt', 'content3');
+
+my $content3 = 'content3';
+$index -> add_frombuffer ('a/b/c.txt', \$content3);
 $index -> write_tree;
 
 my $tree = $index -> write_tree($repo);

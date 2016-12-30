@@ -34,7 +34,8 @@ or alternatively a L<Git::Raw::Index::Entry>.
 =head2 add_frombuffer( $path, $buffer )
 
 Add or update an entry from an in memory file. The entry will be placed at C<$path>
-with the contents of C<$buffer>.
+with the contents of C<$buffer>. C<$buffer> may either be string or a reference
+to a string.
 
 =head2 add_all( \%opts )
 

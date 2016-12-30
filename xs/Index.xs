@@ -46,17 +46,23 @@ add_frombuffer(self, path, buffer)
 	PREINIT:
 		int rc;
 		git_index_entry entry;
+		const char *b;
+		STRLEN len;
 
 	CODE:
 		if (!SvOK(buffer))
 			croak_usage("Buffer not provided");
 
+		if (SvROK(buffer))
+			buffer = SvRV(buffer);
+
 		memset(&entry, 0x0, sizeof(git_index_entry));
 		entry.mode = GIT_FILEMODE_BLOB;
 		entry.path = git_ensure_pv(path, "path");
 
+		b = git_ensure_pv_with_len(buffer, "buffer", &len);
 		rc = git_index_add_frombuffer(self, &entry,
-			SvPVX(buffer), SvCUR(buffer));
+			b, (size_t) len);
 		git_check_error(rc);
 
 void
