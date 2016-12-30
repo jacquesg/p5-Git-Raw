@@ -45,6 +45,8 @@ is $entry -> stage, 0;
 is $entry -> blob, $blob_id;
 is $entry -> blob -> content, $content3;
 
+$index -> add($entry);
+
 $index -> write_tree;
 
 my $tree = $index -> write_tree($repo);

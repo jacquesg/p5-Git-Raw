@@ -255,7 +255,8 @@ merge(self, ancestor, theirs, ours, ...)
 		Repository repo_ptr;
 
 		git_merge_file_options options = GIT_MERGE_FILE_OPTIONS_INIT;
-		Merge_File_Result result = NULL;
+		git_merge_file_result result;
+		Merge_File_Result out = NULL;
 
 	CODE:
 		if (items == 5 && SvOK(ST(4))) {
@@ -266,21 +267,19 @@ merge(self, ancestor, theirs, ours, ...)
 		repo = GIT_SV_TO_MAGIC(self);
 		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
 
-		Newxz(result, 1, git_merge_file_result);
-
-		rc = git_merge_file_from_index(result, repo_ptr -> repository,
+		rc = git_merge_file_from_index(&result, repo_ptr -> repository,
 			ancestor,
 			ours,
 			theirs,
 			&options);
-		if (rc != GIT_OK) {
-			Safefree(result);
-			git_check_error(rc);
-		}
+		git_check_error(rc);
+
+		Newxz(out, 1, git_merge_file_result);
+		StructCopy(&result, out, git_merge_file_result);
 
 		GIT_NEW_OBJ_WITH_MAGIC(
 			RETVAL, "Git::Raw::Merge::File::Result",
-			(Merge_File_Result) result, repo
+			out, repo
 		);
 
 	OUTPUT: RETVAL
