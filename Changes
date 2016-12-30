@@ -5,6 +5,8 @@ Revision history for Git-Raw
 0.67      2016-12-28 19:01:36+02:00 Africa/Johannesburg
 
  - Fixes compilation failure with blead perl 5.25.x (GH#177)
+ - Index -> add_frombuffer() now accepts either a string or a string reference (GH#181)
+ - Index -> add_frombuffer() now returns an Index::Entry (GH#180)
 
 0.66      2016-12-28 18:04:48+02:00 Africa/Johannesburg
 
