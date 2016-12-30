@@ -35,7 +35,7 @@ or alternatively a L<Git::Raw::Index::Entry>.
 
 Add or update an entry from an in memory file. The entry will be placed at C<$path>
 with the contents of C<$buffer>. C<$buffer> may either be string or a reference
-to a string.
+to a string. Returns a L<Git::Raw::Index::Entry> object.
 
 =head2 add_all( \%opts )
 
