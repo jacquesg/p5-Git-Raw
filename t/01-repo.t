@@ -77,8 +77,8 @@ ok exists $caps{'no_filemode'};
 ok exists $caps{'no_symlinks'};
 
 # darwin may be case-sensitive or case-insensitive, so lets not check it
-is $caps{ignore_case}, 1 if ($^O eq 'MSWin32');
-is $caps{ignore_case}, 0 if ($^O ne 'MSWin32' and $^O ne 'darwin');
+is $caps{ignore_case}, 1 if ($^O eq 'MSWin32' or $^O eq 'cygwin');
+is $caps{ignore_case}, 0 if ($^O ne 'MSWin32' and $^O ne 'cygwin' and $^O ne 'darwin');
 
 my $triggered_add = 0;
 $index -> add_all({
