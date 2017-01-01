@@ -656,7 +656,9 @@ Ignore whitespace at end of line.
 
 =item * "skip_binary_check"
 
-Disable updating of the binary flag in delta records.
+Disable updating of the binary flag in delta records. This is useful when
+iterating over a diff if you don't need hunk and data callbacks and want to avoid
+having to load file completely.
 
 =item * "enable_fast_untracked_dirs"
 
