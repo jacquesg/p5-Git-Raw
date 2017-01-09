@@ -91,6 +91,7 @@ is $non_existent_entry, undef;
 
 my $entry = $tree -> entry_byname('test3');
 isa_ok $entry, 'Git::Raw::Tree::Entry';
+is $entry -> type, Git::Raw::Object -> TREE;
 isa_ok $entry -> object, 'Git::Raw::Tree';
 
 $non_existent_entry = $tree -> entry_bypath('test3/under/the/tree/nonexistent');
@@ -102,6 +103,7 @@ isa_ok $entry, 'Git::Raw::Tree::Entry';
 
 my $obj4 = $entry -> object;
 
+is $entry -> type, Git::Raw::Object -> BLOB;
 isa_ok $obj4, 'Git::Raw::Blob';
 is $obj4 -> content, 'this is a third test';
 is $obj4 -> size, '20';

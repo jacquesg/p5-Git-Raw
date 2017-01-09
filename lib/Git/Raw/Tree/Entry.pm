@@ -31,6 +31,11 @@ Retrieve the filename of the tree entry.
 Retrieve the file mode of the tree entry, as an integer. For example,
 a normal file has mode 0100644 = 33188.
 
+=head2 type( )
+
+Retrieve the type of the object pointed by the tree entry. Returns a constant
+from the L<Git::Raw::Object> namespace.
+
 =head2 object( )
 
 Retrieve the object pointed by the tree entry.

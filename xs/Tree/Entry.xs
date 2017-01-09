@@ -36,6 +36,16 @@ file_mode(self)
 	OUTPUT: RETVAL
 
 SV *
+type(self)
+	Tree_Entry self
+
+	CODE:
+		RETVAL = newSViv(git_tree_entry_type(self));
+
+	OUTPUT:
+		RETVAL
+
+SV *
 object(self)
 	SV *self
 
