@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Tree::Entry method:
+    + type()
+
 0.70      2016-12-30 21:07:39+02:00 Africa/Johannesburg
 
  - Documentation fixes
