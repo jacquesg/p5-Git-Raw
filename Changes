@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Index method:
+    + entry_count()
+
 0.71      2017-01-09 08:52:13+02:00 Africa/Johannesburg
 
  - Added Tree::Entry method:
