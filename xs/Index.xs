@@ -382,6 +382,19 @@ checkout(self, ...)
 		Safefree(checkout_opts.paths.strings);
 		git_check_error(rc);
 
+SV *
+entry_count(self)
+	Index self
+
+	PREINIT:
+		size_t count;
+
+	CODE:
+		count = git_index_entrycount (self);
+		RETVAL = newSViv ((int) count);
+
+	OUTPUT: RETVAL
+
 void
 entries(self)
 	SV *self

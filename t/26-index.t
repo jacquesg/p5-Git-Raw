@@ -27,12 +27,17 @@ isa_ok $r, 'Git::Raw::Repository';
 is $index -> path, undef;
 
 $index -> clear;
+is $index -> entry_count, 0;
 
 ok(!eval {$index -> add_frombuffer('blah', undef)});
+is $index -> entry_count, 0;
 
 $index -> add_frombuffer ('d.txt', 'content4');
+is $index -> entry_count, 1;
 $index -> add_frombuffer ('a/b.txt', 'content2');
+is $index -> entry_count, 2;
 $index -> add_frombuffer ('a.txt', 'content1');
+is $index -> entry_count, 3;
 
 my $content3 = 'content3';
 my $blob_id = 'a2b32293aab475bf50798c7642f0fe0593c167f6';

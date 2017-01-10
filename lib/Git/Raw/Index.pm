@@ -127,6 +127,10 @@ Update files in the working tree to match the contents of the index.
 See C<Git::Raw::Repository-E<gt>checkout()> for valid
 C<%checkout_opts> values.
 
+=head2 entry_count( )
+
+Retrieve the number of entries in the index.
+
 =head2 entries( )
 
 Retrieve index entries. Returns a list of L<Git::Raw::Index::Entry> objects.
