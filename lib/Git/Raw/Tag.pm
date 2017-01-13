@@ -67,7 +67,7 @@ Delete the tag. The L<Git::Raw::Tag> object must not be accessed afterwards.
 
 =head2 id( )
 
-Retrieve the id of the tag, as string.
+Retrieve the id of the tag, as a string.
 
 =head2 name( )
 

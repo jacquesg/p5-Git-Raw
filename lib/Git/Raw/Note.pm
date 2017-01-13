@@ -35,7 +35,7 @@ Remove the note from C<$commitish>.
 
 =head2 id( )
 
-Retrieve the note's id.
+Retrieve the note's id as a string.
 
 =head2 message( )
 

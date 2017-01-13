@@ -33,7 +33,7 @@ Retrieve the L<Git::Raw::Repository> owning the tree.
 
 =head2 id( )
 
-Retrieve the id of the tree, as string.
+Retrieve the id of the tree, as a string.
 
 =head2 entries( )
 

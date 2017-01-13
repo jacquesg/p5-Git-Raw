@@ -91,7 +91,7 @@ Retrieve the L<Git::Raw::Repository> owning the commit.
 
 =head2 id( )
 
-Retrieve the id of the commit, as string.
+Retrieve the id of the commit, as a string.
 
 =head2 message( )
 

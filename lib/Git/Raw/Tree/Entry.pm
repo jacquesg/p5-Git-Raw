@@ -20,7 +20,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 id( )
 
-Retrieve the id of the tree entry, as string.
+Get the id of the object pointed by the entry, as a string.
 
 =head2 name( )
 
