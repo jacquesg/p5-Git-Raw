@@ -95,6 +95,22 @@ backend_count(self)
 	OUTPUT: RETVAL
 
 void
+foreach(self, cb)
+	Odb self
+	SV *cb
+
+	PREINIT:
+		int rc;
+
+	CODE:
+		rc = git_odb_foreach(self -> odb,
+			git_odb_foreach_cbb,
+			git_ensure_cv(cb, "callback")
+		);
+		if (rc != GIT_EUSER)
+			git_check_error(rc);
+
+void
 refresh(self)
 	Odb self
 

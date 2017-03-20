@@ -1879,6 +1879,37 @@ STATIC int git_stash_apply_progress_cbb(git_stash_apply_progress_t progress, voi
 	return rv;
 }
 
+STATIC int git_odb_foreach_cbb(const git_oid *oid, void *payload) {
+	dSP;
+	int rv = 0;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(git_oid_to_sv(oid));
+	PUTBACK;
+
+	call_sv((SV *)payload, G_EVAL|G_SCALAR);
+
+	SPAGAIN;
+
+	if (SvTRUE(ERRSV)) {
+		rv = -1;
+		(void) POPs;
+	} else {
+		rv = POPi;
+		if (rv != 0)
+			rv = GIT_EUSER;
+	}
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+	return rv;
+}
+
 STATIC void git_list_to_paths(AV *list, git_strarray *paths) {
 	size_t i = 0, count = 0;
 	SV **path;

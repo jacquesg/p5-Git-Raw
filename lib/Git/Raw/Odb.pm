@@ -39,6 +39,11 @@ have changed on disk while the library is running, this function will force a
 reload of the underlying indexes. Use this method when you're confident that an
 external application has tampered with the ODB.
 
+=head2 foreach( $repo, $callback )
+
+Run C<$callback> for every object available in the database. The callback a single
+argument, the OID of the object. A non-zero return value will stop the loop.
+
 =head2 add_backend( $backend, $priority )
 
 Add a custom backend to the ODB. The backends are checked in relative ordering,

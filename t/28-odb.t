@@ -13,6 +13,17 @@ my $odb = $repo -> odb;
 isa_ok $odb, "Git::Raw::Odb";
 is $odb -> backend_count, 2;
 
+my $object_count = 0;
+my $cb = sub
+{
+	my ($id) = @_;
+	$object_count++;
+	is length($id), 40;
+	0;
+};
+$odb->foreach($cb);
+ok $object_count > 100;
+
 $odb = Git::Raw::Odb -> open(catfile($repo -> path, 'objects'));
 isa_ok $odb, "Git::Raw::Odb";
 is $odb -> backend_count, 2;
