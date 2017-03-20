@@ -2,6 +2,13 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Object methods:
+    + lookup()
+    + type()
+
+ - Added Object method:
+    + foreach()
+
 0.72      2017-01-10 07:10:50+02:00 Africa/Johannesburg
 
  - Added Index method:
