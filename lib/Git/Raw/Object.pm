@@ -34,6 +34,16 @@ L<Git::Raw::Object> provides a namespace for object constants.
 B<WARNING>: The API of this module is unstable and may change without warning
 (any change will be appropriately documented in the changelog).
 
+=head1 METHODS
+
+=head2 lookup( $id )
+
+Retrieve the object corresponding to C<$id>. Returns a L<Git::Raw::Object>.
+
+=head2 type( )
+
+Get the object type.
+
 =head1 CONSTANTS
 
 =head2 ANY

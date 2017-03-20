@@ -65,6 +65,7 @@ typedef git_indexer * Indexer;
 typedef git_odb_backend * Mempack;
 typedef git_merge_file_result * Merge_File_Result;
 typedef git_note * Note;
+typedef git_object * Object;
 
 typedef struct {
 	git_odb *odb;

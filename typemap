@@ -24,6 +24,7 @@ Indexer					T_GIT_REF
 Mempack				    T_GIT_REF
 Merge_File_Result		T_GIT_REF
 Note					T_GIT_REF
+Object					T_GIT_REF
 Odb						T_GIT_REF
 Odb_Backend				T_GIT_REF
 Packbuilder				T_GIT_REF
