@@ -15,6 +15,7 @@ use Git::Raw::Index;
 use Git::Raw::Indexer;
 use Git::Raw::Object;
 use Git::Raw::Odb;
+use Git::Raw::Odb::Object;
 use Git::Raw::Mempack;
 use Git::Raw::Reference;
 use Git::Raw::Repository;

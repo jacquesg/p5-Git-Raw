@@ -110,6 +110,36 @@ foreach(self, cb)
 		if (rc != GIT_EUSER)
 			git_check_error(rc);
 
+Odb_Object
+read(self, id)
+	Odb self
+	SV *id
+
+	PREINIT:
+		int rc;
+
+		git_oid oid;
+
+		STRLEN len;
+		const char *id_str;
+
+		Odb_Object obj;
+
+	INIT:
+		id_str = git_ensure_pv_with_len(id, "id", &len);
+
+	CODE:
+		rc = git_oid_fromstrn(&oid, id_str, len);
+		git_check_error(rc);
+
+		rc = git_odb_read(&obj, self -> odb, &oid);
+		if (rc == GIT_ENOTFOUND)
+			XSRETURN_UNDEF;
+
+		RETVAL = obj;
+
+	OUTPUT: RETVAL
+
 void
 refresh(self)
 	Odb self

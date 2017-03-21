@@ -19,10 +19,15 @@ my $cb = sub
 	my ($id) = @_;
 	$object_count++;
 	is length($id), 40;
+
+	my $obj = $odb -> read($id);
+	isa_ok $obj, "Git::Raw::Odb::Object";
 	0;
 };
 $odb->foreach($cb);
 ok $object_count > 100;
+
+is $odb -> read ('123456789123456789'), undef;
 
 $odb = Git::Raw::Odb -> open(catfile($repo -> path, 'objects'));
 isa_ok $odb, "Git::Raw::Odb";

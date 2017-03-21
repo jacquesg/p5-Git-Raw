@@ -74,6 +74,7 @@ typedef struct {
 
 typedef git_raw_odb * Odb;
 typedef git_odb_backend * Odb_Backend;
+typedef git_odb_object * Odb_Object;
 
 typedef struct {
 	git_packbuilder *packbuilder;
@@ -2349,6 +2350,7 @@ INCLUDE: xs/Note.xs
 INCLUDE: xs/Object.xs
 INCLUDE: xs/Odb.xs
 INCLUDE: xs/Odb/Backend.xs
+INCLUDE: xs/Odb/Object.xs
 INCLUDE: xs/Odb/Backend/Loose.xs
 INCLUDE: xs/Odb/Backend/OnePack.xs
 INCLUDE: xs/Odb/Backend/Pack.xs

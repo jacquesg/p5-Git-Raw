@@ -27,6 +27,7 @@ Note					T_GIT_REF
 Object					T_GIT_REF
 Odb						T_GIT_REF
 Odb_Backend				T_GIT_REF
+Odb_Object				T_GIT_REF
 Packbuilder				T_GIT_REF
 Patch					T_GIT_REF
 PathSpec				T_GIT_REF

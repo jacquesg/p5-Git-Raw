@@ -56,6 +56,10 @@ Add an alternate custom backend to the ODB. Alternate backends are always
 checked for objects after all the main backends have been exhausted. Writing is
 disabled on alternate backends.
 
+=head2 read( $id )
+
+Read an object from the database. Returns a L<Git::Raw::Odb::Object>.
+
 =head1 AUTHOR
 
 Jacques Germishuys <jacquesg@striata.com>
