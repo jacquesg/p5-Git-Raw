@@ -14,6 +14,7 @@ Revision history for Git-Raw
     + id()
     + type()
     + size()
+    + data()
 
 0.72      2017-01-10 07:10:50+02:00 Africa/Johannesburg
 
