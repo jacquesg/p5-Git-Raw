@@ -36,6 +36,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 id( )
+
+Retrieve the id of the object, as a string.
+
 =head2 lookup( $id )
 
 Retrieve the object corresponding to C<$id>. Returns a L<Git::Raw::Object>.

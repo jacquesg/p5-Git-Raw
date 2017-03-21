@@ -3,6 +3,15 @@ MODULE = Git::Raw			PACKAGE = Git::Raw::Object
 INCLUDE: const-xs-object.inc
 
 SV *
+id(self)
+	Object self
+
+	CODE:
+		RETVAL = git_oid_to_sv(git_object_id(self));
+
+	OUTPUT: RETVAL
+
+SV *
 lookup(class, repo, id)
 	SV *class
 	SV *repo

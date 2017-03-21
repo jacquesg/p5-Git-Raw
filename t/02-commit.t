@@ -428,6 +428,7 @@ $commit4 = Git::Raw::Commit -> lookup($repo, $commit4 -> id);
 my $obj = Git::Raw::Object -> lookup($repo, $commit4 -> id);
 isa_ok $obj, "Git::Raw::Object";
 is $obj -> type, Git::Raw::Object -> COMMIT;
+is $obj -> id, $commit4 -> id;
 
 is $commit4 -> message, "fourth commit\n";
 is $commit4 -> summary, "fourth commit";
