@@ -3,6 +3,7 @@ Revision history for Git-Raw
 {{$NEXT}}
 
  - Added Object methods:
+    + id()
     + lookup()
     + type()
 
