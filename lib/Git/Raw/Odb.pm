@@ -41,8 +41,9 @@ external application has tampered with the ODB.
 
 =head2 foreach( $repo, $callback )
 
-Run C<$callback> for every object available in the database. The callback a single
-argument, the OID of the object. A non-zero return value will stop the loop.
+Run C<$callback> for every object available in the database. The callback receives
+a single argument, the OID of the object. A non-zero return value will terminate
+the loop.
 
 =head2 add_backend( $backend, $priority )
 
