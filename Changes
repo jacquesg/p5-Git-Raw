@@ -7,8 +7,13 @@ Revision history for Git-Raw
     + lookup()
     + type()
 
- - Added Object method:
+ - Added Odb methods:
     + foreach()
+
+ - Added Odb::Object methods:
+    + id()
+    + type()
+    + size()
 
 0.72      2017-01-10 07:10:50+02:00 Africa/Johannesburg
 
