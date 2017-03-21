@@ -34,6 +34,10 @@ Get the object type.
 
 Get the object size.
 
+=head2 data( )
+
+Get the uncompressed, raw data without the leading header.
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2016 Jacques Germishuys.

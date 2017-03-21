@@ -27,6 +27,15 @@ type(self)
 
 	OUTPUT: RETVAL
 
+SV *
+data(self)
+	Odb_Object self
+
+	CODE:
+		RETVAL = newSVpv(git_odb_object_data(self), git_odb_object_size(self));
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self
