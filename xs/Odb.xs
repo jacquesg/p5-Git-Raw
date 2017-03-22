@@ -135,6 +135,7 @@ read(self, id)
 		rc = git_odb_read_prefix(&obj, self -> odb, &oid, len);
 		if (rc == GIT_ENOTFOUND)
 			XSRETURN_UNDEF;
+		git_check_error(rc);
 
 		RETVAL = obj;
 

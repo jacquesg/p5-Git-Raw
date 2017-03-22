@@ -58,7 +58,8 @@ disabled on alternate backends.
 
 =head2 read( $id )
 
-Read an object from the database. Returns a L<Git::Raw::Odb::Object>.
+Read an object from the database. Returns a L<Git::Raw::Odb::Object> or C<undef>
+if the object does not exist.
 
 =head1 AUTHOR
 
