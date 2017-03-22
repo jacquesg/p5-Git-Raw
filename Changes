@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.73      2017-03-22 18:41:31+02:00 Africa/Johannesburg
+
  - Added Object methods:
     + id()
     + lookup()
