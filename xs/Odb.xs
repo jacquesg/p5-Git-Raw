@@ -132,7 +132,7 @@ read(self, id)
 		rc = git_oid_fromstrn(&oid, id_str, len);
 		git_check_error(rc);
 
-		rc = git_odb_read(&obj, self -> odb, &oid);
+		rc = git_odb_read_prefix(&obj, self -> odb, &oid, len);
 		if (rc == GIT_ENOTFOUND)
 			XSRETURN_UNDEF;
 

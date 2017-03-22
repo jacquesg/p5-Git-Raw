@@ -439,6 +439,9 @@ is $obj -> size, 186;
 my $data = $obj -> data;
 is length($data), 186;
 
+$obj = $odb -> read(substr($commit4 -> id, 0, 20));
+isa_ok $obj, "Git::Raw::Odb::Object";
+
 is $commit4 -> message, "fourth commit\n";
 is $commit4 -> summary, "fourth commit";
 
