@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fixed crashes in Git::Raw::Diff -> print due to incorrect usages
+ of SPAGAIN/PUTBACK (GH#188) (thanks, @noah-kogler!)
+
 0.73      2017-03-22 18:41:31+02:00 Africa/Johannesburg
 
  - Added Object methods:
