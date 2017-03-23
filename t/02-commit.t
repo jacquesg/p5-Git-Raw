@@ -439,6 +439,12 @@ is $obj -> size, 186;
 my $data = $obj -> data;
 is length($data), 186;
 
+my $hash = $odb -> hash('123456', Git::Raw::Object -> BLOB);
+is $hash, '4632e068d5889f042fe2d9254a9295e5f31a26c7';
+
+my $hash2 = $odb -> write('123456', Git::Raw::Object -> BLOB);
+is $hash2, $hash;
+
 $obj = $odb -> read(substr($commit4 -> id, 0, 20));
 isa_ok $obj, "Git::Raw::Odb::Object";
 

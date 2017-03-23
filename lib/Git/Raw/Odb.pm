@@ -61,6 +61,16 @@ disabled on alternate backends.
 Read an object from the database. Returns a L<Git::Raw::Odb::Object> or C<undef>
 if the object does not exist.
 
+=head2 write( $data, type )
+
+Write an object directly to the database. Returns the OID of the object. C<$type>
+should be one of the values as defines in the constants section of L<Git::Raw::Object>.
+
+=head2 hash( $data, $type )
+
+Determine the object-ID (sha1 hash) of C<$data>. C<$type> should be one of the values
+as defined in the constants section of L<Git::Raw::Object>.
+
 =head1 AUTHOR
 
 Jacques Germishuys <jacquesg@striata.com>

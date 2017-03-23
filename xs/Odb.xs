@@ -141,12 +141,62 @@ read(self, id)
 
 	OUTPUT: RETVAL
 
+SV *
+write(self, data, type)
+	Odb self
+	SV *data
+	SV *type
+
+	PREINIT:
+		int rc;
+		git_oid id;
+
+		STRLEN len;
+		const char *d;
+
+	CODE:
+		d = git_ensure_pv_with_len(data, "data", &len);
+
+		rc = git_odb_write(&id, self -> odb, d, len,
+			git_ensure_iv(type, "type")
+		);
+		git_check_error(rc);
+
+		RETVAL = git_oid_to_sv(&id);
+
+	OUTPUT: RETVAL
+
 void
 refresh(self)
 	Odb self
 
 	CODE:
 		git_odb_refresh(self -> odb);
+
+SV *
+hash (self, data, type)
+	SV *self
+	SV *data
+	SV *type
+
+	PREINIT:
+		int rc;
+		git_oid id;
+
+		STRLEN len;
+		const char *d;
+
+	CODE:
+		d = git_ensure_pv_with_len(data, "data", &len);
+
+		rc = git_odb_hash(&id, d, len,
+			git_ensure_iv(type, "type")
+		);
+		git_check_error(rc);
+
+		RETVAL = git_oid_to_sv(&id);
+
+	OUTPUT: RETVAL
 
 void
 DESTROY(self)
