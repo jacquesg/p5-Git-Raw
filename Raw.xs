@@ -1012,7 +1012,6 @@ STATIC int git_diff_cb(const git_diff_delta *delta, const git_diff_hunk *hunk,
 
 	call_sv(coderef, G_DISCARD);
 
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
