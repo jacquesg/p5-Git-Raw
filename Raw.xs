@@ -1246,9 +1246,6 @@ STATIC int git_sideband_progress_cbb(const char *str, int len, void *cbs) {
 
 	call_sv(git_hv_code_entry((HV *)cbs, "sideband_progress"), G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1276,9 +1273,6 @@ STATIC int git_transfer_progress_cbb(const git_transfer_progress *stats, void *c
 
 	call_sv(git_hv_code_entry((HV *)cbs, "transfer_progress"), G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1299,9 +1293,6 @@ STATIC int git_push_transfer_progress_cbb(unsigned int current, unsigned int tot
 
 	call_sv(git_hv_code_entry((HV *)cbs, "push_transfer_progress"), G_VOID|G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1322,9 +1313,6 @@ STATIC int git_packbuilder_progress_cbb(int stage, unsigned int current, unsigne
 
 	call_sv(git_hv_code_entry((HV *)cbs, "pack_progress"), G_VOID|G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1349,9 +1337,6 @@ STATIC int git_push_update_reference_cbb(const char *ref, const char *msg, void 
 
 	call_sv(git_hv_code_entry((HV *)cbs, "push_update_reference"), G_VOID|G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1384,13 +1369,13 @@ STATIC int git_push_negotiation_cbb(const git_push_update **updates, size_t len,
 
 	call_sv(git_hv_code_entry((HV *)cbs, "push_negotiation"), G_EVAL|G_SCALAR);
 
+	SPAGAIN;
+
 	if (SvTRUE(ERRSV)) {
 		rv = -1;
 		(void) POPs;
 	} else
 		rv = POPi;
-
-	SPAGAIN;
 
 	PUTBACK;
 	FREETMPS;
@@ -1457,9 +1442,6 @@ STATIC int git_update_tips_cbb(const char *name, const git_oid *a,
 
 	call_sv(git_hv_code_entry((HV *)cbs, "update_tips"), G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 
@@ -1707,9 +1689,6 @@ STATIC void git_filter_shutdown_cbb(git_filter *filter) {
 
 	call_sv(((git_raw_filter *) filter) -> callbacks.shutdown, G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
@@ -1807,9 +1786,6 @@ STATIC void git_filter_cleanup_cbb(git_filter *filter, void *payload) {
 
 	call_sv(((git_raw_filter *) filter) -> callbacks.cleanup, G_DISCARD);
 
-	SPAGAIN;
-
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
 }
