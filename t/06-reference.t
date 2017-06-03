@@ -71,7 +71,7 @@ eval {
 	Git::Raw::Reference -> create('refs/test-ref', $repo, $head);
 	fail q{Should've raised an error!};
 } or do {
-	like $@, qr/Failed to write reference/;
+	like $@, qr/Failed to write reference/i;
 };
 
 # shouldn't die with force argument
@@ -127,7 +127,7 @@ eval {
 	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 0, $symbolic);
 	fail q{Should've raised an error!};
 } or do {
-	like $@, qr/Failed to write reference/;
+	like $@, qr/Failed to write reference/i;
 };
 
 # shouldn't die with force argument
