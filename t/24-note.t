@@ -8,6 +8,9 @@ use File::Spec::Functions qw(catfile rel2abs);
 my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
+my $git_default_notes_ref = 'refs/notes/commits';
+my $notes_ref = $repo -> config -> str('core.notesRef') || $git_default_notes_ref;
+
 my $ref = Git::Raw::Note -> default_ref($repo);
 is $ref, undef;
 
@@ -30,9 +33,11 @@ my $committer = $note -> committer;
 is $committer -> name, $default_sig -> name;
 is $committer -> email, $default_sig -> email;
 
+diag "repo notes ref is: $notes_ref"
+    if $git_default_notes_ref ne $notes_ref;
 $ref = Git::Raw::Note -> default_ref($repo);
 isa_ok $ref, 'Git::Raw::Reference';
-is $ref -> name, 'refs/notes/commits';
+is $ref -> name, $notes_ref;
 is $ref -> is_note, 1;
 
 my $note2 = Git::Raw::Note -> read($repo, $repo -> head -> target);
