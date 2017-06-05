@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fix notes testcases for the case where cores.notesRef is set,
+ thanks @sergeyromanov!
+
 0.74      2017-03-24 11:04:26+02:00 Africa/Johannesburg
 
  - Fixed crashes in Git::Raw::Diff -> print due to incorrect usages
