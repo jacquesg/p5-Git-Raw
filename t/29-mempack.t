@@ -54,7 +54,7 @@ is $tp -> indexed_deltas, 0;
 is $tp -> received_bytes, 0;
 
 
-my $hash = 'c0c0ff26d385a8bbf312d7511c06ccbde6254507';
+my $hash = '933e0089f60837ccfca576f5bfcfe4b217c8106b';
 my $odb_path = rel2abs(catfile('t', 'odb'));
 my $pack_file = catfile($odb_path, "pack-$hash.pack");
 my $pack_index = catfile($odb_path, "pack-$hash.idx");

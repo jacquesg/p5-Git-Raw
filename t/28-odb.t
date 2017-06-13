@@ -54,7 +54,7 @@ $odb -> refresh;
 $repo -> odb($odb);
 
 my $odb_path = rel2abs(catfile('t', 'odb'));
-my $pack_index = catfile($odb_path, 'pack-8c875ec76737c36e18eb0eeccfb2d33d511d0efb.idx');
+my $pack_index = catfile($odb_path, 'pack-4ec0baa806411548c1051dbd4620bd8447045d9e.idx');
 my $one_pack = Git::Raw::Odb::Backend::OnePack -> new($pack_index);
 isa_ok $one_pack, 'Git::Raw::Odb::Backend';
 

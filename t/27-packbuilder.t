@@ -57,7 +57,7 @@ is $pb -> object_count, 4;
 is $transfer_progress_count, $pb -> written + 1;
 is $pack_progress_count, 3;
 
-is $pb -> hash, '8c875ec76737c36e18eb0eeccfb2d33d511d0efb';
+is $pb -> hash, '4ec0baa806411548c1051dbd4620bd8447045d9e';
 
 my $walker = Git::Raw::Walker -> create($repo);
 $walker -> push($commit);
@@ -68,7 +68,7 @@ $pb -> insert($walker);
 is $pb -> object_count, 4;
 
 $pb -> write($odb_path);
-is $pb -> hash, '8c875ec76737c36e18eb0eeccfb2d33d511d0efb';
+is $pb -> hash, '4ec0baa806411548c1051dbd4620bd8447045d9e';
 
 done_testing;
 
