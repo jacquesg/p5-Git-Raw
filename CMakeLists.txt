@@ -43,6 +43,7 @@ OPTION( USE_SSH				"Link with libssh to enable SSH support" ON )
 OPTION( USE_GSSAPI			"Link with libgssapi for SPNEGO auth"   OFF )
 OPTION( VALGRIND			"Configure build for valgrind"			OFF )
 OPTION( CURL			"Use curl for HTTP if available" ON)
+OPTION( USE_EXT_HTTP_PARSER		"Use system HTTP_Parser if available" ON)
 OPTION( DEBUG_POOL			"Enable debug pool allocator"			OFF )
 
 IF(DEBUG_POOL)
@@ -206,7 +207,6 @@ FILE(STRINGS "include/git2/version.h" GIT2_HEADER_SOVERSION REGEX "^#define LIBG
 STRING(REGEX REPLACE "^.*LIBGIT2_SOVERSION ([0-9]+)$" "\\1" LIBGIT2_SOVERSION "${GIT2_HEADER_SOVERSION}")
 
 # Find required dependencies
-INCLUDE_DIRECTORIES(src include)
 
 IF (SECURITY_FOUND)
   # OS X 10.7 and older do not have some functions we use, fall back to OpenSSL there
@@ -329,12 +329,12 @@ ENDIF()
 
 # Optional external dependency: http-parser
 FIND_PACKAGE(HTTP_Parser)
-IF (HTTP_PARSER_FOUND AND HTTP_PARSER_VERSION_MAJOR EQUAL 2)
+IF (USE_EXT_HTTP_PARSER AND HTTP_PARSER_FOUND AND HTTP_PARSER_VERSION_MAJOR EQUAL 2)
 	INCLUDE_DIRECTORIES(${HTTP_PARSER_INCLUDE_DIRS})
 	LINK_LIBRARIES(${HTTP_PARSER_LIBRARIES})
 	LIST(APPEND LIBGIT2_PC_LIBS "-lhttp_parser")
 ELSE()
-	MESSAGE(STATUS "http-parser version 2 was not found; using bundled 3rd-party sources.")
+	MESSAGE(STATUS "http-parser version 2 was not found or disabled; using bundled 3rd-party sources.")
 	INCLUDE_DIRECTORIES(deps/http-parser)
 	FILE(GLOB SRC_HTTP deps/http-parser/*.c deps/http-parser/*.h)
 ENDIF()
@@ -468,9 +468,6 @@ IF (MSVC)
 	SET(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}")
 
 	SET(WIN_RC "src/win32/git2.rc")
-
-   # Precompiled headers
-
 ELSE ()
 	SET(CMAKE_C_FLAGS "-D_GNU_SOURCE ${CMAKE_C_FLAGS}")
 
@@ -481,9 +478,7 @@ ELSE ()
 		SET(CMAKE_C_FLAGS "-std=c99 -D_POSIX_C_SOURCE=200112L -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS ${CMAKE_C_FLAGS}")
 	ENDIF()
 
-	IF (WIN32 AND NOT CYGWIN)
-		SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
-	ENDIF ()
+	SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG -O0")
 
 	IF (MINGW OR MSYS) # MinGW and MSYS always do PIC and complain if we tell them to
 		STRING(REGEX REPLACE "-fPIC" "" CMAKE_SHARED_LIBRARY_C_FLAGS "${CMAKE_SHARED_LIBRARY_C_FLAGS}")
@@ -623,6 +618,12 @@ TARGET_LINK_LIBRARIES(git2 ${GSSAPI_LIBRARIES})
 TARGET_LINK_LIBRARIES(git2 ${ICONV_LIBRARIES})
 TARGET_OS_LIBRARIES(git2)
 
+IF (${CMAKE_VERSION} VERSION_LESS 2.8.12)
+	INCLUDE_DIRECTORIES(src include)
+ELSE()
+	TARGET_INCLUDE_DIRECTORIES(git2 PRIVATE src PUBLIC include)
+ENDIF()
+
 # Workaround for Cmake bug #0011240 (see http://public.kitware.com/Bug/view.php?id=11240)
 # Win64+MSVC+static libs = linker error
 IF(MSVC AND GIT_ARCH_64 AND NOT BUILD_SHARED_LIBS)
@@ -681,17 +682,22 @@ IF (BUILD_CLAR)
 	SET(SRC_CLAR "${CLAR_PATH}/main.c" "${CLAR_PATH}/clar_libgit2.c" "${CLAR_PATH}/clar_libgit2_trace.c" "${CLAR_PATH}/clar_libgit2_timer.c" "${CLAR_PATH}/clar.c")
 
 	ADD_CUSTOM_COMMAND(
-		OUTPUT ${CLAR_PATH}/clar.suite
-		COMMAND ${PYTHON_EXECUTABLE} generate.py -f -xonline -xstress .
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/clar.suite
+		COMMAND ${PYTHON_EXECUTABLE} generate.py -o "${CMAKE_CURRENT_BINARY_DIR}" -f -xonline -xstress .
 		DEPENDS ${SRC_TEST}
 		WORKING_DIRECTORY ${CLAR_PATH}
 	)
+	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 	SET_SOURCE_FILES_PROPERTIES(
 		${CLAR_PATH}/clar.c
-		PROPERTIES OBJECT_DEPENDS ${CLAR_PATH}/clar.suite)
+		PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar.suite)
 
 	ADD_EXECUTABLE(libgit2_clar ${SRC_H} ${SRC_GIT2} ${SRC_OS} ${SRC_CLAR} ${SRC_TEST} ${SRC_ZLIB} ${SRC_HTTP} ${SRC_REGEX} ${SRC_SSH} ${SRC_SHA1})
+
+	IF (${CMAKE_VERSION} VERSION_GREATER 2.8.11)
+		TARGET_INCLUDE_DIRECTORIES(libgit2_clar PRIVATE src PUBLIC include)
+	ENDIF()
 
 	TARGET_LINK_LIBRARIES(libgit2_clar ${COREFOUNDATION_DIRS})
 	TARGET_LINK_LIBRARIES(libgit2_clar ${SECURITY_DIRS})
