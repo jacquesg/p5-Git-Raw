@@ -108,7 +108,7 @@ my @library_tests = (
 
 my %library_opts = (
 	'ssl' => {
-		'defines' => ' -DGIT_OPENSSL',
+		'defines' => ' -DGIT_OPENSSL -DGIT_HTTPS',
 		'libs'    => ' -lssl -lcrypto',
 	},
 	'ssh2' => {
@@ -209,7 +209,7 @@ if ($is_gcc) {
 		}
 
 		# Secure transport (HTTPS)
-		$def .= ' -DGIT_SECURE_TRANSPORT';
+		$def .= ' -DGIT_SECURE_TRANSPORT -DGIT_HTTPS';
 		$otherldflags .= ' -framework CoreFoundation -framework Security';
 	}
 
@@ -265,7 +265,7 @@ if ($is_windows || $is_solaris) {
 if ($is_windows) {
 	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
 
-	$def .= ' -DWIN32 -DGIT_WIN32 -DGIT_WINHTTP';
+	$def .= ' -DWIN32 -DGIT_WIN32 -DGIT_WINHTTP -DGIT_HTTPS';
 	$lib .= ' -lwinhttp -lrpcrt4 -lcrypt32';
 
 	if ($is_msvc) {
