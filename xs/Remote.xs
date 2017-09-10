@@ -33,6 +33,41 @@ create(class, repo, name, url)
 	OUTPUT: RETVAL
 
 SV *
+create_with_fetchspec(class, repo, name, url, spec)
+	SV *class
+	SV *repo
+	SV *name
+	SV *url
+	SV *spec
+
+	PREINIT:
+		int rc;
+
+		git_remote *r = NULL;
+		Remote remote = NULL;
+		Repository repo_ptr = NULL;
+
+	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_remote_create_with_fetchspec(
+			&r, repo_ptr -> repository,
+			git_ensure_pv(name, "name"),
+                        git_ensure_pv(url, "url"),
+                        git_ensure_pv(spec, "spec")
+		);
+		git_check_error(rc);
+
+		Newxz(remote, 1, git_raw_remote);
+		remote -> remote = r;
+		remote -> owned = 1;
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, SvPVbyte_nolen(class), remote, SvRV(repo)
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 create_anonymous(class, repo, url)
 	SV *class
 	SV *repo
