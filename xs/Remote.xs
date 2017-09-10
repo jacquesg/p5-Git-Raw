@@ -132,6 +132,26 @@ load(class, repo, name)
 
 	OUTPUT: RETVAL
 
+void
+delete(class, repo, name)
+	SV *class
+	SV *repo
+	SV *name
+
+	PREINIT:
+		int rc;
+
+		git_remote *r = NULL;
+		Repository repo_ptr = NULL;
+
+	CODE:
+		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
+		rc = git_remote_delete(repo_ptr -> repository,
+                        git_ensure_pv(name, "name"));
+
+		git_check_error(rc);
+
+
 SV *
 owner(self)
 	SV *self
