@@ -70,6 +70,13 @@ is $refspec -> dst, "refs/tags/v0.0.1";
 is $refspec -> direction, "fetch";
 is $refspec -> string, "refs/tags/v0.0.1:refs/tags/v0.0.1";
 
+@remotes = $repo -> remotes;
+is scalar(@remotes), 3;
+Git::Raw::Remote -> delete($repo, 'tagfetch');
+@remotes = $repo -> remotes;
+is scalar(@remotes), 2;
+@remotes = ();
+
 $name = 'github';
 $url  = 'git://github.com/libgit2/TestGitRepository.git';
 

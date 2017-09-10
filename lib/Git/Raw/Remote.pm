@@ -65,6 +65,10 @@ Create a remote in memory (anonymous).
 Load an existing remote. Returns a L<Git::Raw::Remote> object if the remote
 was found, otherwise C<undef>.
 
+=head2 delete( $repo, $name )
+
+Delete an existing remote.
+
 =head2 owner( )
 
 Retrieve the L<Git::Raw::Repository> owning the remote.
