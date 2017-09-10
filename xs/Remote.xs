@@ -1,7 +1,7 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Remote
 
 SV *
-create(class, repo, name, url)
+create(class, repo, name, url, ...)
 	SV *class
 	SV *repo
 	SV *name
@@ -16,10 +16,20 @@ create(class, repo, name, url)
 
 	CODE:
 		repo_ptr = GIT_SV_TO_PTR(Repository, repo);
-		rc = git_remote_create(
-			&r, repo_ptr -> repository,
-			git_ensure_pv(name, "name"), git_ensure_pv(url, "url")
-		);
+
+		if (items >= 5) {
+			rc = git_remote_create_with_fetchspec(
+				&r, repo_ptr -> repository,
+				git_ensure_pv(name, "name"), git_ensure_pv(url, "url"),
+				git_ensure_pv(ST(4), "spec")
+			);
+		} else {
+			rc = git_remote_create(
+				&r, repo_ptr -> repository,
+				git_ensure_pv(name, "name"), git_ensure_pv(url, "url")
+			);
+		}
+
 		git_check_error(rc);
 
 		Newxz(remote, 1, git_raw_remote);

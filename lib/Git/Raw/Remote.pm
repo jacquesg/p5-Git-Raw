@@ -51,10 +51,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
-=head2 create( $repo, $name, $url )
+=head2 create( $repo, $name, $url, [$fetch] )
 
-Create a remote with the default fetch refspec and add it to the repository's
-configuration.
+Create a remote with the default fetch refspec or C<$fetch> if provideed, and add
+it to the repository's configuration.
 
 =head2 create_anonymous( $repo, $url )
 
