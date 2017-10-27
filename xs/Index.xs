@@ -38,7 +38,7 @@ add(self, entry)
 		git_check_error(rc);
 
 SV *
-add_frombuffer(self, path, buffer)
+add_frombuffer(self, path, buffer, ...)
 	SV *self
 	SV *path
 	SV *buffer
@@ -50,8 +50,12 @@ add_frombuffer(self, path, buffer)
 		git_index_entry ientry;
 		const char *b;
 		STRLEN len;
+		int mode = GIT_FILEMODE_BLOB;
 
 	CODE:
+		if (items == 4)
+			mode = (int) git_ensure_iv(ST(3), "mode");
+
 		index = GIT_SV_TO_PTR(Index, self);
 
 		if (!SvOK(buffer))
@@ -61,7 +65,7 @@ add_frombuffer(self, path, buffer)
 			buffer = SvRV(buffer);
 
 		memset(&ientry, 0x0, sizeof(git_index_entry));
-		ientry.mode = GIT_FILEMODE_BLOB;
+		ientry.mode = mode;
 		ientry.path = git_ensure_pv(path, "path");
 
 		b = git_ensure_pv_with_len(buffer, "buffer", &len);
