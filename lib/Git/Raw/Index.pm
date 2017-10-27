@@ -31,11 +31,12 @@ Retrieve the L<Git::Raw::Repository> owning the index.
 Add C<$entry> to the index. C<$entry> should either be the path of a file
 or alternatively a L<Git::Raw::Index::Entry>.
 
-=head2 add_frombuffer( $path, $buffer )
+=head2 add_frombuffer( $path, $buffer, [$mode] )
 
 Add or update an entry from an in memory file. The entry will be placed at C<$path>
 with the contents of C<$buffer>. C<$buffer> may either be string or a reference
-to a string. Returns a L<Git::Raw::Index::Entry> object.
+to a string. C<$mode> is the file mode; it defaults to C<0100644>. Returns a
+L<Git::Raw::Index::Entry> object.
 
 =head2 add_all( \%opts )
 
