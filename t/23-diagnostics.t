@@ -7,7 +7,7 @@ use Git::Raw;
 my $count;
 my %features;
 
-ok (eval { Git::Raw -> features });
+ok (eval { Git::Raw -> features; return 1 });
 
 ok (eval { $count = Git::Raw -> features });
 is $count, 3;
