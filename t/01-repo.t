@@ -64,7 +64,7 @@ is $index -> version, 2;
 $index -> version(4);
 is $index -> version, 4;
 
-ok (eval { $index -> capabilities });
+ok (eval { $index -> capabilities; return 1 });
 
 my $caps_count = $index -> capabilities;
 is $caps_count, 3;
