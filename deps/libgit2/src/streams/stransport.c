@@ -5,6 +5,8 @@
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
+#include "streams/stransport.h"
+
 #ifdef GIT_SECURE_TRANSPORT
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -13,8 +15,8 @@
 
 #include "git2/transport.h"
 
-#include "socket_stream.h"
-#include "curl_stream.h"
+#include "streams/socket.h"
+#include "streams/curl.h"
 
 static int stransport_error(OSStatus ret)
 {
@@ -81,8 +83,10 @@ static int stransport_connect(git_stream *stream)
 	}
 
 	if (sec_res == kSecTrustResultDeny || sec_res == kSecTrustResultRecoverableTrustFailure ||
-	    sec_res == kSecTrustResultFatalTrustFailure)
+	    sec_res == kSecTrustResultFatalTrustFailure) {
+		giterr_set(GITERR_SSL, "untrusted connection error");
 		return GIT_ECERTIFICATE;
+	}
 
 	return 0;
 

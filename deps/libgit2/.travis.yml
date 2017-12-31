@@ -17,20 +17,27 @@ env:
   - secure: "YnhS+8n6B+uoyaYfaJ3Lei7cSJqHDPiKJCKFIF2c87YDfmCvAJke8QtE7IzjYDs7UFkTCM4ox+ph2bERUrxZbSCyEkHdjIZpKuMJfYWja/jgMqTMxdyOH9y8JLFbZsSXDIXDwqBlC6vVyl1fP90M35wuWcNTs6tctfVWVofEFbs="
   - GITTEST_INVASIVE_FS_SIZE=1
  matrix:
-  - OPTIONS="-DTHREADSAFE=ON -DCMAKE_BUILD_TYPE=Release"
-  - OPTIONS="-DTHREADSAFE=OFF -DBUILD_EXAMPLES=ON"
-
-addons:
-  apt:
-    packages:
-    - cmake
-    - libssh2-1-dev
-    - openssh-client
-    - openssh-server
-    - valgrind
+  - OPTIONS="-DTHREADSAFE=ON -DCMAKE_BUILD_TYPE=Release -DENABLE_WERROR=ON"
+  - OPTIONS="-DTHREADSAFE=OFF -DBUILD_EXAMPLES=ON -DENABLE_WERROR=ON"
 
 dist: trusty
 sudo: false
+
+addons:
+ apt:
+  sources:
+   - sourceline: 'deb http://libgit2deps.edwardthomson.com trusty libgit2deps'
+     key_url: 'https://www.edwardthomson.com/keys/ethomson@libgit2.org'
+  packages:
+   cmake
+   curl
+   libcurl3
+   libcurl3-gnutls
+   libcurl4-gnutls-dev
+   libssh2-1-dev
+   openssh-client
+   openssh-server
+   valgrind
 
 matrix:
  fast_finish: true
@@ -38,10 +45,6 @@ matrix:
    - os: osx
      compiler: gcc
  include:
-   - compiler: gcc
-     env: PRECISE=1
-     os: linux
-     dist: precise
    - compiler: gcc
      env: COVERITY=1
      os: linux
@@ -56,7 +59,7 @@ matrix:
    - env: COVERITY=1
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./script/install-deps-${TRAVIS_OS_NAME}.sh; fi
+  - if [ -f ./script/install-deps-${TRAVIS_OS_NAME}.sh ]; then ./script/install-deps-${TRAVIS_OS_NAME}.sh; fi
 
 # Run the Build script and tests
 script:
