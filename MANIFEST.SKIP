@@ -2,6 +2,7 @@ Raw.bs
 Raw.c
 Raw.o
 Raw.def
+MYMETA.json.lock
 dll.base
 dll.exp
 const-c-category.inc
