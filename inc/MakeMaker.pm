@@ -446,6 +446,15 @@ my @stash_progress_constants = (qw(
 	DONE
 ));
 
+my @rebase_operation_constants = (qw(
+	PICK
+	REWORD
+	EDIT
+	SQUASH
+	FIXUP
+	EXEC
+));
+
 my @object_constants = (qw(
 	ANY
 	BAD
@@ -494,6 +503,16 @@ ExtUtils::Constant::WriteConstants(
 	XS_FILE      => 'const-xs-stash-progress.inc',
 	XS_SUBNAME   => '_constant',
 	C_SUBNAME    => '_stash_progress_constant',
+);
+
+ExtUtils::Constant::WriteConstants(
+	NAME         => 'Git::Raw::Rebase::Operation',
+	NAMES        => [@rebase_operation_constants],
+	DEFAULT_TYPE => 'IV',
+	C_FILE       => 'const-c-rebase-operation.inc',
+	XS_FILE      => 'const-xs-rebase-operation.inc',
+	XS_SUBNAME   => '_constant',
+	C_SUBNAME    => '_rebase_operation_constant',
 );
 
 ExtUtils::Constant::WriteConstants(

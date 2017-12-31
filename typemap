@@ -33,6 +33,7 @@ Packbuilder				T_GIT_REF
 Patch					T_GIT_REF
 PathSpec				T_GIT_REF
 PathSpec_MatchList		T_GIT_REF
+Rebase_Operation		T_GIT_REF
 Reflog					T_GIT_REF
 Reflog_Entry			T_GIT_REF
 RefSpec					T_GIT_REF
