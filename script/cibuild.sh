@@ -10,6 +10,15 @@ fi
 
 if [ "$TRAVIS_OS_NAME" = "osx" ]; then
 	export PKG_CONFIG_PATH=$(ls -d /usr/local/Cellar/{curl,zlib}/*/lib/pkgconfig | paste -s -d':' -)
+
+	# Set up a ramdisk for us to put our test data on to speed up tests on macOS
+	export CLAR_TMP="$HOME"/_clar_tmp
+	mkdir -p $CLAR_TMP
+
+	# 5*2M sectors aka ~5GB of space
+	device=$(hdiutil attach -nomount ram://$((5 * 2 * 1024 * 1024)))
+	newfs_hfs $device
+	mount -t hfs $device $CLAR_TMP
 fi
 
 # Should we ask Travis to cache this file?
@@ -50,6 +59,7 @@ cat >~/sshd/sshd_config<<-EOF
 	ListenAddress 0.0.0.0
 	Protocol 2
 	HostKey ${HOME}/sshd/id_rsa
+	PidFile ${HOME}/sshd/pid
 	RSAAuthentication yes
 	PasswordAuthentication yes
 	PubkeyAuthentication yes
@@ -99,7 +109,7 @@ if [ -e ./libgit2_clar ]; then
 
 fi
 
-killall sshd
+kill $(cat "$HOME/sshd/pid")
 
 export GITTEST_REMOTE_URL="https://github.com/libgit2/non-existent"
 export GITTEST_REMOTE_USER="libgit2test"

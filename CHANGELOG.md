@@ -3,7 +3,24 @@ v0.26 + 1
 
 ### Changes or improvements
 
+* Improved `p_unlink` in `posix_w32.c` to try and make a file writable
+  before sleeping in the retry loop to prevent unnecessary calls to sleep.
+
+* Writing to a configuration file now preserves the case of the key given by the
+  caller for the case-insensitive portions of the key (existing sections are
+  used even if they don't match).
+
+* We now support conditional includes in configuration files.
+
+* There is a new diff option, `GIT_DIFF_INDENT_HEURISTIC` which activates a
+  heuristic which takes into account whitespace and indentation in order to
+  produce better diffs when dealing with ambiguous diff hunks.
+
 ### API additions
+
+* `git_remote_create_detached()` creates a remote that is not associated
+  to any repository (and does not apply configuration like 'insteadof' rules).
+  This is mostly useful for e.g. emulating `git ls-remote` behavior.
 
 ### API removals
 
