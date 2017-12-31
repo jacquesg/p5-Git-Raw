@@ -73,6 +73,10 @@ sub amend {
 	);
 }
 
+=head2 annotated( )
+
+Create a L<Git::Raw::AnnotatedCommit> from the commit.
+
 =head2 amend( $baseline, [@parents], $tree [, $update_ref ] )
 
 Create a new commit using C<$baseline> as a template for the message, author

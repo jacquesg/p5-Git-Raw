@@ -1,6 +1,34 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::Commit
 
 SV *
+annotated(self)
+	SV *self
+
+	PREINIT:
+		int rc;
+
+		SV *repo;
+		AnnotatedCommit commit;
+		Repository repo_ptr;
+
+	CODE:
+		repo = GIT_SV_TO_MAGIC(self);
+		repo_ptr = INT2PTR(Repository, SvIV((SV *) repo));
+
+		rc = git_annotated_commit_lookup(&commit,
+			repo_ptr -> repository,
+			git_commit_id(GIT_SV_TO_PTR(Commit, self))
+		);
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::AnnotatedCommit",
+			commit, repo
+		);
+
+	OUTPUT: RETVAL
+
+SV *
 create(class, repo, msg, author, committer, parents, tree, ...)
 	SV *class
 	SV *repo
