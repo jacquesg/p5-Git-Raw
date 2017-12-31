@@ -27,7 +27,7 @@ add_file(self, path, level)
 
 	CODE:
 		rc = git_config_add_file_ondisk(
-			self, git_ensure_pv(path, "path"), level, 0
+			self, git_ensure_pv(path, "path"), level, NULL, 0
 		);
 		git_check_error(rc);
 
