@@ -45,6 +45,7 @@ typedef struct {
 	SV *cleanup;
 } git_filter_callbacks;
 
+typedef git_annotated_commit * AnnotatedCommit;
 typedef git_blame * Blame;
 typedef git_blame_hunk * Blame_Hunk;
 typedef git_blob * Blob;
@@ -2294,6 +2295,7 @@ features(class)
 		} else
 			XSRETURN_EMPTY;
 
+INCLUDE: xs/AnnotatedCommit.xs
 INCLUDE: xs/Blame.xs
 INCLUDE: xs/Blame/Hunk.xs
 INCLUDE: xs/Blob.xs
