@@ -25,6 +25,9 @@ exec(self)
 	Rebase_Operation self
 
 	CODE:
+		if (self ->exec == NULL)
+			XSRETURN_UNDEF;
+
 		RETVAL = newSVpv(self -> exec, 0);
 
 	OUTPUT: RETVAL
