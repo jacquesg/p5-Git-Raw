@@ -18,6 +18,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 annotated_commit( )
+
+Create a L<Git::Raw::AnnotatedCommit> from the reference.
+
 =head2 lookup( $name, $repo )
 
 Retrieve the reference with name C<$name> in C<$repo>.
