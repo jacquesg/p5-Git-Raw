@@ -56,6 +56,11 @@ B<WARNING>: The API of this module is unstable and may change without warning
 Create a remote with the default fetch refspec and add it to the repository's
 configuration.
 
+=head2 create_with_fetchspec( $repo, $name, $url, $fetch )
+
+Create a remote with the provided fetch refspec and add it to the repository's
+configuration.
+
 =head2 create_anonymous( $repo, $url )
 
 Create a remote in memory (anonymous).
@@ -64,6 +69,10 @@ Create a remote in memory (anonymous).
 
 Load an existing remote. Returns a L<Git::Raw::Remote> object if the remote
 was found, otherwise C<undef>.
+
+=head2 delete( $repo, $name )
+
+Delete an existing remote.
 
 =head2 owner( )
 

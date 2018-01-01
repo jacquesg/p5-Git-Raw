@@ -59,6 +59,28 @@ is $remotes[0] -> url, $url;
 is $remotes[1] -> name, 'post_rename';
 @remotes = ();
 
+
+$customfetch = Git::Raw::Remote -> create_with_fetchspec($repo, 'tagfetch', $url, "refs/tags/v0.0.1:refs/tags/v0.0.1" );
+@refspecs = $customfetch -> refspecs;
+is scalar(@refspecs), 1;
+$refspec = shift @refspecs;
+is $refspec -> src, "refs/tags/v0.0.1";
+is $refspec -> dst, "refs/tags/v0.0.1";
+is $refspec -> direction, "fetch";
+is $refspec -> string, "refs/tags/v0.0.1:refs/tags/v0.0.1";
+$customfetch = undef;
+@remotes = $repo -> remotes;
+is scalar(@remotes), 3;
+Git::Raw::Remote -> delete($repo,'tagfetch');
+@remotes = $repo -> remotes;
+is scalar(@remotes), 2;
+@remotes = ();
+
+
+
+
+
+
 $name = 'github';
 $url  = 'git://github.com/libgit2/TestGitRepository.git';
 
