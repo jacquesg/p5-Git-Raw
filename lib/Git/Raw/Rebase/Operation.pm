@@ -38,15 +38,17 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 type( )
 
-TBC
+The type of rebase operation.
 
 =head2 id( )
 
-TBC
+The commit ID being cherry-picked. This will return C<undef> for C<EXEC>
+operations.
 
 =head2 exec( )
 
-TBC
+The executable the user has requested to run. This will return C<undef> for all
+but C<EXEC> operations.
 
 =head1 CONSTANTS
 
