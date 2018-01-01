@@ -18,6 +18,7 @@ use Git::Raw::Object;
 use Git::Raw::Odb;
 use Git::Raw::Odb::Object;
 use Git::Raw::Mempack;
+use Git::Raw::Rebase;
 use Git::Raw::Reference;
 use Git::Raw::Repository;
 use Git::Raw::Stash;
