@@ -83,21 +83,21 @@ eval {
 	$builder -> insert('four.txt', $empty_blob, 0100754);
 	fail q{Should've raised an error!};
 } or do {
-	like $@, qr/Failed to insert entry/;
+	like $@, qr/failed to insert entry/;
 };
 
 eval {
 	$builder -> insert('four/five.txt', $empty_blob, 0100755);
 	fail q{Should've raised an error!};
 } or do {
-	like $@, qr/Failed to insert entry/;
+	like $@, qr/failed to insert entry/;
 };
 
 eval {
 	$builder -> remove('two.txt');
 	fail q{Should've raised an error!};
 } or do {
-	like $@, qr/Failed to remove entry/;
+	like $@, qr/failed to remove entry/;
 };
 
 my $subtree = $tree;
