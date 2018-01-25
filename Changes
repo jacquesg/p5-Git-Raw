@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
+
  - Fix notes testcases for the case where cores.notesRef is set,
  thanks @sergeyromanov!
  - Update libgit2 to 71c4306537
