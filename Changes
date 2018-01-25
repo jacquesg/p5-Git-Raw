@@ -4,7 +4,7 @@ Revision history for Git-Raw
 
  - Fix notes testcases for the case where cores.notesRef is set,
  thanks @sergeyromanov!
- - Update libgit2 to 0b9673960
+ - Update libgit2 to 71c4306537
  - Added AnnotatedCommit methods:
     + id()
     + lookup()
