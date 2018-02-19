@@ -2,23 +2,109 @@ cache:
  - C:\projects\sources
 
 install:
- - if not exist "C:\projects\sources" mkdir "C:\projects\sources"
- - cd C:\projects\sources
-
- # Perl
- - ps: Start-FileDownload http://strawberryperl.com/download/5.20.1.1/strawberry-perl-5.20.1.1-64bit.msi
- - msiexec /i "C:\projects\sources\strawberry-perl-5.20.1.1-64bit.msi" /qn INSTALLDIR="C:\projects\perl"
-
- - set PATH=C:\projects\perl\perl\bin;C:\projects\perl\perl\site\bin;C:\projects\perl\c\bin;%PATH%
- - cd C:\projects\p5-Git-Raw
+ - set SOURCES="C:\projects\sources"
+ - if not exist "%SOURCES%" mkdir "%SOURCES%"
+ - del "%SOURCES%\*.msi"
 
  - git config --global user.name "p5-Git-Raw"
  - git config --global user.email "jacquesg@cpan.org"
 
+ # download
+ - set PERL526PACKAGE=strawberry-perl-5.26.1.1-64bit-portable.zip
+ - set PERL524PACKAGE=strawberry-perl-5.24.3.1-64bit-portable.zip
+ - set PERL522PACKAGE=strawberry-perl-5.22.3.1-64bit-portable.zip
+ - set PERL520PACKAGE=strawberry-perl-5.20.3.3-64bit-portable.zip
+ - set PERL518PACKAGE=strawberry-perl-5.18.4.1-64bit-portable.zip
+ - set PERL516PACKAGE=strawberry-perl-5.16.3.1-64bit-portable.zip
+ - set PERL514PACKAGE=strawberry-perl-5.14.4.1-64bit-portable.zip
+
+ - if not exist "%SOURCES%\%PERL526PACKAGE%" curl -fsS -o "%SOURCES%\%PERL526PACKAGE%" http://strawberryperl.com/download/5.26.1.1/%PERL526PACKAGE%
+ - if not exist "%SOURCES%\%PERL524PACKAGE%" curl -fsS -o "%SOURCES%\%PERL524PACKAGE%" http://strawberryperl.com/download/5.24.3.1/%PERL524PACKAGE%
+ - if not exist "%SOURCES%\%PERL522PACKAGE%" curl -fsS -o "%SOURCES%\%PERL522PACKAGE%" http://strawberryperl.com/download/5.22.3.1/%PERL522PACKAGE%
+ - if not exist "%SOURCES%\%PERL520PACKAGE%" curl -fsS -o "%SOURCES%\%PERL520PACKAGE%" http://strawberryperl.com/download/5.20.3.3/%PERL520PACKAGE%
+ - if not exist "%SOURCES%\%PERL518PACKAGE%" curl -fsS -o "%SOURCES%\%PERL518PACKAGE%" http://strawberryperl.com/download/5.18.4.1/%PERL518PACKAGE%
+ - if not exist "%SOURCES%\%PERL516PACKAGE%" curl -fsS -o "%SOURCES%\%PERL516PACKAGE%" http://strawberryperl.com/download/5.16.3.1/%PERL516PACKAGE%
+ - if not exist "%SOURCES%\%PERL514PACKAGE%" curl -fsS -o "%SOURCES%\%PERL514PACKAGE%" http://strawberryperl.com/download/5.14.4.1/%PERL514PACKAGE%
+
+ - set PERL526=C:\projects\perl526
+ - set PERL524=C:\projects\perl524
+ - set PERL522=C:\projects\perl522
+ - set PERL520=C:\projects\perl520
+ - set PERL518=C:\projects\perl518
+ - set PERL516=C:\projects\perl516
+ - set PERL514=C:\projects\perl514
+
+ - 7z x "%SOURCES%\%PERL526PACKAGE%" -o"%PERL526%"
+ - 7z x "%SOURCES%\%PERL524PACKAGE%" -o"%PERL524%"
+ - 7z x "%SOURCES%\%PERL522PACKAGE%" -o"%PERL522%"
+ - 7z x "%SOURCES%\%PERL520PACKAGE%" -o"%PERL520%"
+ - 7z x "%SOURCES%\%PERL518PACKAGE%" -o"%PERL518%"
+ - 7z x "%SOURCES%\%PERL516PACKAGE%" -o"%PERL516%"
+ - 7z x "%SOURCES%\%PERL514PACKAGE%" -o"%PERL514%"
+
+ - set OLDPATH=%PATH%
+ - set PATH=%PERL520%\perl\bin;%PERL520%\perl\site\bin;%PERL520%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw
  - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
  - dzil authordeps --missing | cpanm --notest
  - dzil listdeps --missing | cpanm --notest
 
+ - dzil build --in Git-Raw-526
+ - dzil build --in Git-Raw-524
+ - dzil build --in Git-Raw-522
+ - dzil build --in Git-Raw-520
+ - dzil build --in Git-Raw-518
+ - dzil build --in Git-Raw-516
+ - dzil build --in Git-Raw-514
+
 build_script:
- - dzil test --all
+ - set PATH=%PERL526%\perl\bin;%PERL526%\perl\site\bin;%PERL526%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-526
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - gmake test
+
+ - set PATH=%PERL524%\perl\bin;%PERL524%\perl\site\bin;%PERL524%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-524
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
+ - set PATH=%PERL522%\perl\bin;%PERL522%\perl\site\bin;%PERL522%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-522
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
+ - set PATH=%PERL520%\perl\bin;%PERL520%\perl\site\bin;%PERL520%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-520
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
+ - set PATH=%PERL518%\perl\bin;%PERL518%\perl\site\bin;%PERL518%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-518
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
+ - set PATH=%PERL516%\perl\bin;%PERL516%\perl\site\bin;%PERL516%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-516
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
+ - set PATH=%PERL514%\perl\bin;%PERL514%\perl\site\bin;%PERL514%\c\bin;%OLDPATH%
+ - cd C:\projects\p5-Git-Raw\Git-Raw-514
+ - perl -V
+ - cpanm --quiet --notest Devel::CheckLib File::Slurp::Tiny
+ - perl Makefile.PL
+ - dmake test
+
