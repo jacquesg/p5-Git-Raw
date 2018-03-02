@@ -113,6 +113,10 @@ Retrieve the default L<Git::Raw::Config> of the repository.
 
 Get the path of the shared common directory for this repository.
 
+=head2 is_worktree( )
+
+Check if the repository is a linked work tree.
+
 =head2 index( [$new_index] )
 
 Retrieve the index of the repository. If C<$new_index> is passed, it will be used

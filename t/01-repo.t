@@ -31,6 +31,8 @@ is $disc -> workdir($path), "$path/";
 is $repo -> is_empty, 1;
 is $disc -> is_empty, 1;
 
+ok (!$repo -> is_worktree);
+
 my $head = eval { $repo -> head };
 is $head, undef;
 
@@ -163,8 +165,8 @@ my $error = $@;
 ok ($error);
 isa_ok($error, 'Git::Raw::Error');
 is $error -> file, 't/01-repo.t';
-is $error -> line, 159;
-is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 159";
+is $error -> line, 162;
+is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 162";
 is $error -> code, Git::Raw::Error -> USAGE;
 like $error, qr/Invalid type/;
 is $error -> category, Git::Raw::Error::Category -> INTERNAL;

@@ -555,6 +555,16 @@ status(self, opts, ...)
 
 	OUTPUT: RETVAL
 
+void
+is_worktree(self)
+	Repository self
+
+	PPCODE:
+		if (git_repository_is_worktree (self -> repository))
+			XSRETURN_YES;
+
+		XSRETURN_NO;
+
 SV *
 path_is_ignored(self, path)
 	Repository self
