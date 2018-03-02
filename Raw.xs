@@ -99,6 +99,7 @@ typedef git_tree * Tree;
 typedef git_treebuilder * Tree_Builder;
 typedef git_tree_entry * Tree_Entry;
 typedef git_revwalk * Walker;
+typedef git_worktree * Worktree;
 
 typedef struct {
 	git_index_entry *ours;
@@ -2223,6 +2224,23 @@ STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_op
 		merge_options -> their_label = SvPVbyte_nolen(opt);
 }
 
+STATIC unsigned git_hv_to_worktree_prune_flag(HV *flags) {
+	unsigned out = 0;
+
+	git_flag_opt(flags, "valid", GIT_WORKTREE_PRUNE_VALID, &out);
+	git_flag_opt(flags, "locked", GIT_WORKTREE_PRUNE_LOCKED, &out);
+	git_flag_opt(flags, "working_tree", GIT_WORKTREE_PRUNE_WORKING_TREE, &out);
+
+	return out;
+}
+
+STATIC void git_hv_to_worktree_prune_opts(HV *opts, git_worktree_prune_options *prune_options) {
+	HV *hopt;
+
+	if ((hopt = git_hv_hash_entry(opts, "flags")))
+		prune_options -> flags |= git_hv_to_worktree_prune_flag(hopt);
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
@@ -2354,3 +2372,4 @@ INCLUDE: xs/Tree.xs
 INCLUDE: xs/Tree/Builder.xs
 INCLUDE: xs/Tree/Entry.xs
 INCLUDE: xs/Walker.xs
+INCLUDE: xs/Worktree.xs

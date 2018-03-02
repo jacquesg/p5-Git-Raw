@@ -25,6 +25,7 @@ use Git::Raw::Stash;
 use Git::Raw::Stash::Progress;
 use Git::Raw::Tree;
 use Git::Raw::TransferProgress;
+use Git::Raw::Worktree;
 
 =for HTML
 <a href="https://travis-ci.org/jacquesg/p5-Git-Raw">
