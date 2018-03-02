@@ -172,6 +172,19 @@ config(self)
 	OUTPUT: RETVAL
 
 SV *
+commondir(self)
+	Repository self
+
+	PREINIT:
+		const char *path;
+
+	CODE:
+		path = git_repository_commondir(self -> repository);
+		RETVAL = newSVpv(path, 0);
+
+	OUTPUT: RETVAL
+
+SV *
 index(self, ...)
 	SV *self
 

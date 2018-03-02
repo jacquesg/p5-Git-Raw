@@ -109,6 +109,10 @@ Create a new repository with neither backends nor config object.
 
 Retrieve the default L<Git::Raw::Config> of the repository.
 
+=head2 commondir( )
+
+Get the path of the shared common directory for this repository.
+
 =head2 index( [$new_index] )
 
 Retrieve the index of the repository. If C<$new_index> is passed, it will be used

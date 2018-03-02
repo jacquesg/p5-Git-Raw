@@ -20,6 +20,7 @@ my $disc = Git::Raw::Repository -> discover(catfile($native_path, 'subdir'));
 
 is $repo -> path, "$path/.git/";
 is $disc -> path, "$path/.git/";
+is $repo -> commondir, "$path/.git/";
 
 is $repo -> workdir, "$path/";
 is $disc -> workdir, "$path/";
