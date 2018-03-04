@@ -6,6 +6,16 @@ Revision history for Git-Raw
  - Added Repository methods:
     + commondir()
     + is_worktree()
+ - Added Worktree methods:
+    + add()
+    + lookup()
+    + list()
+    + is_locked()
+    + is_prunable()
+    + lock()
+    + unlock()
+    + validate()
+    + prune()
 
 0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
 
