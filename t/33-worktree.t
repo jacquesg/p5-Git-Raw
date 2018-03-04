@@ -4,9 +4,11 @@ use Test::More;
 
 use Git::Raw;
 use Cwd qw(abs_path);
+use File::Spec::Functions qw(catfile rel2abs);
+
 my $path = abs_path('t/test_repo');
-my $worktree_path1 = abs_path('t/test_repo_myworktree1');
-my $worktree_path2 = abs_path('t/test_repo_myworktree2');
+my $worktree_path1 = rel2abs(catfile('t', 'test_repo_myworktree1'));
+my $worktree_path2 = rel2abs(catfile('t', 'test_repo_myworktree2'));
 my $repo = Git::Raw::Repository -> open($path);
 
 my $worktree1 = Git::Raw::Worktree -> add($repo, 'myworktree1', $worktree_path1);
