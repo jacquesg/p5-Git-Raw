@@ -7,6 +7,16 @@ Revision history for Git-Raw
     + commondir()
     + is_worktree()
  - Index -> add_frombuffer() now accepts a mode (thanks, @ColMelvin)
+ - Added Worktree methods:
+    + add()
+    + lookup()
+    + list()
+    + is_locked()
+    + is_prunable()
+    + lock()
+    + unlock()
+    + validate()
+    + prune()
 
 0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
 

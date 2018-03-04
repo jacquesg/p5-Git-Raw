@@ -47,6 +47,7 @@ Tree					T_GIT_REF
 Tree_Builder				T_GIT_REF
 Tree_Entry				T_GIT_REF
 Walker					T_GIT_REF
+Worktree				T_GIT_REF
 
 OUTPUT
 T_GIT_REF
