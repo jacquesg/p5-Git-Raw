@@ -6,6 +6,7 @@ Revision history for Git-Raw
  - Added Repository methods:
     + commondir()
     + is_worktree()
+ - Index -> add_frombuffer() now accepts a mode (thanks, @ColMelvin)
 
 0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
 
