@@ -23,6 +23,10 @@ isa_ok $worktree3, 'Git::Raw::Worktree';
 my $worktree4 = Git::Raw::Worktree -> lookup($repo, 'badworktree');
 ok (!defined ($worktree4));
 
+my $wtrepo = $worktree1 -> repository;
+isa_ok $wtrepo, 'Git::Raw::Repository';
+undef $wtrepo;
+
 ok (!$worktree1 -> is_locked);
 
 ok ($worktree1 -> lock("locking"));

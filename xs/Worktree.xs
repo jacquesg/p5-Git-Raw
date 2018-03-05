@@ -53,6 +53,27 @@ lookup(class, repo, name)
 
 	OUTPUT: RETVAL
 
+Repository
+repository(self)
+	Worktree self
+
+	PREINIT:
+		int rc;
+		git_repository *r = NULL;
+		Repository repo = NULL;
+
+	CODE:
+		rc = git_repository_open_from_worktree(&r, self);
+		git_check_error(rc);
+
+		Newxz(repo, 1, git_raw_repository);
+		repo -> repository = r;
+		repo -> owned = 1;
+
+		RETVAL = repo;
+
+	OUTPUT: RETVAL
+
 void
 list(class, repo)
 	SV *class

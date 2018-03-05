@@ -26,6 +26,10 @@ Add a new worktree.
 
 Lookup a worktree.
 
+=head2 repository( )
+
+Open the worktree as a repository. Returns a L<Git::Raw::Repository> object.
+
 =head2 list( $repo )
 
 List all worktress for C<$repo>.
