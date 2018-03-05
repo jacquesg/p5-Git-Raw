@@ -292,6 +292,30 @@ head(self, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+head_for_worktree(self, worktree)
+	SV *self
+	SV *worktree
+
+	PREINIT:
+		int rc;
+
+		Reference head;
+		Repository repo;
+
+	CODE:
+		repo = GIT_SV_TO_PTR(Repository, self);
+
+		rc = git_repository_head_for_worktree(&head,
+			repo -> repository, git_ensure_pv(worktree, "worktree"));
+		git_check_error(rc);
+
+		GIT_NEW_OBJ_WITH_MAGIC(
+			RETVAL, "Git::Raw::Reference", head, SvRV(self)
+		);
+
+	OUTPUT: RETVAL
+
 void
 detach_head(self, commitish)
 	SV *self

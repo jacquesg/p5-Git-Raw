@@ -27,6 +27,9 @@ my $wtrepo = $worktree1 -> repository;
 isa_ok $wtrepo, 'Git::Raw::Repository';
 undef $wtrepo;
 
+my $head = $repo -> head_for_worktree('myworktree1');
+isa_ok $head, 'Git::Raw::Reference';
+
 ok (!$worktree1 -> is_locked);
 
 ok ($worktree1 -> lock("locking"));

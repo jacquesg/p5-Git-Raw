@@ -135,6 +135,10 @@ Retrieve the L<Git::Raw::Reference> pointed by the HEAD of the repository. If
 the L<Git::Raw::Reference> C<$new_head> is passed, the HEAD of the repository
 will be changed to point to it.
 
+=head2 head_for_worktree( $worktree )
+
+Retrieve the L<Git::Raw::Reference> pointed by the HEAD of C<$worktree>.
+
 =head2 detach_head( $commitish )
 
 Make the repository HEAD point directly to a commit. C<$commitish> should be
