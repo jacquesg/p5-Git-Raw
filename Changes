@@ -17,6 +17,11 @@ Revision history for Git-Raw
     + unlock()
     + validate()
     + prune()
+    + repository()
+ - Added Diff methods:
+    + patchid()
+ - Added Repository methods:
+    + head_for_worktree()
 
 0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
 
