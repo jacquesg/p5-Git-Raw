@@ -229,6 +229,23 @@ patches(self)
 		} else
 			XSRETURN_EMPTY;
 
+SV *
+patchid(self)
+	Diff self
+
+	PREINIT:
+		int rc;
+		git_oid id;
+		git_diff_patchid_options opts = GIT_DIFF_PATCHID_OPTIONS_INIT;
+
+	CODE:
+		rc = git_diff_patchid(&id, self, &opts);
+		git_check_error(rc);
+
+		RETVAL = git_oid_to_sv(&id);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self

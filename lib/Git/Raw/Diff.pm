@@ -22,6 +22,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 Create a diff from the content of a git patch.
 
+=head2 patchid( )
+
+Calculate the patch id.
+
 =head2 merge( $from )
 
 Merge the given diff with the L<Git::Raw::Diff> C<$from>.
