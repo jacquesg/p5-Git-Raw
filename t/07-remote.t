@@ -124,7 +124,9 @@ $github -> add_push("+refs/namespace/*:refs/namespace/*");
 $github -> disconnect;
 is $github -> is_connected, 0;
 
-$github -> fetch;
+$github -> fetch ({
+	'callbacks' => {}
+});
 is $github -> is_connected, 0;
 
 my $ref = Git::Raw::Reference -> lookup('refs/remotes/github/master', $repo);
