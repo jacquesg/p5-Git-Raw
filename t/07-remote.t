@@ -118,6 +118,9 @@ $github -> prune({
 });
 is $pruned, 0;
 
+$github -> add_fetch("+refs/namespace/*:refs/origin/namespace/*");
+$github -> add_push("+refs/namespace/*:refs/namespace/*");
+
 $github -> disconnect;
 is $github -> is_connected, 0;
 
