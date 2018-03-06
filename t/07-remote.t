@@ -107,6 +107,17 @@ is $github -> is_connected, 1;
 $github -> download;
 $github -> update_tips;
 
+my $pruned = 0;
+$github -> prune({
+	'callbacks' => {
+		'update_tips' => sub {
+			my ($ref, $a, $b) = @_;
+			$pruned = 1;
+		}
+	}
+});
+is $pruned, 0;
+
 $github -> disconnect;
 is $github -> is_connected, 0;
 
