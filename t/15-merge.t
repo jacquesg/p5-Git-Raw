@@ -166,6 +166,7 @@ my $merge_result = $index -> merge ($ancestor_entry,
 		'ancestor_label' => 'test1',
 		'our_label'      => 'HEAD',
 		'their_label'    => 'branch2',
+		'marker_size'    => 7,
 		'flags'          => {
 			'merge' => 1
 		}

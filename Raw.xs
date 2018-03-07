@@ -2222,6 +2222,9 @@ STATIC void git_hv_to_merge_file_opts(HV *opts, git_merge_file_options *merge_op
 
 	if ((opt = git_hv_string_entry(opts, "their_label")))
 		merge_options -> their_label = SvPVbyte_nolen(opt);
+
+	if ((opt = git_hv_int_entry(opts, "marker_size")))
+		merge_options -> marker_size = SvIV(opt);
 }
 
 STATIC unsigned git_hv_to_worktree_prune_flag(HV *flags) {

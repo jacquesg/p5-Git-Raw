@@ -189,6 +189,10 @@ The name of the common ancestor side of conflicts.
 Specify content automerging behaviour. Valid values are C<"ours">, C<"theirs">,
 and C<"union">.
 
+=item * "marker_size"
+
+The size of conflict markers.
+
 =item * "flags"
 
 Merge file flags. Valid values include:
