@@ -22,6 +22,17 @@ Revision history for Git-Raw
     + patchid()
  - Added Repository methods:
     + head_for_worktree()
+ - Added Rebase methods:
+    + new()
+    + abort()
+    + commit()
+    + current_operation()
+    + finish()
+    + inmemory_index()
+    + next()
+    + open()
+    + operation_count()
+    + operations()
 
 0.75      2018-01-25 20:49:37+02:00 Africa/Johannesburg
 
