@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to 515683c7bd
+ - Update libgit2 to d11c4a1a4
  - Added Repository methods:
     + commondir()
     + is_worktree()
