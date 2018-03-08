@@ -20,8 +20,8 @@ make_path($path);
 my $repo = Git::Raw::Repository -> init($path, 0);
 
 my $config = $repo -> config;
-my $name   = $config -> str('user.name');
-my $email  = $config -> str('user.email');
+my $name  = 'Git::Raw author';
+my $email = 'git-xs@example.com';
 my $me = Git::Raw::Signature -> new($name, $email, time(), 0);
 
 
