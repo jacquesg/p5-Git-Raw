@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Fixed rebase tests. Use a well-known user and email (thanks, @eserte)
+
 0.76      2018-03-08 17:57:21+02:00 Africa/Johannesburg
 
  - Update libgit2 to d11c4a1a4
