@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.78      2018-03-09 15:26:40+02:00 Africa/Johannesburg
+
  - Ensure tests are not run in parallel
 
 0.77      2018-03-09 06:54:12+02:00 Africa/Johannesburg
