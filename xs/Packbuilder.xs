@@ -65,14 +65,13 @@ write(self, path)
 	PREINIT:
 		int rc;
 
-		static const char *cbname = "transfer_progress";
-		static const I32 cbnamelen = strlen("transfer_progress");
-
 		const char *p;
+		static const char cbname[] = "transfer_progress";
 
 	CODE:
 		p = git_ensure_pv(path, "path");
-		if (self -> callbacks && hv_exists(self -> callbacks, cbname, cbnamelen))
+
+		if (self -> callbacks && hv_exists(self -> callbacks, cbname, sizeof(cbname)-1))
 			rc = git_packbuilder_write(self -> packbuilder, p, 0,
 				git_transfer_progress_cbb, self -> callbacks);
 		else
