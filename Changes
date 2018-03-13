@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Added Index::Entry methods (thanks @rsrchboy):
+    + add()
+
 0.78      2018-03-09 15:26:40+02:00 Africa/Johannesburg
 
  - Ensure tests are not run in parallel
