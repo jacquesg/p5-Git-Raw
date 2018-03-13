@@ -59,6 +59,7 @@ isa_ok $entry, 'Git::Raw::Index::Entry';
 is $entry -> id, $blob_id;
 is $entry -> path, 'a/b/c.txt';
 is $entry -> size, length($content3);
+is $entry -> mode, 0100644;
 is $entry -> stage, 0;
 is $entry -> blob, $blob_id;
 is $entry -> blob -> content, $content3;

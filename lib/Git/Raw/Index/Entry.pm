@@ -26,6 +26,11 @@ Retrieve the id of the index entry as a string.
 
 Check if the entry has a non-zero stage entry.
 
+=head2 mode( )
+
+Retrieve the mode of the index entry.  Note that this is returned as a
+number, not a string.
+
 =head2 path( )
 
 Retrieve the path of the index entry.

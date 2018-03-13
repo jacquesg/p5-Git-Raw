@@ -37,6 +37,15 @@ size(self)
 	OUTPUT: RETVAL
 
 SV *
+mode(self)
+	Index_Entry self
+
+	CODE:
+		RETVAL = newSVuv((size_t) self -> mode);
+
+	OUTPUT: RETVAL
+
+SV *
 stage(self)
 	Index_Entry self
 
