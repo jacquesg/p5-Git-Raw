@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.79      2018-03-23 20:36:35+02:00 Africa/Johannesburg
+
  - Added Index::Entry methods (thanks @rsrchboy):
     + add()
  - Update libgit2 to 6311e886d8
