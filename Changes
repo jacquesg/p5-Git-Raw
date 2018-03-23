@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to 6311e886d8
+
 0.78      2018-03-09 15:26:40+02:00 Africa/Johannesburg
 
  - Ensure tests are not run in parallel
