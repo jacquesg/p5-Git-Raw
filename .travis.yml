@@ -39,6 +39,7 @@ install:
  - cpanm --quiet --notest Dist::Zilla::PluginBundle::Author::ALEXBIO
  - cpanm --quiet --notest Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+ - cpanm --quiet --notest Devel::Cover::Report::Codecov
  - cpanm --quiet --notest Dist::Zilla::App::Command::cover
  - dzil authordeps --missing | cpanm --quiet --notest
  - dzil listdeps --missing | cpanm --quiet --notest
@@ -49,7 +50,7 @@ script:
  - ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
  - sudo sed -i 's,ChallengeResponseAuthentication no,ChallengeResponseAuthentication yes,g' /etc/ssh/sshd_config
  - sudo restart ssh
- - if [[ ! $TRAVIS_PERL_VERSION =~ "shrplib" ]]; then dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -ignore_re curl -test -report coveralls; fi
+ - if [[ ! $TRAVIS_PERL_VERSION =~ "shrplib" ]]; then dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -ignore_re curl -test -report coveralls -report codecov; fi
  - if [[ $TRAVIS_PERL_VERSION =~ "shrplib" ]]; then dzil test; fi
 
 notifications:
