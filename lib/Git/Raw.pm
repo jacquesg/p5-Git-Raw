@@ -34,6 +34,9 @@ use Git::Raw::Worktree;
 <a href="https://ci.appveyor.com/project/jacquesg/p5-git-raw">
 	<img src="https://ci.appveyor.com/api/projects/status/il9rm9fsf9dj1dcu/branch/master?svg=true" alt="Build Status: AppVeyor" align="right" />
 </a>
+<a href="https://codecov.io/gh/jacquesg/p5-Git-Raw">
+	<img src="https://codecov.io/gh/jacquesg/p5-Git-Raw/branch/master/graph/badge.svg" />
+</a>
 <a href="https://coveralls.io/r/jacquesg/p5-Git-Raw">
 	<img src="https://coveralls.io/repos/jacquesg/p5-Git-Raw/badge.png?branch=master" alt="Coverage Status" align="right" />
 </a>
