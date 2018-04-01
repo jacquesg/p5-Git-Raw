@@ -29,4 +29,7 @@ my $annotated2 = Git::Raw::AnnotatedCommit -> lookup($repo, $commit -> id);
 isa_ok $annotated2, 'Git::Raw::AnnotatedCommit';
 is $annotated2 -> id, $annotated -> id;
 
+my $annotated3 = Git::Raw::AnnotatedCommit -> lookup($repo, '1' x 40);
+ok (!defined ($annotated3));
+
 done_testing;
