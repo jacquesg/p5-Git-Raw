@@ -47,5 +47,5 @@ DESTROY(self)
 	SV *self
 
 	CODE:
-		git_annotated_commit_free(GIT_SV_TO_PTR(Rebase, self));
+		git_annotated_commit_free(GIT_SV_TO_PTR(AnnotatedCommit, self));
 		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
