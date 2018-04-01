@@ -372,7 +372,7 @@ fetch(self, ...)
 		);
 		git_check_error(rc);
 
-SV *
+void
 push(self, refspecs, ...)
 	Remote self
 	SV *refspecs
@@ -383,7 +383,7 @@ push(self, refspecs, ...)
 		git_push_options push_opts = GIT_PUSH_OPTIONS_INIT;
 		git_strarray specs = {NULL, 0};
 
-	CODE:
+	PPCODE:
 		git_list_to_paths(
 			git_ensure_av(refspecs, "refspecs"),
 			&specs
@@ -397,12 +397,9 @@ push(self, refspecs, ...)
 		rc = git_remote_push(self -> remote, &specs, &push_opts);
 		Safefree(specs.strings);
 
-		if (rc != GIT_OK && rc != GIT_EUSER)
-			git_check_error(rc);
-
-		RETVAL = newSViv(1);
-
-	OUTPUT: RETVAL
+		if (rc == GIT_OK || rc == GIT_EUSER)
+			XSRETURN_YES;
+		git_check_error(rc);
 
 void
 connect(self, direction, ...)
@@ -464,7 +461,7 @@ download(self, ...)
 		);
 		git_check_error(rc);
 
-SV *
+void
 upload(self, refspecs, ...)
 	Remote self
 	SV *refspecs
@@ -474,7 +471,7 @@ upload(self, refspecs, ...)
 		git_push_options push_opts = GIT_PUSH_OPTIONS_INIT;
 		git_strarray specs = {NULL, 0};
 
-	CODE:
+	PPCODE:
 		git_list_to_paths(
 			git_ensure_av(refspecs, "refspecs"),
 			&specs
@@ -488,11 +485,9 @@ upload(self, refspecs, ...)
 		rc = git_remote_upload(self -> remote, &specs, &push_opts);
 		Safefree(specs.strings);
 
-		if (rc != GIT_OK && rc != GIT_EUSER)
-			git_check_error(rc);
-		RETVAL = newSViv(1);
-
-	OUTPUT: RETVAL
+		if (rc == GIT_OK || rc == GIT_EUSER)
+			XSRETURN_YES;
+		git_check_error(rc);
 
 void
 prune(self, ...)
