@@ -164,6 +164,44 @@ message(self)
 	OUTPUT: RETVAL
 
 SV *
+message_trailers(self)
+	Commit self
+
+	PREINIT:
+		int rc;
+		size_t i;
+		const char *msg;
+		git_message_trailer_array trailers = {0};
+		HV *result;
+
+	CODE:
+		msg = git_commit_message(self);
+		if (msg == NULL)
+			XSRETURN_UNDEF;
+
+		rc = git_message_trailers(&trailers, msg);
+		git_check_error(rc);
+
+		result = newHV();
+
+		for (i = 0; i < trailers.count; ++i) {
+			const char *key = trailers.trailers[i].key;
+			const char *value = trailers.trailers[i].value;
+			STRLEN length = strlen (key);
+
+			if (!hv_exists(result, key, length))
+				hv_store(result, key, length, newRV_noinc (newAV()), 0);
+
+			av_push (SvRV (*hv_fetch(result, key, length, 0)),
+				newSVpv(value, 0));
+		}
+
+		git_message_trailer_array_free(&trailers);
+		RETVAL = newRV_noinc (result);
+
+	OUTPUT: RETVAL
+
+SV *
 summary(self)
 	Commit self
 

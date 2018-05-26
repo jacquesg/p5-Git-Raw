@@ -106,6 +106,10 @@ my $author = $commit -> author;
 is $commit -> message, "initial commit\n";
 is $commit -> summary, "initial commit";
 
+my $trailers = $commit -> message_trailers;
+isa_ok $trailers, 'HASH';
+is keys (%$trailers), 0;
+
 is $commit -> author -> name, $name;
 is $commit -> author -> email, $email;
 is $commit -> author -> time, $time;
@@ -466,14 +470,30 @@ my @after_refs = sort map { $_ -> name() } $repo -> refs();
 is_deeply \@after_refs, \@before_refs, 'No new references should be created when specifying undef as the update ref argument';
 
 my $commit5 = $repo -> commit(
-    "fifth commit\n", $me, $me, [], $tree, 'refs/commit-test-ref',
+    "fifth commit\n\n".
+	"Signed-off-by: foo\@bar.com\n".
+	"Signed-off-by: someone\@else.com\n".
+	"A: B\n".
+	"A: C\n",
+	$me, $me, [], $tree, 'refs/commit-test-ref',
 );
 
 is $repo -> head -> target -> id, $commit3 -> id, q{Make sure that stringy reference doesn't update HEAD};
 
 $commit5 = Git::Raw::Reference -> lookup('refs/commit-test-ref', $repo) -> target;
 
-is $commit5 -> message, "fifth commit\n";
+$trailers = $commit5 -> message_trailers;
+isa_ok $trailers, 'HASH';
+is keys (%$trailers), 2;
+ok (exists ($trailers->{'Signed-off-by'}));
+ok (exists ($trailers->{'A'}));
+isa_ok $trailers->{'Signed-off-by'}, 'ARRAY';
+isa_ok $trailers->{'A'}, 'ARRAY';
+is $trailers->{'Signed-off-by'}[0], 'foo@bar.com';
+is $trailers->{'Signed-off-by'}[1], 'someone@else.com';
+is $trailers->{'A'}[0], 'B';
+is $trailers->{'A'}[1], 'C';
+
 is $commit5 -> summary, "fifth commit";
 
 is $commit5 -> author -> name, $name;

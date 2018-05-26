@@ -101,6 +101,10 @@ Retrieve the id of the commit, as a string.
 
 Retrieve the message of the commit.
 
+=head2 message_trailers( )
+
+Retrieve the message trailers of the commit. Returns a hash.
+
 =head2 summary( )
 
 Retrieve the summary of the commit message.
