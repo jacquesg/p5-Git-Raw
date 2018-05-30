@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+#
+# This script will generate the test corpus for CR/LF data using git;
+# we create files with all possible line ending varieties (all LF, all
+# CRLF, mixed, etc) on all the possible line ending configurations
+# (`core.autocrlf=true`, `text=auto` in gitattributes, etc).  This
+# allows us to validate that our configuration will match byte-for-byte
+# the configuration that git produces.
+#
+# To update the test resource data, from the test resource directory:
+#     git rm -r ./crlf_data
+#     sh ./generate_crlf.sh ./crlf ./crlf_data /tmp/crlf_gitdirs
+#     git add ./crlf_data
 
 set -e
 

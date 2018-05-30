@@ -91,7 +91,7 @@ __KHASH_IMPL(
 
 static int submodule_alloc(git_submodule **out, git_repository *repo, const char *name);
 static git_config_backend *open_gitmodules(git_repository *repo, int gitmod);
-static git_config *gitmodules_snapshot(git_repository *repo);
+static int gitmodules_snapshot(git_config **snap, git_repository *repo);
 static int get_url_base(git_buf *url, git_repository *repo);
 static int lookup_head_remote_key(git_buf *remote_key, git_repository *repo);
 static int lookup_default_remote(git_remote **remote, git_repository *repo);
@@ -147,6 +147,51 @@ static int find_by_path(const git_config_entry *entry, void *payload)
 	}
 
 	return 0;
+}
+
+/*
+ * Checks to see if the submodule shares its name with a file or directory that
+ * already exists on the index. If so, the submodule cannot be added.
+ */
+static int is_path_occupied(bool *occupied, git_repository *repo, const char *path)
+{
+	int error = 0;
+	git_index *index;
+	git_buf dir = GIT_BUF_INIT;
+	*occupied = false;
+
+	if ((error = git_repository_index__weakptr(&index, repo)) < 0)
+		goto out;
+
+	if ((error = git_index_find(NULL, index, path)) != GIT_ENOTFOUND) {
+		if (!error) {
+			giterr_set(GITERR_SUBMODULE,
+				"File '%s' already exists in the index", path);
+			*occupied = true;
+		}
+		goto out;
+	}
+
+	if ((error = git_buf_sets(&dir, path)) < 0)
+		goto out;
+
+	if ((error = git_path_to_dir(&dir)) < 0)
+		goto out;
+
+	if ((error = git_index_find_prefix(NULL, index, dir.ptr)) != GIT_ENOTFOUND) {
+		if (!error) {
+			giterr_set(GITERR_SUBMODULE,
+				"Directory '%s' already exists in the index", path);
+			*occupied = true;
+		}
+		goto out;
+	}
+
+	error = 0;
+
+out:
+	git_buf_free(&dir);
+	return error;
 }
 
 /**
@@ -509,8 +554,11 @@ int git_submodule__map(git_repository *repo, git_strmap *map)
 		data.map = map;
 		data.repo = repo;
 
-		if ((mods = gitmodules_snapshot(repo)) == NULL)
+		if ((error = gitmodules_snapshot(&mods, repo)) < 0) {
+			if (error == GIT_ENOTFOUND)
+				error = 0;
 			goto cleanup;
+		}
 
 		data.mods = mods;
 		if ((error = git_config_foreach(
@@ -664,6 +712,7 @@ int git_submodule_add_setup(
 	git_submodule *sm = NULL;
 	git_buf name = GIT_BUF_INIT, real_url = GIT_BUF_INIT;
 	git_repository *subrepo = NULL;
+	bool path_occupied;
 
 	assert(repo && url && path);
 
@@ -685,6 +734,14 @@ int git_submodule_add_setup(
 	if (git_path_root(path) >= 0) {
 		giterr_set(GITERR_SUBMODULE, "submodule path must be a relative path");
 		error = -1;
+		goto cleanup;
+	}
+
+	if ((error = is_path_occupied(&path_occupied, repo, path)) < 0)
+		goto cleanup;
+
+	if (path_occupied) {
+		error = GIT_EEXISTS;
 		goto cleanup;
 	}
 
@@ -1511,7 +1568,8 @@ int git_submodule_reload(git_submodule *sm, int force)
 
 	if (!git_repository_is_bare(sm->repo)) {
 		/* refresh config data */
-		mods = gitmodules_snapshot(sm->repo);
+		if ((error = gitmodules_snapshot(&mods, sm->repo)) < 0 && error != GIT_ENOTFOUND)
+			return error;
 		if (mods != NULL) {
 			error = submodule_read_config(sm, mods);
 			git_config_free(mods);
@@ -1915,32 +1973,37 @@ static int submodule_load_from_wd_lite(git_submodule *sm)
 }
 
 /**
- * Returns a snapshot of $WORK_TREE/.gitmodules.
+ * Requests a snapshot of $WORK_TREE/.gitmodules.
  *
- * We ignore any errors and just pretend the file isn't there.
+ * Returns GIT_ENOTFOUND in case no .gitmodules file exist
  */
-static git_config *gitmodules_snapshot(git_repository *repo)
+static int gitmodules_snapshot(git_config **snap, git_repository *repo)
 {
 	const char *workdir = git_repository_workdir(repo);
-	git_config *mods = NULL, *snap = NULL;
+	git_config *mods = NULL;
 	git_buf path = GIT_BUF_INIT;
+	int error;
 
-	if (workdir != NULL) {
-		if (git_buf_joinpath(&path, workdir, GIT_MODULES_FILE) != 0)
-			return NULL;
+	if (!workdir)
+		return GIT_ENOTFOUND;
 
-		if (git_config_open_ondisk(&mods, path.ptr) < 0)
-			mods = NULL;
-	}
+	if ((error = git_buf_joinpath(&path, workdir, GIT_MODULES_FILE)) < 0)
+		return error;
 
+	if ((error = git_config_open_ondisk(&mods, path.ptr)) < 0)
+		goto cleanup;
+
+	if ((error = git_config_snapshot(snap, mods)) < 0)
+		goto cleanup;
+
+	error = 0;
+
+cleanup:
+	if (mods)
+		git_config_free(mods);
 	git_buf_free(&path);
 
-	if (mods) {
-		git_config_snapshot(&snap, mods);
-		git_config_free(mods);
-	}
-
-	return snap;
+	return error;
 }
 
 static git_config_backend *open_gitmodules(

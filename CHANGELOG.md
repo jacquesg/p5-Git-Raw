@@ -3,11 +3,16 @@ v0.27 + 1
 
 ### Changes or improvements
 
+* The line-ending filtering logic - when checking out files - has been
+  updated to match newer git (>= git 2.9) for proper interoperability.
+
 ### API additions
 
 ### API removals
 
 ### Breaking API changes
+
+* The default checkout strategy changed from `DRY_RUN` to `SAFE` (#4531).
 
 v0.27
 ---------
