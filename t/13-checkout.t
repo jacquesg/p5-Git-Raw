@@ -16,6 +16,7 @@ $repo -> checkout($fst, {
 	'ancestor_label' => 'ancestor',
 	'our_label'      => 'ours',
 	'their_label'    => 'theirs',
+	'checkout_strategy' => { 'none' => 1 }
 });
 
 is_deeply $repo -> status({}) -> {'test3/under/the/tree/test3'}, undef;
