@@ -1319,7 +1319,7 @@ static int refdb_fs_backend__delete_tail(
 	}
 
 	/* If a loose reference exists, remove it from the filesystem */
-	if (git_buf_joinpath(&loose_path, backend->gitpath, ref_name) < 0)
+	if (git_buf_joinpath(&loose_path, backend->commonpath, ref_name) < 0)
 		return -1;
 
 
@@ -1603,6 +1603,8 @@ static int create_new_reflog_file(const char *filepath)
 
 GIT_INLINE(int) retrieve_reflog_path(git_buf *path, git_repository *repo, const char *name)
 {
+	if (strcmp(name, GIT_HEAD_FILE) == 0)
+		return git_buf_join3(path, '/', repo->gitdir, GIT_REFLOG_DIR, name);
 	return git_buf_join3(path, '/', repo->commondir, GIT_REFLOG_DIR, name);
 }
 
