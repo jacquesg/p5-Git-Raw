@@ -505,26 +505,57 @@ static int iter_load_loose_paths(refdb_fs_backend *backend, refdb_fs_iter *iter)
 	git_iterator *fsit = NULL;
 	git_iterator_options fsit_opts = GIT_ITERATOR_OPTIONS_INIT;
 	const git_index_entry *entry = NULL;
+	const char *ref_prefix = GIT_REFS_DIR;
+	size_t ref_prefix_len = strlen(ref_prefix);
 
 	if (!backend->commonpath) /* do nothing if no commonpath for loose refs */
 		return 0;
 
 	fsit_opts.flags = backend->iterator_flags;
 
-	if ((error = git_buf_printf(&path, "%s/refs", backend->commonpath)) < 0 ||
-		(error = git_iterator_for_filesystem(&fsit, path.ptr, &fsit_opts)) < 0) {
+	if (iter->glob) {
+		const char *last_sep = NULL;
+		const char *pos;
+		for (pos = iter->glob; *pos; ++pos) {
+			switch (*pos) {
+			case '?':
+			case '*':
+			case '[':
+			case '\\':
+				break;
+			case '/':
+				last_sep = pos;
+				/* FALLTHROUGH */
+			default:
+				continue;
+			}
+			break;
+		}
+		if (last_sep) {
+			ref_prefix = iter->glob;
+			ref_prefix_len = (last_sep - ref_prefix) + 1;
+		}
+	}
+
+	if ((error = git_buf_printf(&path, "%s/", backend->commonpath)) < 0 ||
+		(error = git_buf_put(&path, ref_prefix, ref_prefix_len)) < 0) {
 		git_buf_free(&path);
 		return error;
 	}
 
-	error = git_buf_sets(&path, GIT_REFS_DIR);
+	if ((error = git_iterator_for_filesystem(&fsit, path.ptr, &fsit_opts)) < 0) {
+		git_buf_free(&path);
+		return (iter->glob && error == GIT_ENOTFOUND)? 0 : error;
+	}
+
+	error = git_buf_sets(&path, ref_prefix);
 
 	while (!error && !git_iterator_advance(&entry, fsit)) {
 		const char *ref_name;
 		struct packref *ref;
 		char *ref_dup;
 
-		git_buf_truncate(&path, strlen(GIT_REFS_DIR));
+		git_buf_truncate(&path, ref_prefix_len);
 		git_buf_puts(&path, entry->path);
 		ref_name = git_buf_cstr(&path);
 
@@ -744,7 +775,7 @@ static int loose_lock(git_filebuf *file, refdb_fs_backend *backend, const char *
 
 	assert(file && backend && name);
 
-	if (!git_path_isvalid(backend->repo, name, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
+	if (!git_path_isvalid(backend->repo, name, 0, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
 		giterr_set(GITERR_INVALID, "invalid reference name '%s'", name);
 		return GIT_EINVALIDSPEC;
 	}
@@ -1742,7 +1773,7 @@ static int lock_reflog(git_filebuf *file, refdb_fs_backend *backend, const char 
 
 	repo = backend->repo;
 
-	if (!git_path_isvalid(backend->repo, refname, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
+	if (!git_path_isvalid(backend->repo, refname, 0, GIT_PATH_REJECT_FILESYSTEM_DEFAULTS)) {
 		giterr_set(GITERR_INVALID, "invalid reference name '%s'", refname);
 		return GIT_EINVALIDSPEC;
 	}
