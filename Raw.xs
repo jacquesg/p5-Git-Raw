@@ -8,6 +8,10 @@
 
 #include "ppport.h"
 
+#ifndef MUTABLE_AV
+#define MUTABLE_AV(p) ((AV *)MUTABLE_PTR(p))
+#endif
+
 #ifdef GIT_SSH
 #include <libssh2.h>
 #else

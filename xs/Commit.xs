@@ -190,14 +190,14 @@ message_trailers(self)
 			STRLEN length = strlen (key);
 
 			if (!hv_exists(result, key, length))
-				hv_store(result, key, length, newRV_noinc (newAV()), 0);
+				hv_store(result, key, length, newRV_noinc (MUTABLE_SV (newAV())), 0);
 
-			av_push (SvRV (*hv_fetch(result, key, length, 0)),
+			av_push (MUTABLE_AV (SvRV (*hv_fetch(result, key, length, 0))),
 				newSVpv(value, 0));
 		}
 
 		git_message_trailer_array_free(&trailers);
-		RETVAL = newRV_noinc (result);
+		RETVAL = newRV_noinc (MUTABLE_SV (result));
 
 	OUTPUT: RETVAL
 
