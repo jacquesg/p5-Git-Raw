@@ -668,7 +668,7 @@ int git_index_read(git_index *index, int force)
 	if (!error)
 		git_futils_filestamp_set(&index->stamp, &stamp);
 
-	git_buf_free(&buffer);
+	git_buf_dispose(&buffer);
 	return error;
 }
 
@@ -949,7 +949,7 @@ static int index_entry_init(
 		return -1;
 
 	error = git_path_lstat(path.ptr, &st);
-	git_buf_free(&path);
+	git_buf_dispose(&path);
 
 	if (error < 0)
 		return error;
@@ -1509,7 +1509,7 @@ static int add_repo_as_submodule(git_index_entry **out, git_index *index, const 
 
 	git_reference_free(head);
 	git_repository_free(sub);
-	git_buf_free(&abspath);
+	git_buf_dispose(&abspath);
 
 	*out = entry;
 	return 0;
@@ -1693,7 +1693,7 @@ int git_index_remove_directory(git_index *index, const char *dir, int stage)
 		/* removed entry at 'pos' so we don't need to increment */
 	}
 
-	git_buf_free(&pfx);
+	git_buf_dispose(&pfx);
 
 	return error;
 }
@@ -2629,7 +2629,7 @@ static bool is_index_extended(git_index *index)
 static int write_disk_entry(git_filebuf *file, git_index_entry *entry, const char *last)
 {
 	void *mem = NULL;
-	struct entry_short *ondisk;
+	struct entry_short ondisk;
 	size_t path_len, disk_size;
 	int varint_len = 0;
 	char *path;
@@ -2657,9 +2657,7 @@ static int write_disk_entry(git_filebuf *file, git_index_entry *entry, const cha
 	if (git_filebuf_reserve(file, &mem, disk_size) < 0)
 		return -1;
 
-	ondisk = (struct entry_short *)mem;
-
-	memset(ondisk, 0x0, disk_size);
+	memset(mem, 0x0, disk_size);
 
 	/**
 	 * Yes, we have to truncate.
@@ -2671,30 +2669,32 @@ static int write_disk_entry(git_filebuf *file, git_index_entry *entry, const cha
 	 *
 	 * In 2038 I will be either too dead or too rich to care about this
 	 */
-	ondisk->ctime.seconds = htonl((uint32_t)entry->ctime.seconds);
-	ondisk->mtime.seconds = htonl((uint32_t)entry->mtime.seconds);
-	ondisk->ctime.nanoseconds = htonl(entry->ctime.nanoseconds);
-	ondisk->mtime.nanoseconds = htonl(entry->mtime.nanoseconds);
-	ondisk->dev = htonl(entry->dev);
-	ondisk->ino = htonl(entry->ino);
-	ondisk->mode = htonl(entry->mode);
-	ondisk->uid = htonl(entry->uid);
-	ondisk->gid = htonl(entry->gid);
-	ondisk->file_size = htonl((uint32_t)entry->file_size);
+	ondisk.ctime.seconds = htonl((uint32_t)entry->ctime.seconds);
+	ondisk.mtime.seconds = htonl((uint32_t)entry->mtime.seconds);
+	ondisk.ctime.nanoseconds = htonl(entry->ctime.nanoseconds);
+	ondisk.mtime.nanoseconds = htonl(entry->mtime.nanoseconds);
+	ondisk.dev = htonl(entry->dev);
+	ondisk.ino = htonl(entry->ino);
+	ondisk.mode = htonl(entry->mode);
+	ondisk.uid = htonl(entry->uid);
+	ondisk.gid = htonl(entry->gid);
+	ondisk.file_size = htonl((uint32_t)entry->file_size);
 
-	git_oid_cpy(&ondisk->oid, &entry->id);
+	git_oid_cpy(&ondisk.oid, &entry->id);
 
-	ondisk->flags = htons(entry->flags);
+	ondisk.flags = htons(entry->flags);
 
 	if (entry->flags & GIT_IDXENTRY_EXTENDED) {
-		struct entry_long *ondisk_ext;
-		ondisk_ext = (struct entry_long *)ondisk;
-		ondisk_ext->flags_extended = htons(entry->flags_extended &
+		struct entry_long ondisk_ext;
+		memcpy(&ondisk_ext, &ondisk, sizeof(struct entry_short));
+		ondisk_ext.flags_extended = htons(entry->flags_extended &
 			GIT_IDXENTRY_EXTENDED_FLAGS);
-		path = ondisk_ext->path;
+		memcpy(mem, &ondisk_ext, offsetof(struct entry_long, path));
+		path = ((struct entry_long*)mem)->path;
 		disk_size -= offsetof(struct entry_long, path);
 	} else {
-		path = ondisk->path;
+		memcpy(mem, &ondisk, offsetof(struct entry_short, path));
+		path = ((struct entry_short*)mem)->path;
 		disk_size -= offsetof(struct entry_short, path);
 	}
 
@@ -2819,7 +2819,7 @@ static int write_name_extension(git_index *index, git_filebuf *file)
 
 	error = write_extension(file, &extension, &name_buf);
 
-	git_buf_free(&name_buf);
+	git_buf_dispose(&name_buf);
 
 done:
 	return error;
@@ -2867,7 +2867,7 @@ static int write_reuc_extension(git_index *index, git_filebuf *file)
 
 	error = write_extension(file, &extension, &reuc_buf);
 
-	git_buf_free(&reuc_buf);
+	git_buf_dispose(&reuc_buf);
 
 done:
 	return error;
@@ -2891,7 +2891,7 @@ static int write_tree_extension(git_index *index, git_filebuf *file)
 
 	error = write_extension(file, &extension, &buf);
 
-	git_buf_free(&buf);
+	git_buf_dispose(&buf);
 
 	return error;
 }
@@ -3008,7 +3008,7 @@ static int read_tree_cb(
 	}
 
 	index_entry_adjust_namemask(entry, path.size);
-	git_buf_free(&path);
+	git_buf_dispose(&path);
 
 	if (git_vector_insert(data->new_entries, entry) < 0) {
 		index_entry_free(entry);
@@ -3463,7 +3463,7 @@ static int index_apply_to_all(
 		}
 	}
 
-	git_buf_free(&path);
+	git_buf_dispose(&path);
 	git_pathspec__clear(&ps);
 
 	return error;
