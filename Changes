@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.80      2018-06-17 10:45:28+02:00 Africa/Johannesburg
+
  - Added Commit methods:
     + message_trailers()
  - Update libgit2 to 23c6e89431
