@@ -205,13 +205,13 @@ $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
 if ($is_gcc) {
 	# gcc-like compiler
-	$ccflags .= ' -Wall -Wno-unused-variable -Wno-pedantic';
+	$ccflags .= ' -Wall -Wno-unused-variable -Wno-pedantic -Wno-deprecated-declarations';
 
 	# clang compiler is pedantic!
 	if ($is_osx) {
 		# clang masquerading as gcc
 		if ($Config{gccversion} =~ /LLVM/) {
-			$ccflags .= ' -Wno-deprecated-declarations -Wno-unused-const-variable -Wno-unused-function';
+			$ccflags .= ' -Wno-unused-const-variable -Wno-unused-function';
 		}
 
 		# Secure transport (HTTPS)
