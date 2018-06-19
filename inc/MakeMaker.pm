@@ -225,7 +225,7 @@ if ($is_gcc) {
 
 	# building with a 32-bit perl on a 64-bit OS may require this (supported by cc and gcc-like compilers,
 	# excluding some ARM toolchains)
-	if ($Config{ptrsize} == 4 && $Config{archname} !~ /^armv/) {
+	if ($Config{ptrsize} == 4 && $Config{archname} !~ /arm/) {
 		$ccflags .= ' -m32';
 	}
 } elsif ($is_sunpro) {
