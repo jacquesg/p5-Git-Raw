@@ -196,7 +196,7 @@ default_ref(class, repo)
 		rc = git_reference_lookup(
 			&ref, repo_ptr -> repository, ref_name.ptr
 		);
-		git_buf_free(&ref_name);
+		git_buf_dispose(&ref_name);
 
 		RETVAL = &PL_sv_undef;
 		if (rc != GIT_ENOTFOUND) {

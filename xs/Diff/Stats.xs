@@ -62,7 +62,7 @@ buffer(self, ...)
 
 		RETVAL = newSVpv(buf.ptr, buf.size);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 
 	OUTPUT: RETVAL
 

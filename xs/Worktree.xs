@@ -117,7 +117,7 @@ is_locked(self)
 	PPCODE:
 		rc = git_worktree_is_locked(&buf, self);
 		if (rc < 0) {
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 			git_check_error(rc);
 		}
 
@@ -126,7 +126,7 @@ is_locked(self)
 		else
 			mXPUSHi (0);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 		XSRETURN(1);
 
 void

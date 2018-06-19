@@ -95,7 +95,7 @@ transform(self, ref)
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 		git_check_error(rc);
 
 	OUTPUT: RETVAL
@@ -120,7 +120,7 @@ rtransform(self, ref)
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 		git_check_error(rc);
 
 	OUTPUT: RETVAL

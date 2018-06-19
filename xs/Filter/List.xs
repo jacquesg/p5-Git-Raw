@@ -62,11 +62,11 @@ apply_to_blob(self, blob)
 			&buf, self, blob
 		);
 		if (rc != GIT_OK)
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 
 		git_check_error(rc);
 		RETVAL = newSVpv(buf.ptr, buf.size);
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 
 	OUTPUT: RETVAL
 
@@ -94,16 +94,16 @@ apply_to_data(self, data)
 			&buf, self, &in
 		);
 		if (rc != GIT_OK) {
-			git_buf_free(&in);
-			git_buf_free(&buf);
+			git_buf_dispose(&in);
+			git_buf_dispose(&buf);
 		}
 
 		git_check_error(rc);
 
 		RETVAL = newSVpv(buf.ptr, buf.size);
 
-		git_buf_free(&in);
-		git_buf_free(&buf);
+		git_buf_dispose(&in);
+		git_buf_dispose(&buf);
 
 	OUTPUT: RETVAL
 
@@ -131,11 +131,11 @@ apply_to_file(self, path)
 			&buf, list, repo_ptr -> repository, path
 		);
 		if (rc != GIT_OK)
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 
 		git_check_error(rc);
 		RETVAL = newSVpv(buf.ptr, buf.size);
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 
 	OUTPUT: RETVAL
 

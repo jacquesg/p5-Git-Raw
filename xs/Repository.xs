@@ -123,7 +123,7 @@ discover(class, path)
 		if (rc == GIT_OK)
 			rc = git_repository_open(&r, (const char*) buf.ptr);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 		git_check_error(rc);
 
 		Newxz(repo, 1, git_raw_repository);
@@ -1198,7 +1198,7 @@ message(self)
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, 0);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 		git_check_error(rc);
 
 	OUTPUT: RETVAL

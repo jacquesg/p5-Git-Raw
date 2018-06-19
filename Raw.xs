@@ -2309,7 +2309,7 @@ message_prettify(class, msg, ...)
 		RETVAL = &PL_sv_undef;
 		if (rc == GIT_OK) {
 			RETVAL = newSVpv(buf.ptr, buf.size);
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 		}
 
 		git_check_error(rc);

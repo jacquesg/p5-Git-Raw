@@ -165,7 +165,7 @@ upstream_name(self)
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 
 		if (rc != GIT_ENOTFOUND)
 			git_check_error(rc);
@@ -204,8 +204,8 @@ remote_name(self)
 				RETVAL = newSVpv(remote.ptr, remote.size);
 		}
 
-		git_buf_free(&upstream);
-		git_buf_free(&remote);
+		git_buf_dispose(&upstream);
+		git_buf_dispose(&remote);
 
 		if (rc != GIT_ENOTFOUND)
 			git_check_error(rc);

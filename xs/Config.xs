@@ -118,7 +118,7 @@ str(self, name, ...)
 			git_check_error(rc);
 
 			RETVAL = newSVpv(buf.ptr, 0);
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 		}
 
 	OUTPUT: RETVAL

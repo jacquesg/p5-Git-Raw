@@ -468,12 +468,12 @@ as_email(commit, ...)
 			&diff_opts
 		);
 		if (rc != GIT_OK) {
-			git_buf_free(&buf);
+			git_buf_dispose(&buf);
 			git_check_error(rc);
 		}
 
 		RETVAL = newSVpv(buf.ptr, buf.size);
-		git_buf_free(&buf);
+		git_buf_dispose(&buf);
 
 	OUTPUT: RETVAL
 
