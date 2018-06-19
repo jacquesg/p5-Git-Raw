@@ -353,6 +353,9 @@ $WriteMakefileArgs{OBJECT}  .= ' ' . join ' ', @objs;
 $WriteMakefileArgs{dynamic_lib} = {
 	OTHERLDFLAGS => $otherldflags
 };
+$WriteMakefileArgs{clean} = {
+	FILES => "*.inc"
+};
 
 unless (eval { ExtUtils::MakeMaker->VERSION(6.56) }) {
 	my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
