@@ -205,7 +205,7 @@ $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
 if ($is_gcc) {
 	# gcc-like compiler
-	$ccflags .= ' -Wall -Wno-unused-variable';
+	$ccflags .= ' -Wall -Wno-unused-variable -Wno-pedantic';
 
 	# clang compiler is pedantic!
 	if ($is_osx) {
