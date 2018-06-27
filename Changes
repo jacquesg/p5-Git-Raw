@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.81      2018-06-27 19:20:17+02:00 Africa/Johannesburg
+
  - Cleanup generated inc files (GH#196)
  - Replace deprecated calls to git_buf_free() with git_buf_dispose()
  - Improve reliability of testers by disabling parallel builds
