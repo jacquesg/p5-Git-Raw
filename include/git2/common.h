@@ -194,7 +194,10 @@ typedef enum {
 	GIT_OPT_GET_WINDOWS_SHAREMODE,
 	GIT_OPT_SET_WINDOWS_SHAREMODE,
 	GIT_OPT_ENABLE_STRICT_HASH_VERIFICATION,
-	GIT_OPT_SET_ALLOCATOR
+	GIT_OPT_SET_ALLOCATOR,
+	GIT_OPT_ENABLE_UNSAVED_INDEX_SAFETY,
+	GIT_OPT_GET_PACK_MAX_OBJECTS,
+	GIT_OPT_SET_PACK_MAX_OBJECTS
 } git_libgit2_opt_t;
 
 /**
@@ -240,13 +243,13 @@ typedef enum {
  *		>   `GIT_CONFIG_LEVEL_GLOBAL`, `GIT_CONFIG_LEVEL_XDG`, or
  *		>   `GIT_CONFIG_LEVEL_PROGRAMDATA`.
  *
- *	* opts(GIT_OPT_SET_CACHE_OBJECT_LIMIT, git_otype type, size_t size)
+ *	* opts(GIT_OPT_SET_CACHE_OBJECT_LIMIT, git_object_t type, size_t size)
  *
  *		> Set the maximum data size for the given type of object to be
  *		> considered eligible for caching in memory.  Setting to value to
  *		> zero means that that type of object will not be cached.
- *		> Defaults to 0 for GIT_OBJ_BLOB (i.e. won't cache blobs) and 4k
- *		> for GIT_OBJ_COMMIT, GIT_OBJ_TREE, and GIT_OBJ_TAG.
+ *		> Defaults to 0 for GIT_OBJECT_BLOB (i.e. won't cache blobs) and 4k
+ *		> for GIT_OBJECT_COMMIT, GIT_OBJECT_TREE, and GIT_OBJECT_TAG.
  *
  *	* opts(GIT_OPT_SET_CACHE_MAX_SIZE, ssize_t max_storage_bytes)
  *
@@ -361,7 +364,28 @@ typedef enum {
  *
  *		> Set the memory allocator to a different memory allocator. This
  *		> allocator will then be used to make all memory allocations for
- *		> libgit2 operations.
+ *		> libgit2 operations.  If the given `allocator` is NULL, then the
+ *		> system default will be restored.
+ *
+ *	 opts(GIT_OPT_ENABLE_UNSAVED_INDEX_SAFETY, int enabled)
+ *
+ *		> Ensure that there are no unsaved changes in the index before
+ *		> beginning any operation that reloads the index from disk (eg,
+ *		> checkout).  If there are unsaved changes, the instruction will
+ *		> fail.  (Using the FORCE flag to checkout will still overwrite
+ *		> these changes.)
+ *
+ *	 opts(GIT_OPT_GET_PACK_MAX_OBJECTS, size_t *out)
+ *
+ *		> Get the maximum number of objects libgit2 will allow in a pack
+ *		> file when downloading a pack file from a remote. This can be
+ *		> used to limit maximum memory usage when fetching from an untrusted
+ *		> remote.
+ *
+ *	 opts(GIT_OPT_SET_PACK_MAX_OBJECTS, size_t objects)
+ *
+ *		> Set the maximum number of objects libgit2 will allow in a pack
+ *		> file when downloading a pack file from a remote.
  *
  * @param option Option key
  * @param ... value to set the option

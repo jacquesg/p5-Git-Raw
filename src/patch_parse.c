@@ -458,26 +458,6 @@ done:
 	return error;
 }
 
-static int parse_number(git_off_t *out, git_patch_parse_ctx *ctx)
-{
-	const char *end;
-	int64_t num;
-
-	if (!git__isdigit(ctx->parse_ctx.line[0]))
-		return -1;
-
-	if (git__strntol64(&num, ctx->parse_ctx.line, ctx->parse_ctx.line_len, &end, 10) < 0)
-		return -1;
-
-	if (num < 0)
-		return -1;
-
-	*out = num;
-	git_parse_advance_chars(&ctx->parse_ctx, (end - ctx->parse_ctx.line));
-
-	return 0;
-}
-
 static int parse_int(int *out, git_patch_parse_ctx *ctx)
 {
 	git_off_t num;
@@ -563,6 +543,8 @@ static int parse_hunk_body(
 		char c;
 		int origin;
 		int prefix = 1;
+		int old_lineno = hunk->hunk.old_start + (hunk->hunk.old_lines - oldlines);
+		int new_lineno = hunk->hunk.new_start + (hunk->hunk.new_lines - newlines);
 
 		if (ctx->parse_ctx.line_len == 0 || ctx->parse_ctx.line[ctx->parse_ctx.line_len - 1] != '\n') {
 			error = git_parse_err("invalid patch instruction at line %"PRIuZ,
@@ -586,11 +568,13 @@ static int parse_hunk_body(
 		case '-':
 			origin = GIT_DIFF_LINE_DELETION;
 			oldlines--;
+			new_lineno = -1;
 			break;
 
 		case '+':
 			origin = GIT_DIFF_LINE_ADDITION;
 			newlines--;
+			old_lineno = -1;
 			break;
 
 		default:
@@ -607,6 +591,9 @@ static int parse_hunk_body(
 		line->content_len = ctx->parse_ctx.line_len - prefix;
 		line->content_offset = ctx->parse_ctx.content_len - ctx->parse_ctx.remain_len;
 		line->origin = origin;
+		line->num_lines = 1;
+		line->old_lineno = old_lineno;
+		line->new_lineno = new_lineno;
 
 		hunk->line_count++;
 	}

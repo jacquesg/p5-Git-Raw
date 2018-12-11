@@ -1944,7 +1944,7 @@ static int checkout_lookup_head_tree(git_tree **out, git_repository *repo)
 	git_object *head;
 
 	if (!(error = git_repository_head(&ref, repo)) &&
-		!(error = git_reference_peel(&head, ref, GIT_OBJ_TREE)))
+		!(error = git_reference_peel(&head, ref, GIT_OBJECT_TREE)))
 		*out = (git_tree *)head;
 
 	git_reference_free(ref);
@@ -2397,6 +2397,9 @@ static int checkout_data_init(
 				GIT_DIR_MODE, GIT_MKDIR_VERIFY_DIR)) < 0)
 		goto cleanup;
 
+	if ((error = git_repository_index(&data->index, data->repo)) < 0)
+		goto cleanup;
+
 	/* refresh config and index content unless NO_REFRESH is given */
 	if ((data->opts.checkout_strategy & GIT_CHECKOUT_NO_REFRESH) == 0) {
 		git_config *cfg;
@@ -2404,24 +2407,30 @@ static int checkout_data_init(
 		if ((error = git_repository_config__weakptr(&cfg, repo)) < 0)
 			goto cleanup;
 
-		/* Get the repository index and reload it (unless we're checking
-		 * out the index; then it has the changes we're trying to check
-		 * out and those should not be overwritten.)
+		/* Reload the repository index (unless we're checking out the
+		 * index; then it has the changes we're trying to check out
+		 * and those should not be overwritten.)
 		 */
-		if ((error = git_repository_index(&data->index, data->repo)) < 0)
-			goto cleanup;
-
 		if (data->index != git_iterator_index(target)) {
-			if ((error = git_index_read(data->index, true)) < 0)
-				goto cleanup;
+			if (data->opts.checkout_strategy & GIT_CHECKOUT_FORCE) {
+				/* When forcing, we can blindly re-read the index */
+				if ((error = git_index_read(data->index, false)) < 0)
+					goto cleanup;
+			} else {
+				/*
+				 * When not being forced, we need to check for unresolved
+				 * conflicts and unsaved changes in the index before
+				 * proceeding.
+				 */
+				if (git_index_has_conflicts(data->index)) {
+					error = GIT_ECONFLICT;
+					giterr_set(GITERR_CHECKOUT,
+						"unresolved conflicts exist in the index");
+					goto cleanup;
+				}
 
-			/* cannot checkout if unresolved conflicts exist */
-			if ((data->opts.checkout_strategy & GIT_CHECKOUT_FORCE) == 0 &&
-				git_index_has_conflicts(data->index)) {
-				error = GIT_ECONFLICT;
-				giterr_set(GITERR_CHECKOUT,
-					"unresolved conflicts exist in the index");
-				goto cleanup;
+				if ((error = git_index_read_safely(data->index)) < 0)
+					goto cleanup;
 			}
 
 			/* clean conflict data in the current index */
@@ -2740,7 +2749,7 @@ int git_checkout_tree(
 		repo = git_object_owner(treeish);
 
 	if (treeish) {
-		if (git_object_peel((git_object **)&tree, treeish, GIT_OBJ_TREE) < 0) {
+		if (git_object_peel((git_object **)&tree, treeish, GIT_OBJECT_TREE) < 0) {
 			giterr_set(
 				GITERR_CHECKOUT, "provided object cannot be peeled to a tree");
 			return -1;

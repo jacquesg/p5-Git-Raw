@@ -436,7 +436,7 @@ static int reference__create(
 	if (oid != NULL) {
 		assert(symbolic == NULL);
 
-		if (!git_object__is_valid(repo, oid, GIT_OBJ_ANY)) {
+		if (!git_object__is_valid(repo, oid, GIT_OBJECT_ANY)) {
 			giterr_set(GITERR_REFERENCE,
 				"target OID for the reference doesn't exist on the repository");
 			return -1;
@@ -1348,7 +1348,7 @@ static int peel_error(int error, git_reference *ref, const char* msg)
 int git_reference_peel(
 	git_object **peeled,
 	git_reference *ref,
-	git_otype target_type)
+	git_object_t target_type)
 {
 	git_reference *resolved = NULL;
 	git_object *target = NULL;
@@ -1369,12 +1369,12 @@ int git_reference_peel(
 	 * to a commit. So we only want to use the peeled value
 	 * if it is not zero and the target is not a tag.
 	 */
-	if (target_type != GIT_OBJ_TAG && !git_oid_iszero(&resolved->peel)) {
+	if (target_type != GIT_OBJECT_TAG && !git_oid_iszero(&resolved->peel)) {
 		error = git_object_lookup(&target,
-			git_reference_owner(ref), &resolved->peel, GIT_OBJ_ANY);
+			git_reference_owner(ref), &resolved->peel, GIT_OBJECT_ANY);
 	} else {
 		error = git_object_lookup(&target,
-			git_reference_owner(ref), &resolved->target.oid, GIT_OBJ_ANY);
+			git_reference_owner(ref), &resolved->target.oid, GIT_OBJECT_ANY);
 	}
 
 	if (error < 0) {
@@ -1382,7 +1382,7 @@ int git_reference_peel(
 		goto cleanup;
 	}
 
-	if (target_type == GIT_OBJ_ANY && git_object_type(target) != GIT_OBJ_TAG)
+	if (target_type == GIT_OBJECT_ANY && git_object_type(target) != GIT_OBJECT_TAG)
 		error = git_object_dup(peeled, target);
 	else
 		error = git_object_peel(peeled, target, target_type);
@@ -1429,4 +1429,28 @@ const char *git_reference__shorthand(const char *name)
 const char *git_reference_shorthand(const git_reference *ref)
 {
 	return git_reference__shorthand(ref->name);
+}
+
+int git_reference__is_unborn_head(bool *unborn, const git_reference *ref, git_repository *repo)
+{
+	int error;
+	git_reference *tmp_ref;
+	assert(unborn && ref && repo);
+
+	if (ref->type == GIT_REF_OID) {
+		*unborn = 0;
+		return 0;
+	}
+
+	error = git_reference_lookup_resolved(&tmp_ref, repo, ref->name, -1);
+	git_reference_free(tmp_ref);
+
+	if (error != 0 && error != GIT_ENOTFOUND)
+		return error;
+	else if (error == GIT_ENOTFOUND && git__strcmp(ref->name, GIT_HEAD_FILE) == 0)
+		*unborn = true;
+	else
+		*unborn = false;
+
+	return 0;
 }

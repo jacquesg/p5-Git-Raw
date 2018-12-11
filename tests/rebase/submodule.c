@@ -10,7 +10,7 @@
 static git_repository *repo;
 static git_signature *signature;
 
-// Fixture setup and teardown
+/* Fixture setup and teardown */
 void test_rebase_submodule__initialize(void)
 {
 	git_index *index;
@@ -33,8 +33,9 @@ void test_rebase_submodule__initialize(void)
 	/* We have to commit the rewritten .gitmodules file */
 	cl_git_pass(git_repository_index(&index, repo));
 	cl_git_pass(git_index_add_bypath(index, ".gitmodules"));
-	cl_git_pass(git_index_write_tree(&tree_oid, index));
+	cl_git_pass(git_index_write(index));
 
+	cl_git_pass(git_index_write_tree(&tree_oid, index));
 	cl_git_pass(git_tree_lookup(&tree, repo, &tree_oid));
 
 	cl_git_pass(git_repository_head(&master_ref, repo));
@@ -43,7 +44,7 @@ void test_rebase_submodule__initialize(void)
 	cl_git_pass(git_commit_create_v(&commit_id, repo, git_reference_name(master_ref), signature, signature, NULL, "Fixup .gitmodules", tree, 1, parent));
 
 	/* And a final reset, for good measure */
-	cl_git_pass(git_object_lookup(&obj, repo, &commit_id, GIT_OBJ_COMMIT));
+	cl_git_pass(git_object_lookup(&obj, repo, &commit_id, GIT_OBJECT_COMMIT));
 	cl_git_pass(git_reset(repo, obj, GIT_RESET_HARD, &opts));
 
 	git_index_free(index);

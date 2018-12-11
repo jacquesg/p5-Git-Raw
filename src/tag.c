@@ -36,7 +36,7 @@ const git_oid *git_tag_target_id(const git_tag *t)
 	return &t->target;
 }
 
-git_otype git_tag_target_type(const git_tag *t)
+git_object_t git_tag_target_type(const git_tag *t)
 {
 	assert(t);
 	return t->type;
@@ -70,10 +70,9 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 	static const char *tag_types[] = {
 		NULL, "commit\n", "tree\n", "blob\n", "tag\n"
 	};
-
-	unsigned int i;
 	size_t text_len, alloc_len;
-	char *search;
+	const char *search;
+	unsigned int i;
 
 	if (git_oid__parse(&tag->target, &buffer, buffer_end, "object ") < 0)
 		return tag_error("object field invalid");
@@ -85,7 +84,7 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 		return tag_error("type field not found");
 	buffer += 5;
 
-	tag->type = GIT_OBJ_BAD;
+	tag->type = GIT_OBJECT_BAD;
 
 	for (i = 1; i < ARRAY_SIZE(tag_types); ++i) {
 		size_t type_length = strlen(tag_types[i]);
@@ -100,7 +99,7 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 		}
 	}
 
-	if (tag->type == GIT_OBJ_BAD)
+	if (tag->type == GIT_OBJECT_BAD)
 		return tag_error("invalid object type");
 
 	if (buffer + 4 >= buffer_end)
@@ -138,8 +137,9 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 	tag->message = NULL;
 	if (buffer < buffer_end) {
 		/* If we're not at the end of the header, search for it */
-		if( *buffer != '\n' ) {
-			search = strstr(buffer, "\n\n");
+		if(*buffer != '\n') {
+			search = git__memmem(buffer, buffer_end - buffer,
+					     "\n\n", 2);
 			if (search)
 				buffer = search + 1;
 			else
@@ -157,6 +157,11 @@ static int tag_parse(git_tag *tag, const char *buffer, const char *buffer_end)
 	}
 
 	return 0;
+}
+
+int git_tag__parse_raw(void *_tag, const char *data, size_t size)
+{
+	return tag_parse(_tag, data, data + size);
 }
 
 int git_tag__parse(void *_tag, git_odb_object *odb_obj)
@@ -226,7 +231,7 @@ static int write_tag_annotation(
 	if (git_repository_odb__weakptr(&odb, repo) < 0)
 		goto on_error;
 
-	if (git_odb_write(oid, odb, tag.ptr, tag.size, GIT_OBJ_TAG) < 0)
+	if (git_odb_write(oid, odb, tag.ptr, tag.size, GIT_OBJECT_TAG) < 0)
 		goto on_error;
 
 	git_buf_dispose(&tag);
@@ -372,7 +377,7 @@ int git_tag_create_frombuffer(git_oid *oid, git_repository *repo, const char *bu
 
 	/* write the buffer */
 	if ((error = git_odb_open_wstream(
-			&stream, odb, strlen(buffer), GIT_OBJ_TAG)) < 0)
+			&stream, odb, strlen(buffer), GIT_OBJECT_TAG)) < 0)
 		return error;
 
 	if (!(error = git_odb_stream_write(stream, buffer, strlen(buffer))))
@@ -513,5 +518,5 @@ int git_tag_list(git_strarray *tag_names, git_repository *repo)
 
 int git_tag_peel(git_object **tag_target, const git_tag *tag)
 {
-	return git_object_peel(tag_target, (const git_object *)tag, GIT_OBJ_ANY);
+	return git_object_peel(tag_target, (const git_object *)tag, GIT_OBJECT_ANY);
 }

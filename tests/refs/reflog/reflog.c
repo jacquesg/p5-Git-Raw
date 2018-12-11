@@ -11,7 +11,7 @@ static const char *current_master_tip = "a65fedf39aefe402d3bb6e24df4d4f5fe454775
 static git_repository *g_repo;
 
 
-// helpers
+/* helpers */
 static void assert_signature(const git_signature *expected, const git_signature *actual)
 {
 	cl_assert(actual);
@@ -22,15 +22,15 @@ static void assert_signature(const git_signature *expected, const git_signature 
 }
 
 
-// Fixture setup and teardown
+/* Fixture setup and teardown */
 void test_refs_reflog_reflog__initialize(void)
 {
-   g_repo = cl_git_sandbox_init("testrepo.git");
+	g_repo = cl_git_sandbox_init("testrepo.git");
 }
 
 void test_refs_reflog_reflog__cleanup(void)
 {
-   cl_git_sandbox_cleanup();
+	cl_git_sandbox_cleanup();
 }
 
 static void assert_appends(const git_signature *committer, const git_oid *oid)
@@ -420,6 +420,28 @@ void test_refs_reflog_reflog__logallrefupdates_bare_set_false(void)
 	git_config_free(config);
 
 	assert_no_reflog_update();
+}
+
+void test_refs_reflog_reflog__logallrefupdates_bare_set_always(void)
+{
+	git_config *config;
+	git_reference *ref;
+	git_reflog *log;
+	git_oid id;
+
+	cl_git_pass(git_repository_config(&config, g_repo));
+	cl_git_pass(git_config_set_string(config, "core.logallrefupdates", "always"));
+	git_config_free(config);
+
+	git_oid_fromstr(&id, "be3563ae3f795b2b4353bcce3a527ad0a4f7f644");
+	cl_git_pass(git_reference_create(&ref, g_repo, "refs/bork", &id, 1, "message"));
+
+	cl_git_pass(git_reflog_read(&log, g_repo, "refs/bork"));
+	cl_assert_equal_i(1, git_reflog_entrycount(log));
+	cl_assert_equal_s("message", git_reflog_entry_byindex(log, 0)->msg);
+
+	git_reflog_free(log);
+	git_reference_free(ref);
 }
 
 void test_refs_reflog_reflog__logallrefupdates_bare_unset(void)

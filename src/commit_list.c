@@ -171,7 +171,9 @@ static int commit_quick_parse(
 			buffer--;
 	}
 
-	if ((buffer == committer_start) || (git__strtol64(&commit_time, (char *)(buffer + 1), NULL, 10) < 0))
+	if ((buffer == committer_start) ||
+	    (git__strntol64(&commit_time, (char *)(buffer + 1),
+			    buffer_end - buffer + 1, NULL, 10) < 0))
 		return commit_error(commit, "cannot parse commit time");
 
 	commit->time = commit_time;
@@ -190,7 +192,7 @@ int git_commit_list_parse(git_revwalk *walk, git_commit_list_node *commit)
 	if ((error = git_odb_read(&obj, walk->odb, &commit->oid)) < 0)
 		return error;
 
-	if (obj->cached.type != GIT_OBJ_COMMIT) {
+	if (obj->cached.type != GIT_OBJECT_COMMIT) {
 		giterr_set(GITERR_INVALID, "object is no commit object");
 		error = -1;
 	} else

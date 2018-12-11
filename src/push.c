@@ -73,7 +73,8 @@ int git_push_set_options(git_push *push, const git_push_options *opts)
 	GITERR_CHECK_VERSION(opts, GIT_PUSH_OPTIONS_VERSION, "git_push_options");
 
 	push->pb_parallelism = opts->pb_parallelism;
-	push->custom_headers = &opts->custom_headers;
+	push->connection.custom_headers = &opts->custom_headers;
+	push->connection.proxy = &opts->proxy_opts;
 
 	return 0;
 }
@@ -83,7 +84,7 @@ static void free_refspec(push_spec *spec)
 	if (spec == NULL)
 		return;
 
-	git_refspec__free(&spec->refspec);
+	git_refspec__dispose(&spec->refspec);
 	git__free(spec);
 }
 
@@ -241,10 +242,10 @@ static int enqueue_tag(git_object **out, git_push *push, git_oid *id)
 	git_object *obj = NULL, *target = NULL;
 	int error;
 
-	if ((error = git_object_lookup(&obj, push->repo, id, GIT_OBJ_TAG)) < 0)
+	if ((error = git_object_lookup(&obj, push->repo, id, GIT_OBJECT_TAG)) < 0)
 		return error;
 
-	while (git_object_type(obj) == GIT_OBJ_TAG) {
+	while (git_object_type(obj) == GIT_OBJECT_TAG) {
 		if ((error = git_packbuilder_insert(push->pb, git_object_id(obj), NULL)) < 0)
 			break;
 
@@ -277,7 +278,7 @@ static int queue_objects(git_push *push)
 	git_revwalk_sorting(rw, GIT_SORT_TIME);
 
 	git_vector_foreach(&push->specs, i, spec) {
-		git_otype type;
+		git_object_t type;
 		size_t size;
 
 		if (git_oid_iszero(&spec->loid))
@@ -293,13 +294,13 @@ static int queue_objects(git_push *push)
 		if (git_odb_read_header(&size, &type, push->repo->_odb, &spec->loid) < 0)
 			goto on_error;
 
-		if (type == GIT_OBJ_TAG) {
+		if (type == GIT_OBJECT_TAG) {
 			git_object *target;
 
 			if ((error = enqueue_tag(&target, push, &spec->loid)) < 0)
 				goto on_error;
 
-			if (git_object_type(target) == GIT_OBJ_COMMIT) {
+			if (git_object_type(target) == GIT_OBJECT_COMMIT) {
 				if (git_revwalk_push(rw, git_object_id(target)) < 0) {
 					git_object_free(target);
 					goto on_error;
@@ -322,7 +323,7 @@ static int queue_objects(git_push *push)
 				continue;
 
 			if (!git_odb_exists(push->repo->_odb, &spec->roid)) {
-				giterr_set(GITERR_REFERENCE, 
+				giterr_set(GITERR_REFERENCE,
 					"cannot push because a reference that you are trying to update on the remote contains commits that are not present locally.");
 				error = GIT_ENONFASTFORWARD;
 				goto on_error;
@@ -475,7 +476,7 @@ int git_push_finish(git_push *push, const git_remote_callbacks *callbacks)
 	int error;
 
 	if (!git_remote_connected(push->remote) &&
-	    (error = git_remote_connect(push->remote, GIT_DIRECTION_PUSH, callbacks, NULL, push->custom_headers)) < 0)
+	    (error = git_remote__connect(push->remote, GIT_DIRECTION_PUSH, callbacks, &push->connection)) < 0)
 		return error;
 
 	if ((error = filter_refs(push->remote)) < 0 ||

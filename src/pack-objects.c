@@ -41,6 +41,12 @@ struct pack_write_context {
 	git_transfer_progress *stats;
 };
 
+struct walk_object {
+	git_oid id;
+	unsigned int uninteresting:1,
+		seen:1;
+};
+
 #ifdef GIT_THREADS
 
 #define GIT_PACKBUILDER__MUTEX_OP(pb, mtx, op) do { \
@@ -143,7 +149,7 @@ int git_packbuilder_new(git_packbuilder **out, git_repository *repo)
 	if (!pb->walk_objects)
 		goto on_error;
 
-	git_pool_init(&pb->object_pool, sizeof(git_walk_object));
+	git_pool_init(&pb->object_pool, sizeof(struct walk_object));
 
 	pb->repo = repo;
 	pb->nr_threads = 1; /* do not spawn any thread by default */
@@ -191,8 +197,7 @@ unsigned int git_packbuilder_set_threads(git_packbuilder *pb, unsigned int n)
 static void rehash(git_packbuilder *pb)
 {
 	git_pobject *po;
-	khiter_t pos;
-	size_t i;
+	size_t pos, i;
 	int ret;
 
 	git_oidmap_clear(pb->object_ix);
@@ -206,8 +211,7 @@ int git_packbuilder_insert(git_packbuilder *pb, const git_oid *oid,
 			   const char *name)
 {
 	git_pobject *po;
-	khiter_t pos;
-	size_t newsize;
+	size_t newsize, pos;
 	int ret;
 
 	assert(pb && oid);
@@ -318,7 +322,7 @@ static int write_object(
 	void *cb_data)
 {
 	git_odb_object *obj = NULL;
-	git_otype type;
+	git_object_t type;
 	unsigned char hdr[10], *zbuf = NULL;
 	void *data = NULL;
 	size_t hdr_len, zbuf_len = COMPRESS_BUFLEN, data_len;
@@ -336,7 +340,7 @@ static int write_object(
 				goto done;
 
 		data_len = po->delta_size;
-		type = GIT_OBJ_REF_DELTA;
+		type = GIT_OBJECT_REF_DELTA;
 	} else {
 		if ((error = git_odb_read(&obj, pb->odb, &po->id)) < 0)
 			goto done;
@@ -353,7 +357,7 @@ static int write_object(
 		(error = git_hash_update(&pb->ctx, hdr, hdr_len)) < 0)
 		goto done;
 
-	if (type == GIT_OBJ_REF_DELTA) {
+	if (type == GIT_OBJECT_REF_DELTA) {
 		if ((error = write_cb(po->delta->id.id, GIT_OID_RAWSZ, cb_data)) < 0 ||
 			(error = git_hash_update(&pb->ctx, po->delta->id.id, GIT_OID_RAWSZ)) < 0)
 			goto done;
@@ -510,7 +514,7 @@ static int cb_tag_foreach(const char *name, git_oid *oid, void *data)
 {
 	git_packbuilder *pb = data;
 	git_pobject *po;
-	khiter_t pos;
+	size_t pos;
 
 	GIT_UNUSED(name);
 
@@ -590,8 +594,8 @@ static git_pobject **compute_write_order(git_packbuilder *pb)
 	 */
 	for (i = last_untagged; i < pb->nr_objects; i++) {
 		git_pobject *po = pb->object_list + i;
-		if (po->type != GIT_OBJ_COMMIT &&
-		    po->type != GIT_OBJ_TAG)
+		if (po->type != GIT_OBJECT_COMMIT &&
+		    po->type != GIT_OBJECT_TAG)
 			continue;
 		add_to_write_order(wo, &wo_end, po);
 	}
@@ -601,7 +605,7 @@ static git_pobject **compute_write_order(git_packbuilder *pb)
 	 */
 	for (i = last_untagged; i < pb->nr_objects; i++) {
 		git_pobject *po = pb->object_list + i;
-		if (po->type != GIT_OBJ_TREE)
+		if (po->type != GIT_OBJECT_TREE)
 			continue;
 		add_to_write_order(wo, &wo_end, po);
 	}
@@ -1382,6 +1386,7 @@ int git_packbuilder_write(
 	git_transfer_progress_cb progress_cb,
 	void *progress_cb_payload)
 {
+	git_indexer_options opts = GIT_INDEXER_OPTIONS_INIT;
 	git_indexer *indexer;
 	git_transfer_progress stats;
 	struct pack_write_context ctx;
@@ -1389,8 +1394,11 @@ int git_packbuilder_write(
 
 	PREPARE_PACK;
 
+	opts.progress_cb = progress_cb;
+	opts.progress_cb_payload = progress_cb_payload;
+
 	if (git_indexer_new(
-		&indexer, path, mode, pb->odb, progress_cb, progress_cb_payload) < 0)
+		&indexer, path, mode, pb->odb, &opts) < 0)
 		return -1;
 
 	if (!git_repository__cvar(&t, pb->repo, GIT_CVAR_FSYNCOBJECTFILES) && t)
@@ -1426,7 +1434,7 @@ static int cb_tree_walk(
 	struct tree_walk_context *ctx = payload;
 
 	/* A commit inside a tree represents a submodule commit and should be skipped. */
-	if (git_tree_entry_type(entry) == GIT_OBJ_COMMIT)
+	if (git_tree_entry_type(entry) == GIT_OBJECT_COMMIT)
 		return 0;
 
 	if (!(error = git_buf_sets(&ctx->buf, root)) &&
@@ -1474,20 +1482,20 @@ int git_packbuilder_insert_recur(git_packbuilder *pb, const git_oid *id, const c
 
 	assert(pb && id);
 
-	if ((error = git_object_lookup(&obj, pb->repo, id, GIT_OBJ_ANY)) < 0)
+	if ((error = git_object_lookup(&obj, pb->repo, id, GIT_OBJECT_ANY)) < 0)
 		return error;
 
 	switch (git_object_type(obj)) {
-	case GIT_OBJ_BLOB:
+	case GIT_OBJECT_BLOB:
 		error = git_packbuilder_insert(pb, id, name);
 		break;
-	case GIT_OBJ_TREE:
+	case GIT_OBJECT_TREE:
 		error = git_packbuilder_insert_tree(pb, id);
 		break;
-	case GIT_OBJ_COMMIT:
+	case GIT_OBJECT_COMMIT:
 		error = git_packbuilder_insert_commit(pb, id);
 		break;
-	case GIT_OBJ_TAG:
+	case GIT_OBJECT_TAG:
 		if ((error = git_packbuilder_insert(pb, id, name)) < 0)
 			goto cleanup;
 		error = git_packbuilder_insert_recur(pb, git_tag_target_id((git_tag *) obj), NULL);
@@ -1513,9 +1521,9 @@ size_t git_packbuilder_written(git_packbuilder *pb)
 	return pb->nr_written;
 }
 
-int lookup_walk_object(git_walk_object **out, git_packbuilder *pb, const git_oid *id)
+static int lookup_walk_object(struct walk_object **out, git_packbuilder *pb, const git_oid *id)
 {
-	git_walk_object *obj;
+	struct walk_object *obj;
 
 	obj = git_pool_mallocz(&pb->object_pool, 1);
 	if (!obj) {
@@ -1529,11 +1537,11 @@ int lookup_walk_object(git_walk_object **out, git_packbuilder *pb, const git_oid
 	return 0;
 }
 
-static int retrieve_object(git_walk_object **out, git_packbuilder *pb, const git_oid *id)
+static int retrieve_object(struct walk_object **out, git_packbuilder *pb, const git_oid *id)
 {
 	int error;
-	khiter_t pos;
-	git_walk_object *obj;
+	size_t pos;
+	struct walk_object *obj;
 
 	pos = git_oidmap_lookup_index(pb->walk_objects, id);
 	if (git_oidmap_valid_index(pb->walk_objects, pos)) {
@@ -1552,7 +1560,7 @@ static int retrieve_object(git_walk_object **out, git_packbuilder *pb, const git
 static int mark_blob_uninteresting(git_packbuilder *pb, const git_oid *id)
 {
 	int error;
-	git_walk_object *obj;
+	struct walk_object *obj;
 
 	if ((error = retrieve_object(&obj, pb, id)) < 0)
 		return error;
@@ -1564,7 +1572,7 @@ static int mark_blob_uninteresting(git_packbuilder *pb, const git_oid *id)
 
 static int mark_tree_uninteresting(git_packbuilder *pb, const git_oid *id)
 {
-	git_walk_object *obj;
+	struct walk_object *obj;
 	git_tree *tree;
 	int error;
 	size_t i;
@@ -1584,11 +1592,11 @@ static int mark_tree_uninteresting(git_packbuilder *pb, const git_oid *id)
 		const git_tree_entry *entry = git_tree_entry_byindex(tree, i);
 		const git_oid *entry_id = git_tree_entry_id(entry);
 		switch (git_tree_entry_type(entry)) {
-		case GIT_OBJ_TREE:
+		case GIT_OBJECT_TREE:
 			if ((error = mark_tree_uninteresting(pb, entry_id)) < 0)
 				goto cleanup;
 			break;
-		case GIT_OBJ_BLOB:
+		case GIT_OBJECT_BLOB:
 			if ((error = mark_blob_uninteresting(pb, entry_id)) < 0)
 				goto cleanup;
 			break;
@@ -1636,7 +1644,7 @@ int insert_tree(git_packbuilder *pb, git_tree *tree)
 	size_t i;
 	int error;
 	git_tree *subtree;
-	git_walk_object *obj;
+	struct walk_object *obj;
 	const char *name;
 
 	if ((error = retrieve_object(&obj, pb, git_tree_id(tree))) < 0)
@@ -1654,7 +1662,7 @@ int insert_tree(git_packbuilder *pb, git_tree *tree)
 		const git_tree_entry *entry = git_tree_entry_byindex(tree, i);
 		const git_oid *entry_id = git_tree_entry_id(entry);
 		switch (git_tree_entry_type(entry)) {
-		case GIT_OBJ_TREE:
+		case GIT_OBJECT_TREE:
 			if ((error = git_tree_lookup(&subtree, pb->repo, entry_id)) < 0)
 				return error;
 
@@ -1665,8 +1673,8 @@ int insert_tree(git_packbuilder *pb, git_tree *tree)
 				return error;
 
 			break;
-		case GIT_OBJ_BLOB:
-			if ((error = retrieve_object(&obj, pb, git_tree_id(tree))) < 0)
+		case GIT_OBJECT_BLOB:
+			if ((error = retrieve_object(&obj, pb, entry_id)) < 0)
 				return error;
 			if (obj->uninteresting)
 				continue;
@@ -1684,7 +1692,7 @@ int insert_tree(git_packbuilder *pb, git_tree *tree)
 	return error;
 }
 
-int insert_commit(git_packbuilder *pb, git_walk_object *obj)
+int insert_commit(git_packbuilder *pb, struct walk_object *obj)
 {
 	int error;
 	git_commit *commit = NULL;
@@ -1714,7 +1722,7 @@ int git_packbuilder_insert_walk(git_packbuilder *pb, git_revwalk *walk)
 {
 	int error;
 	git_oid id;
-	git_walk_object *obj;
+	struct walk_object *obj;
 
 	assert(pb && walk);
 
