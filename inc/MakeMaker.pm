@@ -280,9 +280,16 @@ if ($is_windows) {
 	$def .= ' -DWIN32 -DGIT_WIN32 -DGIT_WINHTTP -DGIT_HTTPS';
 	$lib .= ' -lwinhttp -lrpcrt4 -lcrypt32';
 
+	if ($library_opts{'ssl'}{'use'}) {
+		$lib .= ' -lbcrypt';
+	}
+	else {
+		$def .= ' -DGIT_SHA1_WIN32';
+	}
+
 	if ($is_msvc) {
 		# visual studio compiler
-		$def .= ' -D_CRT_SECURE_NO_WARNINGS -DGIT_SHA1_WIN32';
+		$def .= ' -D_CRT_SECURE_NO_WARNINGS';
 	} else {
 		# mingw/cygwin
 		$def .= ' -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
