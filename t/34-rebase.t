@@ -156,7 +156,7 @@ is $repo -> head -> target -> message, $commit3 -> message;
 $branch = $commit3 -> annotated;
 $upstream = $initial_commit -> annotated; $onto = $destination_branch -> annotated_commit;
 
-my $rebase = Git::Raw::Rebase -> new($repo, $branch, $upstream, $onto, {
+$rebase = Git::Raw::Rebase -> new($repo, $branch, $upstream, $onto, {
 	'quiet' => 1,
 	'inmemory' => 1,
 	'merge_opts' => {},
