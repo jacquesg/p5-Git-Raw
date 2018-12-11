@@ -128,6 +128,8 @@ $repo = Git::Raw::Repository -> clone($url, $path, {}, {
 					}
 				} elsif ($description =~ /Counting objects/) {
 					$state = 'count';
+				} elsif ($description =~ /Enumerating objects/) {
+					$state = 'count';
 				}
 			}
 
@@ -137,6 +139,10 @@ $repo = Git::Raw::Repository -> clone($url, $path, {}, {
 						push @$states, 'count';
 						$state = 'compress';
 					}
+				} elsif ($description =~ /Total/) {
+					push @$states, 'count';
+					push @$states, 'total';
+					$state = 'final';
 				}
 			} elsif ($state eq 'compress') {
 				if ($description =~ /Compressing/) {
