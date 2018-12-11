@@ -32,9 +32,11 @@ SET_SOURCE_FILES_PROPERTIES(
 	PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/clar.suite)
 
 INCLUDE_DIRECTORIES(${LIBGIT2_INCLUDES})
+INCLUDE_DIRECTORIES(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
 
 ADD_EXECUTABLE(libgit2_clar ${SRC_CLAR} ${SRC_TEST} ${LIBGIT2_OBJECTS})
 
+SET_TARGET_PROPERTIES(libgit2_clar PROPERTIES C_STANDARD 90)
 SET_TARGET_PROPERTIES(libgit2_clar PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${libgit2_BINARY_DIR})
 
 IF (${CMAKE_VERSION} VERSION_LESS 2.8.12)
@@ -52,12 +54,8 @@ IF (MSVC_IDE)
 	SET_SOURCE_FILES_PROPERTIES("precompiled.c" COMPILE_FLAGS "/Ycprecompiled.h")
 ENDIF ()
 
-IF (USE_HTTPS)
-	ADD_TEST(libgit2_clar "${libgit2_BINARY_DIR}/libgit2_clar" -ionline -xclone::local::git_style_unc_paths -xclone::local::standard_unc_paths_are_written_git_style)
-ELSE ()
-	ADD_TEST(libgit2_clar "${libgit2_BINARY_DIR}/libgit2_clar" -v -xclone::local::git_style_unc_paths -xclone::local::standard_unc_paths_are_written_git_style)
-ENDIF ()
-
-# Add additional test targets that require special setup
-ADD_TEST(libgit2_clar-proxy_credentials "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline::clone::proxy_credentials_in_url -sonline::clone::proxy_credentials_request)
-ADD_TEST(libgit2_clar-ssh "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline::push -sonline::clone::ssh_cert -sonline::clone::ssh_with_paths)
+ADD_TEST(offline   "${libgit2_BINARY_DIR}/libgit2_clar" -v -xonline)
+ADD_TEST(online    "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline)
+ADD_TEST(gitdaemon "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline::push)
+ADD_TEST(ssh       "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline::push -sonline::clone::ssh_cert -sonline::clone::ssh_with_paths)
+ADD_TEST(proxy     "${libgit2_BINARY_DIR}/libgit2_clar" -v -sonline::clone::proxy_credentials_in_url -sonline::clone::proxy_credentials_request)

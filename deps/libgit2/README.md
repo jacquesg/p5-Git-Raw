@@ -1,9 +1,12 @@
 libgit2 - the Git linkable library
 ==================================
 
-[![Travis Build Status](https://secure.travis-ci.org/libgit2/libgit2.svg?branch=master)](http://travis-ci.org/libgit2/libgit2)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/xvof5b4t5480a2q3/branch/master?svg=true)](https://ci.appveyor.com/project/libgit2/libgit2/branch/master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/639/badge.svg)](https://scan.coverity.com/projects/639)
+| Build Status | |
+| ------------ | - |
+| **master** branch CI builds | [![Azure Pipelines Build Status](https://dev.azure.com/libgit2/libgit2/_apis/build/status/libgit2?branchName=master)](https://dev.azure.com/libgit2/libgit2/_build/latest?definitionId=7&branchName=master)   |
+| **v0.27 branch** CI builds | [![Azure Pipelines Build Status](https://dev.azure.com/libgit2/libgit2/_apis/build/status/libgit2?branchName=maint/v0.27)](https://dev.azure.com/libgit2/libgit2/_build/latest?definitionId=7&branchName=maint/v0.27) |
+| **v0.26 branch** CI builds | [![Azure Pipelines Build Status](https://dev.azure.com/libgit2/libgit2/_apis/build/status/libgit2?branchName=maint/v0.26)](https://dev.azure.com/libgit2/libgit2/_build/latest?definitionId=7&branchName=maint/v0.26) |
+| **Nightly** builds | [![Azure Pipelines Build Status](https://libgit2.visualstudio.com/libgit2/_apis/build/status/libgit2-nightly?branchName=master)](https://libgit2.visualstudio.com/libgit2/_build/latest?definitionId=9&branchName=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/639/badge.svg)](https://scan.coverity.com/projects/639) |
 
 `libgit2` is a portable, pure C implementation of the Git core methods
 provided as a linkable library with a solid API, allowing to build Git
@@ -18,7 +21,7 @@ in your favorite language.
 [GitKraken](https://gitkraken.com/) and [gmaster](https://gmaster.io/)
 and on Git hosting providers like [GitHub](https://github.com/),
 [GitLab](https://gitlab.com/) and
-[Visual Studio Team Services](https://visualstudio.com/team-services/).
+[Azure DevOps](https://azure.com/devops).
 We perform the merge every time you click "merge pull request".
 
 `libgit2` is licensed under a **very permissive license** (GPLv2 with a special
@@ -108,7 +111,7 @@ What It Can Do
 
 libgit2 provides you with the ability to manage Git repositories in the
 programming language of your choice.  It's used in production to power many
-applications including GitHub.com, Plastic SCM and Visual Studio Team Services.
+applications including GitHub.com, Plastic SCM and Azure DevOps.
 
 It does not aim to replace the git tool or its user-facing commands. Some APIs
 resemble the plumbing commands as those align closely with the concepts of the

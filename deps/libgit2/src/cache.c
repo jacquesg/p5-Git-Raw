@@ -20,17 +20,17 @@ ssize_t git_cache__max_storage = (256 * 1024 * 1024);
 git_atomic_ssize git_cache__current_storage = {0};
 
 static size_t git_cache__max_object_size[8] = {
-	0,     /* GIT_OBJ__EXT1 */
-	4096,  /* GIT_OBJ_COMMIT */
-	4096,  /* GIT_OBJ_TREE */
-	0,     /* GIT_OBJ_BLOB */
-	4096,  /* GIT_OBJ_TAG */
-	0,     /* GIT_OBJ__EXT2 */
-	0,     /* GIT_OBJ_OFS_DELTA */
-	0      /* GIT_OBJ_REF_DELTA */
+	0,     /* GIT_OBJECT__EXT1 */
+	4096,  /* GIT_OBJECT_COMMIT */
+	4096,  /* GIT_OBJECT_TREE */
+	0,     /* GIT_OBJECT_BLOB */
+	4096,  /* GIT_OBJECT_TAG */
+	0,     /* GIT_OBJECT__EXT2 */
+	0,     /* GIT_OBJECT_OFS_DELTA */
+	0      /* GIT_OBJECT_REF_DELTA */
 };
 
-int git_cache_set_max_object_size(git_otype type, size_t size)
+int git_cache_set_max_object_size(git_object_t type, size_t size)
 {
 	if (type < 0 || (size_t)type >= ARRAY_SIZE(git_cache__max_object_size)) {
 		giterr_set(GITERR_INVALID, "type out of range");
@@ -123,7 +123,7 @@ static void cache_evict_entries(git_cache *cache)
 	}
 
 	while (evict_count > 0) {
-		khiter_t pos = seed++ % git_oidmap_end(cache->map);
+		size_t pos = seed++ % git_oidmap_end(cache->map);
 
 		if (git_oidmap_has_data(cache->map, pos)) {
 			git_cached_obj *evict = git_oidmap_value_at(cache->map, pos);
@@ -140,7 +140,7 @@ static void cache_evict_entries(git_cache *cache)
 	git_atomic_ssize_add(&git_cache__current_storage, -evicted_memory);
 }
 
-static bool cache_should_store(git_otype object_type, size_t object_size)
+static bool cache_should_store(git_object_t object_type, size_t object_size)
 {
 	size_t max_size = git_cache__max_object_size[object_type];
 	return git_cache__enabled && object_size < max_size;
@@ -148,7 +148,7 @@ static bool cache_should_store(git_otype object_type, size_t object_size)
 
 static void *cache_get(git_cache *cache, const git_oid *oid, unsigned int flags)
 {
-	khiter_t pos;
+	size_t pos;
 	git_cached_obj *entry = NULL;
 
 	if (!git_cache__enabled || git_rwlock_rdlock(&cache->lock) < 0)
@@ -172,7 +172,7 @@ static void *cache_get(git_cache *cache, const git_oid *oid, unsigned int flags)
 
 static void *cache_store(git_cache *cache, git_cached_obj *entry)
 {
-	khiter_t pos;
+	size_t pos;
 
 	git_cached_obj_incref(entry);
 

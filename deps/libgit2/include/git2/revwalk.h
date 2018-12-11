@@ -25,15 +25,15 @@ GIT_BEGIN_DECL
  */
 typedef enum {
 	/**
-	 * Sort the output with the same default time-order method from git.
-	 * This is the default sorting for new walkers.
+	 * Sort the output with the same default method from `git`: reverse
+	 * chronological order. This is the default sorting for new walkers.
 	 */
 	GIT_SORT_NONE = 0,
 
 	/**
-	 * Sort the repository contents in topological order (parents before
-	 * children); this sorting mode can be combined with time sorting to
-	 * produce git's "time-order".
+	 * Sort the repository contents in topological order (no parents before
+	 * all of its children are shown); this sorting mode can be combined
+	 * with time sorting to produce `git`'s `--date-order``.
 	 */
 	GIT_SORT_TOPOLOGICAL = 1 << 0,
 
@@ -279,7 +279,7 @@ typedef int(*git_revwalk_hide_cb)(
 	void *payload);
 
 /**
- * Adds a callback function to hide a commit and its parents
+ * Adds, changes or removes a callback function to hide a commit and its parents
  *
  * @param walk the revision walker
  * @param hide_cb  callback function to hide a commit and its parents

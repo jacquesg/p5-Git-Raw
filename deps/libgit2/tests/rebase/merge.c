@@ -19,7 +19,7 @@ static void set_core_autocrlf_to(git_repository *repo, bool value)
 	git_config_free(cfg);
 }
 
-// Fixture setup and teardown
+/* Fixture setup and teardown */
 void test_rebase_merge__initialize(void)
 {
 	repo = cl_git_sandbox_init("rebase");
@@ -647,7 +647,7 @@ static void test_copy_note(
 	cl_git_pass(git_annotated_commit_from_ref(&upstream_head, repo, upstream_ref));
 
 	cl_git_pass(git_reference_peel((git_object **)&branch_commit,
-		branch_ref, GIT_OBJ_COMMIT));
+		branch_ref, GIT_OBJECT_COMMIT));
 
 	/* Add a note to a commit */
 	cl_git_pass(git_note_create(&note_id, repo, "refs/notes/test",

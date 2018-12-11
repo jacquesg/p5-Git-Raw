@@ -133,8 +133,11 @@ git_blame* git_blame__alloc(
 		return NULL;
 	}
 
-	if (opts.flags & GIT_BLAME_USE_MAILMAP)
-		git_mailmap_from_repository(&gbr->mailmap, repo);
+	if (opts.flags & GIT_BLAME_USE_MAILMAP &&
+	    git_mailmap_from_repository(&gbr->mailmap, repo) < 0) {
+		git_blame_free(gbr);
+		return NULL;
+	}
 
 	return gbr;
 }
@@ -312,7 +315,7 @@ static int load_blob(git_blame *blame)
 	if (error < 0)
 		goto cleanup;
 	error = git_object_lookup_bypath((git_object**)&blame->final_blob,
-			(git_object*)blame->final, blame->path, GIT_OBJ_BLOB);
+			(git_object*)blame->final, blame->path, GIT_OBJECT_BLOB);
 
 cleanup:
 	return error;

@@ -21,7 +21,7 @@ git_commit_list_node *git_revwalk__commit_lookup(
 	git_revwalk *walk, const git_oid *oid)
 {
 	git_commit_list_node *commit;
-	khiter_t pos;
+	size_t pos;
 	int ret;
 
 	/* lookup and reserve space if not already present */
@@ -50,10 +50,10 @@ static int push_commit(git_revwalk *walk, const git_oid *oid, int uninteresting,
 	git_commit_list_node *commit;
 	git_commit_list *list;
 
-	if ((error = git_object_lookup(&oobj, walk->repo, oid, GIT_OBJ_ANY)) < 0)
+	if ((error = git_object_lookup(&oobj, walk->repo, oid, GIT_OBJECT_ANY)) < 0)
 		return error;
 
-	error = git_object_peel(&obj, oobj, GIT_OBJ_COMMIT);
+	error = git_object_peel(&obj, oobj, GIT_OBJECT_COMMIT);
 	git_object_free(oobj);
 
 	if (error == GIT_ENOTFOUND || error == GIT_EINVALIDSPEC || error == GIT_EPEEL) {
@@ -388,10 +388,16 @@ static int still_interesting(git_commit_list *list, int64_t time, int slop)
 	if (!list)
 		return 0;
 
+	/*
+	 * If the destination list has commits with an earlier date than our
+	 * source, we want to reset the slop counter as we're not done.
+	 */
+	if (time <= list->item->time)
+		return SLOP;
+
 	for (; list; list = list->next) {
 		/*
-		 * If the destination list has commits with an earlier date than
-		 * our source or if it still contains interesting commits we
+		 * If the destination list still contains interesting commits we
 		 * want to continue looking.
 		 */
 		if (!list->item->uninteresting || list->item->time > time)
@@ -405,7 +411,7 @@ static int still_interesting(git_commit_list *list, int64_t time, int slop)
 static int limit_list(git_commit_list **out, git_revwalk *walk, git_commit_list *commits)
 {
 	int error, slop = SLOP;
-	int64_t time = ~0ll;
+	int64_t time = INT64_MAX;
 	git_commit_list *list = commits;
 	git_commit_list *newlist = NULL;
 	git_commit_list **p = &newlist;
@@ -426,8 +432,8 @@ static int limit_list(git_commit_list **out, git_revwalk *walk, git_commit_list 
 			break;
 		}
 
-		if (!commit->uninteresting && walk->hide_cb && walk->hide_cb(&commit->oid, walk->hide_cb_payload))
-				continue;
+		if (walk->hide_cb && walk->hide_cb(&commit->oid, walk->hide_cb_payload))
+			continue;
 
 		time = commit->time;
 		p = &git_commit_list_insert(commit, p)->next;
@@ -550,7 +556,7 @@ cleanup:
 
 static int prepare_walk(git_revwalk *walk)
 {
-	int error;
+	int error = 0;
 	git_commit_list *list, *commits = NULL;
 	git_commit_list_node *next;
 
@@ -750,15 +756,11 @@ int git_revwalk_add_hide_cb(
 	if (walk->walking)
 		git_revwalk_reset(walk);
 
-	if (walk->hide_cb) {
-		/* There is already a callback added */
-		giterr_set(GITERR_INVALID, "there is already a callback added to hide commits in revwalk");
-		return -1;
-	}
-
 	walk->hide_cb = hide_cb;
 	walk->hide_cb_payload = payload;
-	walk->limited = 1;
+
+	if (hide_cb)
+		walk->limited = 1;
 
 	return 0;
 }

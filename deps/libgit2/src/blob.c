@@ -19,34 +19,54 @@
 const void *git_blob_rawcontent(const git_blob *blob)
 {
 	assert(blob);
-	return git_odb_object_data(blob->odb_object);
+	if (blob->raw)
+		return blob->data.raw.data;
+	else
+		return git_odb_object_data(blob->data.odb);
 }
 
 git_off_t git_blob_rawsize(const git_blob *blob)
 {
 	assert(blob);
-	return (git_off_t)git_odb_object_size(blob->odb_object);
+	if (blob->raw)
+		return blob->data.raw.size;
+	else
+		return (git_off_t)git_odb_object_size(blob->data.odb);
 }
 
 int git_blob__getbuf(git_buf *buffer, git_blob *blob)
 {
 	return git_buf_set(
 		buffer,
-		git_odb_object_data(blob->odb_object),
-		git_odb_object_size(blob->odb_object));
+		git_blob_rawcontent(blob),
+		git_blob_rawsize(blob));
 }
 
-void git_blob__free(void *blob)
+void git_blob__free(void *_blob)
 {
-	git_odb_object_free(((git_blob *)blob)->odb_object);
+	git_blob *blob = (git_blob *) _blob;
+	if (!blob->raw)
+		git_odb_object_free(blob->data.odb);
 	git__free(blob);
 }
 
-int git_blob__parse(void *blob, git_odb_object *odb_obj)
+int git_blob__parse_raw(void *_blob, const char *data, size_t size)
 {
+	git_blob *blob = (git_blob *) _blob;
+	assert(blob);
+	blob->raw = 1;
+	blob->data.raw.data = data;
+	blob->data.raw.size = size;
+	return 0;
+}
+
+int git_blob__parse(void *_blob, git_odb_object *odb_obj)
+{
+	git_blob *blob = (git_blob *) _blob;
 	assert(blob);
 	git_cached_obj_incref((git_cached_obj *)odb_obj);
-	((git_blob *)blob)->odb_object = odb_obj;
+	blob->raw = 0;
+	blob->data.odb = odb_obj;
 	return 0;
 }
 
@@ -60,7 +80,7 @@ int git_blob_create_frombuffer(
 	assert(id && repo);
 
 	if ((error = git_repository_odb__weakptr(&odb, repo)) < 0 ||
-		(error = git_odb_open_wstream(&stream, odb, len, GIT_OBJ_BLOB)) < 0)
+		(error = git_odb_open_wstream(&stream, odb, len, GIT_OBJECT_BLOB)) < 0)
 		return error;
 
 	if ((error = git_odb_stream_write(stream, buffer, len)) == 0)
@@ -80,7 +100,7 @@ static int write_file_stream(
 	git_off_t written = 0;
 
 	if ((error = git_odb_open_wstream(
-			&stream, odb, file_size, GIT_OBJ_BLOB)) < 0)
+			&stream, odb, file_size, GIT_OBJECT_BLOB)) < 0)
 		return error;
 
 	if ((fd = git_futils_open_ro(path)) < 0) {
@@ -123,7 +143,7 @@ static int write_file_filtered(
 	if (!error) {
 		*size = tgt.size;
 
-		error = git_odb_write(id, odb, tgt.ptr, tgt.size, GIT_OBJ_BLOB);
+		error = git_odb_write(id, odb, tgt.ptr, tgt.size, GIT_OBJECT_BLOB);
 	}
 
 	git_buf_dispose(&tgt);
@@ -147,7 +167,7 @@ static int write_symlink(
 		return -1;
 	}
 
-	error = git_odb_write(id, odb, (void *)link_data, link_size, GIT_OBJ_BLOB);
+	error = git_odb_write(id, odb, (void *)link_data, link_size, GIT_OBJECT_BLOB);
 	git__free(link_data);
 	return error;
 }
@@ -372,8 +392,8 @@ int git_blob_is_binary(const git_blob *blob)
 
 	assert(blob);
 
-	git_buf_attach_notowned(&content, blob->odb_object->buffer,
-		min(blob->odb_object->cached.size,
+	git_buf_attach_notowned(&content, git_blob_rawcontent(blob),
+		min(git_blob_rawsize(blob),
 		GIT_FILTER_BYTES_TO_CHECK_NUL));
 	return git_buf_text_is_binary(&content);
 }

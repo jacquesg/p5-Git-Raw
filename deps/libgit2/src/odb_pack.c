@@ -210,7 +210,7 @@ static int packfile_load__cb(void *data, git_buf *path)
 	for (i = 0; i < backend->packs.length; ++i) {
 		struct git_pack_file *p = git_vector_get(&backend->packs, i);
 
-		if (memcmp(p->pack_name, path_str, cmp_len) == 0)
+		if (strncmp(p->pack_name, path_str, cmp_len) == 0)
 			return 0;
 	}
 
@@ -353,7 +353,7 @@ static int pack_backend__refresh(git_odb_backend *backend_)
 }
 
 static int pack_backend__read_header(
-	size_t *len_p, git_otype *type_p,
+	size_t *len_p, git_object_t *type_p,
 	struct git_odb_backend *backend, const git_oid *oid)
 {
 	struct git_pack_entry e;
@@ -390,7 +390,7 @@ static int pack_backend__freshen(
 }
 
 static int pack_backend__read(
-	void **buffer_p, size_t *len_p, git_otype *type_p,
+	void **buffer_p, size_t *len_p, git_object_t *type_p,
 	git_odb_backend *backend, const git_oid *oid)
 {
 	struct git_pack_entry e;
@@ -412,7 +412,7 @@ static int pack_backend__read_prefix(
 	git_oid *out_oid,
 	void **buffer_p,
 	size_t *len_p,
-	git_otype *type_p,
+	git_object_t *type_p,
 	git_odb_backend *backend,
 	const git_oid *short_oid,
 	size_t len)
@@ -519,6 +519,7 @@ static int pack_backend__writepack(struct git_odb_writepack **out,
 	git_transfer_progress_cb progress_cb,
 	void *progress_payload)
 {
+	git_indexer_options opts = GIT_INDEXER_OPTIONS_INIT;
 	struct pack_backend *backend;
 	struct pack_writepack *writepack;
 
@@ -526,13 +527,16 @@ static int pack_backend__writepack(struct git_odb_writepack **out,
 
 	*out = NULL;
 
+	opts.progress_cb = progress_cb;
+	opts.progress_cb_payload = progress_payload;
+
 	backend = (struct pack_backend *)_backend;
 
 	writepack = git__calloc(1, sizeof(struct pack_writepack));
 	GITERR_CHECK_ALLOC(writepack);
 
 	if (git_indexer_new(&writepack->indexer,
-		backend->pack_folder, 0, odb, progress_cb, progress_payload) < 0) {
+		backend->pack_folder, 0, odb, &opts) < 0) {
 		git__free(writepack);
 		return -1;
 	}

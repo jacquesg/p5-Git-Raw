@@ -225,7 +225,7 @@ int git_mailmap_add_entry(
 
 static int mailmap_add_buffer(git_mailmap *mm, const char *buf, size_t len)
 {
-	int error;
+	int error = 0;
 	git_parse_ctx ctx;
 
 	/* Scratch buffers containing the real parsed names & emails */
@@ -296,7 +296,7 @@ static int mailmap_add_blob(
 	if (error < 0)
 		goto cleanup;
 
-	error = git_object_peel((git_object **)&blob, object, GIT_OBJ_BLOB);
+	error = git_object_peel((git_object **)&blob, object, GIT_OBJECT_BLOB);
 	if (error < 0)
 		goto cleanup;
 
