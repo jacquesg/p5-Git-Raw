@@ -261,7 +261,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c}';
 
-if ($is_msvc) {
+if (!$library_opts{'ssl'}{'use'} && $is_windows) {
 	push @srcs, 'deps/libgit2/src/hash/hash_win32.c';
 }
 elsif (!$library_opts{'ssl'}{'use'} && !$is_osx) {
