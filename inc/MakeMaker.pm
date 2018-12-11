@@ -287,6 +287,8 @@ if ($is_windows) {
 		$def .= ' -DGIT_SHA1_WIN32';
 	}
 
+	$def .= ' -DSTRSAFE_NO_DEPRECATE';
+
 	if ($is_msvc) {
 		# visual studio compiler
 		$def .= ' -D_CRT_SECURE_NO_WARNINGS';
