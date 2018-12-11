@@ -12,7 +12,7 @@ new(class, path, odb)
 
 	CODE:
 		rc = git_indexer_new(&indexer, git_ensure_pv(path, "path"),
-			0, GIT_SV_TO_PTR(Odb, odb), NULL, NULL);
+			0, GIT_SV_TO_PTR(Odb, odb), NULL);
 		git_check_error(rc);
 
 		GIT_NEW_OBJ_WITH_MAGIC(

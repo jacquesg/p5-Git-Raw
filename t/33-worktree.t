@@ -39,8 +39,6 @@ is $r, 'locking';
 ok (!eval { $worktree1 -> lock("locking again")});
 $worktree1 -> unlock;
 ok (!$worktree1 -> is_locked);
-$worktree1 -> unlock;
-ok (!$worktree1 -> is_locked);
 
 Git::Raw::Worktree -> list($repo);
 my @list = Git::Raw::Worktree -> list($repo);
