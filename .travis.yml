@@ -36,6 +36,7 @@ install:
  - git config --global user.name "p5-Git-Raw"
  - git config --global user.email "jacquesg@cpan.org"
  - cpanm --quiet --notest Dist::Zilla~">= 5.0000, < 6.0000"
+ - cpanm --quiet --notest Test::CheckManifest~"<= 1.33"
  - cpanm --quiet --notest Dist::Zilla::PluginBundle::Author::ALEXBIO
  - cpanm --quiet --notest Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls
