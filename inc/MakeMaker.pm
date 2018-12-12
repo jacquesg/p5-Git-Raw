@@ -261,10 +261,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c}';
 
-if (!$library_opts{'ssl'}{'use'} && $is_windows) {
-	push @srcs, 'deps/libgit2/src/hash/hash_win32.c';
-}
-elsif (!$library_opts{'ssl'}{'use'} && !$is_osx) {
+if (!$library_opts{'ssl'}{'use'} && !$is_osx) {
 	push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
 }
 
@@ -282,9 +279,6 @@ if ($is_windows) {
 
 	if ($library_opts{'ssl'}{'use'}) {
 		$lib .= ' -lbcrypt';
-	}
-	else {
-		$def .= ' -DGIT_SHA1_WIN32';
 	}
 
 	$def .= ' -DSTRSAFE_NO_DEPRECATE';
