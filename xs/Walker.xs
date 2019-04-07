@@ -109,7 +109,7 @@ push_range(self, ...)
 
 	PROTOTYPE: $;@
 	PREINIT:
-		int rc, free_buffer = 0;
+		int rc = 0;
 
 		git_repository *repo;
 		Walker walk;
@@ -121,6 +121,7 @@ push_range(self, ...)
 		repo = git_revwalk_repository(walk);
 
 		if (items == 3) {
+			size_t buffer_size = 2 * GIT_OID_HEXSZ + 2 + 1;
 			git_oid start, end;
 
 			if (git_sv_to_commitish(repo, ST(1), &start) == NULL)
@@ -128,20 +129,19 @@ push_range(self, ...)
 			if (git_sv_to_commitish(repo, ST(2), &end) == NULL)
 				croak_resolve("Could not resolve 'end' to a commit id");
 
-			Newx(range, 2 * GIT_OID_HEXSZ + 2 + 1, char);
-			free_buffer = 1;
+			Newx(range, buffer_size, char);
 
 			git_oid_tostr(range, GIT_OID_HEXSZ + 1, &start);
-			strncpy(range + GIT_OID_HEXSZ, "..", 2);
+			strncpy(range + GIT_OID_HEXSZ, "..", buffer_size-GIT_OID_HEXSZ);
 			git_oid_tostr(range + GIT_OID_HEXSZ + 2, GIT_OID_HEXSZ + 1, &end);
+			rc = git_revwalk_push_range(walk, range);
+			Safefree(range);
 		} else if (items == 2) {
 			range = (char *) git_ensure_pv(ST(1), "range");
+			rc = git_revwalk_push_range(walk, range);
 		} else
 			croak_usage("'range' not provided");
 
-		rc = git_revwalk_push_range(walk, range);
-		if (free_buffer)
-			Safefree(range);
 		git_check_error(rc);
 
 void
