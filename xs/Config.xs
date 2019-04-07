@@ -123,6 +123,54 @@ str(self, name, ...)
 
 	OUTPUT: RETVAL
 
+SV *
+str_add(self, name, ...)
+	Config self
+	SV *name
+
+	PROTOTYPE: $$;$
+
+	PREINIT:
+		int rc;
+		const char *value;
+
+		const char *id = NULL;
+
+		AV* av;
+		size_t i;
+
+	CODE:
+		id = git_ensure_pv(name, "name");
+
+		if (items == 3) {
+			value = git_ensure_pv(ST(2), "value");
+
+			rc = git_config_set_multivar(self, id, "^$", value);
+			git_check_error(rc);
+		}
+
+		git_config_iterator *iter;
+		git_config_entry *entry;
+
+		rc = git_config_multivar_iterator_new(&iter, self, id, NULL);
+		git_check_error(rc);
+
+		av = newAV();
+
+		while (git_config_next(&entry, iter) == 0) {
+			av_push(av, newSVpv(entry->value, 0));
+		}
+		git_config_iterator_free(iter);
+
+		if (av_len(av) == -1 ) {
+			sv_2mortal(av);
+			XSRETURN_UNDEF;
+		}
+
+		RETVAL = newRV_noinc((SV*)av);
+
+	OUTPUT: RETVAL
+
 void
 foreach(self, cb)
 	Config self

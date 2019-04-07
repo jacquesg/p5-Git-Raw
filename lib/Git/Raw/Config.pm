@@ -50,6 +50,12 @@ Retrieve the value of the C<$name> configuration field of type string. If
 C<$value> is passed, the value of the configration will be updated and
 returned. If C<$name> configuration is not found, C<undef> is returned.
 
+=head2 str_add( $name [, $value ] )
+
+Adds the value of the C<$name> configuration field of type string. If
+C<$value> is passed, the value of the configration will be updated and
+returned. If C<$name> configuration is not found, C<undef> is returned.
+
 =head2 foreach( $callback )
 
 Run C<$callback> for every config entry. The callback receives the name of the

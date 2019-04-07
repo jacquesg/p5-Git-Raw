@@ -7,6 +7,7 @@ use File::Spec::Unix;
 use File::Spec::Functions qw(catfile rel2abs);
 use File::Slurp::Tiny qw(write_file);
 use File::Path qw(make_path);
+use Test::Deep qw(cmp_deeply);
 
 my $native_path = rel2abs(catfile('t', 'test_repo'));
 my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t', 'test_repo'));
@@ -165,8 +166,8 @@ my $error = $@;
 ok ($error);
 isa_ok($error, 'Git::Raw::Error');
 is $error -> file, 't/01-repo.t';
-is $error -> line, 162;
-is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 162";
+is $error -> line, 163;
+is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 163";
 is $error -> code, Git::Raw::Error -> USAGE;
 like $error, qr/Invalid type/;
 is $error -> category, Git::Raw::Error::Category -> INTERNAL;
@@ -181,6 +182,11 @@ is $config -> int('some.int'), 42;
 is undef, $config -> str('some.str');
 is $config -> str('some.str', 'hello'), 'hello';
 is $config -> str('some.str'), 'hello';
+
+is $config -> str_add('multi.var'), undef;
+cmp_deeply $config -> str_add('multi.var', 'hello'), [ qw(hello) ];
+cmp_deeply $config -> str_add('multi.var', 'world'), [ qw(hello world) ];
+cmp_deeply $config -> str_add('multi.var'), [ qw(hello world) ];
 
 is $config -> str('user.name', $name), $name;
 is $config -> str('user.email', $email), $email;
@@ -197,6 +203,7 @@ $config -> foreach(sub {
 	ok $entry_value          if $entry_name eq 'some.bool';
 	is $entry_value, 42      if $entry_name eq 'some.int';
 	is $entry_value, 'hello' if $entry_name eq 'some.str';
+	is $entry_value, 'world' if $entry_name eq 'mult.var';
 
 	0
 });
