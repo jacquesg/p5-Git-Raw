@@ -24,7 +24,7 @@ GIT_BEGIN_DECL
 /**
  * Function type for callbacks from git_odb_foreach.
  */
-typedef int (*git_odb_foreach_cb)(const git_oid *id, void *payload);
+typedef int GIT_CALLBACK(git_odb_foreach_cb)(const git_oid *id, void *payload);
 
 /**
  * Create a new object database with no backends.
@@ -391,7 +391,7 @@ GIT_EXTERN(int) git_odb_open_rstream(
 GIT_EXTERN(int) git_odb_write_pack(
 	git_odb_writepack **out,
 	git_odb *db,
-	git_transfer_progress_cb progress_cb,
+	git_indexer_progress_cb progress_cb,
 	void *progress_payload);
 
 /**

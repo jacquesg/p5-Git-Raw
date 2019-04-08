@@ -98,7 +98,7 @@ static const unsigned int base_obj_len = 2;
 void test_pack_indexer__out_of_order(void)
 {
 	git_indexer *idx = 0;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 
 	cl_git_pass(git_indexer_new(&idx, ".", 0, NULL, NULL));
 	cl_git_pass(git_indexer_append(
@@ -115,15 +115,15 @@ void test_pack_indexer__out_of_order(void)
 void test_pack_indexer__missing_trailer(void)
 {
 	git_indexer *idx = 0;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 
 	cl_git_pass(git_indexer_new(&idx, ".", 0, NULL, NULL));
 	cl_git_pass(git_indexer_append(
 		idx, missing_trailer_pack, missing_trailer_pack_len, &stats));
 	cl_git_fail(git_indexer_commit(idx, &stats));
 
-	cl_assert(giterr_last() != NULL);
-	cl_assert_equal_i(giterr_last()->klass, GITERR_INDEXER);
+	cl_assert(git_error_last() != NULL);
+	cl_assert_equal_i(git_error_last()->klass, GIT_ERROR_INDEXER);
 
 	git_indexer_free(idx);
 }
@@ -131,15 +131,15 @@ void test_pack_indexer__missing_trailer(void)
 void test_pack_indexer__leaky(void)
 {
 	git_indexer *idx = 0;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 
 	cl_git_pass(git_indexer_new(&idx, ".", 0, NULL, NULL));
 	cl_git_pass(git_indexer_append(
 		idx, leaky_pack, leaky_pack_len, &stats));
 	cl_git_fail(git_indexer_commit(idx, &stats));
 
-	cl_assert(giterr_last() != NULL);
-	cl_assert_equal_i(giterr_last()->klass, GITERR_INDEXER);
+	cl_assert(git_error_last() != NULL);
+	cl_assert_equal_i(git_error_last()->klass, GIT_ERROR_INDEXER);
 
 	git_indexer_free(idx);
 }
@@ -147,7 +147,7 @@ void test_pack_indexer__leaky(void)
 void test_pack_indexer__fix_thin(void)
 {
 	git_indexer *idx = NULL;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 	git_repository *repo;
 	git_odb *odb;
 	git_oid id, should_id;
@@ -213,7 +213,7 @@ void test_pack_indexer__fix_thin(void)
 void test_pack_indexer__corrupt_length(void)
 {
 	git_indexer *idx = NULL;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 	git_repository *repo;
 	git_odb *odb;
 	git_oid id, should_id;
@@ -231,8 +231,8 @@ void test_pack_indexer__corrupt_length(void)
 		idx, corrupt_thin_pack, corrupt_thin_pack_len, &stats));
 	cl_git_fail(git_indexer_commit(idx, &stats));
 
-	cl_assert(giterr_last() != NULL);
-	cl_assert_equal_i(giterr_last()->klass, GITERR_ZLIB);
+	cl_assert(git_error_last() != NULL);
+	cl_assert_equal_i(git_error_last()->klass, GIT_ERROR_ZLIB);
 
 	git_indexer_free(idx);
 	git_odb_free(odb);
@@ -243,7 +243,7 @@ void test_pack_indexer__incomplete_pack_fails_with_strict(void)
 {
 	git_indexer_options opts = GIT_INDEXER_OPTIONS_INIT;
 	git_indexer *idx = 0;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 
 	opts.verify = 1;
 
@@ -263,7 +263,7 @@ void test_pack_indexer__out_of_order_with_connectivity_checks(void)
 {
 	git_indexer_options opts = GIT_INDEXER_OPTIONS_INIT;
 	git_indexer *idx = 0;
-	git_transfer_progress stats = { 0 };
+	git_indexer_progress stats = { 0 };
 
 	opts.verify = 1;
 

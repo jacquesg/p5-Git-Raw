@@ -138,4 +138,6 @@ struct git_hash_ctx {
 	} ctx;
 };
 
+extern int git_hash_global_init(void);
+
 #endif
