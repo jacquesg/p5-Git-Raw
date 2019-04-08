@@ -69,6 +69,7 @@ is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($com
 is $master -> target -> id, $repo -> merge_base($master, $commit1) -> id;
 is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1') -> id;
 
+$branch1 = Git::Raw::Branch -> lookup($repo, 'branch1', 1);
 my $r = $repo -> merge_analysis($branch1);
 is_deeply $r, ['normal', 'fast_forward'];
 
@@ -132,7 +133,8 @@ $repo -> checkout($repo -> head($master), {
 is $branch2 -> target -> id, $repo -> merge_base($branch2, $commit2) -> id;
 is $commit -> id, $repo -> merge_base($commit1, $commit2) -> id;
 
-$r = $repo ->merge_analysis($branch2);
+$branch2 = Git::Raw::Branch -> lookup($repo, 'branch2', 1);
+$r = $repo -> merge_analysis($branch2);
 is_deeply $r, ['normal'];
 
 Git::Raw::Graph -> is_descendant_of($repo, $branch1, $branch2), 0;
@@ -316,6 +318,7 @@ $repo -> checkout($repo -> head($master), {
 		'force' => 1
 }});
 
+$branch3 = Git::Raw::Branch -> lookup($repo, 'branch3', 1);
 $r = $repo -> merge_analysis($branch3);
 is_deeply $r, ['normal'];
 
