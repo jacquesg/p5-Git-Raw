@@ -106,10 +106,22 @@ GIT_BEGIN_DECL
 typedef enum {
 	GIT_CHECKOUT_NONE = 0, /**< default is a dry run, no actual updates */
 
-	/** Allow safe updates that cannot overwrite uncommitted data */
+	/**
+	 * Allow safe updates that cannot overwrite uncommitted data.
+	 * If the uncommitted changes don't conflict with the checked out files,
+	 * the checkout will still proceed, leaving the changes intact.
+	 *
+	 * Mutually exclusive with GIT_CHECKOUT_FORCE.
+	 * GIT_CHECKOUT_FORCE takes precedence over GIT_CHECKOUT_SAFE.
+	 */
 	GIT_CHECKOUT_SAFE = (1u << 0),
 
-	/** Allow all updates to force working directory to look like index */
+	/**
+	 * Allow all updates to force working directory to look like index.
+	 *
+	 * Mutually exclusive with GIT_CHECKOUT_SAFE.
+	 * GIT_CHECKOUT_FORCE takes precedence over GIT_CHECKOUT_SAFE.
+	 */
 	GIT_CHECKOUT_FORCE = (1u << 1),
 
 
@@ -220,7 +232,7 @@ typedef struct {
 } git_checkout_perfdata;
 
 /** Checkout notification callback function */
-typedef int (*git_checkout_notify_cb)(
+typedef int GIT_CALLBACK(git_checkout_notify_cb)(
 	git_checkout_notify_t why,
 	const char *path,
 	const git_diff_file *baseline,
@@ -229,14 +241,14 @@ typedef int (*git_checkout_notify_cb)(
 	void *payload);
 
 /** Checkout progress notification function */
-typedef void (*git_checkout_progress_cb)(
+typedef void GIT_CALLBACK(git_checkout_progress_cb)(
 	const char *path,
 	size_t completed_steps,
 	size_t total_steps,
 	void *payload);
 
 /** Checkout perfdata notification function */
-typedef void (*git_checkout_perfdata_cb)(
+typedef void GIT_CALLBACK(git_checkout_perfdata_cb)(
 	const git_checkout_perfdata *perfdata,
 	void *payload);
 
@@ -325,7 +337,7 @@ GIT_EXTERN(int) git_checkout_init_options(
  * @param opts specifies checkout options (may be NULL)
  * @return 0 on success, GIT_EUNBORNBRANCH if HEAD points to a non
  *         existing branch, non-zero value returned by `notify_cb`, or
- *         other error code < 0 (use giterr_last for error details)
+ *         other error code < 0 (use git_error_last for error details)
  */
 GIT_EXTERN(int) git_checkout_head(
 	git_repository *repo,
@@ -338,7 +350,7 @@ GIT_EXTERN(int) git_checkout_head(
  * @param index index to be checked out (or NULL to use repository index)
  * @param opts specifies checkout options (may be NULL)
  * @return 0 on success, non-zero return value from `notify_cb`, or error
- *         code < 0 (use giterr_last for error details)
+ *         code < 0 (use git_error_last for error details)
  */
 GIT_EXTERN(int) git_checkout_index(
 	git_repository *repo,
@@ -354,7 +366,7 @@ GIT_EXTERN(int) git_checkout_index(
  * the working directory (or NULL to use HEAD)
  * @param opts specifies checkout options (may be NULL)
  * @return 0 on success, non-zero return value from `notify_cb`, or error
- *         code < 0 (use giterr_last for error details)
+ *         code < 0 (use git_error_last for error details)
  */
 GIT_EXTERN(int) git_checkout_tree(
 	git_repository *repo,

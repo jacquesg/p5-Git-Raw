@@ -145,7 +145,7 @@ void test_online_clone__empty_repository(void)
 	cl_assert_equal_i(true, git_repository_head_unborn(g_repo));
 
 	cl_git_pass(git_reference_lookup(&head, g_repo, GIT_HEAD_FILE));
-	cl_assert_equal_i(GIT_REF_SYMBOLIC, git_reference_type(head));
+	cl_assert_equal_i(GIT_REFERENCE_SYMBOLIC, git_reference_type(head));
 	cl_assert_equal_s("refs/heads/master", git_reference_symbolic_target(head));
 
 	git_reference_free(head);
@@ -158,7 +158,7 @@ static void checkout_progress(const char *path, size_t cur, size_t tot, void *pa
 	(*was_called) = true;
 }
 
-static int fetch_progress(const git_transfer_progress *stats, void *payload)
+static int fetch_progress(const git_indexer_progress *stats, void *payload)
 {
 	bool *was_called = (bool*)payload;
 	GIT_UNUSED(stats);
@@ -185,7 +185,7 @@ void test_online_clone__can_checkout_a_cloned_repo(void)
 	cl_assert_equal_i(true, git_path_isfile(git_buf_cstr(&path)));
 
 	cl_git_pass(git_reference_lookup(&head, g_repo, "HEAD"));
-	cl_assert_equal_i(GIT_REF_SYMBOLIC, git_reference_type(head));
+	cl_assert_equal_i(GIT_REFERENCE_SYMBOLIC, git_reference_type(head));
 	cl_assert_equal_s("refs/heads/master", git_reference_symbolic_target(head));
 
 	cl_assert_equal_i(true, checkout_progress_cb_was_called);
@@ -226,7 +226,7 @@ void test_online_clone__clone_mirror(void)
 	cl_git_pass(git_clone(&g_repo, LIVE_REPO_URL, "./foo.git", &opts));
 
 	cl_git_pass(git_reference_lookup(&head, g_repo, "HEAD"));
-	cl_assert_equal_i(GIT_REF_SYMBOLIC, git_reference_type(head));
+	cl_assert_equal_i(GIT_REFERENCE_SYMBOLIC, git_reference_type(head));
 	cl_assert_equal_s("refs/heads/master", git_reference_symbolic_target(head));
 
 	cl_assert_equal_i(true, fetch_progress_cb_was_called);
@@ -442,7 +442,7 @@ void test_online_clone__bitbucket_falls_back_to_specified_creds(void)
 	cl_fixture_cleanup("./foo");
 }
 
-static int cancel_at_half(const git_transfer_progress *stats, void *payload)
+static int cancel_at_half(const git_indexer_progress *stats, void *payload)
 {
 	GIT_UNUSED(payload);
 
@@ -472,7 +472,7 @@ static int cred_cb(git_cred **cred, const char *url, const char *user_from_url,
 			_remote_user, _remote_ssh_pubkey,
 			_remote_ssh_privkey, _remote_ssh_passphrase);
 
-	giterr_set(GITERR_NET, "unexpected cred type");
+	git_error_set(GIT_ERROR_NET, "unexpected cred type");
 	return -1;
 }
 
@@ -665,7 +665,7 @@ static int ssh_memory_cred_cb(git_cred **cred, const char *url, const char *user
 		return ret;
 	}
 
-	giterr_set(GITERR_NET, "unexpected cred type");
+	git_error_set(GIT_ERROR_NET, "unexpected cred type");
 	return -1;
 }
 
@@ -839,4 +839,11 @@ void test_online_clone__proxy_credentials_in_environment(void)
 	cl_git_pass(git_clone(&g_repo, "http://github.com/libgit2/TestGitRepository", "./foo", &g_options));
 
 	git_buf_dispose(&url);
+}
+
+void test_online_clone__proxy_auto_not_detected(void)
+{
+	g_options.fetch_opts.proxy_opts.type = GIT_PROXY_AUTO;
+
+	cl_git_pass(git_clone(&g_repo, "http://github.com/libgit2/TestGitRepository", "./foo", &g_options));
 }

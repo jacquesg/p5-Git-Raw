@@ -155,6 +155,44 @@ int p_rename(const char *from, const char *to)
 	return -1;
 }
 
+int p_fallocate(int fd, off_t offset, off_t len)
+{
+#ifdef __APPLE__
+	fstore_t prealloc;
+	struct stat st;
+	size_t newsize;
+	int error;
+
+	if ((error = p_fstat(fd, &st)) < 0)
+		return error;
+
+	if (git__add_sizet_overflow(&newsize, offset, len)) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (newsize < (unsigned long long)st.st_size)
+		return 0;
+
+	memset(&prealloc, 0, sizeof(prealloc));
+	prealloc.fst_flags  = F_ALLOCATEALL;
+	prealloc.fst_posmode = F_PEOFPOSMODE;
+	prealloc.fst_offset = offset;
+	prealloc.fst_length = len;
+
+	/*
+	 * fcntl will often error when the file already exists; ignore
+	 * this error since ftruncate will also resize the file (although
+	 * likely slower).
+	 */
+	fcntl(fd, F_PREALLOCATE, &prealloc);
+
+	return ftruncate(fd, (offset + len));
+#else
+	return posix_fallocate(fd, offset, len);
+#endif
+}
+
 #endif /* GIT_WIN32 */
 
 ssize_t p_read(git_file fd, void *buf, size_t cnt)
@@ -243,17 +281,17 @@ int p_mmap(git_map *out, size_t len, int prot, int flags, int fd, git_off_t offs
 	out->len = 0;
 
 	if ((prot & GIT_PROT_WRITE) && ((flags & GIT_MAP_TYPE) == GIT_MAP_SHARED)) {
-		giterr_set(GITERR_OS, "trying to map shared-writeable");
+		git_error_set(GIT_ERROR_OS, "trying to map shared-writeable");
 		return -1;
 	}
 
 	out->data = malloc(len);
-	GITERR_CHECK_ALLOC(out->data);
+	GIT_ERROR_CHECK_ALLOC(out->data);
 
 	if (!git__is_ssizet(len) ||
 		(p_lseek(fd, offset, SEEK_SET) < 0) ||
 		(p_read(fd, out->data, len) != (ssize_t)len)) {
-		giterr_set(GITERR_OS, "mmap emulation failed");
+		git_error_set(GIT_ERROR_OS, "mmap emulation failed");
 		return -1;
 	}
 
