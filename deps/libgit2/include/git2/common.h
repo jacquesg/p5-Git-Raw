@@ -21,10 +21,7 @@
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
- GIT_BEGIN_DECL
-# include "inttypes.h"
- GIT_END_DECL
-/** This check is needed for importing this file in an iOS/OS X framework throws an error in Xcode otherwise.*/
+# include <stdint.h>
 #elif !defined(__CLANG_INTTYPES_H)
 # include <inttypes.h>
 #endif
@@ -43,15 +40,23 @@ typedef size_t size_t;
 			 __attribute__((visibility("default"))) \
 			 type
 #elif defined(_MSC_VER)
-# define GIT_EXTERN(type) __declspec(dllexport) type
+# define GIT_EXTERN(type) __declspec(dllexport) type __cdecl
 #else
 # define GIT_EXTERN(type) extern type
+#endif
+
+/** Declare a callback function for application use. */
+#if defined(_MSC_VER)
+# define GIT_CALLBACK(name) (__cdecl *name)
+#else
+# define GIT_CALLBACK(name) (*name)
 #endif
 
 /** Declare a function as deprecated. */
 #if defined(__GNUC__)
 # define GIT_DEPRECATED(func) \
 			 __attribute__((deprecated)) \
+			 __attribute__((used)) \
 			 func
 #elif defined(_MSC_VER)
 # define GIT_DEPRECATED(func) __declspec(deprecated) func
@@ -197,7 +202,8 @@ typedef enum {
 	GIT_OPT_SET_ALLOCATOR,
 	GIT_OPT_ENABLE_UNSAVED_INDEX_SAFETY,
 	GIT_OPT_GET_PACK_MAX_OBJECTS,
-	GIT_OPT_SET_PACK_MAX_OBJECTS
+	GIT_OPT_SET_PACK_MAX_OBJECTS,
+	GIT_OPT_DISABLE_PACK_KEEP_FILE_CHECKS
 } git_libgit2_opt_t;
 
 /**
@@ -386,6 +392,10 @@ typedef enum {
  *
  *		> Set the maximum number of objects libgit2 will allow in a pack
  *		> file when downloading a pack file from a remote.
+ *
+ *	 opts(GIT_OPT_DISABLE_PACK_KEEP_FILE_CHECKS, int enabled)
+ *		> This will cause .keep file existence checks to be skipped when
+ *		> accessing packfiles, which can help performance with remote filesystems.
  *
  * @param option Option key
  * @param ... value to set the option

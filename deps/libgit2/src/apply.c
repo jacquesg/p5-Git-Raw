@@ -25,7 +25,7 @@
 #include "index.h"
 
 #define apply_err(...) \
-	( giterr_set(GITERR_PATCH, __VA_ARGS__), GIT_EAPPLYFAIL )
+	( git_error_set(GIT_ERROR_PATCH, __VA_ARGS__), GIT_EAPPLYFAIL )
 
 typedef struct {
 	/* The lines that we allocate ourself are allocated out of the pool.
@@ -59,7 +59,7 @@ static int patch_image_init_fromstr(
 	git_pool_init(&out->pool, sizeof(git_diff_line));
 
 	for (start = in; start < in + in_len; start = end) {
-		end = memchr(start, '\n', in_len);
+		end = memchr(start, '\n', in_len - (start - in));
 
 		if (end == NULL)
 			end = in + in_len;
@@ -68,7 +68,7 @@ static int patch_image_init_fromstr(
 			end++;
 
 		line = git_pool_mallocz(&out->pool, 1);
-		GITERR_CHECK_ALLOC(line);
+		GIT_ERROR_CHECK_ALLOC(line);
 
 		if (git_vector_insert(&out->lines, line) < 0)
 			return -1;
@@ -138,7 +138,7 @@ static bool find_hunk_linenum(
 
 static int update_hunk(
 	patch_image *image,
-	unsigned int linenum,
+	size_t linenum,
 	patch_image *preimage,
 	patch_image *postimage)
 {
@@ -155,7 +155,7 @@ static int update_hunk(
 			&image->lines, linenum, (prelen - postlen));
 
 	if (error) {
-		giterr_set_oom();
+		git_error_set_oom();
 		return -1;
 	}
 
@@ -439,7 +439,6 @@ static int apply_one(
 	git_filemode_t pre_filemode;
 	git_index_entry pre_entry, post_entry;
 	bool skip_preimage = false;
-	size_t pos;
 	int error;
 
 	if ((error = git_patch_from_diff(&patch, diff, i)) < 0)
@@ -464,8 +463,7 @@ static int apply_one(
 	 */
 	if (delta->status != GIT_DELTA_RENAMED &&
 	    delta->status != GIT_DELTA_ADDED) {
-		pos = git_strmap_lookup_index(removed_paths, delta->old_file.path);
-		if (git_strmap_valid_index(removed_paths, pos)) {
+		if (git_strmap_exists(removed_paths, delta->old_file.path)) {
 			error = apply_err("path '%s' has been renamed or deleted", delta->old_file.path);
 			goto done;
 		}
@@ -483,7 +481,7 @@ static int apply_one(
 		    postimage_reader, delta->old_file.path)) == 0) {
 			skip_preimage = true;
 		} else if (error == GIT_ENOTFOUND) {
-			giterr_clear();
+			git_error_clear();
 			error = 0;
 		} else {
 			goto done;
@@ -549,7 +547,7 @@ static int apply_one(
 
 	if (delta->status == GIT_DELTA_RENAMED ||
 	    delta->status == GIT_DELTA_DELETED)
-		git_strmap_insert(removed_paths, delta->old_file.path, (char *)delta->old_file.path, &error);
+		error = git_strmap_set(removed_paths, delta->old_file.path, (char *) delta->old_file.path);
 
 	if (delta->status == GIT_DELTA_RENAMED ||
 	    delta->status == GIT_DELTA_ADDED)
@@ -575,9 +573,9 @@ static int apply_deltas(
 {
 	git_strmap *removed_paths;
 	size_t i;
-	int error;
+	int error = 0;
 
-	if (git_strmap_alloc(&removed_paths) < 0)
+	if (git_strmap_new(&removed_paths) < 0)
 		return -1;
 
 	for (i = 0; i < git_diff_num_deltas(diff); i++) {
@@ -777,7 +775,7 @@ int git_apply(
 
 	assert(repo && diff);
 
-	GITERR_CHECK_VERSION(
+	GIT_ERROR_CHECK_VERSION(
 		given_opts, GIT_APPLY_OPTIONS_VERSION, "git_apply_options");
 
 	if (given_opts)

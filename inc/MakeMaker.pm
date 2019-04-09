@@ -259,7 +259,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 }
 
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
-my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c}';
+my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c}';
 
 if (!$library_opts{'ssl'}{'use'} && !$is_osx) {
 	push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
