@@ -2,6 +2,13 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to d1cfd79a477
+ - Added Worktree methods:
+    + name()
+    + path()
+ - Added Config methods (thanks @waterkip):
+    + str_add()
+
 0.82      2018-12-12 17:14:23+02:00 Africa/Johannesburg
 
  - Update libgit2 to da8138b0121
