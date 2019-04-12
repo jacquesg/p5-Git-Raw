@@ -53,6 +53,24 @@ lookup(class, repo, name)
 
 	OUTPUT: RETVAL
 
+SV *
+name(self)
+	Worktree self
+
+	CODE:
+		RETVAL = newSVpv (git_worktree_name(self), 0);
+
+	OUTPUT: RETVAL
+
+SV *
+path(self)
+	Worktree self
+
+	CODE:
+		RETVAL = newSVpv (git_worktree_path(self), 0);
+
+	OUTPUT: RETVAL
+
 Repository
 repository(self)
 	Worktree self

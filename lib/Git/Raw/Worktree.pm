@@ -26,6 +26,14 @@ Add a new worktree.
 
 Lookup a worktree.
 
+=head2 name( )
+
+Retrieve the name of the worktree.
+
+=head2 path( )
+
+Retrieve the filesystem path for the worktree.
+
 =head2 repository( )
 
 Open the worktree as a repository. Returns a L<Git::Raw::Repository> object.

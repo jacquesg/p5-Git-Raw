@@ -13,9 +13,13 @@ my $repo = Git::Raw::Repository -> open($path);
 
 my $worktree1 = Git::Raw::Worktree -> add($repo, 'myworktree1', $worktree_path1);
 isa_ok $worktree1, 'Git::Raw::Worktree';
+is $worktree1 -> name, 'myworktree1';
+is $worktree1 -> path, $worktree_path1;
 
 my $worktree2 = Git::Raw::Worktree -> add($repo, 'myworktree2', $worktree_path2);
 isa_ok $worktree2, 'Git::Raw::Worktree';
+is $worktree2 -> name, 'myworktree2';
+is $worktree2 -> path, $worktree_path2;
 
 my $worktree3 = Git::Raw::Worktree -> lookup($repo, 'myworktree1');
 isa_ok $worktree3, 'Git::Raw::Worktree';
