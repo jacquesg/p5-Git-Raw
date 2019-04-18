@@ -27,6 +27,10 @@ use Git::Raw::Tree;
 use Git::Raw::TransferProgress;
 use Git::Raw::Worktree;
 
+1;
+
+__END__
+
 =for HTML
 <a href="https://travis-ci.org/jacquesg/p5-Git-Raw">
 	<img src="https://travis-ci.org/jacquesg/p5-Git-Raw.svg?branch=master" alt="Build Status: Travis" align="right" />
@@ -69,6 +73,124 @@ Clean up C<$msg> from excess whitespace and ensure that the last line ends with
 a newline. The default is to strip all comments, starting with a C<#>, unless
 otherwise specified.
 
+=head1 DOCUMENTATION
+
+=head2 L<Git::Raw::AnnotatedCommit>
+
+=head2 L<Git::Raw::Blame>
+
+=head2 L<Git::Raw::Blame::Hunk>
+
+=head2 L<Git::Raw::Blob>
+
+=head2 L<Git::Raw::Branch>
+
+=head2 L<Git::Raw::Cert>
+
+=head2 L<Git::Raw::Cert::HostKey>
+
+=head2 L<Git::Raw::Cert::X509>
+
+=head2 L<Git::Raw::Commit>
+
+=head2 L<Git::Raw::Config>
+
+=head2 L<Git::Raw::Cred>
+
+=head2 L<Git::Raw::Diff>
+
+=head2 L<Git::Raw::Diff::Delta>
+
+=head2 L<Git::Raw::Diff::File>
+
+=head2 L<Git::Raw::Diff::Hunk>
+
+=head2 L<Git::Raw::Diff::Stats>
+
+=head2 L<Git::Raw::Error>
+
+=head2 L<Git::Raw::Error::Category>
+
+=head2 L<Git::Raw::Filter>
+
+=head2 L<Git::Raw::Filter::List>
+
+=head2 L<Git::Raw::Filter::Source>
+
+=head2 L<Git::Raw::Graph>
+
+=head2 L<Git::Raw::Index>
+
+=head2 L<Git::Raw::Index::Conflict>
+
+=head2 L<Git::Raw::Index::Entry>
+
+=head2 L<Git::Raw::Indexer>
+
+=head2 L<Git::Raw::Mempack>
+
+=head2 L<Git::Raw::Merge::File::Result>
+
+=head2 L<Git::Raw::Note>
+
+=head2 L<Git::Raw::Object>
+
+=head2 L<Git::Raw::Odb>
+
+=head2 L<Git::Raw::Odb::Backend>
+
+=head2 L<Git::Raw::Odb::Backend::Loose>
+
+=head2 L<Git::Raw::Odb::Backend::OnePack>
+
+=head2 L<Git::Raw::Odb::Backend::Pack>
+
+=head2 L<Git::Raw::Odb::Object>
+
+=head2 L<Git::Raw::Packbuilder>
+
+=head2 L<Git::Raw::Patch>
+
+=head2 L<Git::Raw::PathSpec>
+
+=head2 L<Git::Raw::PathSpec::MatchList>
+
+=head2 L<Git::Raw::Rebase>
+
+=head2 L<Git::Raw::Rebase::Operation>
+
+=head2 L<Git::Raw::RefSpec>
+
+=head2 L<Git::Raw::Reference>
+
+=head2 L<Git::Raw::Reflog>
+
+=head2 L<Git::Raw::Reflog::Entry>
+
+=head2 L<Git::Raw::Remote>
+
+=head2 L<Git::Raw::Repository>
+
+=head2 L<Git::Raw::Signature>
+
+=head2 L<Git::Raw::Stash>
+
+=head2 L<Git::Raw::Stash::Progress>
+
+=head2 L<Git::Raw::Tag>
+
+=head2 L<Git::Raw::TransferProgress>
+
+=head2 L<Git::Raw::Tree>
+
+=head2 L<Git::Raw::Tree::Builder>
+
+=head2 L<Git::Raw::Tree::Entry>
+
+=head2 L<Git::Raw::Walker>
+
+=head2 L<Git::Raw::Worktree>
+
 =head1 AUTHOR
 
 Alessandro Ghedini <alexbio@cpan.org>
@@ -84,7 +206,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-
-=cut
-
-1; # End of Git::Raw
