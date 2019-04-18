@@ -163,7 +163,7 @@ str_add(self, name, ...)
 		git_config_iterator_free(iter);
 
 		if (av_len(av) == -1 ) {
-			sv_2mortal(av);
+			sv_2mortal(MUTABLE_SV(av));
 			XSRETURN_UNDEF;
 		}
 
