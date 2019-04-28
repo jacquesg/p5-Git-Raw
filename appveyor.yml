@@ -51,12 +51,12 @@ install:
  - dzil listdeps --missing | cpanm --notest
 
  - dzil build --in Git-Raw-526
- - dzil build --in Git-Raw-524
- - dzil build --in Git-Raw-522
- - dzil build --in Git-Raw-520
- - dzil build --in Git-Raw-518
- - dzil build --in Git-Raw-516
- - dzil build --in Git-Raw-514
+ - xcopy Git-Raw-526 Git-Raw-524 /i /O /X /E /H /K
+ - xcopy Git-Raw-526 Git-Raw-522 /i /O /X /E /H /K
+ - xcopy Git-Raw-526 Git-Raw-520 /i /O /X /E /H /K
+ - xcopy Git-Raw-526 Git-Raw-518 /i /O /X /E /H /K
+ - xcopy Git-Raw-526 Git-Raw-516 /i /O /X /E /H /K
+ - xcopy Git-Raw-526 Git-Raw-514 /i /O /X /E /H /K
 
 build_script:
  - set PATH=%PERL526%\perl\bin;%PERL526%\perl\site\bin;%PERL526%\c\bin;%OLDPATH%
