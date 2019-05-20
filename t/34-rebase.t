@@ -87,14 +87,20 @@ my $destination_branch = $repo -> branch('destination_branch', $initial_commit);
 isa_ok $destination_branch, 'Git::Raw::Branch';
 
 $branch = $commit3 -> annotated;
-$upstream = $initial_commit -> annotated; $onto = $destination_branch -> annotated_commit;
+$upstream = $initial_commit -> annotated;
+$onto = $destination_branch -> annotated_commit;
 
-my $rebase = Git::Raw::Rebase -> new($repo, $branch, $upstream, $onto, {
+$rebase = Git::Raw::Rebase -> new($repo, $branch, $upstream, $onto, {
 	'quiet' => 1,
 	'merge_opts' => {},
 	'checkout_opts' => {},
 });
 isa_ok $rebase, 'Git::Raw::Rebase';
+
+is $rebase -> orig_head_name, undef;
+is $rebase -> orig_head_id, $branch -> id;
+is $rebase -> onto_name, 'destination_branch';
+is $rebase -> onto_id, $onto -> id;
 
 is $repo -> state, "rebase_merge";
 is $repo -> is_head_detached, 1;

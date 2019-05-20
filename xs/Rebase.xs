@@ -247,6 +247,58 @@ operations(self)
 
 		XSRETURN((int) count);
 
+SV *
+orig_head_name(self)
+	Rebase self
+
+	CODE:
+		const char *head_name = git_rebase_orig_head_name(self);
+		if (head_name == NULL)
+			XSRETURN_UNDEF;
+
+		RETVAL = newSVpv (head_name, 0);
+
+	OUTPUT: RETVAL
+
+SV *
+orig_head_id(self)
+	Rebase self
+
+	CODE:
+		const git_oid *oid = git_rebase_orig_head_id(self);
+		if (oid == NULL)
+			XSRETURN_UNDEF;
+
+		RETVAL = git_oid_to_sv(oid);
+
+	OUTPUT: RETVAL
+
+SV *
+onto_name(self)
+	Rebase self
+
+	CODE:
+		const char *onto_name = git_rebase_onto_name(self);
+		if (onto_name == NULL)
+			XSRETURN_UNDEF;
+
+		RETVAL = newSVpv (onto_name, 0);
+
+	OUTPUT: RETVAL
+
+SV *
+onto_id(self)
+	Rebase self
+
+	CODE:
+		const git_oid *oid = git_rebase_onto_id(self);
+		if (oid == NULL)
+			XSRETURN_UNDEF;
+
+		RETVAL = git_oid_to_sv(oid);
+
+	OUTPUT: RETVAL
+
 void
 DESTROY(self)
 	SV *self
