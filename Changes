@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to c9f116f148c
+ - Update libgit2 to 040db8ad749
  - Added Worktree methods:
     + name()
     + path()
