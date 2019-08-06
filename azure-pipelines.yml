@@ -1,0 +1,115 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+strategy:
+  matrix:
+    linux-perl530:
+        PERL_VERSION: '5.30.0'
+        IMAGE: 'ubuntu-latest'
+    linux-perl528:
+        PERL_VERSION: '5.28.2'
+        IMAGE: 'ubuntu-latest'
+    linux-perl526:
+        PERL_VERSION: '5.26.3'
+        IMAGE: 'ubuntu-latest'
+    linux-perl524:
+        PERL_VERSION: '5.24.4'
+        IMAGE: 'ubuntu-latest'
+    linux-perl522:
+        PERL_VERSION: '5.22.4'
+        IMAGE: 'ubuntu-latest'
+    linux-perl520:
+        PERL_VERSION: '5.20.3'
+        IMAGE: 'ubuntu-latest'
+    linux-perl518:
+        PERL_VERSION: '5.18.4'
+        IMAGE: 'ubuntu-latest'
+    linux-perl516:
+        PERL_VERSION: '5.16.3'
+        IMAGE: 'ubuntu-latest'
+    linux-perl514:
+        PERL_VERSION: '5.14.4'
+        IMAGE: 'ubuntu-latest'
+    macos-perl530:
+        PERL_VERSION: '5.30.0'
+        IMAGE: 'macos-latest'
+    macos-perl528:
+        PERL_VERSION: '5.28.2'
+        IMAGE: 'macos-latest'
+    macos-perl526:
+        PERL_VERSION: '5.26.3'
+        IMAGE: 'macos-latest'
+    macos-perl524:
+        PERL_VERSION: '5.24.4'
+        IMAGE: 'macos-latest'
+    macos-perl522:
+        PERL_VERSION: '5.22.4'
+        IMAGE: 'macos-latest'
+
+pool:
+  vmImage: $(IMAGE)
+
+steps:
+- script: |
+    sudo apt-get -qq install libssl-dev libssh2-1-dev openssh-client openssh-server
+    sudo mkdir -p -m0755 /var/run/sshd
+  condition: startsWith(variables['IMAGE'], 'ubuntu')
+  displayName: 'Install dependencies'
+
+- script: |
+    sudo mkdir -p -m0755 /var/run/sshd
+    sudo sed -i 's,ChallengeResponseAuthentication no,ChallengeResponseAuthentication yes,g' /etc/ssh/sshd_config
+    sudo sed -i 's,UsePAM yes,UsePAM no,g' /etc/ssh/sshd_config
+    sudo sed -i 's,StrictModes yes,StrictModes no,g' /etc/ssh/sshd_config
+    sudo systemctl start ssh
+    sudo systemctl status ssh
+  condition: startsWith(variables['IMAGE'], 'ubuntu')
+  displayName: 'Setup SSH server'
+
+- script: |
+    wget -O - https://install.perlbrew.pl | bash
+    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:$PATH
+    echo "##vso[task.setvariable variable=PATH]$PATH"
+  displayName: 'Install perlbrew'
+
+- script: |
+    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
+    echo "##vso[task.setvariable variable=PATH]$PATH"
+    perlbrew install --notest perl-$(PERL_VERSION)
+    perl -V
+    curl -L https://cpanmin.us | perl - App::cpanminus
+  displayName: 'Install perl'
+
+- script: |
+    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
+    echo "##vso[task.setvariable variable=PATH]$PATH"
+    git config --global user.name "p5-Git-Raw"
+    git config --global user.email "jacquesg@cpan.org"
+    cpanm --quiet --notest Dist::Zilla~">= 5.0000, < 6.0000"
+    cpanm --quiet --notest Dist::Zilla::PluginBundle::Author::ALEXBIO
+    cpanm --quiet --notest Pod::Coverage::TrustPod
+    cpanm --quiet --notest Devel::Cover::Report::Coveralls
+    cpanm --quiet --notest Dist::Zilla::App::Command::cover
+    dzil authordeps --missing | cpanm --quiet --notest
+    dzil listdeps --missing | cpanm --quiet --notest
+  displayName: 'Install CPAN dependencies'
+
+- script: |
+    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
+    echo "##vso[task.setvariable variable=PATH]$PATH"
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa -N "" -q
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+    ssh-keyscan -t rsa localhost >> ~/.ssh/known_hosts
+    export RELEASE_TESTING=1
+    export NETWORK_TESTING=1
+    export AUTOMATED_TESTING=1
+    echo "##vso[task.setvariable variable=RELEASE_TESTING]$RELEASE_TESTING"
+    echo "##vso[task.setvariable variable=NETWORK_TESTING]$NETWORK_TESTING"
+    echo "##vso[task.setvariable variable=AUTOMATED_TESTING]$AUTOMATED_TESTING"
+    dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -ignore_re curl -test -report coveralls
+  displayName: 'Build/Test'
