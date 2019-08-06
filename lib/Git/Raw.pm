@@ -23,6 +23,7 @@ use Git::Raw::Reference;
 use Git::Raw::Repository;
 use Git::Raw::Stash;
 use Git::Raw::Stash::Progress;
+use Git::Raw::Submodule;
 use Git::Raw::Tree;
 use Git::Raw::TransferProgress;
 use Git::Raw::Worktree;
@@ -169,6 +170,8 @@ otherwise specified.
 =head2 L<Git::Raw::Repository>
 
 =head2 L<Git::Raw::Signature>
+
+=head2 L<Git::Raw::Submodule>
 
 =head2 L<Git::Raw::Stash>
 

@@ -149,6 +149,8 @@ typedef struct {
 
 typedef git_raw_repository * Repository;
 
+typedef git_submodule * Submodule;
+
 typedef struct {
 	git_cred *cred;
 	SV *callback;
@@ -1158,6 +1160,34 @@ STATIC int git_tag_foreach_cbb(const char *name, git_oid *oid, void *payload) {
 	PUTBACK;
 
 	call_sv(pl -> cb, G_SCALAR);
+
+	SPAGAIN;
+
+	rv = POPi;
+
+	PUTBACK;
+	FREETMPS;
+	LEAVE;
+
+	if (rv != 0)
+		rv = GIT_EUSER;
+
+	return rv;
+}
+
+STATIC int git_submodule_foreach_cb(git_submodule *sm, const char *name, void *p) {
+	dSP;
+	int rv = 0;
+	git_foreach_payload *payload = (git_foreach_payload *) p;
+
+	ENTER;
+	SAVETMPS;
+
+	PUSHMARK(SP);
+	mXPUSHs(newSVpv(name, 0));
+	PUTBACK;
+
+	call_sv(((git_foreach_payload *) payload) -> cb, G_SCALAR);
 
 	SPAGAIN;
 
@@ -2269,6 +2299,20 @@ STATIC void git_hv_to_rebase_opts(HV *opts, git_rebase_options *rebase_opts) {
 		git_hv_to_checkout_opts(hopt, &rebase_opts -> checkout_options);
 }
 
+STATIC void git_hv_to_submodule_update_opts(HV *opts, git_submodule_update_options *update_opts) {
+	SV *opt;
+	HV *hopt;
+
+	if ((hopt = git_hv_hash_entry(opts, "fetch_opts")))
+		git_hv_to_fetch_opts(hopt, &update_opts -> fetch_opts);
+
+	if ((hopt = git_hv_hash_entry(opts, "checkout_opts")))
+		git_hv_to_checkout_opts(hopt, &update_opts -> checkout_opts);
+
+	if ((opt = git_hv_int_entry(opts, "allow_fetch")))
+		update_opts -> allow_fetch = SvIV(opt);
+}
+
 MODULE = Git::Raw			PACKAGE = Git::Raw
 
 BOOT:
@@ -2394,6 +2438,7 @@ INCLUDE: xs/Repository.xs
 INCLUDE: xs/Signature.xs
 INCLUDE: xs/Stash.xs
 INCLUDE: xs/Stash/Progress.xs
+INCLUDE: xs/Submodule.xs
 INCLUDE: xs/Tag.xs
 INCLUDE: xs/Test.xs
 INCLUDE: xs/TransferProgress.xs
