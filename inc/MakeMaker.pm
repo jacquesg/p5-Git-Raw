@@ -30,7 +30,7 @@ my $is_osx = ($^O =~ /darwin/i) ? 1 : 0;
 my $is_gkfreebsd = ($^O =~ /gnukfreebsd/i) ? 1 : 0;
 my $is_netbsd = ($^O =~ /netbsd/i) ? 1 : 0;
 
-# allow the user to override/specify the locations of OpenSSL, libssh2 and libcurl
+# allow the user to override/specify the locations of OpenSSL, libssh2
 our $opt = {};
 
 Getopt::Long::GetOptions(
@@ -39,8 +39,6 @@ Getopt::Long::GetOptions(
 	'with-openssl-libs=s@'   => \$opt->{'ssl'}->{'libs'},
 	'with-libssh2-include=s' => \$opt->{'ssh2'}->{'incdir'},
 	'with-libssh2-lib=s@'    => \$opt->{'ssh2'}->{'libs'},
-	'with-libcurl-include=s' => \$opt->{'curl'}->{'incdir'},
-	'with-libcurl-lib=s@'    => \$opt->{'curl'}->{'libs'},
 ) || die &usage();
 
 my $def = '';
@@ -67,23 +65,14 @@ my %os_specific = (
 			'inc' => ['/usr/pkg/include'],
 			'lib' => ['/usr/pkg/lib']
 		},
-		'curl' => {
-			'inc' => ['/usr/pkg/include'],
-			'lib' => ['/usr/pkg/lib']
-		}
 	}
 );
 
 my ($ssh2_libpath, $ssh2_incpath);
-my ($curl_libpath, $curl_incpath);
 if (my $os_params = $os_specific{$^O}) {
 	if (my $ssh2 = $os_params -> {'ssh2'}) {
 		$ssh2_libpath = $ssh2 -> {'lib'};
 		$ssh2_incpath = $ssh2 -> {'inc'};
-	}
-	if (my $curl = $os_params -> {'curl'}) {
-		$curl_libpath = $curl -> {'lib'};
-		$curl_incpath = $curl -> {'inc'};
 	}
 }
 
@@ -98,12 +87,6 @@ my @library_tests = (
 		'lib'     => 'ssl',
 		'header'  => 'openssl/opensslconf.h',
 	},
-	{
-		'lib'     => 'curl',
-		'libpath' => $curl_libpath,
-		'incpath' => $curl_incpath,
-		'header'  => 'curl/curl.h',
-	},
 );
 
 my %library_opts = (
@@ -115,10 +98,6 @@ my %library_opts = (
 		'defines' => ' -DGIT_SSH',
 		'libs'    => ' -lssh2',
 	},
-	'curl' => {
-		'defines' => ' -DGIT_CURL',
-		'libs'    => ' -lcurl',
-	}
 );
 
 # check for optional libraries
