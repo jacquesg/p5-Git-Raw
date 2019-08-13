@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Moved from Travis to Azure pipelines
+ - Removed references to cURL as libgit2 no longer supports it
+
 0.83      2019-05-20 14:38:30+01:00 Europe/London
 
  - Update libgit2 to 040db8ad749
