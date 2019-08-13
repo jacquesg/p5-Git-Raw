@@ -34,7 +34,7 @@ __END__
 
 =for HTML
 <a href="https://travis-ci.org/jacquesg/p5-Git-Raw">
-	<img src="https://dev.azure.com/jacquesgermishuys/p5-Git-Raw/_apis/build/status/jacquesg.p5-Git-Raw?branchName=master" alt="Build Status: Azure Pipeline" align="right" />
+	<img src="https://dev.azure.com/jacquesgermishuys/p5-Git-Raw/_build" alt="Build Status: Azure Pipeline" align="right" />
 </a>
 <a href="https://ci.appveyor.com/project/jacquesg/p5-git-raw">
 	<img src="https://ci.appveyor.com/api/projects/status/il9rm9fsf9dj1dcu/branch/master?svg=true" alt="Build Status: AppVeyor" align="right" />
