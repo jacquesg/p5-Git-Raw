@@ -91,7 +91,7 @@ my @library_tests = (
 
 my %library_opts = (
 	'ssl' => {
-		'defines' => ' -DGIT_OPENSSL -DGIT_SHA1_OPENSSL -DGIT_HTTPS',
+		'defines' => ' -DGIT_OPENSSL -DGIT_HTTPS',
 		'libs'    => ' -lssl -lcrypto',
 	},
 	'ssh2' => {
@@ -182,6 +182,9 @@ if ($is_netbsd) {
 # Nanosecond resolution
 $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
+# SHA1DC
+$def .= ' -DGIT_SHA1_COLLISIONDETECT';
+
 if ($is_gcc) {
 	# gcc-like compiler
 	$ccflags .= ' -Wall -Wno-unused-variable -Wno-pedantic -Wno-deprecated-declarations';
@@ -194,7 +197,7 @@ if ($is_gcc) {
 		}
 
 		# Secure transport (HTTPS)
-		$def .= ' -DGIT_SECURE_TRANSPORT -DGIT_HTTPS -DGIT_SHA1_COMMON_CRYPTO';
+		$def .= ' -DGIT_SECURE_TRANSPORT -DGIT_HTTPS';
 		$otherldflags .= ' -framework CoreFoundation -framework Security';
 	}
 
@@ -238,11 +241,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 }
 
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
-my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c}';
-
-if (!$library_opts{'ssl'}{'use'} && !$is_osx) {
-	push @srcs, 'deps/libgit2/src/hash/hash_generic.c';
-}
+my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c,hash/sha1/collision*.c,hash/sha1/sha1dc/*.c}';
 
 # the system regex is broken on Solaris, not available on Windows
 if ($is_windows || $is_solaris) {
