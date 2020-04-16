@@ -360,6 +360,8 @@ fetch(self, ...)
 		int rc;
 
 		git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
+		git_strarray specs = {NULL, 0};
+		git_strarray *refspecs = NULL;
 
 	CODE:
 		if (items >= 2) {
@@ -367,9 +369,20 @@ fetch(self, ...)
 			git_hv_to_fetch_opts(opts, &fetch_opts);
 		}
 
-		rc = git_remote_fetch(self -> remote, NULL,
+		if (items >= 3) {
+			git_list_to_paths(
+				git_ensure_av(ST(2), "refspecs"),
+				&specs
+			);
+			refspecs = &specs;
+		}
+
+		rc = git_remote_fetch(self -> remote, refspecs,
 			&fetch_opts, NULL
 		);
+		if (refspecs) {
+			Safefree(specs.strings);
+		}
 		git_check_error(rc);
 
 void
@@ -449,6 +462,8 @@ download(self, ...)
 		int rc;
 
 		git_fetch_options fetch_opts = GIT_FETCH_OPTIONS_INIT;
+		git_strarray specs = {NULL, 0};
+		git_strarray *refspecs = NULL;
 
 	CODE:
 		if (items >= 2) {
@@ -456,9 +471,20 @@ download(self, ...)
 			git_hv_to_fetch_opts(opts, &fetch_opts);
 		}
 
-		rc = git_remote_download(self -> remote, NULL,
+		if (items >= 3) {
+			git_list_to_paths(
+				git_ensure_av(ST(2), "refspecs"),
+				&specs
+			);
+			refspecs = &specs;
+		}
+
+		rc = git_remote_download(self -> remote, refspecs,
 			&fetch_opts
 		);
+		if (refspecs) {
+			Safefree(specs.strings);
+		}
 		git_check_error(rc);
 
 void

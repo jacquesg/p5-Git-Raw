@@ -179,6 +179,20 @@ my $ls = $github -> ls;
 
 is_deeply $ls -> {'HEAD'}, $ls -> {'refs/heads/master'};
 
+$path = rel2abs(catfile('t', 'refspecs_repo'));
+make_path($path);
+
+$repo = Git::Raw::Repository -> init ($path, 0);
+$github = Git::Raw::Remote -> create_anonymous($repo, $url);
+
+$github->download({}, ['refs/heads/no-parent:']);
+
+isa_ok $repo->lookup($ls -> {'refs/heads/no-parent'} -> {'id'}), 'Git::Raw::Commit';
+is $repo->lookup($ls -> {'refs/heads/master'} -> {'id'}), undef;
+
+rmtree $path;
+ok ! -e $path;
+
 $path = rel2abs(catfile('t', 'callbacks_repo'));
 make_path($path);
 
