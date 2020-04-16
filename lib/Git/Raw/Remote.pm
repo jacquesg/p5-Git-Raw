@@ -140,11 +140,13 @@ The local OID of the reference (optional).
 
 =back
 
-=head2 fetch( [ \%fetch_opts ] )
+=head2 fetch( [ \%fetch_opts, [ \@refspecs ] ] )
 
 Download new data and update tips. Convenience function to connect to a remote,
-download the data, disconnect and update the remote-tracking branches. Valid fields for
-the C<%fetch_opts> hash are:
+download the data, disconnect and update the remote-tracking branches.
+C<@refspecs> is an optional list of refspecs to use for the negotiation with
+the server to determine the missing objects that need to be downloaded.  Valid
+fields for the C<%fetch_opts> hash are:
 
 =over 4
 
@@ -195,10 +197,10 @@ Connect to the remote. The C<$direction> should either be C<"fetch"> or C<"push"
 
 Disconnect the remote.
 
-=head2 download( [ \%fetch_opts ] )
+=head2 download( [ \%fetch_opts, [ \@refspecs ] ] )
 
 Download the remote packfile. See C<Git::Raw::Remote-E<gt>fetch()> for valid
-C<%fetch_opts> values.
+C<%fetch_opts> and C<@refspecs> values.
 
 =head2 upload( \@refspecs, [ \%push_opts ] )
 
