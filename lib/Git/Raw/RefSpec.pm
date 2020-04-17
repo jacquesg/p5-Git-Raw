@@ -2,6 +2,9 @@ package Git::Raw::RefSpec;
 
 use strict;
 use warnings;
+use overload
+	'""'       => sub { return $_[0] -> string },
+	fallback   => 1;
 
 =head1 NAME
 
