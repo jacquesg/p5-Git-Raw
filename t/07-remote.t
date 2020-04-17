@@ -38,6 +38,7 @@ is $refspec -> src_matches('refs/heads/master'), 1;
 is $refspec -> rtransform ('refs/remotes/github/master'), "refs/heads/master";
 is $refspec -> dst_matches('refs/remotes/github/master'), 1;
 is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
+is $refspec, $refspec -> string;
 
 my $rename = Git::Raw::Remote -> create($repo, 'pre_rename', $url);
 is $rename -> name, 'pre_rename';
