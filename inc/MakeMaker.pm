@@ -278,7 +278,7 @@ if ($is_windows) {
 		$def .= ' -D_CRT_SECURE_NO_WARNINGS';
 	} else {
 		# mingw/cygwin
-		$def .= ' -D_WIN32_WINNT=0x0501 -D__USE_MINGW_ANSI_STDIO=1';
+		$def .= ' -D_WIN32_WINNT=0x0600 -D__USE_MINGW_ANSI_STDIO=1';
 	}
 } else {
 	push @srcs, glob 'deps/libgit2/src/unix/*.c'
