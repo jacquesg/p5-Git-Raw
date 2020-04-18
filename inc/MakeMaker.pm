@@ -198,6 +198,10 @@ $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 # SHA1DC
 $def .= ' -DGIT_SHA1_COLLISIONDETECT';
 
+# Use the builtin PCRE regex
+$def .= ' -DGIT_REGEX_BUILTIN -DLINK_SIZE=2 -DMAX_NAME_SIZE=32 -DMAX_NAME_COUNT=10000 -DNEWLINE=-2 ';
+$def .= ' -DPARENS_NEST_LIMIT=250 -DMATCH_LIMIT=10000000 -DMATCH_LIMIT_RECURSION=MATCH_LIMIT -DPOSIX_MALLOC_THRESHOLD=10';
+
 if ($is_gcc) {
 	# gcc-like compiler
 	$ccflags .= ' -Wall -Wno-unused-variable -Wno-pedantic -Wno-deprecated-declarations';
@@ -253,7 +257,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 	print "Thread support disabled (perl wasn't built with thread support)\n"
 }
 
-my @deps = glob 'deps/libgit2/deps/{http-parser,zlib}/*.c';
+my @deps = glob 'deps/libgit2/deps/{http-parser,zlib,pcre}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c,hash/sha1/collision*.c,hash/sha1/sha1dc/*.c}';
 
 # the system regex is broken on Solaris, not available on Windows
