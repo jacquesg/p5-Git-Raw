@@ -1,5 +1,5 @@
 #include "clar_libgit2.h"
-#include "fileops.h"
+#include "futils.h"
 #include "stash_helpers.h"
 
 static git_repository *repo;
@@ -281,6 +281,26 @@ void test_stash_save__stashing_updates_the_reflog(void)
 
 	assert_object_oid("refs/stash@{0}", git_oid_tostr_s(&stash_tip_oid), GIT_OBJECT_COMMIT);
 	assert_object_oid("refs/stash@{1}", NULL, GIT_OBJECT_COMMIT);
+}
+
+void test_stash_save__multiline_message(void)
+{
+	const char *msg = "This\n\nis a multiline message\n";
+	const git_reflog_entry *entry;
+	git_reflog *reflog;
+
+	assert_object_oid("refs/stash@{0}", NULL, GIT_OBJECT_COMMIT);
+
+	cl_git_pass(git_stash_save(&stash_tip_oid, repo, signature, msg, GIT_STASH_DEFAULT));
+
+	cl_git_pass(git_reflog_read(&reflog, repo, "refs/stash"));
+	cl_assert(entry = git_reflog_entry_byindex(reflog, 0));
+	cl_assert_equal_s(git_reflog_entry_message(entry), "On master: This  is a multiline message");
+
+	assert_object_oid("refs/stash@{0}", git_oid_tostr_s(&stash_tip_oid), GIT_OBJECT_COMMIT);
+	assert_commit_message_contains("refs/stash@{0}", msg);
+
+	git_reflog_free(reflog);
 }
 
 void test_stash_save__cannot_stash_when_there_are_no_local_change(void)

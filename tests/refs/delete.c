@@ -1,6 +1,6 @@
 #include "clar_libgit2.h"
 
-#include "fileops.h"
+#include "futils.h"
 #include "git2/reflog.h"
 #include "git2/refdb.h"
 #include "reflog.h"
@@ -104,4 +104,15 @@ void test_refs_delete__remove(void)
 	cl_git_pass(git_reference_remove(g_repo, packed_test_head_name));
 
 	cl_git_fail(git_reference_lookup(&ref, g_repo, packed_test_head_name));
+}
+
+void test_refs_delete__head(void)
+{
+	git_reference *ref;
+
+	/* Check that it is not possible to delete HEAD */
+
+	cl_git_pass(git_reference_lookup(&ref, g_repo, "HEAD"));
+	cl_git_fail(git_reference_delete(ref));
+	git_reference_free(ref);
 }

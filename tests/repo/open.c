@@ -1,5 +1,5 @@
 #include "clar_libgit2.h"
-#include "fileops.h"
+#include "futils.h"
 #include "sysdir.h"
 #include <ctype.h>
 
@@ -35,7 +35,53 @@ void test_repo_open__format_version_1(void)
 
 	git_config_free(config);
 	git_repository_free(repo);
+
+	cl_git_pass(git_repository_open(&repo, "empty_bare.git"));
+	cl_assert(git_repository_path(repo) != NULL);
+	cl_assert(git__suffixcmp(git_repository_path(repo), "/") == 0);
+	git_repository_free(repo);
+}
+
+void test_repo_open__format_version_1_with_valid_extension(void)
+{
+	git_repository *repo;
+	git_config *config;
+
+	repo = cl_git_sandbox_init("empty_bare.git");
+
+	cl_git_pass(git_repository_open(&repo, "empty_bare.git"));
+	cl_git_pass(git_repository_config(&config, repo));
+
+	cl_git_pass(git_config_set_int32(config, "core.repositoryformatversion", 1));
+	cl_git_pass(git_config_set_int32(config, "extensions.noop", 1));
+
+	git_config_free(config);
+	git_repository_free(repo);
+
+	cl_git_pass(git_repository_open(&repo, "empty_bare.git"));
+	cl_assert(git_repository_path(repo) != NULL);
+	cl_assert(git__suffixcmp(git_repository_path(repo), "/") == 0);
+	git_repository_free(repo);
+}
+
+void test_repo_open__format_version_1_with_invalid_extension(void)
+{
+	git_repository *repo;
+	git_config *config;
+
+	repo = cl_git_sandbox_init("empty_bare.git");
+
+	cl_git_pass(git_repository_open(&repo, "empty_bare.git"));
+	cl_git_pass(git_repository_config(&config, repo));
+
+	cl_git_pass(git_config_set_int32(config, "core.repositoryformatversion", 1));
+	cl_git_pass(git_config_set_int32(config, "extensions.invalid", 1));
+
+	git_config_free(config);
+	git_repository_free(repo);
+
 	cl_git_fail(git_repository_open(&repo, "empty_bare.git"));
+	git_repository_free(repo);
 }
 
 void test_repo_open__standard_empty_repo_through_gitdir(void)
@@ -86,6 +132,17 @@ void test_repo_open__open_with_discover(void)
 	}
 
 	cl_fixture_cleanup("attr");
+}
+
+void test_repo_open__check_if_repository(void)
+{
+	cl_git_sandbox_init("empty_standard_repo");
+
+	/* Pass NULL for the output parameter to check for but not open the repo */
+	cl_git_pass(git_repository_open_ext(NULL, "empty_standard_repo", 0, NULL));
+	cl_git_fail(git_repository_open_ext(NULL, "repo_does_not_exist", 0, NULL));
+
+	cl_fixture_cleanup("empty_standard_repo");
 }
 
 static void make_gitlink_dir(const char *dir, const char *linktext)
@@ -266,7 +323,9 @@ void test_repo_open__bad_gitlinks(void)
 
 	for (scan = bad_links; *scan != NULL; scan++) {
 		make_gitlink_dir("alternate", *scan);
+		repo = NULL;
 		cl_git_fail(git_repository_open_ext(&repo, "alternate", 0, NULL));
+		cl_assert(repo == NULL);
 	}
 
 	git_futils_rmdir_r("invalid", NULL, GIT_RMDIR_REMOVE_FILES);

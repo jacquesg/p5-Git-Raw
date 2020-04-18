@@ -73,7 +73,7 @@ static int git_smart__set_callbacks(
 	return 0;
 }
 
-static int http_header_name_length(const char *http_header)
+static size_t http_header_name_length(const char *http_header)
 {
 	const char *colon = strchr(http_header, ':');
 	if (!colon)
@@ -84,7 +84,7 @@ static int http_header_name_length(const char *http_header)
 static bool is_malformed_http_header(const char *http_header)
 {
 	const char *c;
-	int name_len;
+	size_t name_len;
 
 	/* Disallow \r and \n */
 	c = strchr(http_header, '\r');
@@ -114,7 +114,7 @@ static char *forbidden_custom_headers[] = {
 static bool is_forbidden_custom_header(const char *custom_header)
 {
 	unsigned long i;
-	int name_len = http_header_name_length(custom_header);
+	size_t name_len = http_header_name_length(custom_header);
 
 	/* Disallow headers that we set */
 	for (i = 0; i < ARRAY_SIZE(forbidden_custom_headers); i++)
@@ -206,7 +206,7 @@ static void free_symrefs(git_vector *symrefs)
 static int git_smart__connect(
 	git_transport *transport,
 	const char *url,
-	git_cred_acquire_cb cred_acquire_cb,
+	git_credential_acquire_cb cred_acquire_cb,
 	void *cred_acquire_payload,
 	const git_proxy_options *proxy,
 	int direction,
@@ -286,7 +286,7 @@ static int git_smart__connect(
 	if ((error = git_smart__detect_caps(first, &t->caps, &symrefs)) == 0) {
 		/* If the only ref in the list is capabilities^{} with OID_ZERO, remove it */
 		if (1 == t->refs.length && !strcmp(first->head.name, "capabilities^{}") &&
-			git_oid_iszero(&first->head.oid)) {
+			git_oid_is_zero(&first->head.oid)) {
 			git_vector_clear(&t->refs);
 			git_pkt_free((git_pkt *)first);
 		}
@@ -489,7 +489,7 @@ int git_transport_smart_certificate_check(git_transport *transport, git_cert *ce
 	return t->certificate_check_cb(cert, valid, hostname, t->message_cb_payload);
 }
 
-int git_transport_smart_credentials(git_cred **out, git_transport *transport, const char *user, int methods)
+int git_transport_smart_credentials(git_credential **out, git_transport *transport, const char *user, int methods)
 {
 	transport_smart *t = GIT_CONTAINER_OF(transport, transport_smart, parent);
 

@@ -36,6 +36,8 @@
  * [pg]: https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain
  */
 
+#include "common.h"
+
 /**
  * ### Includes
  *
@@ -43,9 +45,7 @@
  * that you need.  It should be the only thing you need to include in order
  * to compile properly and get all the libgit2 API.
  */
-#include <git2.h>
-#include <stdio.h>
-#include <string.h>
+#include "git2.h"
 
 static void oid_parsing(git_oid *out);
 static void object_database(git_repository *repo, git_oid *oid);
@@ -624,7 +624,7 @@ static void revwalking(git_repository *repo)
 static void index_walking(git_repository *repo)
 {
 	git_index *index;
-	unsigned int i, ecount;
+	size_t i, ecount;
 
 	printf("\n*Index Walking*\n");
 

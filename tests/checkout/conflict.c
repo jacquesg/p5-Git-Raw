@@ -1,7 +1,7 @@
 #include "clar_libgit2.h"
 #include "git2/repository.h"
 #include "git2/sys/index.h"
-#include "fileops.h"
+#include "futils.h"
 #include "repository.h"
 
 static git_repository *g_repo;
@@ -192,7 +192,7 @@ static void ensure_workdir_link(
 {
 	int symlinks;
 
-	cl_git_pass(git_repository__cvar(&symlinks, repo, GIT_CVAR_SYMLINKS));
+	cl_git_pass(git_repository__configmap_lookup(&symlinks, repo, GIT_CONFIGMAP_SYMLINKS));
 
 	if (!symlinks) {
 		ensure_workdir_contents(path, target);

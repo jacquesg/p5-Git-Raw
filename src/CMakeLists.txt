@@ -3,6 +3,8 @@ IF(DEBUG_POOL)
 ENDIF()
 ADD_FEATURE_INFO(debugpool GIT_DEBUG_POOL "debug pool allocator")
 
+INCLUDE(PkgBuildConfig)
+
 # This variable will contain the libraries we need to put into
 # libgit2.pc's Requires.private. That is, what we're linking to or
 # what someone who's statically linking us needs to link to.
@@ -19,51 +21,11 @@ SET(LIBGIT2_INCLUDES
 SET(LIBGIT2_SYSTEM_INCLUDES "")
 SET(LIBGIT2_LIBS "")
 
-# Installation paths
-#
-SET(BIN_INSTALL_DIR bin CACHE PATH "Where to install binaries to.")
-SET(LIB_INSTALL_DIR lib CACHE PATH "Where to install libraries to.")
-SET(INCLUDE_INSTALL_DIR include CACHE PATH "Where to install headers to.")
-
-# Set a couple variables to be substituted inside the .pc file.
-# We can't just use LIB_INSTALL_DIR in the .pc file, as passing them as absolue
-# or relative paths is both valid and supported by cmake.
-SET (PKGCONFIG_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-IF(IS_ABSOLUTE ${LIB_INSTALL_DIR})
-  SET (PKGCONFIG_LIBDIR ${LIB_INSTALL_DIR})
-ELSE(IS_ABSOLUTE ${LIB_INSTALL_DIR})
-  SET (PKGCONFIG_LIBDIR "\${prefix}/${LIB_INSTALL_DIR}")
-ENDIF (IS_ABSOLUTE ${LIB_INSTALL_DIR})
-
-IF(IS_ABSOLUTE ${INCLUDE_INSTALL_DIR})
-  SET (PKGCONFIG_INCLUDEDIR ${INCLUDE_INSTALL_DIR})
-ELSE(IS_ABSOLUTE ${INCLUDE_INSTALL_DIR})
-  SET (PKGCONFIG_INCLUDEDIR "\${prefix}/${INCLUDE_INSTALL_DIR}")
-ENDIF(IS_ABSOLUTE ${INCLUDE_INSTALL_DIR})
-
 # Enable tracing
-IF (ENABLE_TRACE STREQUAL "ON")
+IF(ENABLE_TRACE)
 	SET(GIT_TRACE 1)
 ENDIF()
 ADD_FEATURE_INFO(tracing GIT_TRACE "tracing support")
-
-# Use `regcomp_l` if available
-CHECK_SYMBOL_EXISTS(regcomp_l "regex.h;xlocale.h" HAVE_REGCOMP_L)
-IF (HAVE_REGCOMP_L)
-	SET(GIT_USE_REGCOMP_L 1)
-ENDIF ()
-
-# Otherwise, we either want to use system's `regcomp` or our
-# bundled regcomp code, if system doesn't provide `regcomp`.
-IF(NOT HAVE_REGCOMP_L)
-	CHECK_FUNCTION_EXISTS(regcomp HAVE_REGCOMP)
-	IF(NOT HAVE_REGCOMP)
-		ADD_SUBDIRECTORY("${libgit2_SOURCE_DIR}/deps/regex" "${libgit2_BINARY_DIR}/deps/regex")
-		LIST(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/regex")
-		LIST(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:regex>)
-	ENDIF()
-ENDIF()
 
 CHECK_FUNCTION_EXISTS(futimens HAVE_FUTIMENS)
 IF (HAVE_FUTIMENS)
@@ -139,180 +101,73 @@ IF (WIN32 AND WINHTTP)
 	LIST(APPEND LIBGIT2_PC_LIBS "-lrpcrt4" "-lcrypt32" "-lole32")
 ENDIF()
 
-IF (USE_HTTPS)
-	# We try to find any packages our backends might use
-	FIND_PACKAGE(OpenSSL)
-	FIND_PACKAGE(mbedTLS)
-	IF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-		FIND_PACKAGE(Security)
-		FIND_PACKAGE(CoreFoundation)
-	ENDIF()
+Include(SelectHTTPSBackend)
+Include(SelectHashes)
 
-	# Auto-select TLS backend
-	IF (USE_HTTPS STREQUAL ON)
-		IF (SECURITY_FOUND)
-			IF (SECURITY_HAS_SSLCREATECONTEXT)
-				SET(HTTPS_BACKEND "SecureTransport")
-			ELSE()
-				MESSAGE("-- Security framework is too old, falling back to OpenSSL")
-				SET(HTTPS_BACKEND "OpenSSL")
-			ENDIF()
-		ELSEIF (WINHTTP)
-			SET(HTTPS_BACKEND "WinHTTP")
-		ELSEIF(OPENSSL_FOUND)
-			SET(HTTPS_BACKEND "OpenSSL")
-		ELSEIF(MBEDTLS_FOUND)
-			SET(HTTPS_BACKEND "mbedTLS")
-		ELSE()
-			MESSAGE(FATAL_ERROR "Unable to autodetect a usable HTTPS backend."
-				"Please pass the backend name explicitly (-DUSE_HTTPS=backend)")
-		ENDIF()
+# Specify regular expression implementation
+FIND_PACKAGE(PCRE)
+
+IF(REGEX_BACKEND STREQUAL "")
+	CHECK_SYMBOL_EXISTS(regcomp_l "regex.h;xlocale.h" HAVE_REGCOMP_L)
+
+	IF(HAVE_REGCOMP_L)
+		SET(REGEX_BACKEND "regcomp_l")
+	ELSEIF(PCRE_FOUND)
+		SET(REGEX_BACKEND "pcre")
 	ELSE()
-		# Backend was explicitly set
-		SET(HTTPS_BACKEND ${USE_HTTPS})
+		SET(REGEX_BACKEND "builtin")
 	ENDIF()
-
-	# Check that we can find what's required for the selected backend
-	IF (HTTPS_BACKEND STREQUAL "SecureTransport")
-		IF (NOT COREFOUNDATION_FOUND)
-			MESSAGE(FATAL_ERROR "Cannot use SecureTransport backend, CoreFoundation.framework not found")
-		ENDIF()
-		IF (NOT SECURITY_FOUND)
-			MESSAGE(FATAL_ERROR "Cannot use SecureTransport backend, Security.framework not found")
-		ENDIF()
-		IF (NOT SECURITY_HAS_SSLCREATECONTEXT)
-			MESSAGE(FATAL_ERROR "Cannot use SecureTransport backend, SSLCreateContext not supported")
-		ENDIF()
-
-		SET(GIT_SECURE_TRANSPORT 1)
-		LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${SECURITY_INCLUDE_DIR})
-		LIST(APPEND LIBGIT2_LIBS ${COREFOUNDATION_LIBRARIES} ${SECURITY_LIBRARIES})
-		LIST(APPEND LIBGIT2_PC_LIBS ${COREFOUNDATION_LDFLAGS} ${SECURITY_LDFLAGS})
-	ELSEIF (HTTPS_BACKEND STREQUAL "OpenSSL")
-		IF (NOT OPENSSL_FOUND)
-			MESSAGE(FATAL_ERROR "Asked for OpenSSL TLS backend, but it wasn't found")
-		ENDIF()
-
-		SET(GIT_OPENSSL 1)
-		LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${OPENSSL_INCLUDE_DIR})
-		LIST(APPEND LIBGIT2_LIBS ${OPENSSL_LIBRARIES})
-		LIST(APPEND LIBGIT2_PC_LIBS ${OPENSSL_LDFLAGS})
-		LIST(APPEND LIBGIT2_PC_REQUIRES "openssl")
-	ELSEIF(HTTPS_BACKEND STREQUAL "mbedTLS")
-		IF (NOT MBEDTLS_FOUND)
-			MESSAGE(FATAL_ERROR "Asked for mbedTLS backend, but it wasn't found")
-		ENDIF()
-
-		IF(NOT CERT_LOCATION)
-			MESSAGE("Auto-detecting default certificates location")
-			IF(CMAKE_SYSTEM_NAME MATCHES Darwin)
-				# Check for an Homebrew installation
-				SET(OPENSSL_CMD "/usr/local/opt/openssl/bin/openssl")
-			ELSE()
-				SET(OPENSSL_CMD "openssl")
-			ENDIF()
-			EXECUTE_PROCESS(COMMAND ${OPENSSL_CMD} version -d OUTPUT_VARIABLE OPENSSL_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-			IF(OPENSSL_DIR)
-				STRING(REGEX REPLACE "^OPENSSLDIR: \"(.*)\"$" "\\1/" OPENSSL_DIR ${OPENSSL_DIR})
-
-				SET(OPENSSL_CA_LOCATIONS
-					"ca-bundle.pem"             # OpenSUSE Leap 42.1
-					"cert.pem"                  # Ubuntu 14.04, FreeBSD
-					"certs/ca-certificates.crt" # Ubuntu 16.04
-					"certs/ca.pem"              # Debian 7
-				)
-				FOREACH(SUFFIX IN LISTS OPENSSL_CA_LOCATIONS)
-					SET(LOC "${OPENSSL_DIR}${SUFFIX}")
-					IF(NOT CERT_LOCATION AND EXISTS "${OPENSSL_DIR}${SUFFIX}")
-						SET(CERT_LOCATION ${LOC})
-					ENDIF()
-				ENDFOREACH()
-			ELSE()
-				MESSAGE("Unable to find OpenSSL executable. Please provide default certificate location via CERT_LOCATION")
-			ENDIF()
-		ENDIF()
-
-		IF(CERT_LOCATION)
-			IF(NOT EXISTS ${CERT_LOCATION})
-				MESSAGE(FATAL_ERROR "Cannot use CERT_LOCATION=${CERT_LOCATION} as it doesn't exist")
-			ENDIF()
-			ADD_FEATURE_INFO(CERT_LOCATION ON "using certificates from ${CERT_LOCATION}")
-			ADD_DEFINITIONS(-DGIT_DEFAULT_CERT_LOCATION="${CERT_LOCATION}")
-		ENDIF()
-
-		SET(GIT_MBEDTLS 1)
-		LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${MBEDTLS_INCLUDE_DIR})
-		LIST(APPEND LIBGIT2_LIBS ${MBEDTLS_LIBRARIES})
-		# mbedTLS has no pkgconfig file, hence we can't require it
-		# https://github.com/ARMmbed/mbedtls/issues/228
-		# For now, pass its link flags as our own
-		LIST(APPEND LIBGIT2_PC_LIBS ${MBEDTLS_LIBRARIES})
-	ELSEIF (HTTPS_BACKEND STREQUAL "WinHTTP")
-		# WinHTTP setup was handled in the WinHTTP-specific block above
-	ELSE()
-		MESSAGE(FATAL_ERROR "Asked for backend ${HTTPS_BACKEND} but it wasn't found")
-	ENDIF()
-
-	ADD_FEATURE_INFO(HTTPS ON "using ${HTTPS_BACKEND}")
-	SET(GIT_HTTPS 1)
-ELSE()
-	ADD_FEATURE_INFO(HTTPS OFF "no support")
 ENDIF()
 
-# Specify sha1 implementation
-IF(SHA1_BACKEND STREQUAL "OpenSSL")
-	IF(NOT OPENSSL_FOUND)
-		FIND_PACKAGE(OpenSSL)
-		IF(NOT OPENSSL_FOUND)
-		    MESSAGE(FATAL_ERROR "Requested OpenSSL SHA1 backend, but OpenSSL could not be found")
-		ENDIF()
+IF(REGEX_BACKEND STREQUAL "regcomp_l")
+	ADD_FEATURE_INFO(regex ON "using system regcomp_l")
+	SET(GIT_REGEX_REGCOMP_L 1)
+ELSEIF(REGEX_BACKEND STREQUAL "pcre2")
+	FIND_PACKAGE(PCRE2)
+
+	IF(NOT PCRE2_FOUND)
+		MESSAGE(FATAL_ERROR "PCRE2 support was requested but not found")
 	ENDIF()
 
-	ADD_FEATURE_INFO(SHA ON "using OpenSSL")
-	SET(GIT_SHA1_OPENSSL 1)
-	IF(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-		LIST(APPEND LIBGIT2_PC_LIBS "-lssl")
-	ELSE()
-		LIST(APPEND LIBGIT2_PC_REQUIRES "openssl")
-	ENDIF()
-ELSEIF(SHA1_BACKEND STREQUAL "CollisionDetection")
-	ADD_FEATURE_INFO(SHA ON "using CollisionDetection")
-	SET(GIT_SHA1_COLLISIONDETECT 1)
-	ADD_DEFINITIONS(-DSHA1DC_NO_STANDARD_INCLUDES=1)
-	ADD_DEFINITIONS(-DSHA1DC_CUSTOM_INCLUDE_SHA1_C=\"common.h\")
-	ADD_DEFINITIONS(-DSHA1DC_CUSTOM_INCLUDE_UBC_CHECK_C=\"common.h\")
-	FILE(GLOB SRC_SHA1 hash/hash_collisiondetect.c hash/sha1dc/*)
-ELSEIF(SHA1_BACKEND STREQUAL "Generic")
-	ADD_FEATURE_INFO(SHA ON "using Generic")
-	FILE(GLOB SRC_SHA1 hash/hash_generic.c)
-ELSEIF(SHA1_BACKEND STREQUAL "Win32")
-	ADD_FEATURE_INFO(SHA ON "using Win32")
-	SET(GIT_SHA1_WIN32 1)
-	FILE(GLOB SRC_SHA1 hash/hash_win32.c)
-ELSEIF(SHA1_BACKEND STREQUAL "CommonCrypto")
-	ADD_FEATURE_INFO(SHA ON "using CommonCrypto")
-	SET(GIT_SHA1_COMMON_CRYPTO 1)
-ELSEIF (SHA1_BACKEND STREQUAL "mbedTLS")
-	ADD_FEATURE_INFO(SHA ON "using mbedTLS")
-	SET(GIT_SHA1_MBEDTLS 1)
-	FILE(GLOB SRC_SHA1 hash/hash_mbedtls.c)
-	LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${MBEDTLS_INCLUDE_DIR})
-	LIST(APPEND LIBGIT2_LIBS ${MBEDTLS_LIBRARIES})
-	# mbedTLS has no pkgconfig file, hence we can't require it
-	# https://github.com/ARMmbed/mbedtls/issues/228
-	# For now, pass its link flags as our own
-	LIST(APPEND LIBGIT2_PC_LIBS ${MBEDTLS_LIBRARIES})
+	ADD_FEATURE_INFO(regex ON "using system PCRE2")
+	SET(GIT_REGEX_PCRE2 1)
+
+	LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${PCRE2_INCLUDE_DIRS})
+	LIST(APPEND LIBGIT2_LIBS ${PCRE2_LIBRARIES})
+	LIST(APPEND LIBGIT2_PC_REQUIRES "libpcre2-8")
+ELSEIF(REGEX_BACKEND STREQUAL "pcre")
+	ADD_FEATURE_INFO(regex ON "using system PCRE")
+	SET(GIT_REGEX_PCRE 1)
+
+	LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${PCRE_INCLUDE_DIRS})
+	LIST(APPEND LIBGIT2_LIBS ${PCRE_LIBRARIES})
+	LIST(APPEND LIBGIT2_PC_REQUIRES "libpcre")
+ELSEIF(REGEX_BACKEND STREQUAL "regcomp")
+	ADD_FEATURE_INFO(regex ON "using system regcomp")
+	SET(GIT_REGEX_REGCOMP 1)
+ELSEIF(REGEX_BACKEND STREQUAL "builtin")
+	ADD_FEATURE_INFO(regex ON "using bundled PCRE")
+	SET(GIT_REGEX_BUILTIN 1)
+
+	ADD_SUBDIRECTORY("${libgit2_SOURCE_DIR}/deps/pcre" "${libgit2_BINARY_DIR}/deps/pcre")
+	LIST(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/pcre")
+	LIST(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:pcre>)
 ELSE()
-	MESSAGE(FATAL_ERROR "Asked for unknown SHA1 backend ${SHA1_BACKEND}")
+	MESSAGE(FATAL_ERROR "The REGEX_BACKEND option provided is not supported")
 ENDIF()
 
 # Optional external dependency: http-parser
-FIND_PACKAGE(HTTP_Parser)
-IF (USE_EXT_HTTP_PARSER AND HTTP_PARSER_FOUND AND HTTP_PARSER_VERSION_MAJOR EQUAL 2)
-	LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${HTTP_PARSER_INCLUDE_DIRS})
-	LIST(APPEND LIBGIT2_LIBS ${HTTP_PARSER_LIBRARIES})
-	LIST(APPEND LIBGIT2_PC_LIBS "-lhttp_parser")
-	ADD_FEATURE_INFO(http-parser ON "http-parser support")
+IF(USE_HTTP_PARSER STREQUAL "system")
+	FIND_PACKAGE(HTTP_Parser)
+
+	IF (HTTP_PARSER_FOUND AND HTTP_PARSER_VERSION_MAJOR EQUAL 2)
+		LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${HTTP_PARSER_INCLUDE_DIRS})
+		LIST(APPEND LIBGIT2_LIBS ${HTTP_PARSER_LIBRARIES})
+		LIST(APPEND LIBGIT2_PC_LIBS "-lhttp_parser")
+		ADD_FEATURE_INFO(http-parser ON "http-parser support (system)")
+	ELSE()
+		MESSAGE(FATAL_ERROR "http-parser support was requested but not found")
+	ENDIF()
 ELSE()
 	MESSAGE(STATUS "http-parser version 2 was not found or disabled; using bundled 3rd-party sources.")
 	ADD_SUBDIRECTORY("${libgit2_SOURCE_DIR}/deps/http-parser" "${libgit2_BINARY_DIR}/deps/http-parser")
@@ -328,7 +183,6 @@ IF(NOT USE_BUNDLED_ZLIB)
 		LIST(APPEND LIBGIT2_SYSTEM_INCLUDES ${ZLIB_INCLUDE_DIRS})
 		LIST(APPEND LIBGIT2_LIBS ${ZLIB_LIBRARIES})
 		IF(APPLE OR CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-			LIST(APPEND LIBGIT2_LIBS "z")
 			LIST(APPEND LIBGIT2_PC_LIBS "-lz")
 		ELSE()
 			LIST(APPEND LIBGIT2_PC_REQUIRES "zlib")
@@ -364,15 +218,18 @@ ELSE()
 ENDIF()
 ADD_FEATURE_INFO(SSH GIT_SSH "SSH transport support")
 
-# Optional external dependency: libgssapi
-IF (USE_GSSAPI)
-	FIND_PACKAGE(GSSAPI)
+# Optional external dependency: ntlmclient
+IF (USE_NTLMCLIENT)
+	SET(GIT_NTLM 1)
+	ADD_SUBDIRECTORY("${libgit2_SOURCE_DIR}/deps/ntlmclient" "${libgit2_BINARY_DIR}/deps/ntlmclient")
+	LIST(APPEND LIBGIT2_INCLUDES "${libgit2_SOURCE_DIR}/deps/ntlmclient")
+	LIST(APPEND LIBGIT2_OBJECTS "$<TARGET_OBJECTS:ntlmclient>")
 ENDIF()
-IF (GSSAPI_FOUND)
-	SET(GIT_GSSAPI 1)
-	LIST(APPEND LIBGIT2_LIBS ${GSSAPI_LIBRARIES})
-ENDIF()
-ADD_FEATURE_INFO(SPNEGO GIT_GSSAPI "SPNEGO authentication support")
+ADD_FEATURE_INFO(ntlmclient GIT_NTLM "NTLM authentication support for Unix")
+
+# Optional external dependency: GSSAPI
+
+INCLUDE(SelectGSSAPI)
 
 # Optional external dependency: iconv
 IF (USE_ICONV)
@@ -417,8 +274,6 @@ FILE(GLOB SRC_H
 
 # On Windows use specific platform sources
 IF (WIN32 AND NOT CYGWIN)
-	ADD_DEFINITIONS(-DWIN32 -D_WIN32_WINNT=0x0600)
-
 	IF(MSVC)
 		SET(WIN_RC "win32/git2.rc")
 	ENDIF()
@@ -427,16 +282,29 @@ IF (WIN32 AND NOT CYGWIN)
 ELSEIF (AMIGA)
 	ADD_DEFINITIONS(-DNO_ADDRINFO -DNO_READDIR_R -DNO_MMAP)
 ELSE()
-	IF (VALGRIND)
-		ADD_DEFINITIONS(-DNO_MMAP)
-	ENDIF()
 	FILE(GLOB SRC_OS unix/*.c unix/*.h)
 ENDIF()
+
+IF (USE_LEAK_CHECKER STREQUAL "valgrind")
+	ADD_DEFINITIONS(-DVALGRIND)
+ENDIF()
+
 FILE(GLOB SRC_GIT2 *.c *.h
 	allocators/*.c allocators/*.h
 	streams/*.c streams/*.h
 	transports/*.c transports/*.h
 	xdiff/*.c xdiff/*.h)
+IF(APPLE)
+	# The old Secure Transport API has been deprecated in macOS 10.15.
+	SET_SOURCE_FILES_PROPERTIES(streams/stransport.c PROPERTIES COMPILE_FLAGS -Wno-deprecated)
+ENDIF()
+
+# the xdiff dependency is not (yet) warning-free, disable warnings as
+# errors for the xdiff sources until we've sorted them out
+IF(MSVC)
+	SET_SOURCE_FILES_PROPERTIES(xdiff/xdiffi.c PROPERTIES COMPILE_FLAGS -WX-)
+	SET_SOURCE_FILES_PROPERTIES(xdiff/xutils.c PROPERTIES COMPILE_FLAGS -WX-)
+ENDIF()
 
 # Determine architecture of the machine
 IF (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -458,16 +326,8 @@ SET_TARGET_PROPERTIES(git2internal PROPERTIES C_STANDARD 90)
 IDE_SPLIT_SOURCES(git2internal)
 LIST(APPEND LIBGIT2_OBJECTS $<TARGET_OBJECTS:git2internal>)
 
-IF (${CMAKE_VERSION} VERSION_LESS 2.8.12)
-	INCLUDE_DIRECTORIES(${LIBGIT2_INCLUDES})
-	INCLUDE_DIRECTORIES(SYSTEM ${LIBGIT2_SYSTEM_INCLUDES})
-ELSE()
-	TARGET_INCLUDE_DIRECTORIES(git2internal
-	    PRIVATE ${LIBGIT2_INCLUDES}
-	    PUBLIC ${libgit2_SOURCE_DIR}/include)
-	TARGET_INCLUDE_DIRECTORIES(git2internal
-	    SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
-ENDIF()
+TARGET_INCLUDE_DIRECTORIES(git2internal PRIVATE ${LIBGIT2_INCLUDES} PUBLIC ${libgit2_SOURCE_DIR}/include)
+TARGET_INCLUDE_DIRECTORIES(git2internal SYSTEM PRIVATE ${LIBGIT2_SYSTEM_INCLUDES})
 
 SET(LIBGIT2_OBJECTS ${LIBGIT2_OBJECTS} PARENT_SCOPE)
 SET(LIBGIT2_INCLUDES ${LIBGIT2_INCLUDES} PARENT_SCOPE)
@@ -509,10 +369,13 @@ IF (SONAME)
 	ENDIF()
 ENDIF()
 
-LIST(REMOVE_DUPLICATES LIBGIT2_PC_REQUIRES)
-STRING(REPLACE ";" " " LIBGIT2_PC_REQUIRES "${LIBGIT2_PC_REQUIRES}")
-STRING(REPLACE ";" " " LIBGIT2_PC_LIBS "${LIBGIT2_PC_LIBS}")
-CONFIGURE_FILE(${libgit2_SOURCE_DIR}/libgit2.pc.in ${libgit2_BINARY_DIR}/libgit2.pc @ONLY)
+PKG_BUILD_CONFIG(NAME libgit2
+	VERSION ${LIBGIT2_VERSION_STRING}
+	DESCRIPTION "The git library, take 2"
+	LIBS_SELF git2
+	PRIVATE_LIBS ${LIBGIT2_PC_LIBS}
+	REQUIRES ${LIBGIT2_PC_REQUIRES}
+)
 
 IF (MSVC_IDE)
    # Precompiled headers
@@ -522,10 +385,9 @@ ENDIF ()
 
 # Install
 INSTALL(TARGETS git2
-	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-INSTALL(FILES ${libgit2_BINARY_DIR}/libgit2.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig )
-INSTALL(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${INCLUDE_INSTALL_DIR} )
-INSTALL(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${INCLUDE_INSTALL_DIR} )
+INSTALL(DIRECTORY ${libgit2_SOURCE_DIR}/include/git2 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+INSTALL(FILES ${libgit2_SOURCE_DIR}/include/git2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

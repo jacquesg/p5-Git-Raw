@@ -15,7 +15,7 @@
 #include "diff_xdiff.h"
 #include "delta.h"
 #include "zstream.h"
-#include "fileops.h"
+#include "futils.h"
 
 static void diff_output_init(
 	git_patch_generated_output *, const git_diff_options *, git_diff_file_cb,
@@ -836,7 +836,7 @@ static int patch_generated_line_cb(
 {
 	git_patch_generated  *patch = payload;
 	git_patch_hunk *hunk;
-	git_diff_line   *line;
+	git_diff_line *line;
 
 	GIT_UNUSED(delta);
 	GIT_UNUSED(hunk_);

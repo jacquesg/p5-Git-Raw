@@ -33,7 +33,7 @@ void test_checkout_icase__initialize(void)
 	cl_git_pass(git_reference_name_to_id(&id, repo, "refs/heads/dir"));
 	cl_git_pass(git_object_lookup(&obj, repo, &id, GIT_OBJECT_ANY));
 
-	git_checkout_init_options(&checkout_opts, GIT_CHECKOUT_OPTIONS_VERSION);
+	git_checkout_options_init(&checkout_opts, GIT_CHECKOUT_OPTIONS_VERSION);
 	checkout_opts.checkout_strategy = GIT_CHECKOUT_NONE;
 }
 
@@ -96,7 +96,7 @@ static int symlink_or_fake(git_repository *repo, const char *a, const char *b)
 {
 	int symlinks;
 
-	cl_git_pass(git_repository__cvar(&symlinks, repo, GIT_CVAR_SYMLINKS));
+	cl_git_pass(git_repository__configmap_lookup(&symlinks, repo, GIT_CONFIGMAP_SYMLINKS));
 
 	if (symlinks)
 		return p_symlink(a, b);

@@ -115,8 +115,11 @@ void git_cache_dispose(git_cache *cache)
 /* Called with lock */
 static void cache_evict_entries(git_cache *cache)
 {
-	size_t evict_count = 8, i;
+	size_t evict_count = git_cache_size(cache) / 2048, i;
 	ssize_t evicted_memory = 0;
+
+	if (evict_count < 8)
+		evict_count = 8;
 
 	/* do not infinite loop if there's not enough entries to evict  */
 	if (evict_count > git_cache_size(cache)) {
@@ -134,9 +137,8 @@ static void cache_evict_entries(git_cache *cache)
 
 		evict_count--;
 		evicted_memory += evict->size;
-		git_cached_obj_decref(evict);
-
 		git_oidmap_delete(cache->map, key);
+		git_cached_obj_decref(evict);
 	}
 
 	cache->used_memory -= evicted_memory;
@@ -206,10 +208,14 @@ static void *cache_store(git_cache *cache, git_cached_obj *entry)
 			entry = stored_entry;
 		} else if (stored_entry->flags == GIT_CACHE_STORE_RAW &&
 			   entry->flags == GIT_CACHE_STORE_PARSED) {
-			git_cached_obj_decref(stored_entry);
-			git_cached_obj_incref(entry);
-
-			git_oidmap_set(cache->map, &entry->oid, entry);
+			if (git_oidmap_set(cache->map, &entry->oid, entry) == 0) {
+				git_cached_obj_decref(stored_entry);
+				git_cached_obj_incref(entry);
+			} else {
+				git_cached_obj_decref(entry);
+				git_cached_obj_incref(stored_entry);
+				entry = stored_entry;
+			}
 		} else {
 			/* NO OP */
 		}

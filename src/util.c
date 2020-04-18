@@ -192,7 +192,7 @@ int git__strntol32(int32_t *result, const char *nptr, size_t nptr_len, const cha
 
 	tmp_int = tmp_long & 0xFFFFFFFF;
 	if (tmp_int != tmp_long) {
-		int len = tmp_endptr - nptr;
+		int len = (int)(tmp_endptr - nptr);
 		git_error_set(GIT_ERROR_INVALID, "failed to convert: '%.*s' is too large", len, nptr);
 		return -1;
 	}
@@ -719,6 +719,37 @@ static int GIT_STDLIB_CALL git__qsort_r_glue_cmp(
 }
 #endif
 
+
+#if !defined(HAVE_QSORT_R_BSD) && \
+	!defined(HAVE_QSORT_R_GNU) && \
+	!defined(HAVE_QSORT_S)
+static void swap(uint8_t *a, uint8_t *b, size_t elsize)
+{
+	char tmp[256];
+
+	while (elsize) {
+		size_t n = elsize < sizeof(tmp) ? elsize : sizeof(tmp);
+		memcpy(tmp, a + elsize - n, n);
+		memcpy(a + elsize - n, b + elsize - n, n);
+		memcpy(b + elsize - n, tmp, n);
+		elsize -= n;
+	}
+}
+
+static void insertsort(
+	void *els, size_t nel, size_t elsize,
+	git__sort_r_cmp cmp, void *payload)
+{
+	uint8_t *base = els;
+	uint8_t *end = base + nel * elsize;
+	uint8_t *i, *j;
+
+	for (i = base + elsize; i < end; i += elsize)
+		for (j = i; j > base && cmp(j, j - elsize, payload) < 0; j -= elsize)
+			swap(j, j - elsize, elsize);
+}
+#endif
+
 void git__qsort_r(
 	void *els, size_t nel, size_t elsize, git__sort_r_cmp cmp, void *payload)
 {
@@ -731,31 +762,8 @@ void git__qsort_r(
 	git__qsort_r_glue glue = { cmp, payload };
 	qsort_s(els, nel, elsize, git__qsort_r_glue_cmp, &glue);
 #else
-	git__insertsort_r(els, nel, elsize, NULL, cmp, payload);
+	insertsort(els, nel, elsize, cmp, payload);
 #endif
-}
-
-void git__insertsort_r(
-	void *els, size_t nel, size_t elsize, void *swapel,
-	git__sort_r_cmp cmp, void *payload)
-{
-	uint8_t *base = els;
-	uint8_t *end = base + nel * elsize;
-	uint8_t *i, *j;
-	bool freeswap = !swapel;
-
-	if (freeswap)
-		swapel = git__malloc(elsize);
-
-	for (i = base + elsize; i < end; i += elsize)
-		for (j = i; j > base && cmp(j, j - elsize, payload) < 0; j -= elsize) {
-			memcpy(swapel, j, elsize);
-			memcpy(j, j - elsize, elsize);
-			memcpy(j - elsize, swapel, elsize);
-		}
-
-	if (freeswap)
-		git__free(swapel);
 }
 
 /*
@@ -802,23 +810,23 @@ static const int8_t utf8proc_utf8class[256] = {
 	4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-int git__utf8_charlen(const uint8_t *str, int str_len)
+int git__utf8_charlen(const uint8_t *str, size_t str_len)
 {
-	int length, i;
+	size_t length, i;
 
 	length = utf8proc_utf8class[str[0]];
 	if (!length)
 		return -1;
 
-	if (str_len >= 0 && length > str_len)
-		return -str_len;
+	if (str_len > 0 && length > str_len)
+		return -1;
 
 	for (i = 1; i < length; i++) {
 		if ((str[i] & 0xC0) != 0x80)
-			return -i;
+			return -1;
 	}
 
-	return length;
+	return (int)length;
 }
 
 int git__utf8_iterate(const uint8_t *str, int str_len, int32_t *dst)

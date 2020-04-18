@@ -13,11 +13,6 @@
 #include "win32/posix.h"
 #include "hash.h"
 
-/**
- * This is supposedly defined in WinBase.h (from Windows.h) but there were linker issues.
- */
-USHORT WINAPI RtlCaptureStackBackTrace(ULONG, ULONG, PVOID*, PULONG);
-
 static bool   g_win32_stack_initialized = false;
 static HANDLE g_win32_stack_process = INVALID_HANDLE_VALUE;
 static git_win32__stack__aux_cb_alloc  g_aux_cb_alloc  = NULL;
@@ -81,7 +76,7 @@ int git_win32__stack_compare(
 }
 
 int git_win32__stack_format(
-	char *pbuf, int buf_len,
+	char *pbuf, size_t buf_len,
 	const git_win32__stack__raw_data *pdata,
 	const char *prefix, const char *suffix)
 {
@@ -96,10 +91,10 @@ int git_win32__stack_format(
 	} s;
 
 	IMAGEHLP_LINE64 line;
-	int buf_used = 0;
+	size_t buf_used = 0;
 	unsigned int k;
 	char detail[MY_MAX_FILENAME * 2]; /* filename plus space for function name and formatting */
-	int detail_len;
+	size_t detail_len;
 
 	if (!g_win32_stack_initialized) {
 		git_error_set(GIT_ERROR_INVALID, "git_win32_stack not initialized.");
@@ -176,7 +171,7 @@ int git_win32__stack_format(
 }
 
 int git_win32__stack(
-	char * pbuf, int buf_len,
+	char * pbuf, size_t buf_len,
 	int skip,
 	const char *prefix, const char *suffix)
 {

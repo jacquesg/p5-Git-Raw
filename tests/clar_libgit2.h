@@ -3,8 +3,8 @@
 
 #include "clar.h"
 #include <git2.h>
-#include <posix.h>
 #include "common.h"
+#include "posix.h"
 
 /**
  * Replace for `clar_must_pass` that passes the last library error as the
@@ -29,8 +29,8 @@
  * calls that are supposed to fail!
  */
 #define cl_git_fail(expr) do { \
-	git_error_clear(); \
 	if ((expr) == 0) \
+		git_error_clear(), \
 		cl_git_report_failure(0, 0, __FILE__, __LINE__, "Function call succeeded: " #expr); \
 	} while (0)
 
@@ -218,6 +218,12 @@ void cl_fake_home(void);
 void cl_fake_home_cleanup(void *);
 
 void cl_sandbox_set_search_path_defaults(void);
+
+#ifdef GIT_WIN32
+# define cl_msleep(x) Sleep(x)
+#else
+# define cl_msleep(x) usleep(1000 * (x))
+#endif
 
 #ifdef GIT_WIN32
 bool cl_sandbox_supports_8dot3(void);

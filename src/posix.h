@@ -11,7 +11,6 @@
 
 #include <fcntl.h>
 #include <time.h>
-#include "fnmatch.h"
 
 /* stat: file mode type testing macros */
 #ifndef S_IFGITLINK
@@ -90,6 +89,18 @@
 #define EAFNOSUPPORT (INT_MAX-1)
 #endif
 
+/* Provide a 64-bit size for offsets. */
+
+#if defined(_MSC_VER)
+typedef __int64 off64_t;
+#elif defined(__HAIKU__)
+typedef __haiku_std_int64 off64_t;
+#elif defined(__APPLE__)
+typedef __int64_t off64_t;
+#else
+typedef int64_t off64_t;
+#endif
+
 typedef int git_file;
 
 /**
@@ -115,7 +126,6 @@ extern int p_open(const char *path, int flags, ...);
 extern int p_creat(const char *path, mode_t mode);
 extern int p_getcwd(char *buffer_out, size_t size);
 extern int p_rename(const char *from, const char *to);
-extern int p_fallocate(int fd, off_t offset, off_t len);
 
 extern int git__page_size(size_t *page_size);
 extern int git__mmap_alignment(size_t *page_size);

@@ -8,7 +8,7 @@
 #include "common.h"
 
 #include "../posix.h"
-#include "../fileops.h"
+#include "../futils.h"
 #include "path.h"
 #include "path_w32.h"
 #include "utf-conv.h"
@@ -210,7 +210,7 @@ on_error:
  * We now take a "git_off_t" rather than "long" because
  * files may be longer than 2Gb.
  */
-int p_ftruncate(int fd, git_off_t size)
+int p_ftruncate(int fd, off64_t size)
 {
 	if (size < 0) {
 		errno = EINVAL;
@@ -251,8 +251,24 @@ int p_link(const char *old, const char *new)
 
 GIT_INLINE(int) unlink_once(const wchar_t *path)
 {
+	DWORD error;
+
 	if (DeleteFileW(path))
 		return 0;
+
+	if ((error = GetLastError()) == ERROR_ACCESS_DENIED) {
+		WIN32_FILE_ATTRIBUTE_DATA fdata;
+		if (!GetFileAttributesExW(path, GetFileExInfoStandard, &fdata) ||
+		    !(fdata.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) ||
+		    !(fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			goto out;
+
+		if (RemoveDirectoryW(path))
+			return 0;
+	}
+
+out:
+	SetLastError(error);
 
 	if (last_error_retryable())
 		return GIT_RETRY;
@@ -398,18 +414,44 @@ int p_readlink(const char *path, char *buf, size_t bufsiz)
 	return (int)bufsiz;
 }
 
+static bool target_is_dir(const char *target, const char *path)
+{
+	git_buf resolved = GIT_BUF_INIT;
+	git_win32_path resolved_w;
+	bool isdir = true;
+
+	if (git_path_is_absolute(target))
+		git_win32_path_from_utf8(resolved_w, target);
+	else if (git_path_dirname_r(&resolved, path) < 0 ||
+		 git_path_apply_relative(&resolved, target) < 0 ||
+		 git_win32_path_from_utf8(resolved_w, resolved.ptr) < 0)
+		goto out;
+
+	isdir = GetFileAttributesW(resolved_w) & FILE_ATTRIBUTE_DIRECTORY;
+
+out:
+	git_buf_dispose(&resolved);
+	return isdir;
+}
+
 int p_symlink(const char *target, const char *path)
 {
 	git_win32_path target_w, path_w;
 	DWORD dwFlags;
 
+	/*
+	 * Convert both target and path to Windows-style paths. Note that we do
+	 * not want to use `git_win32_path_from_utf8` for converting the target,
+	 * as that function will automatically pre-pend the current working
+	 * directory in case the path is not absolute. As Git will instead use
+	 * relative symlinks, this is not someting we want.
+	 */
 	if (git_win32_path_from_utf8(path_w, path) < 0 ||
-		git__utf8_to_16(target_w, MAX_PATH, target) < 0)
+	    git_win32_path_relative_from_utf8(target_w, target) < 0)
 		return -1;
 
 	dwFlags = SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE;
-
-	if (GetFileAttributesW(target_w) & FILE_ATTRIBUTE_DIRECTORY)
+	if (target_is_dir(target, path))
 		dwFlags |= SYMBOLIC_LINK_FLAG_DIRECTORY;
 
 	if (!CreateSymbolicLinkW(path_w, target_w, dwFlags))
@@ -523,58 +565,6 @@ int p_open(const char *path, int flags, ...)
 int p_creat(const char *path, mode_t mode)
 {
 	return p_open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);
-}
-
-int p_fallocate(int fd, off_t offset, off_t len)
-{
-	HANDLE fh = (HANDLE)_get_osfhandle(fd);
-	LARGE_INTEGER zero, position, oldsize, newsize;
-	size_t size;
-
-	if (fh == INVALID_HANDLE_VALUE) {
-		errno = EBADF;
-		return -1;
-	}
-
-	if (offset < 0 || len <= 0) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	if (git__add_sizet_overflow(&size, offset, len)) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	zero.u.LowPart = 0;
-	zero.u.HighPart = 0;
-
-	newsize.u.LowPart = (size & 0xffffffff);
-
-#if (SIZE_MAX > UINT32_MAX)
-	newsize.u.HighPart = size >> 32;
-#else
-	newsize.u.HighPart = 0;
-#endif
-
-	if (!GetFileSizeEx(fh, &oldsize)) {
-		set_errno();
-		return -1;
-	}
-
-	/* POSIX emulation: attempting to shrink the file is ignored */
-	if (oldsize.QuadPart >= newsize.QuadPart)
-		return 0;
-
-	if (!SetFilePointerEx(fh, zero, &position, FILE_CURRENT) ||
-	    !SetFilePointerEx(fh, newsize, NULL, FILE_BEGIN) ||
-	    !SetEndOfFile(fh) ||
-	    !SetFilePointerEx(fh, position, 0, FILE_BEGIN)) {
-		set_errno();
-		return -1;
-	}
-
-	return 0;
 }
 
 int p_utimes(const char *path, const struct p_timeval times[2])

@@ -1,7 +1,7 @@
 #include "clar_libgit2.h"
 
 #include "filebuf.h"
-#include "fileops.h"
+#include "futils.h"
 #include "posix.h"
 
 #define TEST_CONFIG "git-test-config"
@@ -123,10 +123,79 @@ void test_config_stress__quick_write(void)
 	for (i = 0; i < 10; i++) {
 		int32_t val;
 		cl_git_pass(git_config_set_int32(config_w, key, i));
+		cl_msleep(1);
 		cl_git_pass(git_config_get_int32(&val, config_r, key));
 		cl_assert_equal_i(i, val);
 	}
 
 	git_config_free(config_r);
 	git_config_free(config_w);
+}
+
+static int foreach_cb(const git_config_entry *entry, void *payload)
+{
+	if (!strcmp(entry->name, "key.value")) {
+		*(char **)payload = git__strdup(entry->value);
+		return 0;
+	}
+	return -1;
+}
+
+void test_config_stress__foreach_refreshes(void)
+{
+	git_config *config_w, *config_r;
+	char *value = NULL;
+
+	cl_git_pass(git_config_open_ondisk(&config_w, "./cfg"));
+	cl_git_pass(git_config_open_ondisk(&config_r, "./cfg"));
+
+	cl_git_pass(git_config_set_string(config_w, "key.value", "1"));
+	cl_git_pass(git_config_foreach_match(config_r, "key.value", foreach_cb, &value));
+
+	cl_assert_equal_s(value, "1");
+
+	git_config_free(config_r);
+	git_config_free(config_w);
+	git__free(value);
+}
+
+void test_config_stress__foreach_refreshes_snapshot(void)
+{
+	git_config *config, *snapshot;
+	char *value = NULL;
+
+	cl_git_pass(git_config_open_ondisk(&config, "./cfg"));
+
+	cl_git_pass(git_config_set_string(config, "key.value", "1"));
+	cl_git_pass(git_config_snapshot(&snapshot, config));
+	cl_git_pass(git_config_foreach_match(snapshot, "key.value", foreach_cb, &value));
+
+	cl_assert_equal_s(value, "1");
+
+	git_config_free(snapshot);
+	git_config_free(config);
+	git__free(value);
+}
+
+void test_config_stress__huge_section_with_many_values(void)
+{
+	git_config *config;
+
+	if (!cl_is_env_set("GITTEST_INVASIVE_SPEED"))
+		cl_skip();
+
+	/*
+	 * The config file is structured in such a way that is
+	 * has a section header that is approximately 500kb of
+	 * size followed by 40k entries. While the resulting
+	 * configuration file itself is roughly 650kb in size and
+	 * thus considered to be rather small, in the past we'd
+	 * balloon to more than 20GB of memory (20000x500kb)
+	 * while parsing the file. It thus was a trivial way to
+	 * cause an out-of-memory situation and thus cause denial
+	 * of service, e.g. via gitmodules.
+	 */
+	cl_git_pass(git_config_open_ondisk(&config, cl_fixture("config/config-oom")));
+
+	git_config_free(config);
 }

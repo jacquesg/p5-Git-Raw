@@ -9,11 +9,9 @@
 # endif
 #endif
 
-#include <locale.h>
-
 #include "clar_libgit2.h"
+#include "futils.h"
 #include "posix.h"
-#include "userdiff.h"
 
 void test_core_posix__initialize(void)
 {
@@ -25,11 +23,6 @@ void test_core_posix__initialize(void)
 	cl_git_pass(WSAStartup(MAKEWORD(2,2), &wsd));
 	cl_assert(LOBYTE(wsd.wVersion) == 2 && HIBYTE(wsd.wVersion) == 2);
 #endif
-}
-
-void test_core_posix__cleanup(void)
-{
-    p_unlink("fallocate_test");
 }
 
 static bool supports_ipv6(void)
@@ -119,7 +112,7 @@ void test_core_posix__utimes(void)
 	cl_git_mkfile("foo", "Dummy file.");
 	cl_must_pass(p_utimes("foo", times));
 
-	p_stat("foo", &st);
+	cl_must_pass(p_stat("foo", &st));
 	cl_assert_equal_i(1234567890, st.st_atime);
 	cl_assert_equal_i(1234567890, st.st_mtime);
 
@@ -132,9 +125,9 @@ void test_core_posix__utimes(void)
 
 	cl_must_pass(fd = p_open("foo", O_RDWR));
 	cl_must_pass(p_futimes(fd, times));
-	p_close(fd);
+	cl_must_pass(p_close(fd));
 
-	p_stat("foo", &st);
+	cl_must_pass(p_stat("foo", &st));
 	cl_assert_equal_i(1414141414, st.st_atime);
 	cl_assert_equal_i(1414141414, st.st_mtime);
 
@@ -145,89 +138,101 @@ void test_core_posix__utimes(void)
 	cl_must_pass(p_utimes("foo", NULL));
 
 	curtime = time(NULL);
-	p_stat("foo", &st);
+	cl_must_pass(p_stat("foo", &st));
 	cl_assert((st.st_atime - curtime) < 5);
 	cl_assert((st.st_mtime - curtime) < 5);
 
-	p_unlink("foo");
+	cl_must_pass(p_unlink("foo"));
 }
 
-void test_core_posix__p_regcomp_ignores_global_locale_ctype(void)
+void test_core_posix__unlink_removes_symlink(void)
 {
-	regex_t preg;
-	int error = 0;
+	if (!git_path_supports_symlinks(clar_sandbox_path()))
+		clar__skip();
 
-	const char* oldlocale = setlocale(LC_CTYPE, NULL);
+	cl_git_mkfile("file", "Dummy file.");
+	cl_git_pass(git_futils_mkdir("dir", 0777, 0));
 
-	if (!setlocale(LC_CTYPE, "UTF-8") &&
-	    !setlocale(LC_CTYPE, "c.utf8") &&
-			!setlocale(LC_CTYPE, "en_US.UTF-8"))
-		cl_skip();
+	cl_must_pass(p_symlink("file", "file-symlink"));
+	cl_must_pass(p_symlink("dir", "dir-symlink"));
 
-	if (MB_CUR_MAX == 1) {
-		setlocale(LC_CTYPE, oldlocale);
-		cl_fail("Expected locale to be switched to multibyte");
-	}
+	cl_must_pass(p_unlink("file-symlink"));
+	cl_must_pass(p_unlink("dir-symlink"));
 
-	p_regcomp(&preg, "[\xc0-\xff][\x80-\xbf]", REG_EXTENDED);
-	regfree(&preg);
+	cl_assert(git_path_exists("file"));
+	cl_assert(git_path_exists("dir"));
 
-	setlocale(LC_CTYPE, oldlocale);
-
-	cl_must_pass(error);
+	cl_must_pass(p_unlink("file"));
+	cl_must_pass(p_rmdir("dir"));
 }
 
-void test_core_posix__p_regcomp_compile_userdiff_regexps(void)
+void test_core_posix__symlink_resolves_to_correct_type(void)
 {
-	size_t idx;
+	git_buf contents = GIT_BUF_INIT;
 
-	for (idx = 0; idx < ARRAY_SIZE(builtin_defs); ++idx) {
-		git_diff_driver_definition ddef = builtin_defs[idx];
-		int error = 0;
-		regex_t preg;
+	if (!git_path_supports_symlinks(clar_sandbox_path()))
+		clar__skip();
 
-		error = p_regcomp(&preg, ddef.fns, REG_EXTENDED | ddef.flags);
-		regfree(&preg);
-		cl_must_pass(error);
+	cl_must_pass(git_futils_mkdir("dir", 0777, 0));
+	cl_must_pass(git_futils_mkdir("file", 0777, 0));
+	cl_git_mkfile("dir/file", "symlink target");
 
-		error = p_regcomp(&preg, ddef.words, REG_EXTENDED);
-		regfree(&preg);
-		cl_must_pass(error);
-	}
+	cl_git_pass(p_symlink("file", "dir/link"));
+
+	cl_git_pass(git_futils_readbuffer(&contents, "dir/file"));
+	cl_assert_equal_s(contents.ptr, "symlink target");
+
+	cl_must_pass(p_unlink("dir/link"));
+	cl_must_pass(p_unlink("dir/file"));
+	cl_must_pass(p_rmdir("dir"));
+	cl_must_pass(p_rmdir("file"));
+
+	git_buf_dispose(&contents);
 }
 
-void test_core_posix__fallocate(void)
+void test_core_posix__relative_symlink(void)
 {
-	int fd;
-	struct stat st;
+	git_buf contents = GIT_BUF_INIT;
 
-	/* fallocate a new file succeeds */
-	cl_must_pass(fd = p_open("fallocate_test", O_RDWR|O_CREAT, 0666));
-	cl_must_pass(p_fallocate(fd, 0, 42));
-	cl_must_pass(p_fstat(fd, &st));
-	cl_assert_equal_i(42, st.st_size);
-	p_close(fd);
+	if (!git_path_supports_symlinks(clar_sandbox_path()))
+		clar__skip();
 
-	/* fallocate an existing file succeeds */
-	cl_must_pass(fd = p_open("fallocate_test", O_RDWR, 0666));
-	cl_must_pass(p_fallocate(fd, 90, 9));
-	cl_must_pass(p_fstat(fd, &st));
-	cl_assert_equal_i(99, st.st_size);
-	p_close(fd);
+	cl_must_pass(git_futils_mkdir("dir", 0777, 0));
+	cl_git_mkfile("file", "contents");
+	cl_git_pass(p_symlink("../file", "dir/link"));
+	cl_git_pass(git_futils_readbuffer(&contents, "dir/link"));
+	cl_assert_equal_s(contents.ptr, "contents");
 
-	/* fallocate doesn't shrink */
-	cl_must_pass(fd = p_open("fallocate_test", O_RDWR, 0666));
-	cl_must_pass(p_fallocate(fd, 0, 14));
-	cl_must_pass(p_fstat(fd, &st));
-	cl_assert_equal_i(99, st.st_size);
-	p_close(fd);
+	cl_must_pass(p_unlink("file"));
+	cl_must_pass(p_unlink("dir/link"));
+	cl_must_pass(p_rmdir("dir"));
 
-	/* fallocate doesn't move the cursor */
-	cl_must_pass(fd = p_open("fallocate_test", O_RDWR, 0666));
-	cl_must_pass(p_fallocate(fd, 0, 100));
-	cl_assert_equal_i(0, p_lseek(fd, 0, SEEK_CUR));
-	cl_must_pass(p_lseek(fd, 42, SEEK_SET));
-	cl_must_pass(p_fallocate(fd, 0, 200));
-	cl_assert_equal_i(42, p_lseek(fd, 0, SEEK_CUR));
-	p_close(fd);
+	git_buf_dispose(&contents);
+}
+
+void test_core_posix__symlink_to_file_across_dirs(void)
+{
+	git_buf contents = GIT_BUF_INIT;
+
+	if (!git_path_supports_symlinks(clar_sandbox_path()))
+		clar__skip();
+
+	/*
+	 * Create a relative symlink that points into another
+	 * directory. This used to not work on Win32, where we
+	 * forgot to convert directory separators to
+	 * Windows-style ones.
+	 */
+	cl_must_pass(git_futils_mkdir("dir", 0777, 0));
+	cl_git_mkfile("dir/target", "symlink target");
+	cl_git_pass(p_symlink("dir/target", "link"));
+
+	cl_git_pass(git_futils_readbuffer(&contents, "dir/target"));
+	cl_assert_equal_s(contents.ptr, "symlink target");
+
+	cl_must_pass(p_unlink("dir/target"));
+	cl_must_pass(p_unlink("link"));
+	cl_must_pass(p_rmdir("dir"));
+
+	git_buf_dispose(&contents);
 }

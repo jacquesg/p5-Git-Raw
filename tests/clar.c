@@ -67,7 +67,7 @@
 #		define PRIxZ "Ix"
 #	endif
 
-#	ifdef _MSC_VER
+#	if defined(_MSC_VER) || defined(__MINGW32__)
 	typedef struct stat STAT_T;
 #	else
 	typedef struct _stat STAT_T;
@@ -96,7 +96,7 @@ fixture_path(const char *base, const char *fixture_name);
 
 struct clar_error {
 	const char *file;
-	int line_number;
+	size_t line_number;
 	const char *error_msg;
 	char *description;
 
@@ -145,7 +145,7 @@ static struct {
 	int report_suite_names;
 
 	int write_summary;
-	const char *summary_filename;
+	char *summary_filename;
 	struct clar_summary *summary;
 
 	struct clar_explicit *explicit;
@@ -474,8 +474,8 @@ clar_parse_args(int argc, char **argv)
 
 		case 'r':
 			_clar.write_summary = 1;
-			_clar.summary_filename = *(argument + 2) ? (argument + 2) :
-			    "summary.xml";
+			free(_clar.summary_filename);
+			_clar.summary_filename = strdup(*(argument + 2) ? (argument + 2) : "summary.xml");
 			break;
 
 		default:
@@ -492,6 +492,11 @@ clar_test_init(int argc, char **argv)
 		(int)_clar_suite_count,
 		""
 	);
+
+	if ((_clar.summary_filename = getenv("CLAR_SUMMARY")) != NULL) {
+		_clar.write_summary = 1;
+		_clar.summary_filename = strdup(_clar.summary_filename);
+	}
 
 	if (argc > 1)
 		clar_parse_args(argc, argv);
@@ -553,6 +558,8 @@ clar_test_shutdown(void)
 		report_next = report->next;
 		free(report);
 	}
+
+	free(_clar.summary_filename);
 }
 
 int
@@ -589,7 +596,7 @@ void clar__skip(void)
 
 void clar__fail(
 	const char *file,
-	int line,
+	size_t line,
 	const char *error_msg,
 	const char *description,
 	int should_abort)
@@ -621,7 +628,7 @@ void clar__fail(
 void clar__assert(
 	int condition,
 	const char *file,
-	int line,
+	size_t line,
 	const char *error_msg,
 	const char *description,
 	int should_abort)
@@ -634,7 +641,7 @@ void clar__assert(
 
 void clar__assert_equal(
 	const char *file,
-	int line,
+	size_t line,
 	const char *err,
 	int should_abort,
 	const char *fmt,

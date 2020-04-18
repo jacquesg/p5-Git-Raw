@@ -19,7 +19,7 @@ void test_attr_lookup__simple(void)
 	cl_assert(!path.is_dir);
 
 	cl_git_pass(git_attr_file__lookup_one(file,&path,"binary",&value));
-	cl_assert(GIT_ATTR_TRUE(value));
+	cl_assert(GIT_ATTR_IS_TRUE(value));
 
 	cl_git_pass(git_attr_file__lookup_one(file,&path,"missing",&value));
 	cl_assert(!value);
@@ -252,7 +252,7 @@ void test_attr_lookup__from_buffer(void)
 
 	cl_git_pass(git_attr_file__new(&file, NULL, 0));
 
-	cl_git_pass(git_attr_file__parse_buffer(NULL, file, "a* foo\nabc bar\n* baz"));
+	cl_git_pass(git_attr_file__parse_buffer(NULL, file, "a* foo\nabc bar\n* baz", true));
 
 	cl_assert(file->rules.length == 3);
 

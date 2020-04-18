@@ -107,6 +107,12 @@ void test_patch_print__rename_exact(void)
 		strlen(PATCH_RENAME_EXACT));
 }
 
+void test_patch_print__rename_exact_with_mode(void)
+{
+	patch_print_from_patchfile(PATCH_RENAME_EXACT_WITH_MODE,
+		strlen(PATCH_RENAME_EXACT_WITH_MODE));
+}
+
 void test_patch_print__rename_similar(void)
 {
 	patch_print_from_patchfile(PATCH_RENAME_SIMILAR,
@@ -171,4 +177,10 @@ void test_patch_print__binary_not_shown(void)
 {
 	patch_print_from_patchfile(PATCH_BINARY_NOT_PRINTED,
 		strlen(PATCH_BINARY_NOT_PRINTED));
+}
+
+void test_patch_print__binary_add_not_shown(void)
+{
+	patch_print_from_patchfile(PATCH_ADD_BINARY_NOT_PRINTED,
+		strlen(PATCH_ADD_BINARY_NOT_PRINTED));
 }

@@ -10,7 +10,7 @@
 #include "commit.h"
 #include "git2/repository.h"
 #include "git2/object.h"
-#include "fileops.h"
+#include "futils.h"
 #include "tree-cache.h"
 #include "index.h"
 
@@ -340,7 +340,7 @@ size_t git_tree_entrycount(const git_tree *tree)
 	return tree->entries.size;
 }
 
-unsigned int git_treebuilder_entrycount(git_treebuilder *bld)
+size_t git_treebuilder_entrycount(git_treebuilder *bld)
 {
 	assert(bld);
 
@@ -479,7 +479,7 @@ static int check_entry(git_repository *repo, const char *filename, const git_oid
 	if (!valid_entry_name(repo, filename))
 		return tree_error("failed to insert entry: invalid name for a tree entry", filename);
 
-	if (git_oid_iszero(id))
+	if (git_oid_is_zero(id))
 		return tree_error("failed to insert entry: invalid null OID", filename);
 
 	if (filemode != GIT_FILEMODE_COMMIT &&
@@ -834,7 +834,7 @@ out:
 	return error;
 }
 
-void git_treebuilder_filter(
+int git_treebuilder_filter(
 	git_treebuilder *bld,
 	git_treebuilder_filter_cb filter,
 	void *payload)
@@ -850,9 +850,11 @@ void git_treebuilder_filter(
 				git_tree_entry_free(entry);
 			}
 	});
+
+	return 0;
 }
 
-void git_treebuilder_clear(git_treebuilder *bld)
+int git_treebuilder_clear(git_treebuilder *bld)
 {
 	git_tree_entry *e;
 
@@ -860,6 +862,8 @@ void git_treebuilder_clear(git_treebuilder *bld)
 
 	git_strmap_foreach_value(bld->map, e, git_tree_entry_free(e));
 	git_strmap_clear(bld->map);
+
+	return 0;
 }
 
 void git_treebuilder_free(git_treebuilder *bld)
