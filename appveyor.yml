@@ -47,8 +47,9 @@ install:
  - cd C:\projects\p5-Git-Raw
  - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
  - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
- - dzil authordeps --missing | cpanm --notest
- - dzil listdeps --missing | cpanm --notest
+ - cpanm --quiet --notest App::Ack
+ - dzil authordeps --missing | ack -v "inc::" | cpanm --notest --quiet
+ - dzil listdeps --missing | cpanm --notest --quiet
 
  - dzil build --in Git-Raw-526
  - xcopy Git-Raw-526 Git-Raw-524 /i /O /X /E /H /K

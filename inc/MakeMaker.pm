@@ -259,12 +259,7 @@ if ($Config{usethreads} && !$is_sunpro) {
 
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib,pcre}/*.c';
 my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c,hash/sha1/collision*.c,hash/sha1/sha1dc/*.c}';
-
-# the system regex is broken on Solaris, not available on Windows
-if ($is_windows || $is_solaris) {
-	push @srcs, 'deps/libgit2/deps/regex/regex.c';
-	$inc .= ' -Ideps/libgit2/deps/regex';
-}
+$inc .= ' -Ideps/libgit2/deps/pcre';
 
 if ($is_windows) {
 	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
