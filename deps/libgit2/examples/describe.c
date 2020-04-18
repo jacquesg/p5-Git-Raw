@@ -13,7 +13,6 @@
  */
 
 #include "common.h"
-#include <assert.h>
 
 /**
  * The following example partially reimplements the `git describe` command
@@ -38,32 +37,30 @@
  */
 
 /** describe_options represents the parsed command line options */
-typedef struct {
+struct describe_options {
 	const char **commits;
 	size_t commit_count;
 	git_describe_options describe_options;
 	git_describe_format_options format_options;
-} describe_options;
+};
 
-typedef struct args_info args_info;
-
-static void opts_add_commit(describe_options *opts, const char *commit)
+static void opts_add_commit(struct describe_options *opts, const char *commit)
 {
 	size_t sz;
 
 	assert(opts != NULL);
 
 	sz = ++opts->commit_count * sizeof(opts->commits[0]);
-	opts->commits = xrealloc(opts->commits, sz);
+	opts->commits = xrealloc((void *) opts->commits, sz);
 	opts->commits[opts->commit_count - 1] = commit;
 }
 
-static void do_describe_single(git_repository *repo, describe_options *opts, const char *rev)
+static void do_describe_single(git_repository *repo, struct describe_options *opts, const char *rev)
 {
 	git_object *commit;
 	git_describe_result *describe_result;
 	git_buf buf = { 0 };
-	
+
 	if (rev) {
 		check_lg2(git_revparse_single(&commit, repo, rev),
 			"Failed to lookup rev", rev);
@@ -81,7 +78,7 @@ static void do_describe_single(git_repository *repo, describe_options *opts, con
 	printf("%s\n", buf.ptr);
 }
 
-static void do_describe(git_repository *repo, describe_options *opts)
+static void do_describe(git_repository *repo, struct describe_options *opts)
 {
 	if (opts->commit_count == 0)
 		do_describe_single(repo, opts, NULL);
@@ -100,9 +97,9 @@ static void print_usage(void)
 }
 
 /** Parse command line arguments */
-static void parse_options(describe_options *opts, int argc, char **argv)
+static void parse_options(struct describe_options *opts, int argc, char **argv)
 {
-	args_info args = ARGS_INFO_INIT;
+	struct args_info args = ARGS_INFO_INIT;
 
 	for (args.pos = 1; args.pos < argc; ++args.pos) {
 		const char *curr = argv[args.pos];
@@ -142,19 +139,19 @@ static void parse_options(describe_options *opts, int argc, char **argv)
 }
 
 /** Initialize describe_options struct */
-static void describe_options_init(describe_options *opts)
+static void describe_options_init(struct describe_options *opts)
 {
 	memset(opts, 0, sizeof(*opts));
 
 	opts->commits = NULL;
 	opts->commit_count = 0;
-	git_describe_init_options(&opts->describe_options, GIT_DESCRIBE_OPTIONS_VERSION);
-	git_describe_init_format_options(&opts->format_options, GIT_DESCRIBE_FORMAT_OPTIONS_VERSION);
+	git_describe_options_init(&opts->describe_options, GIT_DESCRIBE_OPTIONS_VERSION);
+	git_describe_format_options_init(&opts->format_options, GIT_DESCRIBE_FORMAT_OPTIONS_VERSION);
 }
 
 int lg2_describe(git_repository *repo, int argc, char **argv)
 {
-	describe_options opts;
+	struct describe_options opts;
 
 	describe_options_init(&opts);
 	parse_options(&opts, argc, argv);

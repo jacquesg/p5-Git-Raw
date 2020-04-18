@@ -19,7 +19,7 @@ static const char *g_crlf_raw[CRLF_NUM_TEST_OBJECTS] = {
 	"\xFE\xFF\x00T\x00h\x00i\x00s\x00!"
 };
 
-static git_off_t g_crlf_raw_len[CRLF_NUM_TEST_OBJECTS] = {
+static off64_t g_crlf_raw_len[CRLF_NUM_TEST_OBJECTS] = {
 	-1, -1, -1, -1, -1, 17, -1, -1, 12
 };
 
@@ -59,7 +59,7 @@ void test_object_blob_filter__initialize(void)
 		if (g_crlf_raw_len[i] < 0)
 			g_crlf_raw_len[i] = strlen(g_crlf_raw[i]);
 
-		cl_git_pass(git_blob_create_frombuffer(
+		cl_git_pass(git_blob_create_from_buffer(
 			&g_crlf_oids[i], g_repo, g_crlf_raw[i], (size_t)g_crlf_raw_len[i]));
 	}
 }

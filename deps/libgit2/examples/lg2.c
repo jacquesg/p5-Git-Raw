@@ -15,6 +15,8 @@ struct {
 	{ "cat-file",     lg2_cat_file,     1 },
 	{ "checkout",     lg2_checkout,     1 },
 	{ "clone",        lg2_clone,        0 },
+	{ "commit",       lg2_commit,       1 },
+	{ "config",       lg2_config,       1 },
 	{ "describe",     lg2_describe,     1 },
 	{ "diff",         lg2_diff,         1 },
 	{ "fetch",        lg2_fetch,        1 },
@@ -26,10 +28,12 @@ struct {
 	{ "ls-files",     lg2_ls_files,     1 },
 	{ "ls-remote",    lg2_ls_remote,    1 },
 	{ "merge",        lg2_merge,        1 },
+	{ "push",         lg2_push,        1  },
 	{ "remote",       lg2_remote,       1 },
 	{ "rev-list",     lg2_rev_list,     1 },
 	{ "rev-parse",    lg2_rev_parse,    1 },
 	{ "show-index",   lg2_show_index,   0 },
+	{ "stash",        lg2_stash,        1 },
 	{ "status",       lg2_status,       1 },
 	{ "tag",          lg2_tag,          1 },
 };
@@ -82,8 +86,7 @@ int main(int argc, char **argv)
 			break;
 		} else if (optional_str_arg(&git_dir, &args, "--git-dir", ".git")) {
 			continue;
-		} else if (!strcmp(a, "--")) {
-			/* arg separator */
+		} else if (match_arg_separator(&args)) {
 			break;
 		}
 	}

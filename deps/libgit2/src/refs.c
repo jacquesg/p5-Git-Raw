@@ -9,7 +9,7 @@
 
 #include "hash.h"
 #include "repository.h"
-#include "fileops.h"
+#include "futils.h"
 #include "filebuf.h"
 #include "pack.h"
 #include "reflog.h"
@@ -91,17 +91,22 @@ git_reference *git_reference__alloc(
 	return ref;
 }
 
-git_reference *git_reference__set_name(
-	git_reference *ref, const char *name)
+git_reference *git_reference__realloc(
+	git_reference **ptr_to_ref, const char *name)
 {
-	size_t namelen = strlen(name);
-	size_t reflen;
+	size_t namelen, reflen;
 	git_reference *rewrite = NULL;
+
+	assert(ptr_to_ref && name);
+
+	namelen = strlen(name);
 
 	if (!GIT_ADD_SIZET_OVERFLOW(&reflen, sizeof(git_reference), namelen) &&
 		!GIT_ADD_SIZET_OVERFLOW(&reflen, reflen, 1) &&
-		(rewrite = git__realloc(ref, reflen)) != NULL)
+		(rewrite = git__realloc(*ptr_to_ref, reflen)) != NULL)
 		memcpy(rewrite->name, name, namelen + 1);
+
+	*ptr_to_ref = NULL;
 
 	return rewrite;
 }
@@ -139,6 +144,11 @@ int git_reference_delete(git_reference *ref)
 {
 	const git_oid *old_id = NULL;
 	const char *old_target = NULL;
+
+	if (!strcmp(ref->name, "HEAD")) {
+		git_error_set(GIT_ERROR_REFERENCE, "cannot delete HEAD");
+		return GIT_ERROR;
+	}
 
 	if (ref->type == GIT_REFERENCE_DIRECT)
 		old_id = &ref->target.oid;
@@ -188,7 +198,7 @@ static int reference_normalize_for_repo(
 	int precompose;
 	unsigned int flags = GIT_REFERENCE_FORMAT_ALLOW_ONELEVEL;
 
-	if (!git_repository__cvar(&precompose, repo, GIT_CVAR_PRECOMPOSE) &&
+	if (!git_repository__configmap_lookup(&precompose, repo, GIT_CONFIGMAP_PRECOMPOSE) &&
 		precompose)
 		flags |= GIT_REFERENCE_FORMAT__PRECOMPOSE_UNICODE;
 
@@ -386,7 +396,7 @@ const git_oid *git_reference_target_peel(const git_reference *ref)
 {
 	assert(ref);
 
-	if (ref->type != GIT_REFERENCE_DIRECT || git_oid_iszero(&ref->peel))
+	if (ref->type != GIT_REFERENCE_DIRECT || git_oid_is_zero(&ref->peel))
 		return NULL;
 
 	return &ref->peel;
@@ -897,14 +907,13 @@ static int is_valid_ref_char(char ch)
 	case '\\':
 	case '?':
 	case '[':
-	case '*':
 		return 0;
 	default:
 		return 1;
 	}
 }
 
-static int ensure_segment_validity(const char *name)
+static int ensure_segment_validity(const char *name, char may_contain_glob)
 {
 	const char *current = name;
 	char prev = '\0';
@@ -926,6 +935,12 @@ static int ensure_segment_validity(const char *name)
 
 		if (prev == '@' && *current == '{')
 			return -1; /* Refname contains "@{" */
+
+		if (*current == '*') {
+			if (!may_contain_glob)
+				return -1;
+			may_contain_glob = 0;
+		}
 
 		prev = *current;
 	}
@@ -1005,19 +1020,20 @@ int git_reference__normalize_name(
 	}
 
 	while (true) {
-		segment_len = ensure_segment_validity(current);
-		if (segment_len < 0) {
-			if ((process_flags & GIT_REFERENCE_FORMAT_REFSPEC_PATTERN) &&
-					current[0] == '*' &&
-					(current[1] == '\0' || current[1] == '/')) {
-				/* Accept one wildcard as a full refname component. */
-				process_flags &= ~GIT_REFERENCE_FORMAT_REFSPEC_PATTERN;
-				segment_len = 1;
-			} else
-				goto cleanup;
-		}
+		char may_contain_glob = process_flags & GIT_REFERENCE_FORMAT_REFSPEC_PATTERN;
+
+		segment_len = ensure_segment_validity(current, may_contain_glob);
+		if (segment_len < 0)
+			goto cleanup;
 
 		if (segment_len > 0) {
+			/*
+			 * There may only be one glob in a pattern, thus we reset
+			 * the pattern-flag in case the current segment has one.
+			 */
+			if (memchr(current, '*', segment_len))
+				process_flags &= ~GIT_REFERENCE_FORMAT_REFSPEC_PATTERN;
+
 			if (normalize) {
 				size_t cur_len = git_buf_len(buf);
 
@@ -1374,7 +1390,7 @@ int git_reference_peel(
 	 * to a commit. So we only want to use the peeled value
 	 * if it is not zero and the target is not a tag.
 	 */
-	if (target_type != GIT_OBJECT_TAG && !git_oid_iszero(&resolved->peel)) {
+	if (target_type != GIT_OBJECT_TAG && !git_oid_is_zero(&resolved->peel)) {
 		error = git_object_lookup(&target,
 			git_reference_owner(ref), &resolved->peel, GIT_OBJECT_ANY);
 	} else {

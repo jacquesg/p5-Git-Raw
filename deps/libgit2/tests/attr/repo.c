@@ -1,7 +1,8 @@
 #include "clar_libgit2.h"
-#include "fileops.h"
+#include "futils.h"
 #include "git2/attr.h"
 #include "attr.h"
+#include "sysdir.h"
 
 #include "attr_expect.h"
 #include "git2/sys/repository.h"
@@ -17,6 +18,7 @@ void test_attr_repo__cleanup(void)
 {
 	cl_git_sandbox_cleanup();
 	g_repo = NULL;
+	cl_sandbox_set_search_path_defaults();
 }
 
 static struct attr_expected get_one_test_cases[] = {
@@ -104,23 +106,23 @@ void test_attr_repo__get_many(void)
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "root_test1", 4, names));
 
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_TRUE(values[1]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[2]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[3]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[0]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[1]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[2]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[3]));
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "root_test2", 4, names));
 
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_FALSE(values[1]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[2]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[3]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[0]));
+	cl_assert(GIT_ATTR_IS_FALSE(values[1]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[2]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[3]));
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "sub/subdir_test1", 4, names));
 
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_TRUE(values[1]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[2]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[0]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[1]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[2]));
 	cl_assert_equal_s("yes", values[3]);
 }
 
@@ -134,9 +136,9 @@ void test_attr_repo__get_many_in_place(void)
 
 	cl_git_pass(git_attr_get_many(vals, g_repo, 0, "sub/subdir_test1", 4, vals));
 
-	cl_assert(GIT_ATTR_TRUE(vals[0]));
-	cl_assert(GIT_ATTR_TRUE(vals[1]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(vals[2]));
+	cl_assert(GIT_ATTR_IS_TRUE(vals[0]));
+	cl_assert(GIT_ATTR_IS_TRUE(vals[1]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(vals[2]));
 	cl_assert_equal_s("yes", vals[3]);
 }
 
@@ -202,89 +204,19 @@ void test_attr_repo__manpage_example(void)
 	const char *value;
 
 	cl_git_pass(git_attr_get(&value, g_repo, 0, "sub/abc", "foo"));
-	cl_assert(GIT_ATTR_TRUE(value));
+	cl_assert(GIT_ATTR_IS_TRUE(value));
 
 	cl_git_pass(git_attr_get(&value, g_repo, 0, "sub/abc", "bar"));
-	cl_assert(GIT_ATTR_UNSPECIFIED(value));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(value));
 
 	cl_git_pass(git_attr_get(&value, g_repo, 0, "sub/abc", "baz"));
-	cl_assert(GIT_ATTR_FALSE(value));
+	cl_assert(GIT_ATTR_IS_FALSE(value));
 
 	cl_git_pass(git_attr_get(&value, g_repo, 0, "sub/abc", "merge"));
 	cl_assert_equal_s("filfre", value);
 
 	cl_git_pass(git_attr_get(&value, g_repo, 0, "sub/abc", "frotz"));
-	cl_assert(GIT_ATTR_UNSPECIFIED(value));
-}
-
-void test_attr_repo__macros(void)
-{
-	const char *names[5] = { "rootattr", "binary", "diff", "crlf", "frotz" };
-	const char *names2[5] = { "mymacro", "positive", "negative", "rootattr", "another" };
-	const char *names3[3] = { "macro2", "multi2", "multi3" };
-	const char *values[5];
-
-	cl_git_pass(git_attr_get_many(values, g_repo, 0, "binfile", 5, names));
-
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_TRUE(values[1]));
-	cl_assert(GIT_ATTR_FALSE(values[2]));
-	cl_assert(GIT_ATTR_FALSE(values[3]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[4]));
-
-	cl_git_pass(git_attr_get_many(values, g_repo, 0, "macro_test", 5, names2));
-
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_TRUE(values[1]));
-	cl_assert(GIT_ATTR_FALSE(values[2]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[3]));
-	cl_assert_equal_s("77", values[4]);
-
-	cl_git_pass(git_attr_get_many(values, g_repo, 0, "macro_test", 3, names3));
-
-	cl_assert(GIT_ATTR_TRUE(values[0]));
-	cl_assert(GIT_ATTR_FALSE(values[1]));
-	cl_assert_equal_s("answer", values[2]);
-}
-
-void test_attr_repo__bad_macros(void)
-{
-	const char *names[6] = { "rootattr", "positive", "negative",
-		"firstmacro", "secondmacro", "thirdmacro" };
-	const char *values[6];
-
-	cl_git_pass(git_attr_get_many(values, g_repo, 0, "macro_bad", 6, names));
-
-	/* these three just confirm that the "mymacro" rule ran */
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[0]));
-	cl_assert(GIT_ATTR_TRUE(values[1]));
-	cl_assert(GIT_ATTR_FALSE(values[2]));
-
-	/* file contains:
-	 *     # let's try some malicious macro defs
-	 *     [attr]firstmacro -thirdmacro -secondmacro
-	 *     [attr]secondmacro firstmacro -firstmacro
-	 *     [attr]thirdmacro secondmacro=hahaha -firstmacro
-	 *     macro_bad firstmacro secondmacro thirdmacro
-	 *
-	 * firstmacro assignment list ends up with:
-	 *     -thirdmacro -secondmacro
-	 * secondmacro assignment list expands "firstmacro" and ends up with:
-	 *     -thirdmacro -secondmacro -firstmacro
-	 * thirdmacro assignment don't expand so list ends up with:
-	 *     secondmacro="hahaha"
-	 *
-	 * macro_bad assignment list ends up with:
-	 *     -thirdmacro -secondmacro firstmacro &&
-	 *     -thirdmacro -secondmacro -firstmacro secondmacro &&
-	 *     secondmacro="hahaha" thirdmacro
-	 *
-	 * so summary results should be:
-	 *     -firstmacro secondmacro="hahaha" thirdmacro
-	 */
-	cl_assert(GIT_ATTR_FALSE(values[3]));
-	cl_assert_equal_s("hahaha", values[4]);
-	cl_assert(GIT_ATTR_TRUE(values[5]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(value));
 }
 
 #define CONTENT "I'm going to be dynamically processed\r\n" \
@@ -357,22 +289,117 @@ void test_attr_repo__bare_repo_with_index(void)
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "file.txt", 4, names));
 
-	cl_assert(GIT_ATTR_TRUE(values[0]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[0]));
 	cl_assert_equal_s("foobar", values[1]);
-	cl_assert(GIT_ATTR_FALSE(values[2]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[3]));
+	cl_assert(GIT_ATTR_IS_FALSE(values[2]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[3]));
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "trial.txt", 4, names));
 
-	cl_assert(GIT_ATTR_FALSE(values[0]));
+	cl_assert(GIT_ATTR_IS_FALSE(values[0]));
 	cl_assert_equal_s("barfoo", values[1]);
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[2]));
-	cl_assert(GIT_ATTR_TRUE(values[3]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[2]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[3]));
 
 	cl_git_pass(git_attr_get_many(values, g_repo, 0, "sub/sub/subdir.txt", 4, names));
 
-	cl_assert(GIT_ATTR_TRUE(values[0]));
+	cl_assert(GIT_ATTR_IS_TRUE(values[0]));
 	cl_assert_equal_s("foobar", values[1]);
-	cl_assert(GIT_ATTR_FALSE(values[2]));
-	cl_assert(GIT_ATTR_UNSPECIFIED(values[3]));
+	cl_assert(GIT_ATTR_IS_FALSE(values[2]));
+	cl_assert(GIT_ATTR_IS_UNSPECIFIED(values[3]));
+}
+
+void test_attr_repo__sysdir(void)
+{
+	git_buf sysdir = GIT_BUF_INIT;
+	const char *value;
+
+	cl_git_pass(p_mkdir("system", 0777));
+	cl_git_rewritefile("system/gitattributes", "file merge=foo");
+	cl_git_pass(git_buf_joinpath(&sysdir, clar_sandbox_path(), "system"));
+	cl_git_pass(git_sysdir_set(GIT_SYSDIR_SYSTEM, sysdir.ptr));
+	g_repo = cl_git_sandbox_reopen();
+
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file", "merge"));
+	cl_assert_equal_s(value, "foo");
+
+	cl_git_pass(p_unlink("system/gitattributes"));
+	cl_git_pass(p_rmdir("system"));
+	git_buf_dispose(&sysdir);
+}
+
+void test_attr_repo__sysdir_with_session(void)
+{
+	const char *values[2], *attrs[2] = { "foo", "bar" };
+	git_buf sysdir = GIT_BUF_INIT;
+	git_attr_session session;
+
+	cl_git_pass(p_mkdir("system", 0777));
+	cl_git_rewritefile("system/gitattributes", "file foo=1 bar=2");
+	cl_git_pass(git_buf_joinpath(&sysdir, clar_sandbox_path(), "system"));
+	cl_git_pass(git_sysdir_set(GIT_SYSDIR_SYSTEM, sysdir.ptr));
+	g_repo = cl_git_sandbox_reopen();
+
+	cl_git_pass(git_attr_session__init(&session, g_repo));
+	cl_git_pass(git_attr_get_many_with_session(values, g_repo, &session, 0, "file", ARRAY_SIZE(attrs), attrs));
+
+	cl_assert_equal_s(values[0], "1");
+	cl_assert_equal_s(values[1], "2");
+
+	cl_git_pass(p_unlink("system/gitattributes"));
+	cl_git_pass(p_rmdir("system"));
+	git_buf_dispose(&sysdir);
+	git_attr_session__free(&session);
+}
+
+void test_attr_repo__rewrite(void)
+{
+	const char *value;
+
+	cl_git_rewritefile("attr/.gitattributes", "file.txt foo=first\n");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file.txt", "foo"));
+	cl_assert_equal_s(value, "first");
+
+	cl_git_rewritefile("attr/.gitattributes", "file.txt foo=second\n");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file.txt", "foo"));
+	cl_assert_equal_s(value, "second");
+
+	cl_git_rewritefile("attr/.gitattributes", "file.txt other=value\n");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file.txt", "foo"));
+	cl_assert_equal_p(value, NULL);
+}
+
+void test_attr_repo__rewrite_sysdir(void)
+{
+	git_buf sysdir = GIT_BUF_INIT;
+	const char *value;
+
+	cl_git_pass(p_mkdir("system", 0777));
+	cl_git_pass(git_buf_joinpath(&sysdir, clar_sandbox_path(), "system"));
+	cl_git_pass(git_sysdir_set(GIT_SYSDIR_SYSTEM, sysdir.ptr));
+	g_repo = cl_git_sandbox_reopen();
+
+	cl_git_rewritefile("system/gitattributes", "file foo=first");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file", "foo"));
+	cl_assert_equal_s(value, "first");
+
+	cl_git_rewritefile("system/gitattributes", "file foo=second");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file", "foo"));
+	cl_assert_equal_s(value, "second");
+
+	git_buf_dispose(&sysdir);
+}
+
+void test_attr_repo__unlink(void)
+{
+	const char *value;
+
+	cl_git_rewritefile("attr/.gitattributes", "file.txt foo=value1\n");
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file.txt", "foo"));
+	cl_assert_equal_s(value, "value1");
+
+	cl_git_pass(p_unlink("attr/.gitattributes"));
+
+	cl_git_pass(git_attr_get(&value, g_repo, 0, "file.txt", "foo"));
+	cl_assert_equal_p(value, NULL);
 }

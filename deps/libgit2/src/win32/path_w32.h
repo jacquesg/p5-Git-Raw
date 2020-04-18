@@ -8,39 +8,12 @@
 #define INCLUDE_win32_path_w32_h__
 
 #include "common.h"
-
 #include "vector.h"
 
-/*
- * Provides a large enough buffer to support Windows paths:  MAX_PATH is
- * 260, corresponding to a maximum path length of 259 characters plus a
- * NULL terminator.  Prefixing with "\\?\" adds 4 characters, but if the
- * original was a UNC path, then we turn "\\server\share" into
- * "\\?\UNC\server\share".  So we replace the first two characters with
- * 8 characters, a net gain of 6, so the maximum length is MAX_PATH+6.
- */
-#define GIT_WIN_PATH_UTF16		MAX_PATH+6
-
-/* Maximum size of a UTF-8 Win32 path.  We remove the "\\?\" or "\\?\UNC\"
- * prefixes for presentation, bringing us back to 259 (non-NULL)
- * characters.  UTF-8 does have 4-byte sequences, but they are encoded in
- * UTF-16 using surrogate pairs, which takes up the space of two characters.
- * Two characters in the range U+0800 -> U+FFFF take up more space in UTF-8
- * (6 bytes) than one surrogate pair (4 bytes).
- */
-#define GIT_WIN_PATH_UTF8		(259 * 3 + 1)
-
-/*
- * The length of a Windows "shortname", for 8.3 compatibility.
- */
-#define GIT_WIN_PATH_SHORTNAME  13
-
-/* Win32 path types */
-typedef wchar_t git_win32_path[GIT_WIN_PATH_UTF16];
-typedef char git_win32_utf8_path[GIT_WIN_PATH_UTF8];
-
 /**
- * Create a Win32 path (in UCS-2 format) from a UTF-8 string.
+ * Create a Win32 path (in UCS-2 format) from a UTF-8 string.  If the given
+ * path is relative, then it will be turned into an absolute path by having
+ * the current working directory prepended.
  *
  * @param dest The buffer to receive the wide string.
  * @param src The UTF-8 string to convert.
@@ -49,11 +22,24 @@ typedef char git_win32_utf8_path[GIT_WIN_PATH_UTF8];
 extern int git_win32_path_from_utf8(git_win32_path dest, const char *src);
 
 /**
+ * Create a Win32 path (in UCS-2 format) from a UTF-8 string.  If the given
+ * path is relative, then it will not be turned into an absolute path.
+ *
+ * @param dest The buffer to receive the wide string.
+ * @param src The UTF-8 string to convert.
+ * @return The length of the wide string, in characters (not counting the NULL terminator), or < 0 for failure
+ */
+extern int git_win32_path_relative_from_utf8(git_win32_path dest, const char *src);
+
+/**
  * Canonicalize a Win32 UCS-2 path so that it is suitable for delivery to the
  * Win32 APIs: remove multiple directory separators, squashing to a single one,
  * strip trailing directory separators, ensure directory separators are all
  * canonical (always backslashes, never forward slashes) and process any
  * directory entries of '.' or '..'.
+ *
+ * Note that this is intended to be used on absolute Windows paths, those
+ * that start with `C:\`, `\\server\share`, `\\?\`, etc.
  *
  * This processes the buffer in place.
  *

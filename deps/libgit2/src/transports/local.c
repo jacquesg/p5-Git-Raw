@@ -201,7 +201,7 @@ on_error:
 static int local_connect(
 	git_transport *transport,
 	const char *url,
-	git_cred_acquire_cb cred_acquire_cb,
+	git_credential_acquire_cb cred_acquire_cb,
 	void *cred_acquire_payload,
 	const git_proxy_options *proxy,
 	int direction, int flags)
@@ -309,7 +309,7 @@ static int local_push_update_remote_ref(
 	if (lref[0] != '\0') {
 		/* Create or update a ref */
 		error = git_reference_create(NULL, remote_repo, rref, loid,
-					     !git_oid_iszero(roid), NULL);
+					     !git_oid_is_zero(roid), NULL);
 	} else {
 		/* Delete a ref */
 		if ((error = git_reference_lookup(&remote_ref, remote_repo, rref)) < 0) {
@@ -501,7 +501,7 @@ static int local_counting(int stage, unsigned int current, unsigned int total, v
 	if (git_buf_oom(&progress_info))
 		return -1;
 
-	error = t->progress_cb(git_buf_cstr(&progress_info), git_buf_len(&progress_info), t->message_cb_payload);
+	error = t->progress_cb(git_buf_cstr(&progress_info), (int)git_buf_len(&progress_info), t->message_cb_payload);
 	git_buf_dispose(&progress_info);
 
 	return error;
@@ -588,7 +588,7 @@ static int local_download_pack(
 		goto cleanup;
 
 	if (t->progress_cb &&
-	    (error = t->progress_cb(git_buf_cstr(&progress_info), git_buf_len(&progress_info), t->message_cb_payload)) < 0)
+	    (error = t->progress_cb(git_buf_cstr(&progress_info), (int)git_buf_len(&progress_info), t->message_cb_payload)) < 0)
 		goto cleanup;
 
 	/* Walk the objects, building a packfile */
@@ -602,7 +602,7 @@ static int local_download_pack(
 		goto cleanup;
 
 	if (t->progress_cb &&
-	    (error = t->progress_cb(git_buf_cstr(&progress_info), git_buf_len(&progress_info), t->message_cb_payload)) < 0)
+	    (error = t->progress_cb(git_buf_cstr(&progress_info), (int)git_buf_len(&progress_info), t->message_cb_payload)) < 0)
 		goto cleanup;
 
 	if ((error = git_odb_write_pack(&writepack, odb, progress_cb, progress_payload)) != 0)

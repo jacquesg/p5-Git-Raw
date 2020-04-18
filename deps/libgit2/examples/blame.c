@@ -19,7 +19,7 @@
  * simulate the output of `git blame` and a few of its command line arguments.
  */
 
-struct opts {
+struct blame_opts {
 	char *path;
 	char *commitspec;
 	int C;
@@ -28,14 +28,14 @@ struct opts {
 	int end_line;
 	int F;
 };
-static void parse_opts(struct opts *o, int argc, char *argv[]);
+static void parse_opts(struct blame_opts *o, int argc, char *argv[]);
 
 int lg2_blame(git_repository *repo, int argc, char *argv[])
 {
 	int line, break_on_null_hunk;
-	size_t i, rawsize;
+	git_object_size_t i, rawsize;
 	char spec[1024] = {0};
-	struct opts o = {0};
+	struct blame_opts o = {0};
 	const char *rawdata;
 	git_revspec revspec = {0};
 	git_blame_options blameopts = GIT_BLAME_OPTIONS_INIT;
@@ -72,7 +72,7 @@ int lg2_blame(git_repository *repo, int argc, char *argv[])
 	 * Get the raw data inside the blob for output. We use the
 	 * `commitish:path/to/file.txt` format to find it.
 	 */
-	if (git_oid_iszero(&blameopts.newest_commit))
+	if (git_oid_is_zero(&blameopts.newest_commit))
 		strcpy(spec, "HEAD");
 	else
 		git_oid_tostr(spec, sizeof(spec), &blameopts.newest_commit);
@@ -91,7 +91,7 @@ int lg2_blame(git_repository *repo, int argc, char *argv[])
 	i = 0;
 	break_on_null_hunk = 0;
 	while (i < rawsize) {
-		const char *eol = memchr(rawdata + i, '\n', rawsize - i);
+		const char *eol = memchr(rawdata + i, '\n', (size_t)(rawsize - i));
 		char oid[10] = {0};
 		const git_blame_hunk *hunk = git_blame_get_hunk_byline(blame, line);
 
@@ -101,7 +101,7 @@ int lg2_blame(git_repository *repo, int argc, char *argv[])
 		if (hunk) {
 			char sig[128] = {0};
 			break_on_null_hunk = 1;
-			
+
 			git_oid_tostr(oid, 10, &hunk->final_commit_id);
 			snprintf(sig, 30, "%s <%s>", hunk->final_signature->name, hunk->final_signature->email);
 
@@ -143,7 +143,7 @@ static void usage(const char *msg, const char *arg)
 }
 
 /** Parse the arguments. */
-static void parse_opts(struct opts *o, int argc, char *argv[])
+static void parse_opts(struct blame_opts *o, int argc, char *argv[])
 {
 	int i;
 	char *bare_args[3] = {0};

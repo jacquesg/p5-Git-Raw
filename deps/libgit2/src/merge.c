@@ -68,6 +68,16 @@ struct merge_diff_df_data {
 	git_merge_diff *prev_conflict;
 };
 
+/*
+ * This acts as a negative cache entry marker. In case we've tried to calculate
+ * similarity metrics for a given blob already but `git_hashsig` determined
+ * that it's too small in order to have a meaningful hash signature, we will
+ * insert the address of this marker instead of `NULL`. Like this, we can
+ * easily check whether we have checked a gien entry already and skip doing the
+ * calculation again and again.
+ */
+static int cache_invalid_marker;
+
 /* Merge base computation */
 
 int merge_bases_many(git_commit_list **out, git_revwalk **walk_out, git_repository *repo, size_t length, const git_oid input_array[])
@@ -310,46 +320,55 @@ static int interesting(git_pqueue *list)
 	return 0;
 }
 
-static void clear_commit_marks_1(git_commit_list **plist,
+static int clear_commit_marks_1(git_commit_list **plist,
 		git_commit_list_node *commit, unsigned int mark)
 {
 	while (commit) {
 		unsigned int i;
 
 		if (!(mark & commit->flags))
-			return;
+			return 0;
 
 		commit->flags &= ~mark;
 
 		for (i = 1; i < commit->out_degree; i++) {
 			git_commit_list_node *p = commit->parents[i];
-			git_commit_list_insert(p, plist);
+			if (git_commit_list_insert(p, plist) == NULL)
+				return -1;
 		}
 
 		commit = commit->out_degree ? commit->parents[0] : NULL;
 	}
+
+	return 0;
 }
 
-static void clear_commit_marks_many(git_vector *commits, unsigned int mark)
+static int clear_commit_marks_many(git_vector *commits, unsigned int mark)
 {
 	git_commit_list *list = NULL;
 	git_commit_list_node *c;
 	unsigned int i;
 
 	git_vector_foreach(commits, i, c) {
-		git_commit_list_insert(c, &list);
+		if (git_commit_list_insert(c, &list) == NULL)
+			return -1;
 	}
 
 	while (list)
-		clear_commit_marks_1(&list, git_commit_list_pop(&list), mark);
+		if (clear_commit_marks_1(&list, git_commit_list_pop(&list), mark) < 0)
+			return -1;
+	return 0;
 }
 
-static void clear_commit_marks(git_commit_list_node *commit, unsigned int mark)
+static int clear_commit_marks(git_commit_list_node *commit, unsigned int mark)
 {
 	git_commit_list *list = NULL;
-	git_commit_list_insert(commit, &list);
+	if (git_commit_list_insert(commit, &list) == NULL)
+		return -1;
 	while (list)
-		clear_commit_marks_1(&list, git_commit_list_pop(&list), mark);
+		if (clear_commit_marks_1(&list, git_commit_list_pop(&list), mark) < 0)
+			return -1;
+	return 0;
 }
 
 static int paint_down_to_common(
@@ -466,10 +485,11 @@ static int remove_redundant(git_revwalk *walk, git_vector *commits)
 				redundant[filled_index[j]] = 1;
 		}
 
-		clear_commit_marks(commit, ALL_FLAGS);
-		clear_commit_marks_many(&work, ALL_FLAGS);
-
 		git_commit_list_free(&common);
+
+		if ((error = clear_commit_marks(commit, ALL_FLAGS)) < 0 ||
+		    (error = clear_commit_marks_many(&work, ALL_FLAGS)) < 0)
+				goto done;
 	}
 
 	for (i = 0; i < commits->length; ++i) {
@@ -531,10 +551,9 @@ int git_merge__bases_many(git_commit_list **out, git_revwalk *walk, git_commit_l
 		while (result)
 			git_vector_insert(&redundant, git_commit_list_pop(&result));
 
-		clear_commit_marks(one, ALL_FLAGS);
-		clear_commit_marks_many(twos, ALL_FLAGS);
-
-		if ((error = remove_redundant(walk, &redundant)) < 0) {
+		if ((error = clear_commit_marks(one, ALL_FLAGS)) < 0 ||
+		    (error = clear_commit_marks_many(twos, ALL_FLAGS)) < 0 ||
+		    (error = remove_redundant(walk, &redundant)) < 0) {
 			git_vector_free(&redundant);
 			return error;
 		}
@@ -867,7 +886,7 @@ static int merge_conflict_invoke_driver(
 
 	git_oid_cpy(&result->id, &oid);
 	result->mode = mode;
-	result->file_size = buf.size;
+	result->file_size = (uint32_t)buf.size;
 
 	result->path = git_pool_strdup(&diff_list->pool, path);
 	GIT_ERROR_CHECK_ALLOC(result->path);
@@ -1015,8 +1034,11 @@ static int index_entry_similarity_calc(
 {
 	git_blob *blob;
 	git_diff_file diff_file = {{{0}}};
-	git_off_t blobsize;
+	git_object_size_t blobsize;
 	int error;
+
+	if (*out || *out == &cache_invalid_marker)
+		return 0;
 
 	*out = NULL;
 
@@ -1038,6 +1060,8 @@ static int index_entry_similarity_calc(
 	error = opts->metric->buffer_signature(out, &diff_file,
 		git_blob_rawcontent(blob), (size_t)blobsize,
 		opts->metric->payload);
+	if (error == GIT_EBUFS)
+		*out = &cache_invalid_marker;
 
 	git_blob_free(blob);
 
@@ -1060,18 +1084,16 @@ static int index_entry_similarity_inexact(
 		return 0;
 
 	/* update signature cache if needed */
-	if (!cache[a_idx] && (error = index_entry_similarity_calc(&cache[a_idx], repo, a, opts)) < 0)
-		return error;
-	if (!cache[b_idx] && (error = index_entry_similarity_calc(&cache[b_idx], repo, b, opts)) < 0)
+	if ((error = index_entry_similarity_calc(&cache[a_idx], repo, a, opts)) < 0 ||
+	    (error = index_entry_similarity_calc(&cache[b_idx], repo, b, opts)) < 0)
 		return error;
 
 	/* some metrics may not wish to process this file (too big / too small) */
-	if (!cache[a_idx] || !cache[b_idx])
+	if (cache[a_idx] == &cache_invalid_marker || cache[b_idx] == &cache_invalid_marker)
 		return 0;
 
 	/* compare signatures */
-	if (opts->metric->similarity(
-		&score, cache[a_idx], cache[b_idx], opts->metric->payload) < 0)
+	if (opts->metric->similarity(&score, cache[a_idx], cache[b_idx], opts->metric->payload) < 0)
 		return -1;
 
 	/* clip score */
@@ -1541,7 +1563,7 @@ int git_merge_diff_list__find_renames(
 done:
 	if (cache != NULL) {
 		for (i = 0; i < cache_size; ++i) {
-			if (cache[i] != NULL)
+			if (cache[i] != NULL && cache[i] != &cache_invalid_marker)
 				opts->metric->free_signature(cache[i], opts->metric->payload);
 		}
 
@@ -2422,7 +2444,7 @@ static int write_merge_head(
 	assert(repo && heads);
 
 	if ((error = git_buf_joinpath(&file_path, repo->gitdir, GIT_MERGE_HEAD_FILE)) < 0 ||
-		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_FORCE, GIT_MERGE_FILE_MODE)) < 0)
+		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_CREATE_LEADING_DIRS, GIT_MERGE_FILE_MODE)) < 0)
 		goto cleanup;
 
 	for (i = 0; i < heads_len; i++) {
@@ -2450,7 +2472,7 @@ static int write_merge_mode(git_repository *repo)
 	assert(repo);
 
 	if ((error = git_buf_joinpath(&file_path, repo->gitdir, GIT_MERGE_MODE_FILE)) < 0 ||
-		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_FORCE, GIT_MERGE_FILE_MODE)) < 0)
+		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_CREATE_LEADING_DIRS, GIT_MERGE_FILE_MODE)) < 0)
 		goto cleanup;
 
 	if ((error = git_filebuf_write(&file, "no-ff", 5)) < 0)
@@ -2681,7 +2703,7 @@ static int write_merge_msg(
 		entries[i].merge_head = heads[i];
 
 	if ((error = git_buf_joinpath(&file_path, repo->gitdir, GIT_MERGE_MSG_FILE)) < 0 ||
-		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_FORCE, GIT_MERGE_FILE_MODE)) < 0 ||
+		(error = git_filebuf_open(&file, file_path.ptr, GIT_FILEBUF_CREATE_LEADING_DIRS, GIT_MERGE_FILE_MODE)) < 0 ||
 		(error = git_filebuf_write(&file, "Merge ", 6)) < 0)
 		goto cleanup;
 
@@ -3112,9 +3134,6 @@ static int merge_heads(
 	*ancestor_head_out = NULL;
 	*our_head_out = NULL;
 
-	if ((error = git_repository__ensure_not_bare(repo, "merge")) < 0)
-		goto done;
-
 	if ((error = git_annotated_commit_from_ref(&our_head, repo, our_ref)) < 0)
 		goto done;
 
@@ -3325,24 +3344,40 @@ done:
 	return error;
 }
 
-int git_merge_init_options(git_merge_options *opts, unsigned int version)
+int git_merge_options_init(git_merge_options *opts, unsigned int version)
 {
 	GIT_INIT_STRUCTURE_FROM_TEMPLATE(
 		opts, version, git_merge_options, GIT_MERGE_OPTIONS_INIT);
 	return 0;
 }
 
-int git_merge_file_init_input(git_merge_file_input *input, unsigned int version)
+int git_merge_init_options(git_merge_options *opts, unsigned int version)
+{
+	return git_merge_options_init(opts, version);
+}
+
+int git_merge_file_input_init(git_merge_file_input *input, unsigned int version)
 {
 	GIT_INIT_STRUCTURE_FROM_TEMPLATE(
 		input, version, git_merge_file_input, GIT_MERGE_FILE_INPUT_INIT);
 	return 0;
 }
 
-int git_merge_file_init_options(
+int git_merge_file_init_input(git_merge_file_input *input, unsigned int version)
+{
+	return git_merge_file_input_init(input, version);
+}
+
+int git_merge_file_options_init(
 	git_merge_file_options *opts, unsigned int version)
 {
 	GIT_INIT_STRUCTURE_FROM_TEMPLATE(
 		opts, version, git_merge_file_options, GIT_MERGE_FILE_OPTIONS_INIT);
 	return 0;
+}
+
+int git_merge_file_init_options(
+	git_merge_file_options *opts, unsigned int version)
+{
+	return git_merge_file_options_init(opts, version);
 }

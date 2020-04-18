@@ -32,8 +32,6 @@ static DWORD WINAPI git_win32__threadproc(LPVOID lpParameter)
 
 	thread->result = thread->proc(thread->param);
 
-	git__free_tls_data();
-
 	return CLEAN_THREAD_EXIT;
 }
 
@@ -42,15 +40,15 @@ int git_threads_init(void)
 	HMODULE hModule = GetModuleHandleW(L"kernel32");
 
 	if (hModule) {
-		win32_srwlock_initialize = (win32_srwlock_fn)
+		win32_srwlock_initialize = (win32_srwlock_fn)(void *)
 			GetProcAddress(hModule, "InitializeSRWLock");
-		win32_srwlock_acquire_shared = (win32_srwlock_fn)
+		win32_srwlock_acquire_shared = (win32_srwlock_fn)(void *)
 			GetProcAddress(hModule, "AcquireSRWLockShared");
-		win32_srwlock_release_shared = (win32_srwlock_fn)
+		win32_srwlock_release_shared = (win32_srwlock_fn)(void *)
 			GetProcAddress(hModule, "ReleaseSRWLockShared");
-		win32_srwlock_acquire_exclusive = (win32_srwlock_fn)
+		win32_srwlock_acquire_exclusive = (win32_srwlock_fn)(void *)
 			GetProcAddress(hModule, "AcquireSRWLockExclusive");
-		win32_srwlock_release_exclusive = (win32_srwlock_fn)
+		win32_srwlock_release_exclusive = (win32_srwlock_fn)(void *)
 			GetProcAddress(hModule, "ReleaseSRWLockExclusive");
 	}
 
@@ -103,9 +101,6 @@ void git_thread_exit(void *value)
 {
 	assert(GIT_GLOBAL->current_thread);
 	GIT_GLOBAL->current_thread->result = value;
-
-	git__free_tls_data();
-
 	ExitThread(CLEAN_THREAD_EXIT);
 }
 

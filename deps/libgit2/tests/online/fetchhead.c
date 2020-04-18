@@ -1,6 +1,6 @@
 #include "clar_libgit2.h"
 
-#include "fileops.h"
+#include "futils.h"
 #include "fetchhead.h"
 #include "../fetchhead/fetchhead_data.h"
 #include "git2/clone.h"
@@ -35,10 +35,10 @@ static void fetchhead_test_clone(void)
 	cl_git_pass(git_clone(&g_repo, LIVE_REPO_URL, "./foo", &g_options));
 }
 
-static int count_references(void)
+static size_t count_references(void)
 {
 	git_strarray array;
-	int refs;
+	size_t refs;
 
 	cl_git_pass(git_reference_list(&array, g_repo));
 	refs = array.count;
@@ -118,7 +118,7 @@ void test_online_fetchhead__no_merges(void)
 void test_online_fetchhead__explicit_dst_refspec_creates_branch(void)
 {
 	git_reference *ref;
-	int refs;
+	size_t refs;
 
 	fetchhead_test_clone();
 	refs = count_references();
@@ -133,7 +133,7 @@ void test_online_fetchhead__explicit_dst_refspec_creates_branch(void)
 void test_online_fetchhead__empty_dst_refspec_creates_no_branch(void)
 {
 	git_reference *ref;
-	int refs;
+	size_t refs;
 
 	fetchhead_test_clone();
 	refs = count_references();
@@ -146,11 +146,28 @@ void test_online_fetchhead__empty_dst_refspec_creates_no_branch(void)
 
 void test_online_fetchhead__colon_only_dst_refspec_creates_no_branch(void)
 {
-	int refs;
+	size_t refs;
 
 	fetchhead_test_clone();
 	refs = count_references();
 	fetchhead_test_fetch("refs/heads/first-merge:", FETCH_HEAD_EXPLICIT_DATA);
 
 	cl_assert_equal_i(refs, count_references());
+}
+
+void test_online_fetchhead__creds_get_stripped(void)
+{
+	git_buf buf = GIT_BUF_INIT;
+	git_remote *remote;
+
+	cl_git_pass(git_repository_init(&g_repo, "./foo", 0));
+	cl_git_pass(git_remote_create_anonymous(&remote, g_repo, "https://foo:bar@github.com/libgit2/TestGitRepository"));
+	cl_git_pass(git_remote_fetch(remote, NULL, NULL, NULL));
+
+	cl_git_pass(git_futils_readbuffer(&buf, "./foo/.git/FETCH_HEAD"));
+	cl_assert_equal_s(buf.ptr,
+		"49322bb17d3acc9146f98c97d078513228bbf3c0\t\thttps://github.com/libgit2/TestGitRepository\n");
+
+	git_remote_free(remote);
+	git_buf_dispose(&buf);
 }

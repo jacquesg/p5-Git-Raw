@@ -14,10 +14,10 @@
 
 #include "common.h"
 
-int lg2_show_index(git_repository *repo, int argc, char** argv)
+int lg2_show_index(git_repository *repo, int argc, char **argv)
 {
 	git_index *index;
-	unsigned int i, ecount;
+	size_t i, ecount;
 	char *dir = ".";
 	size_t dirlen;
 	char out[GIT_OID_HEXSZ+1];

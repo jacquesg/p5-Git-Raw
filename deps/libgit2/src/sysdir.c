@@ -82,15 +82,25 @@ static int git_sysdir_guess_global_dirs(git_buf *out)
 #else
 	int error;
 	uid_t uid, euid;
+	const char *sandbox_id;
 
 	uid = getuid();
 	euid = geteuid();
 
+	/**
+	 * If APP_SANDBOX_CONTAINER_ID is set, we are running in a
+	 * sandboxed environment on macOS.
+	 */
+	sandbox_id = getenv("APP_SANDBOX_CONTAINER_ID");
+
 	/*
 	 * In case we are running setuid, use the configuration
 	 * of the effective user.
+	 *
+	 * If we are running in a sandboxed environment on macOS,
+	 * we have to get the HOME dir from the password entry file.
 	 */
-	if (uid == euid)
+	if (!sandbox_id && uid == euid)
 	    error = git__getenv(out, "HOME");
 	else
 	    error = get_passwd_home(out, euid);
@@ -203,25 +213,6 @@ int git_sysdir_get(const git_buf **out, git_sysdir_t which)
 	GIT_ERROR_CHECK_ERROR(git_sysdir_check_selector(which));
 
 	*out = &git_sysdir__dirs[which].buf;
-	return 0;
-}
-
-int git_sysdir_get_str(
-	char *out,
-	size_t outlen,
-	git_sysdir_t which)
-{
-	const git_buf *path = NULL;
-
-	GIT_ERROR_CHECK_ERROR(git_sysdir_check_selector(which));
-	GIT_ERROR_CHECK_ERROR(git_sysdir_get(&path, which));
-
-	if (!out || path->size >= outlen) {
-		git_error_set(GIT_ERROR_NOMEMORY, "buffer is too short for the path");
-		return GIT_EBUFS;
-	}
-
-	git_buf_copy_cstr(out, outlen, path);
 	return 0;
 }
 
