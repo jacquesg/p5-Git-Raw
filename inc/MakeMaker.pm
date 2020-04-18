@@ -50,8 +50,12 @@ my $ccflags = '';
 my %os_specific = (
 	'darwin' => {
 		'ssh2' => {
-			'inc' => ['/opt/local/include'],
-			'lib' => ['/opt/local/lib']
+			'inc' => ['/usr/local/opt/libssh2/include', '/opt/local/include'],
+			'lib' => ['/usr/local/opt/libssh2/lib', '/opt/local/lib']
+		},
+		'ssl' => {
+			'inc' => ['/usr/local/opt/openssl/include'],
+			'lib' => ['/usr/local/opt/openssl/lib']
 		}
 	},
 	'freebsd' => {
@@ -69,12 +73,19 @@ my %os_specific = (
 );
 
 my ($ssh2_libpath, $ssh2_incpath);
+my ($ssl_libpath, $ssl_incpath);
 if (my $os_params = $os_specific{$^O}) {
 	if (my $ssh2 = $os_params -> {'ssh2'}) {
 		$ssh2_libpath = $ssh2 -> {'lib'};
 		$ssh2_incpath = $ssh2 -> {'inc'};
 	}
+
+	if (my $ssl = $os_params -> {'ssl'}) {
+		$ssl_libpath = $ssl -> {'lib'};
+		$ssl_incpath = $ssl -> {'inc'};
+	}
 }
+
 
 my @library_tests = (
 	{
@@ -85,6 +96,8 @@ my @library_tests = (
 	},
 	{
 		'lib'     => 'ssl',
+		'libpath' => $ssl_libpath,
+		'incpath' => $ssl_incpath,
 		'header'  => 'openssl/opensslconf.h',
 	},
 );
