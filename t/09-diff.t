@@ -588,7 +588,7 @@ EOS
 
 $diff = Git::Raw::Diff -> new($content);
 isa_ok $diff, 'Git::Raw::Diff';
-is $diff -> patchid, '292e4ea0c7e13c2a7770607a5bce3e6a914bad49';
+is $diff -> patchid, 'c0ba3e033a74ff87780612647720ce92ab7203a4';
 
 is $diff -> delta_count, 2;
 $delta1 = $diff -> deltas(0);
