@@ -113,12 +113,7 @@ steps:
     echo "##vso[task.setvariable variable=PATH]$PATH"
     git config --global user.name "p5-Git-Raw"
     git config --global user.email "jacquesg@cpan.org"
-    cpanm --quiet --notest Dist::Zilla~">= 5.0000, < 6.0000"
-    cpanm --quiet --notest Dist::Zilla::PluginBundle::Author::ALEXBIO
-    cpanm --quiet --notest Pod::Coverage::TrustPod
-    cpanm --quiet --notest Devel::Cover::Report::Coveralls
-    cpanm --quiet --notest Dist::Zilla::App::Command::cover
-    cpanm --quiet --notest App::Ack
+    cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::JACQUESG App::Ack
     dzil authordeps --missing | ack -v "inc::" | cpanm --quiet --notest
     dzil listdeps --missing | cpanm --quiet --notest
   displayName: 'Install CPAN dependencies'

@@ -45,9 +45,7 @@ install:
  - set OLDPATH=%PATH%
  - set PATH=%PERL520%\perl\bin;%PERL520%\perl\site\bin;%PERL520%\c\bin;%OLDPATH%
  - cd C:\projects\p5-Git-Raw
- - cpanm --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::ALEXBIO Pod::Coverage::TrustPod
- - cpanm --quiet --notest Devel::Cover::Report::Coveralls Dist::Zilla::App::Command::cover
- - cpanm --quiet --notest App::Ack
+ - cpanm --notest --quiet Dist::Zilla Dist::Zilla::PluginBundle::Author::JACQUESG App::Ack
  - dzil authordeps --missing | ack -v "inc::" | cpanm --notest --quiet
  - dzil listdeps --missing | cpanm --notest --quiet
 
