@@ -2,6 +2,10 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to 918a7d195
+ - The SHA1DC algorithm is now always used
+ - Drop support for Windows XP/Windows Server 2003 and older
+
 0.84      2019-08-19 21:31:54+01:00 Europe/London
 
  - Moved from Travis to Azure pipelines
