@@ -19,6 +19,10 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
+=head2 parse( $input, $is_fetch )
+
+Parse the refspec string C<$input>.
+
 =head2 dst( )
 
 Retrieve the destination specifier of the refspec.

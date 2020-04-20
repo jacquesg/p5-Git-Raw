@@ -96,7 +96,14 @@ typedef git_rebase_operation * Rebase_Operation;
 typedef git_reference * Reference;
 typedef git_reflog * Reflog;
 typedef git_reflog_entry * Reflog_Entry;
-typedef git_refspec * RefSpec;
+
+typedef struct {
+	git_refspec *refspec;
+	int owned;
+} git_raw_refspec;
+
+typedef git_raw_refspec * RefSpec;
+
 typedef git_signature * Signature;
 typedef git_tag * Tag;
 typedef git_transfer_progress * TransferProgress;

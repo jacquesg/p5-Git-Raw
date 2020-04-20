@@ -1,11 +1,35 @@
 MODULE = Git::Raw			PACKAGE = Git::Raw::RefSpec
 
+RefSpec
+parse(class, input, is_fetch)
+	SV *class
+	SV *input
+	SV *is_fetch
+
+	PREINIT:
+		int rc;
+		git_refspec *s = NULL;
+		RefSpec spec = NULL;
+
+	CODE:
+		rc = git_refspec_parse(&s, git_ensure_pv(input, "input"),
+			git_ensure_iv(is_fetch, "is_fetch"));
+		git_check_error(rc);
+
+		Newxz(spec, 1, git_raw_refspec);
+		spec -> refspec = s;
+		spec -> owned = 1;
+
+		RETVAL = spec;
+
+	OUTPUT: RETVAL
+
 SV *
 dst(self)
 	RefSpec self
 
 	CODE:
-		RETVAL = newSVpv(git_refspec_dst(self), 0);
+		RETVAL = newSVpv(git_refspec_dst(self -> refspec), 0);
 
 	OUTPUT: RETVAL
 
@@ -20,7 +44,7 @@ dst_matches(self, ref)
 	CODE:
 		ref_name = git_ensure_pv(ref, "name");
 
-		RETVAL = newSViv(git_refspec_dst_matches(self, ref_name));
+		RETVAL = newSViv(git_refspec_dst_matches(self -> refspec, ref_name));
 
 	OUTPUT: RETVAL
 
@@ -29,7 +53,7 @@ src(self)
 	RefSpec self
 
 	CODE:
-		RETVAL = newSVpv(git_refspec_src(self), 0);
+		RETVAL = newSVpv(git_refspec_src(self -> refspec), 0);
 
 	OUTPUT: RETVAL
 
@@ -44,7 +68,7 @@ src_matches(self, ref)
 	CODE:
 		ref_name = git_ensure_pv(ref, "name");
 
-		RETVAL = newSViv(git_refspec_src_matches(self, ref_name));
+		RETVAL = newSViv(git_refspec_src_matches(self -> refspec, ref_name));
 
 	OUTPUT: RETVAL
 
@@ -53,7 +77,7 @@ string(self)
 	RefSpec self
 
 	CODE:
-		RETVAL = newSVpv(git_refspec_string(self), 0);
+		RETVAL = newSVpv(git_refspec_string(self -> refspec), 0);
 
 	OUTPUT: RETVAL
 
@@ -65,7 +89,7 @@ direction(self)
 		git_direction dir;
 
 	CODE:
-		dir = git_refspec_direction(self);
+		dir = git_refspec_direction(self -> refspec);
 		if (dir == GIT_DIRECTION_FETCH)
 			RETVAL = newSVpv("fetch", 0);
 		else if (dir == GIT_DIRECTION_PUSH)
@@ -91,7 +115,7 @@ transform(self, ref)
 
 		ref_name = git_ensure_pv(ref, "name");
 
-		rc = git_refspec_transform(&buf, self, ref_name);
+		rc = git_refspec_transform(&buf, self -> refspec, ref_name);
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
@@ -116,7 +140,7 @@ rtransform(self, ref)
 
 		ref_name = git_ensure_pv(ref, "name");
 
-		rc = git_refspec_rtransform(&buf, self, ref_name);
+		rc = git_refspec_rtransform(&buf, self -> refspec, ref_name);
 		if (rc == GIT_OK)
 			RETVAL = newSVpv(buf.ptr, buf.size);
 
@@ -130,7 +154,7 @@ is_force(self)
 	RefSpec self
 
 	CODE:
-		RETVAL = newSViv(git_refspec_force(self));
+		RETVAL = newSViv(git_refspec_force(self -> refspec));
 
 	OUTPUT: RETVAL
 
@@ -138,5 +162,16 @@ void
 DESTROY(self)
 	SV *self
 
+	PREINIT:
+		RefSpec spec;
+
 	CODE:
-		SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+		spec = GIT_SV_TO_PTR(RefSpec, self);
+
+		if (spec -> owned)
+			git_refspec_free(spec -> refspec);
+		else
+			SvREFCNT_dec(GIT_SV_TO_MAGIC(self));
+
+		Safefree(spec);
+

@@ -326,16 +326,21 @@ refspecs(self)
 		count = git_remote_refspec_count(remote_ptr -> remote);
 
 		for (i = 0; i < count; ++i) {
-			const git_refspec *refspec;
+			RefSpec spec;
+			const git_refspec *s;
 			SV *tmp;
 
-			refspec = git_remote_get_refspec(
+			s = git_remote_get_refspec(
 				remote_ptr -> remote,
 				i
 			);
 
+			Newxz(spec, 1, git_raw_refspec);
+			spec -> refspec = (git_refspec *)s;
+			spec -> owned = 0;
+
 			GIT_NEW_OBJ_WITH_MAGIC(
-				tmp, "Git::Raw::RefSpec", (git_refspec *) refspec, SvRV(self)
+				tmp, "Git::Raw::RefSpec", spec, SvRV(self)
 			);
 
 			mXPUSHs(tmp);
