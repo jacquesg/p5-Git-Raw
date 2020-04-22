@@ -4,6 +4,8 @@ Revision history for Git-Raw
 
  - Remote -> download and Remote -> fetch now accept an optional
  list of refspecs (thanks, @ColMelvin)
+ - Added RefSpec methods:
+    + parse
 
 0.85      2020-04-19 12:30:20+01:00 Europe/London
 
