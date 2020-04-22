@@ -2,6 +2,9 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Remote -> download and Remote -> fetch now accept an optional
+ list of refspecs (thanks, @ColMelvin)
+
 0.85      2020-04-19 12:30:20+01:00 Europe/London
 
  - Update libgit2 to 918a7d195
