@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.86      2020-04-25 12:23:50+01:00 Europe/London
+
  - Remote -> download and Remote -> fetch now accept an optional
  list of refspecs (thanks, @ColMelvin)
  - Added RefSpec methods:
