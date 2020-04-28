@@ -152,7 +152,7 @@ fields for the C<%fetch_opts> hash are:
 
 =item * "callbacks"
 
-See L<C<CALLBACKS>>.
+See L<CALLBACKS/"CALLBACKS">.
 
 =item * "prune"
 
@@ -181,7 +181,7 @@ remote tracking-branches. Valid fields for the C<%push_opts> hash are:
 
 =item * "callbacks"
 
-See L<C<CALLBACKS>>.
+See L<CALLBACKS/"CALLBACKS">.
 
 =item * "custom_headers"
 
