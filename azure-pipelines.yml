@@ -89,40 +89,43 @@ steps:
     while read algorithm key comment; do
         echo "[localhost]:2222 $algorithm $key" >>"${HOME}/.ssh/known_hosts"
     done <"${SSHD_DIR}/id_rsa.pub"
+  condition: or(startsWith(variables['IMAGE'], 'ubuntu'), startsWith(variables['IMAGE'], 'macos'))
   displayName: 'Setup SSH server'
 
 - script: |
+    PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
+    echo "##vso[task.setvariable variable=PATH]$PATH"
     wget -O - https://install.perlbrew.pl | bash
-    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:$PATH
-    echo "##vso[task.setvariable variable=PATH]$PATH"
-  displayName: 'Install perlbrew'
-
-- script: |
-    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
-    echo "##vso[task.setvariable variable=PATH]$PATH"
     perlbrew install --notest perl-$(PERL_VERSION)
     perl -V
     curl -L https://cpanmin.us | perl - App::cpanminus
-  displayName: 'Install perl'
+  condition: or(startsWith(variables['IMAGE'], 'ubuntu'), startsWith(variables['IMAGE'], 'macos'))
+  displayName: 'Install perl (Unix)'
 
 - script: |
-    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
-    echo "##vso[task.setvariable variable=PATH]$PATH"
     git config --global user.name "p5-Git-Raw"
     git config --global user.email "jacquesg@cpan.org"
     cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::JACQUESG App::Ack
     dzil authordeps --missing | ack -v "inc::" | cpanm --quiet --notest
     dzil listdeps --missing | cpanm --quiet --notest
-  displayName: 'Install CPAN dependencies'
+  condition: or(startsWith(variables['IMAGE'], 'ubuntu'), startsWith(variables['IMAGE'], 'macos'))
+  displayName: 'Install CPAN dependencies (Unix)'
 
 - script: |
-    export PATH=~/perl5/bin:~/perl5/perlbrew/bin:~/perl5/perlbrew/perls/perl-$(PERL_VERSION)/bin:$PATH
-    echo "##vso[task.setvariable variable=PATH]$PATH"
-    export RELEASE_TESTING=1
-    export NETWORK_TESTING=1
-    export AUTOMATED_TESTING=1
-    echo "##vso[task.setvariable variable=RELEASE_TESTING]$RELEASE_TESTING"
-    echo "##vso[task.setvariable variable=NETWORK_TESTING]$NETWORK_TESTING"
-    echo "##vso[task.setvariable variable=AUTOMATED_TESTING]$AUTOMATED_TESTING"
-    dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -ignore_re curl -test -report coveralls
-  displayName: 'Build/Test'
+    dzil cover -ignore_re ^deps -ignore_re CORE -ignore_re ^const -ignore_re usr -test -report coveralls
+  condition: startsWith(variables['IMAGE'], 'ubuntu')
+  env:
+    COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+    RELEASE_TESTING: 1
+    NETWORK_TESTING: 1
+    AUTOMATED_TESTING: 1
+  displayName: 'Build/Test (Linux)'
+
+- script: |
+    dzil test
+  condition: startsWith(variables['IMAGE'], 'macos')
+  env:
+    RELEASE_TESTING: 1
+    NETWORK_TESTING: 1
+    AUTOMATED_TESTING: 1
+  displayName: 'Build/Test (macOS)'
