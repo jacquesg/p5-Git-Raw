@@ -5,7 +5,7 @@ use Test::More;
 use File::Spec::Functions qw(catfile rel2abs);
 use File::Path qw(rmtree);
 
-my @repos = (qw(test_repo rebase_repo));
+my @repos = (qw(test_repo rebase_repo test_repo_submodules));
 foreach my $repo (@repos) {
 	my $path = rel2abs(catfile('t', $repo));
 
