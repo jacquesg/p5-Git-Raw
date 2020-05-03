@@ -20,18 +20,6 @@ strategy:
     linux-perl522:
         PERL_VERSION: '5.22.4'
         IMAGE: 'ubuntu-latest'
-    linux-perl520:
-        PERL_VERSION: '5.20.3'
-        IMAGE: 'ubuntu-latest'
-    linux-perl518:
-        PERL_VERSION: '5.18.4'
-        IMAGE: 'ubuntu-latest'
-    linux-perl516:
-        PERL_VERSION: '5.16.3'
-        IMAGE: 'ubuntu-latest'
-    linux-perl514:
-        PERL_VERSION: '5.14.4'
-        IMAGE: 'ubuntu-latest'
     macos-perl530:
         PERL_VERSION: '5.30.0'
         IMAGE: 'macos-latest'
