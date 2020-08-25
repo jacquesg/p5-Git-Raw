@@ -71,7 +71,7 @@ steps:
     /usr/sbin/sshd -f "${SSHD_DIR}/sshd_config" -E "${SSHD_DIR}/log"
 
     # Set up keys
-    mkdir "${HOME}/.ssh"
+    mkdir -p "${HOME}/.ssh"
     ssh-keygen -t rsa -f "${HOME}/.ssh/id_rsa" -N "" -q
     cat "${HOME}/.ssh/id_rsa.pub" >>"${HOME}/.ssh/authorized_keys"
     while read algorithm key comment; do
