@@ -273,6 +273,10 @@ is_descendant_of(class, repo, commitish, ancestor)
 			croak_resolve("Could not resolve 'ancestor' to a commit id");
 
 		result = git_graph_descendant_of(repo -> repository, &commitish_id, &ancestor_id);
+		if (result < 0)
+		{
+			git_check_error(result);
+		}
 
 		RETVAL = newSViv(result);
 

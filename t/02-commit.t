@@ -338,6 +338,7 @@ is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $commit2 -> id), 0
 
 ok (!eval { Git::Raw::Graph -> is_descendant_of($repo, $commit, '12341234') });
 ok (!eval { Git::Raw::Graph -> is_descendant_of($repo, '12341234', $commit) });
+ok (!eval { Git::Raw::Graph -> is_descendant_of($repo, '1' x 40, '2' x 40) });
 
 is $head -> message, "second commit\n";
 is $head -> summary, "second commit";
