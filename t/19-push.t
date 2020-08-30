@@ -115,6 +115,12 @@ if ($features{'ssh'} == 0) {
 	exit;
 }
 
+if (!$ENV{SSH_TESTING}) {
+	diag("SSH testing not available, skipping SSH clone tests");
+	done_testing;
+	exit;
+}
+
 my $remote_path = rel2abs(catfile('t', 'test_repo'));
 my $remote_port = $ENV{AUTHOR_TESTING} ? 22 : 2222;
 my $remote_url = "ssh://$ENV{USER}\@localhost:$remote_port$remote_path";
