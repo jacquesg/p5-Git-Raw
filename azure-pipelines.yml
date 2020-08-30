@@ -107,6 +107,7 @@ steps:
     RELEASE_TESTING: 1
     NETWORK_TESTING: 1
     AUTOMATED_TESTING: 1
+    SSH_TESTING: 1
   displayName: 'Build/Test (Linux)'
 
 - script: |
@@ -116,4 +117,5 @@ steps:
     RELEASE_TESTING: 1
     NETWORK_TESTING: 1
     AUTOMATED_TESTING: 1
+    SSH_TESTING: 0
   displayName: 'Build/Test (macOS)'
