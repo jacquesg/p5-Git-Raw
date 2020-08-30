@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.87      2020-08-30 13:16:52+01:00 Europe/London
+
  - Update libgit2 to 8720ae8a2c
  - Graph -> is_descendant_of now correctly throws an error instead of
    returning -1 on error
