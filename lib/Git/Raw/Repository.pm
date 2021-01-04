@@ -82,9 +82,9 @@ Remote customization callback. If a non-default remote is required, i.e. a remot
 with a remote name other than 'origin', this callback should be used. The callback
 receives a L<Git::Raw::Repository> object, a string containing the default name
 for the remote, typically 'origin', and a string containing the URL of the remote.
-This callbacks should return a L<Git::Raw::Remote> object. The returned object and
-the repository object passed to this callback is ephemeral. B<Note:> Do not take any
-references to it as it may be freed internally.
+This callback should return a L<Git::Raw::Remote> object. The returned object and
+the repository object passed to this callback are ephemeral. B<Note:> Do not take any
+references to it, as it may be freed internally.
 
 =back
 
@@ -122,7 +122,7 @@ Check if the repository is a linked work tree.
 Retrieve the index of the repository. If C<$new_index> is passed, it will be used
 as the index of the repository. If C<$new_index> is C<undef> the index associated
 with the repository will be disassociated. Returns a L<Git::Raw::Index> object or
-undef if index has been disassociated as part of the call.
+C<undef> if index has been disassociated as part of the call.
 
 =head2 odb( [$new_odb] )
 
@@ -171,7 +171,7 @@ conflicts.
 =item * "force"
 
 Take any action to make the working directory match the target (pretty much the
-opposite of C<"none">.
+opposite of C<"none">).
 
 =item * "safe_create"
 
@@ -180,7 +180,7 @@ Recreate missing files.
 =item * "safe"
 
 Make only modifications that will not lose changes (to be used in order to
-simulate C<git checkout>.
+simulate C<git checkout>).
 
 =item * "allow_conflicts"
 
@@ -196,7 +196,7 @@ Remove ignored files from the working directory.
 
 =item * "update_only"
 
-Only update files that already exists (files won't be created not deleted).
+Only update files that already exist (files won't be created or deleted).
 
 =item * "dont_update_index"
 
@@ -232,7 +232,7 @@ Notifies about conflicting paths.
 
 =item * "dirty"
 
-Notifies about file that don't need an update but no longer matches the baseline.
+Notifies about files that don't need an update but no longer match the baseline.
 Core git displays these files when checkout runs, but won't stop the checkout.
 
 =item * "updated"
@@ -277,7 +277,7 @@ and an integer C<$total_steps>.
 
 =item * "paths"
 
-An optional array representing the list of files thay should be checked out. If
+An optional array representing the list of files that should be checked out. If
 C<"paths"> is not specified, all files will be checked out (default).
 
 =item * "our_label"
@@ -344,7 +344,7 @@ C<"type"> (setting C<"type"> to C<"soft"> or C<"hard"> has no effect).
 
 =head2 status( \%opts, [$file, $file, ...] )
 
-Retrieve the status of files in the index and/or working directory. This functions
+Retrieve the status of files in the index and/or working directory. This function
 returns a hash reference with an entry for each C<$file>, or all files if no file
 parameters are provided. Each C<$file> entry has a list of C<"flags">, which may
 include: C<"index_new">, C<"index_modified">, C<"index_deleted">, C<"index_renamed">,
@@ -411,12 +411,12 @@ Rename detection should be run between the index and the working directory.
 
 =item * "sort_case_sensitively"
 
-Override the native case sensitivity for the file system and forces the output
+Override the native case sensitivity for the file system and force the output
 to be in case-sensitive order.
 
 =item * "sort_case_insensitively"
 
-Override the native case sensitivity for the file system and forces the output
+Override the native case sensitivity for the file system and force the output
 to be in case-insensitive order.
 
 =item * "renames_from_rewrites"
@@ -431,8 +431,8 @@ C<Git::Raw>).
 
 =item * "update_index"
 
-Refresh the stat cache in the index for files that are unchanged but have out
-of date stat information in the index. It will result in less work being done
+Refresh the stat cache in the index for files that are unchanged but have 
+out-of-date stat information in the index. It will result in less work being done
 on subsequent calls to C<status>. This is mutually exclusive with the
 C<"no_refresh"> option.
 
