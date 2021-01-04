@@ -20,7 +20,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 new( )
 
-Create a new in memory index. This is currently of little use.
+Create a new in-memory index. This is currently of little use.
 
 =head2 owner( )
 
@@ -33,7 +33,7 @@ or alternatively a L<Git::Raw::Index::Entry>.
 
 =head2 add_frombuffer( $path, $buffer, [$mode] )
 
-Add or update an entry from an in memory file. The entry will be placed at C<$path>
+Add or update an entry from an in-memory file. The entry will be placed at C<$path>
 with the contents of C<$buffer>. C<$buffer> may either be string or a reference
 to a string. C<$mode> is the file mode; it defaults to C<0100644>. Returns a
 L<Git::Raw::Index::Entry> object.
@@ -79,7 +79,7 @@ be added to the index, C<E<gt>0> if it should be skipped or C<E<lt>0> to abort.
 
 =head2 find( $path )
 
-Find the first L<Git::Raw::Index::Entry> which point to given C<$path>. If an
+Find the first L<Git::Raw::Index::Entry> which points to a given C<$path>. If an
 entry cannot be found, this function will return C<undef>.
 
 =head2 remove( $path )
@@ -98,7 +98,7 @@ Retrieve the full path to the index file on disk.
 =head2 checksum( )
 
 Retrieve the SHA-1 checksum over the index file, except for the last 20 bytes which is the checksum content itself.
-In the index does not exist on-disk an empty OID will be returned.
+If the index does not exist on-disk an empty OID will be returned.
 
 =head2 clear( )
 
@@ -106,7 +106,7 @@ Clear the index.
 
 =head2 read( [$force] )
 
-Update the index reading it from disk.
+Update the index, reading it from disk.
 
 =head2 write( )
 
@@ -114,7 +114,7 @@ Write the index to disk.
 
 =head2 read_tree( $tree )
 
-Replace the index contente with C<$tree>.
+Replace the index content with C<$tree>.
 
 =head2 write_tree( [$repo] )
 
@@ -250,7 +250,7 @@ List of path patterns to add.
 
 The callback to be called for each updated item. Receives the C<$path> and
 matching C<$pathspec>. This callback should return C<0> if the file should be
-added to the index, C<E<gt>0> if it should be skipped or C<E<lt>0> to abort.
+added to the index, C<E<gt>0> if it should be skipped, or C<E<lt>0> to abort.
 
 =back
 
