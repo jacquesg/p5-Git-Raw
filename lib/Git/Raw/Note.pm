@@ -27,7 +27,7 @@ L<Git::Raw::Note> object.
 =head2 read( $repo, $commitish, [$refname] )
 
 Read the note for C<$commitish>. Returns a L<Git::Raw::Note> object if a note
-is associated with C<$commitish>, otherise C<undef>.
+is associated with C<$commitish>, otherwise C<undef>.
 
 =head2 remove( $repo, $commitish, [$refname] )
 
