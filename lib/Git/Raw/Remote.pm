@@ -53,8 +53,8 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head2 create( $repo, $name, $url, [$fetch] )
 
-Create a remote with the default fetch refspec or C<$fetch> if provideed, and add
-it to the repository's configuration.
+Create a remote with the default fetch refspec or C<$fetch> if
+provided, and add it to the repository's configuration.
 
 =head2 create_anonymous( $repo, $url )
 
@@ -89,7 +89,7 @@ Retrieve the name of the remote.
 
 =head2 rename( $repo, $old_name, $new_name, [ \@problems ] )
 
-Rename a remote. Non-default refspecs cannot be renamed and will be store in
+Rename a remote. Non-default refspecs cannot be renamed and will be stored in
 C<@problems> if provided.
 
 =head2 url( [ $url ] )

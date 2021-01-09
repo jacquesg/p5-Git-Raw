@@ -18,18 +18,18 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 METHODS
 
-=head2 create( $name, $attributes)
+=head2 create( $name, $attributes )
 
 Create a filter. C<$name> is a name by which the filter can be referenced.
 C<$attributes> is a whitespace-separated list of attribute names to check for
 this filter (e.g. C<"eol crlf text">). If the attribute name is bare, it will
-be simply loaded and passed to the C<"check"> callback.  If it has a value
+simply be loaded and passed to the C<"check"> callback.  If it has a value
 (i.e. "name=value"), the attribute must match that value for the filter to
 be applied.
 
 =head2 callbacks( \%callbacks )
 
-Set the callbacks for the filter. C<%callbacks> may specificy the following
+Set the callbacks for the filter. C<%callbacks> may specify the following
 callbacks.
 
 =over 4
