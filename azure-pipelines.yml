@@ -72,7 +72,7 @@ steps:
 
     # Set up keys
     mkdir -p "${HOME}/.ssh"
-    ssh-keygen -t rsa -f "${HOME}/.ssh/id_rsa" -N "" -q
+    ssh-keygen -t rsa -m PEM -b 2048 -f "${HOME}/.ssh/id_rsa" -N "" -q
     cat "${HOME}/.ssh/id_rsa.pub" >>"${HOME}/.ssh/authorized_keys"
     while read algorithm key comment; do
         echo "[localhost]:2222 $algorithm $key" >>"${HOME}/.ssh/known_hosts"
