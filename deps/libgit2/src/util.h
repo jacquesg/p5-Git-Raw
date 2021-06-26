@@ -18,7 +18,7 @@
 #include "buffer.h"
 #include "common.h"
 #include "strnlen.h"
-#include "thread-utils.h"
+#include "thread.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 #define bitsizeof(x) (CHAR_BIT * sizeof(x))
@@ -169,29 +169,29 @@ extern int git__strncasecmp(const char *a, const char *b, size_t sz);
 extern int git__strcasesort_cmp(const char *a, const char *b);
 
 typedef struct {
-	git_atomic refcount;
+	git_atomic32 refcount;
 	void *owner;
 } git_refcount;
 
 typedef void (*git_refcount_freeptr)(void *r);
 
 #define GIT_REFCOUNT_INC(r) { \
-	git_atomic_inc(&(r)->rc.refcount);	\
+	git_atomic32_inc(&(r)->rc.refcount);	\
 }
 
 #define GIT_REFCOUNT_DEC(_r, do_free) { \
 	git_refcount *r = &(_r)->rc; \
-	int val = git_atomic_dec(&r->refcount); \
+	int val = git_atomic32_dec(&r->refcount); \
 	if (val <= 0 && r->owner == NULL) { do_free(_r); } \
 }
 
 #define GIT_REFCOUNT_OWN(r, o) { \
-	(r)->rc.owner = o; \
+	(void)git_atomic_swap((r)->rc.owner, o); \
 }
 
-#define GIT_REFCOUNT_OWNER(r) ((r)->rc.owner)
+#define GIT_REFCOUNT_OWNER(r) git_atomic_load((r)->rc.owner)
 
-#define GIT_REFCOUNT_VAL(r) git_atomic_get((r)->rc.refcount)
+#define GIT_REFCOUNT_VAL(r) git_atomic32_get((r)->rc.refcount)
 
 
 static signed char from_hex[] = {
@@ -317,27 +317,6 @@ extern int git__date_rfc2822_fmt(char *out, size_t len, const git_time *date);
 extern size_t git__unescape(char *str);
 
 /*
- * Iterate through an UTF-8 string, yielding one
- * codepoint at a time.
- *
- * @param str current position in the string
- * @param str_len size left in the string; -1 if the string is NULL-terminated
- * @param dst pointer where to store the current codepoint
- * @return length in bytes of the read codepoint; -1 if the codepoint was invalid
- */
-extern int git__utf8_iterate(const uint8_t *str, int str_len, int32_t *dst);
-
-/*
- * Iterate through an UTF-8 string and stops after finding any invalid UTF-8
- * codepoints.
- *
- * @param str string to scan
- * @param str_len size of the string
- * @return length in bytes of the string that contains valid data
- */
-extern size_t git__utf8_valid_buf_length(const uint8_t *str, size_t str_len);
-
-/*
  * Safely zero-out memory, making sure that the compiler
  * doesn't optimize away the operation.
  */
@@ -413,6 +392,10 @@ GIT_INLINE(double) git__timer(void)
 #endif
 
 extern int git__getenv(git_buf *out, const char *name);
+
+extern int git__online_cpus(void);
+
+GIT_INLINE(int) git__noop(void) { return 0; }
 
 #include "alloc.h"
 

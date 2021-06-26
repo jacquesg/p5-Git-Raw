@@ -51,6 +51,7 @@ typedef enum {
 	GIT_CONFIGMAP_PROTECTHFS,       /* core.protectHFS */
 	GIT_CONFIGMAP_PROTECTNTFS,      /* core.protectNTFS */
 	GIT_CONFIGMAP_FSYNCOBJECTFILES, /* core.fsyncObjectFiles */
+	GIT_CONFIGMAP_LONGPATHS,        /* core.longpaths */
 	GIT_CONFIGMAP_CACHE_MAX
 } git_configmap_item;
 
@@ -116,6 +117,8 @@ typedef enum {
 	GIT_PROTECTNTFS_DEFAULT = GIT_CONFIGMAP_TRUE,
 	/* core.fsyncObjectFiles */
 	GIT_FSYNCOBJECTFILES_DEFAULT = GIT_CONFIGMAP_FALSE,
+	/* core.longpaths */
+	GIT_LONGPATHS_DEFAULT = GIT_CONFIGMAP_FALSE,
 } git_configmap_value;
 
 /* internal repository init flags */
@@ -152,9 +155,9 @@ struct git_repository {
 
 	unsigned int lru_counter;
 
-	git_atomic attr_session_key;
+	git_atomic32 attr_session_key;
 
-	git_configmap_value configmap_cache[GIT_CONFIGMAP_CACHE_MAX];
+	intptr_t configmap_cache[GIT_CONFIGMAP_CACHE_MAX];
 	git_strmap *submodule_cache;
 };
 
@@ -231,5 +234,19 @@ extern size_t git_repository__reserved_names_posix_len;
  */
 bool git_repository__reserved_names(
 	git_buf **out, size_t *outlen, git_repository *repo, bool include_ntfs);
+
+/*
+ * The default branch for the repository; the `init.defaultBranch`
+ * configuration option, if set, or `master` if it is not.
+ */
+int git_repository_initialbranch(git_buf *out, git_repository *repo);
+
+/*
+ * Given a relative `path`, this makes it absolute based on the
+ * repository's working directory.  This will perform validation
+ * to ensure that the path is not longer than MAX_PATH on Windows
+ * (unless `core.longpaths` is set in the repo config).
+ */
+int git_repository_workdir_path(git_buf *out, git_repository *repo, const char *path);
 
 #endif

@@ -13,7 +13,6 @@
 #include "diff.h"
 #include "strmap.h"
 #include "map.h"
-#include "buf_text.h"
 #include "config.h"
 #include "regexp.h"
 #include "repository.h"
@@ -144,7 +143,7 @@ static git_diff_driver_registry *git_repository_driver_registry(
 {
 	if (!repo->diff_drivers) {
 		git_diff_driver_registry *reg = git_diff_driver_registry_new();
-		reg = git__compare_and_swap(&repo->diff_drivers, NULL, reg);
+		reg = git_atomic_compare_and_swap(&repo->diff_drivers, NULL, reg);
 
 		if (reg != NULL) /* if we race, free losing allocation */
 			git_diff_driver_registry_free(reg);
@@ -358,7 +357,7 @@ int git_diff_driver_lookup(
 	int error = 0;
 	const char *values[1], *attrs[] = { "diff" };
 
-	assert(out);
+	GIT_ASSERT_ARG(out);
 	*out = NULL;
 
 	if (!repo || !path || !strlen(path))
@@ -428,8 +427,8 @@ int git_diff_driver_content_is_binary(
 	 * let's just use the simple NUL-byte detection that core git uses.
 	 */
 
-	/* previously was: if (git_buf_text_is_binary(&search)) */
-	if (git_buf_text_contains_nul(&search))
+	/* previously was: if (git_buf_is_binary(&search)) */
+	if (git_buf_contains_nul(&search))
 		return 1;
 
 	return 0;

@@ -26,7 +26,6 @@
 #include "diff.h"
 #include "diff_generate.h"
 #include "pathspec.h"
-#include "buf_text.h"
 #include "diff_xdiff.h"
 #include "path.h"
 #include "attr.h"
@@ -327,6 +326,9 @@ static int checkout_target_fullpath(
 	git_buf_truncate(&data->target_path, data->target_len);
 
 	if (path && git_buf_puts(&data->target_path, path) < 0)
+		return -1;
+
+	if (git_path_validate_workdir_buf(data->repo, &data->target_path) < 0)
 		return -1;
 
 	*out = &data->target_path;
@@ -1243,7 +1245,7 @@ static int checkout_conflict_append_remove(
 	checkout_data *data = payload;
 	const char *name;
 
-	assert(ancestor || ours || theirs);
+	GIT_ASSERT_ARG(ancestor || ours || theirs);
 
 	if (ancestor)
 		name = git__strdup(ancestor->path);
@@ -1278,14 +1280,14 @@ static int checkout_verify_paths(
 	unsigned int flags = GIT_PATH_REJECT_WORKDIR_DEFAULTS;
 
 	if (action & CHECKOUT_ACTION__REMOVE) {
-		if (!git_path_isvalid(repo, delta->old_file.path, delta->old_file.mode, flags)) {
+		if (!git_path_validate(repo, delta->old_file.path, delta->old_file.mode, flags)) {
 			git_error_set(GIT_ERROR_CHECKOUT, "cannot remove invalid path '%s'", delta->old_file.path);
 			return -1;
 		}
 	}
 
 	if (action & ~CHECKOUT_ACTION__REMOVE) {
-		if (!git_path_isvalid(repo, delta->new_file.path, delta->new_file.mode, flags)) {
+		if (!git_path_validate(repo, delta->new_file.path, delta->new_file.mode, flags)) {
 			git_error_set(GIT_ERROR_CHECKOUT, "cannot checkout to invalid path '%s'", delta->new_file.path);
 			return -1;
 		}
@@ -1487,7 +1489,9 @@ static int checkout_stream_write(
 static int checkout_stream_close(git_writestream *s)
 {
 	struct checkout_stream *stream = (struct checkout_stream *)s;
-	assert(stream && stream->open);
+
+	GIT_ASSERT_ARG(stream);
+	GIT_ASSERT_ARG(stream->open);
 
 	stream->open = 0;
 	return p_close(stream->fd);
@@ -1554,7 +1558,7 @@ static int blob_content_to_file(
 
 	error = git_filter_list_stream_blob(fl, blob, &writer.base);
 
-	assert(writer.open == 0);
+	GIT_ASSERT(writer.open == 0);
 
 	git_filter_list_free(fl);
 
@@ -1976,7 +1980,7 @@ static int checkout_write_entry(
 	struct stat st;
 	int error;
 
-	assert (side == conflict->ours || side == conflict->theirs);
+	GIT_ASSERT(side == conflict->ours || side == conflict->theirs);
 
 	if (checkout_target_fullpath(&fullpath, data, side->path) < 0)
 		return -1;
@@ -2030,7 +2034,8 @@ static int checkout_merge_path(
 	const char *our_label_raw, *their_label_raw, *suffix;
 	int error = 0;
 
-	if ((error = git_buf_joinpath(out, git_repository_workdir(data->repo), result->path)) < 0)
+	if ((error = git_buf_joinpath(out, data->opts.target_directory, result->path)) < 0 ||
+	    (error = git_path_validate_workdir_buf(data->repo, out)) < 0)
 		return error;
 
 	/* Most conflicts simply use the filename in the index */
@@ -2115,7 +2120,7 @@ static int checkout_write_merge(
 		if ((error = git_filter_list__load_ext(
 				&fl, data->repo, NULL, git_buf_cstr(&path_workdir),
 				GIT_FILTER_TO_WORKTREE, &filter_opts)) < 0 ||
-			(error = git_filter_list_apply_to_data(&out_data, fl, &in_data)) < 0)
+			(error = git_filter_list__convert_buf(&out_data, fl, &in_data)) < 0)
 			goto done;
 	} else {
 		out_data.ptr = (char *)result.ptr;
@@ -2329,6 +2334,22 @@ static void checkout_data_clear(checkout_data *data)
 	git_attr_session__free(&data->attr_session);
 }
 
+static int validate_target_directory(checkout_data *data)
+{
+	int error;
+
+	if ((error = git_path_validate_workdir(data->repo, data->opts.target_directory)) < 0)
+		return error;
+
+	if (git_path_isdir(data->opts.target_directory))
+		return 0;
+
+	error = checkout_mkdir(data, data->opts.target_directory, NULL,
+	                       GIT_DIR_MODE, GIT_MKDIR_VERIFY_DIR);
+
+	return error;
+}
+
 static int checkout_data_init(
 	checkout_data *data,
 	git_iterator *target,
@@ -2361,10 +2382,7 @@ static int checkout_data_init(
 
 	if (!data->opts.target_directory)
 		data->opts.target_directory = git_repository_workdir(repo);
-	else if (!git_path_isdir(data->opts.target_directory) &&
-			 (error = checkout_mkdir(data,
-				data->opts.target_directory, NULL,
-				GIT_DIR_MODE, GIT_MKDIR_VERIFY_DIR)) < 0)
+	else if ((error = validate_target_directory(data)) < 0)
 		goto cleanup;
 
 	if ((error = git_repository_index(&data->index, data->repo)) < 0)
@@ -2588,7 +2606,7 @@ int git_checkout_iterator(
 	}
 
 	/* Should not have case insensitivity mismatch */
-	assert(git_iterator_ignore_case(workdir) == git_iterator_ignore_case(baseline));
+	GIT_ASSERT(git_iterator_ignore_case(workdir) == git_iterator_ignore_case(baseline));
 
 	/* Generate baseline-to-target diff which will include an entry for
 	 * every possible update that might need to be made.
@@ -2639,7 +2657,7 @@ int git_checkout_iterator(
 		(error = checkout_extensions_update_index(&data)) < 0)
 		goto cleanup;
 
-	assert(data.completed_steps == data.total_steps);
+	GIT_ASSERT(data.completed_steps == data.total_steps);
 
 	if (data.opts.perfdata_cb)
 		data.opts.perfdata_cb(&data.perfdata, data.opts.perfdata_payload);
@@ -2767,7 +2785,8 @@ int git_checkout_head(
 	git_repository *repo,
 	const git_checkout_options *opts)
 {
-	assert(repo);
+	GIT_ASSERT_ARG(repo);
+
 	return git_checkout_tree(repo, NULL, opts);
 }
 

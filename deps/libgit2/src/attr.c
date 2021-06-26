@@ -58,14 +58,16 @@ int git_attr_get(
 	git_attr_rule *rule;
 	git_dir_flag dir_flag = GIT_DIR_FLAG_UNKNOWN;
 
-	assert(value && repo && name);
+	GIT_ASSERT_ARG(value);
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(name);
 
 	*value = NULL;
 
 	if (git_repository_is_bare(repo))
 		dir_flag = GIT_DIR_FLAG_FALSE;
 
-	if (git_attr_path__init(&path, pathname, git_repository_workdir(repo), dir_flag) < 0)
+	if (git_attr_path__init(&path, repo, pathname, git_repository_workdir(repo), dir_flag) < 0)
 		return -1;
 
 	if ((error = collect_attr_files(repo, NULL, flags, pathname, &files)) < 0)
@@ -123,12 +125,15 @@ int git_attr_get_many_with_session(
 	if (!num_attr)
 		return 0;
 
-	assert(values && repo && names);
+	GIT_ASSERT_ARG(values);
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(pathname);
+	GIT_ASSERT_ARG(names);
 
 	if (git_repository_is_bare(repo))
 		dir_flag = GIT_DIR_FLAG_FALSE;
 
-	if (git_attr_path__init(&path, pathname, git_repository_workdir(repo), dir_flag) < 0)
+	if (git_attr_path__init(&path, repo, pathname, git_repository_workdir(repo), dir_flag) < 0)
 		return -1;
 
 	if ((error = collect_attr_files(repo, attr_session, flags, pathname, &files)) < 0)
@@ -206,12 +211,13 @@ int git_attr_foreach(
 	git_strmap *seen = NULL;
 	git_dir_flag dir_flag = GIT_DIR_FLAG_UNKNOWN;
 
-	assert(repo && callback);
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(callback);
 
 	if (git_repository_is_bare(repo))
 		dir_flag = GIT_DIR_FLAG_FALSE;
 
-	if (git_attr_path__init(&path, pathname, git_repository_workdir(repo), dir_flag) < 0)
+	if (git_attr_path__init(&path, repo, pathname, git_repository_workdir(repo), dir_flag) < 0)
 		return -1;
 
 	if ((error = collect_attr_files(repo, NULL, flags, pathname, &files)) < 0 ||
@@ -378,6 +384,9 @@ int git_attr_add_macro(
 	git_attr_rule *macro = NULL;
 	git_pool *pool;
 
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(name);
+
 	if ((error = git_attr_cache__init(repo)) < 0)
 		return error;
 
@@ -514,10 +523,14 @@ static int collect_attr_files(
 		return error;
 
 	/* Resolve path in a non-bare repo */
-	if (workdir != NULL)
-		error = git_path_find_dir(&dir, path, workdir);
-	else
+	if (workdir != NULL) {
+		if (!(error = git_repository_workdir_path(&dir, repo, path)))
+			error = git_path_find_dir(&dir);
+	}
+	else {
 		error = git_path_dirname_r(&dir, path);
+	}
+
 	if (error < 0)
 		goto cleanup;
 

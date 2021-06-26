@@ -10,7 +10,6 @@
 #include "repository.h"
 #include "filebuf.h"
 #include "attrcache.h"
-#include "buf_text.h"
 #include "git2/blob.h"
 #include "git2/tree.h"
 #include "blob.h"
@@ -123,7 +122,7 @@ int git_attr_file__load(
 	struct stat st;
 	bool nonexistent = false;
 	int bom_offset;
-	git_bom_t bom;
+	git_buf_bom_t bom;
 	git_oid id;
 	git_object_size_t blobsize;
 
@@ -192,9 +191,9 @@ int git_attr_file__load(
 
 	/* advance over a UTF8 BOM */
 	content_str = git_buf_cstr(&content);
-	bom_offset = git_buf_text_detect_bom(&bom, &content);
+	bom_offset = git_buf_detect_bom(&bom, &content);
 
-	if (bom == GIT_BOM_UTF8)
+	if (bom == GIT_BUF_BOM_UTF8)
 		content_str += bom_offset;
 
 	/* store the key of the attr_reader; don't bother with cache
@@ -351,7 +350,9 @@ uint32_t git_attr_file__name_hash(const char *name)
 {
 	uint32_t h = 5381;
 	int c;
-	assert(name);
+
+	GIT_ASSERT_ARG(name);
+
 	while ((c = (int)*name++) != 0)
 		h = ((h << 5) + h) + c;
 	return h;
@@ -401,7 +402,7 @@ int git_attr_file__load_standalone(git_attr_file **out, const char *path)
 
 	if ((error = git_attr_file__new(&file, NULL, GIT_ATTR_FILE__FROM_FILE)) < 0 ||
 	    (error = git_attr_file__parse_buffer(NULL, file, content.ptr, true)) < 0 ||
-	    (error = git_attr_cache__alloc_file_entry(&file->entry, NULL, path, &file->pool)) < 0)
+	    (error = git_attr_cache__alloc_file_entry(&file->entry, NULL, NULL, path, &file->pool)) < 0)
 		goto out;
 
 	*out = file;
@@ -501,14 +502,19 @@ git_attr_assignment *git_attr_rule__lookup_assignment(
 }
 
 int git_attr_path__init(
-	git_attr_path *info, const char *path, const char *base, git_dir_flag dir_flag)
+	git_attr_path *info,
+	git_repository *repo,
+	const char *path,
+	const char *base,
+	git_dir_flag dir_flag)
 {
 	ssize_t root;
 
 	/* build full path as best we can */
 	git_buf_init(&info->full, 0);
 
-	if (git_path_join_unrooted(&info->full, path, base, &root) < 0)
+	if (git_path_join_unrooted(&info->full, path, base, &root) < 0 ||
+	    git_path_validate_workdir_buf(repo, &info->full) < 0)
 		return -1;
 
 	info->path = info->full.ptr + root;
@@ -660,7 +666,8 @@ int git_attr_fnmatch__parse(
 	int slash_count, allow_space;
 	bool escaped;
 
-	assert(spec && base && *base);
+	GIT_ASSERT_ARG(spec);
+	GIT_ASSERT_ARG(base && *base);
 
 	if (parse_optimized_patterns(spec, pool, *base))
 		return 0;
@@ -828,7 +835,7 @@ int git_attr_assignment__parse(
 	const char *scan = *base;
 	git_attr_assignment *assign = NULL;
 
-	assert(assigns && !assigns->length);
+	GIT_ASSERT_ARG(assigns && !assigns->length);
 
 	git_vector_set_cmp(assigns, sort_by_hash_and_name);
 
@@ -954,10 +961,10 @@ void git_attr_rule__free(git_attr_rule *rule)
 
 int git_attr_session__init(git_attr_session *session, git_repository *repo)
 {
-	assert(repo);
+	GIT_ASSERT_ARG(repo);
 
 	memset(session, 0, sizeof(*session));
-	session->key = git_atomic_inc(&repo->attr_session_key);
+	session->key = git_atomic32_inc(&repo->attr_session_key);
 
 	return 0;
 }

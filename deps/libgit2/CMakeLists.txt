@@ -13,7 +13,7 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5.1)
 
-project(libgit2 VERSION "1.0.1" LANGUAGES C)
+project(libgit2 VERSION "1.1.0" LANGUAGES C)
 
 # Add find modules to the path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${libgit2_SOURCE_DIR}/cmake/")
@@ -50,7 +50,7 @@ OPTION(USE_STANDALONE_FUZZERS		"Enable standalone fuzzers (compatible with gcc)"
 OPTION(USE_LEAK_CHECKER			"Run tests with leak checker"				OFF)
 OPTION(DEBUG_POOL			"Enable debug pool allocator"				OFF)
 OPTION(ENABLE_WERROR			"Enable compilation with -Werror"			OFF)
-OPTION(USE_BUNDLED_ZLIB    		"Use the bundled version of zlib"			OFF)
+OPTION(USE_BUNDLED_ZLIB    		"Use the bundled version of zlib. Can be set to one of Bundled(ON)/Chromium. The Chromium option requires a x86_64 processor with SSE4.2 and CLMUL"			OFF)
    SET(USE_HTTP_PARSER			"" CACHE STRING "Specifies the HTTP Parser implementation; either system or builtin.")
 OPTION(DEPRECATE_HARD			"Do not include deprecated functions in the library"	OFF)
    SET(REGEX_BACKEND			"" CACHE STRING "Regular expression implementation. One of regcomp_l, pcre2, pcre, regcomp, or builtin.")
@@ -89,8 +89,8 @@ IF(WIN32)
 ENDIF()
 
 IF(MSVC)
-	# Enable MSVC CRTDBG memory leak reporting when in debug mode.
-	OPTION(MSVC_CRTDBG 		"Enable CRTDBG memory leak reporting"			OFF)
+	# Enable leak checking using the debugging C runtime.
+	OPTION(WIN32_LEAKCHECK		"Enable leak reporting via crtdbg"			OFF)
 ENDIF()
 
 IF (DEPRECATE_HARD)
@@ -129,8 +129,8 @@ IF (MSVC)
 		SET(CRT_FLAG_RELEASE "/MD")
 	ENDIF()
 
-	IF (MSVC_CRTDBG)
-		SET(GIT_MSVC_CRTDBG 1)
+	IF (WIN32_LEAKCHECK)
+		SET(GIT_WIN32_LEAKCHECK 1)
 		SET(CRT_FLAG_DEBUG "${CRT_FLAG_DEBUG}")
 		SET(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} Dbghelp.lib")
 	ENDIF()
