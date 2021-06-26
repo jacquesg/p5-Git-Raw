@@ -63,7 +63,9 @@
 #	include <pthread.h>
 #	include <sched.h>
 # endif
-#define GIT_STDLIB_CALL
+
+#define GIT_LIBGIT2_CALL
+#define GIT_SYSTEM_CALL
 
 #ifdef GIT_USE_STAT_ATIMESPEC
 # define st_atim st_atimespec
@@ -78,9 +80,10 @@
 #include "git2/types.h"
 #include "git2/errors.h"
 #include "errors.h"
-#include "thread-utils.h"
+#include "thread.h"
 #include "integer.h"
 #include "assert_safe.h"
+#include "utf8.h"
 
 /*
  * Include the declarations for deprecated functions; this ensures

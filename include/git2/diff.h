@@ -168,6 +168,10 @@ typedef enum {
 	 *  can apply given diff information to binary files.
 	 */
 	GIT_DIFF_SHOW_BINARY = (1u << 30),
+
+	/** Ignore blank lines */
+	GIT_DIFF_IGNORE_BLANK_LINES = (1u << 31),
+
 } git_diff_option_t;
 
 /**
@@ -998,7 +1002,7 @@ GIT_EXTERN(size_t) git_diff_num_deltas(const git_diff *diff);
 /**
  * Query how many diff deltas are there in a diff filtered by type.
  *
- * This works just like `git_diff_entrycount()` with an extra parameter
+ * This works just like `git_diff_num_deltas()` with an extra parameter
  * that is a `git_delta_t` and returns just the count of how many deltas
  * match that particular type.
  *
