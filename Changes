@@ -2,7 +2,7 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
- - Update libgit2 to 416ea5b46
+ - Update libgit2 to e16747660
  - Threads are no longer only enabled if perl was built with perl support
  - Documentation fixes (GH#220, GH#221) (thanks @benkasminbullock)
 
