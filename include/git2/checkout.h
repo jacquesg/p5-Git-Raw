@@ -178,13 +178,22 @@ typedef enum {
 	GIT_CHECKOUT_DONT_WRITE_INDEX = (1u << 23),
 
 	/**
+	 * Show what would be done by a checkout.  Stop after sending
+	 * notifications; don't update the working directory or index.
+	 */
+	GIT_CHECKOUT_DRY_RUN = (1u << 24),
+
+	/** Include common ancestor data in zdiff3 format for conflicts */
+	GIT_CHECKOUT_CONFLICT_STYLE_ZDIFF3 = (1u << 25),
+
+	/**
 	 * THE FOLLOWING OPTIONS ARE NOT YET IMPLEMENTED
 	 */
 
 	/** Recursively checkout submodules with same options (NOT IMPLEMENTED) */
 	GIT_CHECKOUT_UPDATE_SUBMODULES = (1u << 16),
 	/** Recursively checkout submodules if HEAD moved in super repo (NOT IMPLEMENTED) */
-	GIT_CHECKOUT_UPDATE_SUBMODULES_IF_CHANGED = (1u << 17),
+	GIT_CHECKOUT_UPDATE_SUBMODULES_IF_CHANGED = (1u << 17)
 
 } git_checkout_strategy_t;
 
