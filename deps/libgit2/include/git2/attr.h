@@ -83,7 +83,7 @@ typedef enum {
 	GIT_ATTR_VALUE_UNSPECIFIED = 0, /**< The attribute has been left unspecified */
 	GIT_ATTR_VALUE_TRUE,   /**< The attribute has been set */
 	GIT_ATTR_VALUE_FALSE,  /**< The attribute has been unset */
-	GIT_ATTR_VALUE_STRING, /**< This attribute has a value */
+	GIT_ATTR_VALUE_STRING  /**< This attribute has a value */
 } git_attr_value_t;
 
 /**
@@ -147,11 +147,17 @@ typedef struct {
 	/** A combination of GIT_ATTR_CHECK flags */
 	unsigned int flags;
 
+#ifdef GIT_DEPRECATE_HARD
+	void *reserved;
+#else
+	git_oid *commit_id;
+#endif
+
 	/**
 	 * The commit to load attributes from, when
 	 * `GIT_ATTR_CHECK_INCLUDE_COMMIT` is specified.
 	 */
-	git_oid *commit_id;
+	git_oid attr_commit_id;
 } git_attr_options;
 
 #define GIT_ATTR_OPTIONS_VERSION 1
@@ -171,6 +177,7 @@ typedef struct {
  *             not have to exist, but if it does not, then it will be
  *             treated as a plain file (not a directory).
  * @param name The name of the attribute to look up.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_attr_get(
 	const char **value_out,
@@ -193,6 +200,7 @@ GIT_EXTERN(int) git_attr_get(
  *             not have to exist, but if it does not, then it will be
  *             treated as a plain file (not a directory).
  * @param name The name of the attribute to look up.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_attr_get_ext(
 	const char **value_out,
@@ -229,6 +237,7 @@ GIT_EXTERN(int) git_attr_get_ext(
  *             it will be treated as a plain file (i.e. not a directory).
  * @param num_attr The number of attributes being looked up
  * @param names An array of num_attr strings containing attribute names.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_attr_get_many(
 	const char **values_out,
@@ -253,6 +262,7 @@ GIT_EXTERN(int) git_attr_get_many(
  *             it will be treated as a plain file (i.e. not a directory).
  * @param num_attr The number of attributes being looked up
  * @param names An array of num_attr strings containing attribute names.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_attr_get_many_ext(
 	const char **values_out,
@@ -338,11 +348,16 @@ GIT_EXTERN(int) git_attr_cache_flush(
  * Add a macro definition.
  *
  * Macros will automatically be loaded from the top level `.gitattributes`
- * file of the repository (plus the build-in "binary" macro).  This
+ * file of the repository (plus the built-in "binary" macro).  This
  * function allows you to add others.  For example, to add the default
  * macro, you would call:
  *
  *     git_attr_add_macro(repo, "binary", "-diff -crlf");
+ *
+ * @param repo The repository to add the macro in.
+ * @param name The name of the macro.
+ * @param values The value for the macro.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_attr_add_macro(
 	git_repository *repo,

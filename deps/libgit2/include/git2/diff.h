@@ -133,6 +133,9 @@ typedef enum {
 	 */
 	GIT_DIFF_INDENT_HEURISTIC = (1u << 18),
 
+	/** Ignore blank lines */
+	GIT_DIFF_IGNORE_BLANK_LINES = (1u << 19),
+
 	/** Treat all files as text, disabling binary attributes & detection */
 	GIT_DIFF_FORCE_TEXT = (1u << 20),
 	/** Treat all files as binary, disabling text diffs */
@@ -167,11 +170,7 @@ typedef enum {
 	/** Include the necessary deflate / delta information so that `git-apply`
 	 *  can apply given diff information to binary files.
 	 */
-	GIT_DIFF_SHOW_BINARY = (1u << 30),
-
-	/** Ignore blank lines */
-	GIT_DIFF_IGNORE_BLANK_LINES = (1u << 31),
-
+	GIT_DIFF_SHOW_BINARY = (1u << 30)
 } git_diff_option_t;
 
 /**
@@ -209,6 +208,7 @@ typedef enum {
 	GIT_DIFF_FLAG_NOT_BINARY = (1u << 1), /**< file(s) treated as text data */
 	GIT_DIFF_FLAG_VALID_ID   = (1u << 2), /**< `id` value is known correct */
 	GIT_DIFF_FLAG_EXISTS     = (1u << 3), /**< file exists at this side of the delta */
+	GIT_DIFF_FLAG_VALID_SIZE = (1u << 4)  /**< file size value is known correct */
 } git_diff_flag_t;
 
 /**
@@ -232,7 +232,7 @@ typedef enum {
 	GIT_DELTA_UNTRACKED = 7,   /**< entry is untracked item in workdir */
 	GIT_DELTA_TYPECHANGE = 8,  /**< type of entry changed between old and new */
 	GIT_DELTA_UNREADABLE = 9,  /**< entry is unreadable */
-	GIT_DELTA_CONFLICTED = 10, /**< entry in the index is conflicted */
+	GIT_DELTA_CONFLICTED = 10  /**< entry in the index is conflicted */
 } git_delta_t;
 
 /**
@@ -498,7 +498,7 @@ typedef enum {
 	GIT_DIFF_BINARY_LITERAL,
 
 	/** The binary data is the delta from one side to the other. */
-	GIT_DIFF_BINARY_DELTA,
+	GIT_DIFF_BINARY_DELTA
 } git_diff_binary_t;
 
 /** The contents of one of the files in a binary diff. */
@@ -707,7 +707,7 @@ typedef enum {
 	 * GIT_DIFF_INCLUDE_UNMODIFIED flag.  If you do not want UNMODIFIED
 	 * records in the final result, pass this flag to have them removed.
 	 */
-	GIT_DIFF_FIND_REMOVE_UNMODIFIED = (1u << 16),
+	GIT_DIFF_FIND_REMOVE_UNMODIFIED = (1u << 16)
 } git_diff_find_t;
 
 /**
@@ -759,7 +759,7 @@ typedef struct {
 	uint16_t copy_threshold;
 
 	/**
-	 * Treshold below which similar files will be split into a delete/add pair.
+	 * Threshold below which similar files will be split into a delete/add pair.
 	 * This is equivalent to the last part of the -B option. Defaults to 60.
 	 */
 	uint16_t break_rewrite_threshold;
@@ -769,7 +769,7 @@ typedef struct {
 	 *
 	 * This is a little different from the `-l` option from Git because we
 	 * will still process up to this many matches before abandoning the search.
-	 * Defaults to 200.
+	 * Defaults to 1000.
 	 */
 	size_t rename_limit;
 
@@ -832,6 +832,7 @@ GIT_EXTERN(void) git_diff_free(git_diff *diff);
  * @param old_tree A git_tree object to diff from, or NULL for empty tree.
  * @param new_tree A git_tree object to diff to, or NULL for empty tree.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_tree_to_tree(
 	git_diff **diff,
@@ -858,6 +859,7 @@ GIT_EXTERN(int) git_diff_tree_to_tree(
  * @param old_tree A git_tree object to diff from, or NULL for empty tree.
  * @param index The index to diff with; repo index used if NULL.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_tree_to_index(
 	git_diff **diff,
@@ -885,6 +887,7 @@ GIT_EXTERN(int) git_diff_tree_to_index(
  * @param repo The repository.
  * @param index The index to diff from; repo index used if NULL.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_index_to_workdir(
 	git_diff **diff,
@@ -914,6 +917,7 @@ GIT_EXTERN(int) git_diff_index_to_workdir(
  * @param repo The repository containing the tree.
  * @param old_tree A git_tree object to diff from, or NULL for empty tree.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_tree_to_workdir(
 	git_diff **diff,
@@ -933,6 +937,7 @@ GIT_EXTERN(int) git_diff_tree_to_workdir(
  * @param repo The repository containing the tree.
  * @param old_tree A git_tree object to diff from, or NULL for empty tree.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_tree_to_workdir_with_index(
 	git_diff **diff,
@@ -951,6 +956,7 @@ GIT_EXTERN(int) git_diff_tree_to_workdir_with_index(
  * @param old_index A git_index object to diff from.
  * @param new_index A git_index object to diff to.
  * @param opts Structure with options to influence diff or NULL for defaults.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_index_to_index(
 	git_diff **diff,
@@ -971,6 +977,7 @@ GIT_EXTERN(int) git_diff_index_to_index(
  *
  * @param onto Diff to merge into.
  * @param from Diff to merge.
+ * @return 0 or an error code.
  */
 GIT_EXTERN(int) git_diff_merge(
 	git_diff *onto,
@@ -1108,7 +1115,7 @@ typedef enum {
 	GIT_DIFF_FORMAT_RAW          = 3u, /**< like git diff --raw */
 	GIT_DIFF_FORMAT_NAME_ONLY    = 4u, /**< like git diff --name-only */
 	GIT_DIFF_FORMAT_NAME_STATUS  = 5u, /**< like git diff --name-status */
-	GIT_DIFF_FORMAT_PATCH_ID     = 6u, /**< git diff as used by git patch-id */
+	GIT_DIFF_FORMAT_PATCH_ID     = 6u  /**< git diff as used by git patch-id */
 } git_diff_format_t;
 
 /**
@@ -1312,13 +1319,13 @@ typedef enum {
 	GIT_DIFF_STATS_NUMBER = (1u << 2),
 
 	/** Extended header information such as creations, renames and mode changes, equivalent of `--summary` */
-	GIT_DIFF_STATS_INCLUDE_SUMMARY = (1u << 3),
+	GIT_DIFF_STATS_INCLUDE_SUMMARY = (1u << 3)
 } git_diff_stats_format_t;
 
 /**
  * Accumulate diff statistics for all patches.
  *
- * @param out Structure containg the diff statistics.
+ * @param out Structure containing the diff statistics.
  * @param diff A git_diff generated by one of the above functions.
  * @return 0 on success; non-zero on error
  */
@@ -1375,99 +1382,6 @@ GIT_EXTERN(int) git_diff_stats_to_buf(
  * cannot be used after free.
  */
 GIT_EXTERN(void) git_diff_stats_free(git_diff_stats *stats);
-
-/**
- * Formatting options for diff e-mail generation
- */
-typedef enum {
-	/** Normal patch, the default */
-	GIT_DIFF_FORMAT_EMAIL_NONE = 0,
-
-	/** Don't insert "[PATCH]" in the subject header*/
-	GIT_DIFF_FORMAT_EMAIL_EXCLUDE_SUBJECT_PATCH_MARKER = (1 << 0),
-
-} git_diff_format_email_flags_t;
-
-/**
- * Options for controlling the formatting of the generated e-mail.
- */
-typedef struct {
-	unsigned int version;
-
-	/** see `git_diff_format_email_flags_t` above */
-	uint32_t flags;
-
-	/** This patch number */
-	size_t patch_no;
-
-	/** Total number of patches in this series */
-	size_t total_patches;
-
-	/** id to use for the commit */
-	const git_oid *id;
-
-	/** Summary of the change */
-	const char *summary;
-
-	/** Commit message's body */
-	const char *body;
-
-	/** Author of the change */
-	const git_signature *author;
-} git_diff_format_email_options;
-
-#define GIT_DIFF_FORMAT_EMAIL_OPTIONS_VERSION 1
-#define GIT_DIFF_FORMAT_EMAIL_OPTIONS_INIT {GIT_DIFF_FORMAT_EMAIL_OPTIONS_VERSION, 0, 1, 1, NULL, NULL, NULL, NULL}
-
-/**
- * Create an e-mail ready patch from a diff.
- *
- * @param out buffer to store the e-mail patch in
- * @param diff containing the commit
- * @param opts structure with options to influence content and formatting.
- * @return 0 or an error code
- */
-GIT_EXTERN(int) git_diff_format_email(
-	git_buf *out,
-	git_diff *diff,
-	const git_diff_format_email_options *opts);
-
-/**
- * Create an e-mail ready patch for a commit.
- *
- * Does not support creating patches for merge commits (yet).
- *
- * @param out buffer to store the e-mail patch in
- * @param repo containing the commit
- * @param commit pointer to up commit
- * @param patch_no patch number of the commit
- * @param total_patches total number of patches in the patch set
- * @param flags determines the formatting of the e-mail
- * @param diff_opts structure with options to influence diff or NULL for defaults.
- * @return 0 or an error code
- */
-GIT_EXTERN(int) git_diff_commit_as_email(
-	git_buf *out,
-	git_repository *repo,
-	git_commit *commit,
-	size_t patch_no,
-	size_t total_patches,
-	uint32_t flags,
-	const git_diff_options *diff_opts);
-
-/**
- * Initialize git_diff_format_email_options structure
- *
- * Initializes a `git_diff_format_email_options` with default values. Equivalent
- * to creating an instance with GIT_DIFF_FORMAT_EMAIL_OPTIONS_INIT.
- *
- * @param opts The `git_blame_options` struct to initialize.
- * @param version The struct version; pass `GIT_DIFF_FORMAT_EMAIL_OPTIONS_VERSION`.
- * @return Zero on success; -1 on failure.
- */
-GIT_EXTERN(int) git_diff_format_email_options_init(
-	git_diff_format_email_options *opts,
-	unsigned int version);
 
 /**
  * Patch ID options structure
