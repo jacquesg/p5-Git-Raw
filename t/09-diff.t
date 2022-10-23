@@ -557,7 +557,7 @@ is $tree_diff -> delta_count, 1;
 
 $content = <<'EOS';
 From 5e3ed60de0985b4c6d1a049718930704077525ba Mon Sep 17 00:00:00 2001
-From: Jacques Germishuys <jacquesg@striata.com>
+From: Jacques Germishuys <jacquesg@cpan.org>
 Date: Sat, 24 Dec 2016 10:01:28 +0200
 Subject: [PATCH] Second
 

@@ -250,7 +250,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 1.1.0
+libgit2 1.5.0
 };
 
 is $patch, $expected_patch;
@@ -280,7 +280,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 1.1.0
+libgit2 1.5.0
 };
 
 is $patch, $expected_patch;
@@ -309,7 +309,7 @@ index 0000000..7b79d2f
 +this is a second test
 \\ No newline at end of file
 --
-libgit2 1.1.0
+libgit2 1.5.0
 };
 
 is $patch, $expected_patch;
