@@ -18,7 +18,7 @@ B<WARNING>: The API of this module is unstable and may change without warning
 
 =head1 AUTHOR
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 METHODS
 

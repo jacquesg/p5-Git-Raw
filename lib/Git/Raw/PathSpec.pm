@@ -70,7 +70,7 @@ Only determine if there were patterns that did not match.
 
 Alessandro Ghedini <alexbio@cpan.org>
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

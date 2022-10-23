@@ -30,7 +30,7 @@ MD5 hostkey hash or C<undef> if not available.
 
 =head1 AUTHOR
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

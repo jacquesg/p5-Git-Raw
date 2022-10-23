@@ -84,7 +84,7 @@ No commit will be cherry-picked. The client should run the given command and
 
 =head1 AUTHOR
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

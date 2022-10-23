@@ -106,7 +106,7 @@ Check if the reference lives in the C<refsE<sol>notes> namespace.
 
 Alessandro Ghedini <alexbio@cpan.org>
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

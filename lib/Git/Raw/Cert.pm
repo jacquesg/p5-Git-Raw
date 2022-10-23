@@ -22,7 +22,7 @@ Type of certificate, C<"x509">, C<"hostkey">, C<"strarray"> or C<"none">.
 
 =head1 AUTHOR
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

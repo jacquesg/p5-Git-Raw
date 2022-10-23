@@ -31,7 +31,7 @@ Create a L<Git::Raw::Annotated::Commit> from the given commit C<$id>.
 
 =head1 AUTHOR
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 

@@ -57,7 +57,7 @@ added to the index where C<$path> should be used.
 
 Alessandro Ghedini <alexbio@cpan.org>
 
-Jacques Germishuys <jacquesg@striata.com>
+Jacques Germishuys <jacquesg@cpan.org>
 
 =head1 LICENSE AND COPYRIGHT
 
