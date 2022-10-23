@@ -104,7 +104,7 @@ my @library_tests = (
 
 my %library_opts = (
 	'ssl' => {
-		'defines' => ' -DGIT_OPENSSL -DGIT_HTTPS',
+		'defines' => ' -DGIT_OPENSSL -DGIT_OPENSSL_DYNAMIC -DGIT_HTTPS',
 		'libs'    => ' -lssl -lcrypto',
 	},
 	'ssh2' => {
@@ -196,7 +196,11 @@ if ($is_netbsd) {
 $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
 # SHA1DC
-$def .= ' -DGIT_SHA1_COLLISIONDETECT';
+$def .= ' -DGIT_SHA1_COLLISIONDETECT -DSHA1DC_NO_STANDARD_INCLUDES=1 -DSHA1DC_CUSTOM_INCLUDE_SHA1_C=\""git2_util.h"\" -DSHA1DC_CUSTOM_INCLUDE_UBC_CHECK_C=\""git2_util.h"\"';
+
+
+# SHA256
+$def .= ' -DGIT_SHA256_BUILTIN';
 
 # Use the builtin PCRE regex
 $def .= ' -DGIT_REGEX_BUILTIN -DLINK_SIZE=2 -DMAX_NAME_SIZE=32 -DMAX_NAME_COUNT=10000 -DNEWLINE=-2 ';
@@ -257,11 +261,12 @@ if (!$is_sunpro) {
 }
 
 my @deps = glob 'deps/libgit2/deps/{http-parser,zlib,pcre}/*.c';
-my @srcs = glob 'deps/libgit2/src/{*.c,transports/*.c,xdiff/*.c,streams/*.c,allocators/*.c,hash/sha1/collision*.c,hash/sha1/sha1dc/*.c}';
+my @srcs = glob 'deps/libgit2/src/libgit2/{*.c,transports/*.c,xdiff/*.c,streams/*.c}';
+push @srcs, glob 'deps/libgit2/src/util/{*.c,allocators/*.c,hash/collision*.c,hash/hash*.c,hash/builtin*.c,hash/sha1dc/*.c,hash/rfc6234/*.c}';
 $inc .= ' -Ideps/libgit2/deps/pcre';
 
 if ($is_windows) {
-	push @srcs, glob 'deps/libgit2/src/{win32,compat}/*.c';
+	push @srcs, glob 'deps/libgit2/src/util/win32/*.c';
 
 	$def .= ' -DWIN32 -DGIT_WIN32 -DGIT_WINHTTP -DGIT_HTTPS';
 	$lib .= ' -lwinhttp -lrpcrt4 -lcrypt32';
@@ -280,7 +285,7 @@ if ($is_windows) {
 		$def .= ' -D_WIN32_WINNT=0x0600 -D__USE_MINGW_ANSI_STDIO=1';
 	}
 } else {
-	push @srcs, glob 'deps/libgit2/src/unix/*.c'
+	push @srcs, glob 'deps/libgit2/src/util/unix/*.c'
 }
 
 # real-time library is required for Solaris and Linux
@@ -554,7 +559,7 @@ TEMPLATE
 override _build_WriteMakefile_args => sub {
 	return +{
 		%{ super() },
-		INC	    => '-I. -Ideps/libgit2 -Ideps/libgit2/src -Ideps/libgit2/include -Ideps/libgit2/deps/http-parser -Ideps/libgit2/deps/zlib',
+		INC	    => '-I. -Ideps/libgit2 -I deps/libgit2/include -Ideps/libgit2/src/libgit2 -Ideps/libgit2/src/util -Ideps/libgit2/deps/http-parser -Ideps/libgit2/deps/zlib',
 		OBJECT	=> '$(O_FILES)',
 	}
 };
