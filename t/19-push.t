@@ -22,7 +22,7 @@ my $remote = Git::Raw::Remote -> create_anonymous($repo, $local_path);
 isa_ok $remote, 'Git::Raw::Remote';
 
 my $total_packed = 0;
-is $remote -> upload(['refs/heads/master:refs/heads/master'], {
+is $remote -> upload(['refs/heads/main:refs/heads/main'], {
 		'callbacks' => {
 			'pack_progress' => sub {
 				my ($stage, $current, $total) = @_;
@@ -62,7 +62,7 @@ $remote = Git::Raw::Remote -> create_anonymous($repo, $local_url);
 
 my $updated_ref;
 $total_packed = 0;
-is $remote -> upload(['refs/heads/master:refs/heads/master'], {
+is $remote -> upload(['refs/heads/main:refs/heads/main'], {
 		'callbacks' => {
 			'pack_progress' => sub {
 				my ($stage, $current, $total) = @_;
@@ -91,7 +91,7 @@ is $remote -> upload(['refs/heads/master:refs/heads/master'], {
 		}
 	}), 1;
 ok ($total_packed > 0);
-is $updated_ref, "refs/heads/master";
+is $updated_ref, "refs/heads/main";
 
 remove_tree $local_path;
 ok ! -e $local_path;

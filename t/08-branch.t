@@ -77,8 +77,8 @@ ok (!eval { $repo -> branches('invalid_type') });
 $branches = [ sort { $a -> name cmp $b -> name } $repo -> branches ];
 
 is $branches -> [0] -> type, 'direct';
-is $branches -> [0] -> name, 'refs/heads/master';
-is $branches -> [0] -> shorthand, 'master';
+is $branches -> [0] -> name, 'refs/heads/main';
+is $branches -> [0] -> shorthand, 'main';
 
 is $branches -> [1] -> type, 'direct';
 is $branches -> [1] -> name, 'refs/heads/some_branch';

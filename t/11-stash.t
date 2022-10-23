@@ -43,7 +43,7 @@ Git::Raw::Stash -> foreach($repo, sub {
 	my ($i, $msg, $commit) = @_;
 
 	is $i, 0;
-	is $msg, 'On master: some stash';
+	is $msg, 'On main: some stash';
 	isa_ok $commit, 'Git::Raw::Commit';
 
 	0;
@@ -106,7 +106,7 @@ Git::Raw::Stash -> foreach($repo, sub {
 });
 
 is scalar(@stashes), 1;
-is $stashes[0] -> {'msg'}, 'On master: stash untracked files';
+is $stashes[0] -> {'msg'}, 'On main: stash untracked files';
 ok (! -f $untracked_file);
 
 write_file($untracked_file, 'this is an untracked file');
@@ -125,7 +125,7 @@ Git::Raw::Stash -> foreach($repo, sub {
 });
 
 is scalar(@stashes), 2;
-is $stashes[0] -> {'msg'}, 'On master: dont stash indexed files';
+is $stashes[0] -> {'msg'}, 'On main: dont stash indexed files';
 ok (-f $untracked_file);
 
 $repo -> ignore("ignored\n");
@@ -143,7 +143,7 @@ Git::Raw::Stash -> foreach($repo, sub {
 });
 
 is scalar(@stashes), 3;
-is $stashes[0] -> {'msg'}, 'On master: stash ignored files';
+is $stashes[0] -> {'msg'}, 'On main: stash ignored files';
 ok (! -f $untracked_file);
 ok (! -f $ignored_file);
 

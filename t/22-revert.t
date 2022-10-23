@@ -69,16 +69,16 @@ is $repo -> state, "revert";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
-my $master = Git::Raw::Branch -> lookup($repo, 'master', 1);
-$index -> read_tree($master -> target -> tree);
+my $main = Git::Raw::Branch -> lookup($repo, 'main', 1);
+$index -> read_tree($main -> target -> tree);
 $index -> write;
 
-$repo -> checkout($master -> target -> tree, {
+$repo -> checkout($main -> target -> tree, {
 	'checkout_strategy' => {
 		'safe' => 1
 	}
 });
 
-$repo -> head($master);
+$repo -> head($main);
 
 done_testing;

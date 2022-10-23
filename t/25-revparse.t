@@ -24,12 +24,12 @@ is $revs[1] -> id, $head -> id;
 
 my $prev_head = shift @revs;
 
-@revs = $repo -> revparse('master~..master');
+@revs = $repo -> revparse('main~..main');
 is scalar(@revs), 2;
 is $revs[0] -> id, $prev_head -> id;
 is $revs[1] -> id, $head -> id;
 
-my @mb = $repo -> revparse('master~...master');
+my @mb = $repo -> revparse('main~...main');
 isa_ok $mb[0], 'Git::Raw::Commit';
 isa_ok $mb[1], 'Git::Raw::Commit';
 
@@ -40,7 +40,7 @@ is $revs[1] -> id, $mb[1] -> id;
 is scalar(@revs), 1;
 is $revs[0] -> id, $prev_head -> id;
 
-@revs = $repo -> revparse('master@{1}');
+@revs = $repo -> revparse('main@{1}');
 is scalar(@revs), 1;
 is $revs[0] -> id, $prev_head -> id;
 

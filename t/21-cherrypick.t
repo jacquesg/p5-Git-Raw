@@ -120,17 +120,17 @@ is $repo -> state, "cherry_pick";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
-my $master = Git::Raw::Branch -> lookup($repo, 'master', 1);
-$index -> read_tree($master -> target -> tree);
+my $main = Git::Raw::Branch -> lookup($repo, 'main', 1);
+$index -> read_tree($main -> target -> tree);
 $index -> write;
 
-$repo -> checkout($master -> target -> tree, {
+$repo -> checkout($main -> target -> tree, {
 	'checkout_strategy' => {
 		'safe' => 1
 	}
 });
 
-$head = $repo -> head($master);
+$head = $repo -> head($main);
 
 is $index -> has_conflicts, 0;
 is $repo -> status({}) -> {'cherry_file'}, undef;

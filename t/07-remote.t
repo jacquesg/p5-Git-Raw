@@ -33,11 +33,11 @@ is $refspec -> dst, "refs/remotes/github/*";
 is $refspec -> direction, "fetch";
 is $refspec -> string, "+refs/heads/*:refs/remotes/github/*";
 is $refspec -> is_force, 1;
-is $refspec -> transform ('refs/heads/master'), "refs/remotes/github/master";
-is $refspec -> src_matches('refs/heads/master'), 1;
-is $refspec -> rtransform ('refs/remotes/github/master'), "refs/heads/master";
-is $refspec -> dst_matches('refs/remotes/github/master'), 1;
-is $refspec -> dst_matches('refs/remotes/blah/master'), 0;
+is $refspec -> transform ('refs/heads/main'), "refs/remotes/github/main";
+is $refspec -> src_matches('refs/heads/main'), 1;
+is $refspec -> rtransform ('refs/remotes/github/main'), "refs/heads/main";
+is $refspec -> dst_matches('refs/remotes/github/main'), 1;
+is $refspec -> dst_matches('refs/remotes/blah/main'), 0;
 is $refspec, $refspec -> string;
 
 my $rename = Git::Raw::Remote -> create($repo, 'pre_rename', $url);
@@ -79,7 +79,7 @@ is scalar(@remotes), 2;
 @remotes = ();
 
 $name = 'github';
-$url  = 'git://github.com/libgit2/TestGitRepository.git';
+$url  = 'https://github.com/libgit2/TestGitRepository.git';
 
 # FIXME: remote rename
 # is $github -> name($name), $name;
@@ -140,21 +140,21 @@ is $dwim -> name, $ref -> name;
 my $non_existent_ref = Git::Raw::Reference -> lookup('github/non-existent', $repo);
 is $non_existent_ref, undef;
 
-my $master = Git::Raw::Branch -> lookup ($repo, 'master', 1);
-ok ($master);
-my $upstream = $master -> upstream;
+my $main = Git::Raw::Branch -> lookup ($repo, 'main', 1);
+ok ($main);
+my $upstream = $main -> upstream;
 is $upstream, undef;
 
-ok (!eval { $master -> upstream($repo -> head -> target) });
+ok (!eval { $main -> upstream($repo -> head -> target) });
 
-$upstream = $master -> upstream($ref);
+$upstream = $main -> upstream($ref);
 isa_ok $upstream, 'Git::Raw::Reference';
 is $upstream -> name, $ref -> name;
 
-$upstream = $master -> upstream(undef);
+$upstream = $main -> upstream(undef);
 is $upstream, undef;
 
-$upstream = $master -> upstream($ref -> shorthand);
+$upstream = $main -> upstream($ref -> shorthand);
 isa_ok $upstream, 'Git::Raw::Reference';
 is $upstream -> name, $ref -> name;
 

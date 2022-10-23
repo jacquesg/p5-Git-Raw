@@ -13,21 +13,21 @@ my $repo = Git::Raw::Repository -> open($native_path);
 my $head = $repo -> head;
 isa_ok $head, 'Git::Raw::Reference';
 is $head -> type, 'direct';
-is $head -> name, 'refs/heads/master';
+is $head -> name, 'refs/heads/main';
 ok $head -> is_branch;
 
 my $ref = Git::Raw::Reference -> lookup('HEAD', $repo);
 is $ref -> type, 'symbolic';
 isa_ok $ref -> target, 'Git::Raw::Reference';
 
-$ref = Git::Raw::Reference -> lookup('refs/heads/master', $repo);
+$ref = Git::Raw::Reference -> lookup('refs/heads/main', $repo);
 isa_ok $ref, 'Git::Raw::Reference';
 
 my $non_existent_ref = Git::Raw::Reference -> lookup('refs/heads/non-existent', $repo);
 is $non_existent_ref, undef;
 
 is $ref -> type, 'direct';
-is $ref -> name, 'refs/heads/master';
+is $ref -> name, 'refs/heads/main';
 ok $ref -> is_branch;
 ok !$ref -> is_remote;
 ok !$ref -> is_note;
@@ -107,16 +107,16 @@ is scalar(grep { !$_ -> isa('Git::Raw::Reference') } @refs), 0, 'Everything retu
 
 my @ref_names = sort map { $_ -> name() } @refs;
 
-is_deeply \@ref_names, [ 'refs/commit-test-ref', 'refs/heads/master' ];
+is_deeply \@ref_names, [ 'refs/commit-test-ref', 'refs/heads/main' ];
 
 my $symbolic = 1;
-my $symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 0, $symbolic);
+my $symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/main', 0, $symbolic);
 
-my $master_ref = Git::Raw::Reference->lookup('refs/heads/master', $repo);
+my $main_ref = Git::Raw::Reference->lookup('refs/heads/main', $repo);
 
 is $symbolic_ref -> type, 'symbolic';
 is $symbolic_ref -> name, 'refs/test-symbolic-ref';
-is $symbolic_ref -> target -> name, $master_ref -> name;
+is $symbolic_ref -> target -> name, $main_ref -> name;
 ok !$symbolic_ref -> is_branch;
 ok !$symbolic_ref -> is_remote;
 ok !$symbolic_ref -> is_note;
@@ -124,18 +124,18 @@ ok !$symbolic_ref -> is_tag;
 
 # should fail to overwrite existing ref is overwrite is falsy
 eval {
-	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 0, $symbolic);
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/main', 0, $symbolic);
 	fail q{Should've raised an error!};
 } or do {
 	like $@, qr/Failed to write reference/i;
 };
 
 # shouldn't die with force argument
-$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/master', 1, $symbolic);
+$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, 'refs/heads/main', 1, $symbolic);
 
 # should still reject Git::Raw::Reference as object when creating direct ref
 eval {
-	Git::Raw::Reference -> create('refs/test-ref', $repo, $master_ref, not $symbolic);
+	Git::Raw::Reference -> create('refs/test-ref', $repo, $main_ref, not $symbolic);
 	fail q{Should've raised an error!};
 } or do {
 	like $@, qr/Argument is not of type/;
@@ -151,7 +151,7 @@ eval {
 
 # should reject Git::Raw::Commit as target for symbolic ref
 eval {
-	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $master_ref -> target, 1, $symbolic);
+	Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $main_ref -> target, 1, $symbolic);
 	fail q{Should've raised an error!};
 } or do {
 	like $@, qr/Argument is not of type Git::Raw::Reference/;
@@ -167,11 +167,11 @@ eval {
 
 # and we can also use an existing Git::Raw::Reference object as the target
 $symbolic_ref -> delete;
-$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $master_ref, 0, $symbolic);
+$symbolic_ref = Git::Raw::Reference -> create('refs/test-symbolic-ref', $repo, $main_ref, 0, $symbolic);
 
 is $symbolic_ref -> type, 'symbolic';
 is $symbolic_ref -> name, 'refs/test-symbolic-ref';
-is $symbolic_ref -> target -> name, $master_ref -> name;
+is $symbolic_ref -> target -> name, $main_ref -> name;
 ok !$symbolic_ref -> is_branch;
 ok !$symbolic_ref -> is_remote;
 ok !$symbolic_ref -> is_note;

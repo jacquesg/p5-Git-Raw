@@ -47,27 +47,27 @@ $index -> write;
 my $commit1 = $repo -> commit("commit on branch1\n", $me, $me, [$branch1 -> target],
 	$index -> write_tree);
 
-my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
-$repo -> checkout($repo -> head($master), {
+my $main  = Git::Raw::Branch -> lookup($repo, 'main', 1);
+$repo -> checkout($repo -> head($main), {
 	'checkout_strategy' => {
 		'safe' => 1
 	}
 });
 
-ok (!eval { $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 2)) });
-ok (!eval { $repo -> merge_base("refs/heads/master", sub {}) });
-ok (!eval { $repo -> merge_base($master) });
-ok (!eval { $repo -> merge_base($master, 'refs/heads/unknown_branch') });
+ok (!eval { $repo -> merge_base("refs/heads/main", substr($commit1 -> id, 0, 2)) });
+ok (!eval { $repo -> merge_base("refs/heads/main", sub {}) });
+ok (!eval { $repo -> merge_base($main) });
+ok (!eval { $repo -> merge_base($main, 'refs/heads/unknown_branch') });
 
-my $mb = $repo -> merge_base("refs/heads/master", $commit1 -> id);
+my $mb = $repo -> merge_base("refs/heads/main", $commit1 -> id);
 isa_ok $mb, 'Git::Raw::Commit';
 is $mb -> id, "$mb";
 
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1 -> id);
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", $commit1) -> id;
-is $master -> target -> id, $repo -> merge_base("refs/heads/master", substr($commit1 -> id, 0, 7)) -> id;
-is $master -> target -> id, $repo -> merge_base($master, $commit1) -> id;
-is $master -> target -> id, $repo -> merge_base($master, 'refs/heads/branch1') -> id;
+is $main -> target -> id, $repo -> merge_base("refs/heads/main", $commit1 -> id);
+is $main -> target -> id, $repo -> merge_base("refs/heads/main", $commit1) -> id;
+is $main -> target -> id, $repo -> merge_base("refs/heads/main", substr($commit1 -> id, 0, 7)) -> id;
+is $main -> target -> id, $repo -> merge_base($main, $commit1) -> id;
+is $main -> target -> id, $repo -> merge_base($main, 'refs/heads/branch1') -> id;
 
 $branch1 = Git::Raw::Branch -> lookup($repo, 'branch1', 1);
 my $r = $repo -> merge_analysis($branch1);
@@ -106,8 +106,8 @@ $repo -> merge($branch1, {
 is $repo -> index -> has_conflicts, 0;
 is_deeply $repo -> status({}) -> {'test1'}, {'flags' => ['index_modified']};
 
-$master -> target($commit1);
-$master = Git::Raw::Branch -> lookup ($repo, 'master', 1);
+$main -> target($commit1);
+$main = Git::Raw::Branch -> lookup ($repo, 'main', 1);
 
 is_deeply $repo -> status({}) -> {'test1'}, undef;
 
@@ -124,7 +124,7 @@ $index -> write;
 my $commit2 = $repo -> commit("commit on branch2\n", $me, $me, [$branch2 -> target],
 	$index -> write_tree);
 
-$repo -> checkout($repo -> head($master), {
+$repo -> checkout($repo -> head($main), {
 	'checkout_strategy' => {
 		'force' => 1
 	}
@@ -238,9 +238,9 @@ $index -> add('test1');
 $index -> write;
 
 my $merge_msg = $repo -> message();
-is $merge_msg, "Merge branch 'branch2'\n\nConflicts:\n\ttest1\n";
+is $merge_msg, "Merge branch 'branch2'\n\n#Conflicts:\n#\ttest1\n";
 
-my $target = $master -> target;
+my $target = $main -> target;
 $commit = $repo -> commit("Merge commit!", $me, $me, [$target, $commit2],
 	$index -> write_tree);
 
@@ -313,7 +313,7 @@ $commit = $repo -> commit("commit on branch3\n", $me, $me, [$branch3 -> target],
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit, $initial_head), 1);
 is (Git::Raw::Graph -> is_descendant_of($repo, $commit -> id, $initial_head), 1);
 
-$repo -> checkout($repo -> head($master), {
+$repo -> checkout($repo -> head($main), {
 	checkout_strategy => {
 		'force' => 1
 }});
@@ -339,7 +339,7 @@ is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
-$repo -> checkout($repo -> head($master), {
+$repo -> checkout($repo -> head($main), {
 	checkout_strategy => {
 		'force' => 1
 	}
@@ -361,8 +361,8 @@ is $repo -> state, "merge";
 $repo -> state_cleanup;
 is $repo -> state, "none";
 
-$master = $repo -> head;
-my $head_commit = $master -> target;
+$main = $repo -> head;
+my $head_commit = $main -> target;
 
 write_file($file1, 'pre-commit merge');
 $index -> add('test1');

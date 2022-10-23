@@ -13,7 +13,7 @@ use File::Spec::Functions qw(catfile rel2abs);
 use Git::Raw;
 use File::Path qw(rmtree);
 
-my $url = 'git://github.com/libgit2/TestGitRepository.git';
+my $url = 'https://github.com/libgit2/TestGitRepository.git';
 
 my $path = rel2abs(catfile('t', 'test_repo_clone_bare'));
 my $bare = Git::Raw::Repository -> clone($url, $path, { bare => 1 });
@@ -368,7 +368,7 @@ ok ! -e $path;
 
 ($credentials_fired, $certificate_check_fired, $update_tips_fired) = (0, 0, 0);
 $repo = Git::Raw::Repository -> clone($remote_url, $path, {
-		'checkout_branch' => 'master'
+		'checkout_branch' => 'main'
 	}, {
 	'callbacks' => {
 		'credentials' => sub {

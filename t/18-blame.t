@@ -93,8 +93,8 @@ is $hunks[0] -> final_commit_id, $hunk3 -> final_commit_id;
 my $line_hunk = $blame -> line(4);
 is $line_hunk -> final_commit_id, $hunk3 -> final_commit_id;
 
-my $master  = Git::Raw::Branch -> lookup($repo, 'master', 1);
-$repo -> checkout($repo -> head($master), {
+my $main  = Git::Raw::Branch -> lookup($repo, 'main', 1);
+$repo -> checkout($repo -> head($main), {
 	'checkout_strategy' => {
 		'force' => 1
 	}

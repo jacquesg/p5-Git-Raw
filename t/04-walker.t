@@ -64,7 +64,7 @@ is $walk -> next -> summary, "third commit";
 is $walk -> next, undef;
 $walk -> sorting (['none']);
 
-$walk -> push_ref('refs/heads/master');
+$walk -> push_ref('refs/heads/main');
 my $end = $walk -> next;
 is $end -> summary, "third commit";
 is $walk -> next -> message, "second commit\n";
@@ -88,17 +88,17 @@ is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_head;
-$walk -> hide_ref('refs/heads/master');
+$walk -> hide_ref('refs/heads/main');
 is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_head;
-$walk -> hide_ref('refs/heads/master');
+$walk -> hide_ref('refs/heads/main');
 is $walk -> next, undef;
 
 $walk -> reset;
 $walk -> push_head;
-$walk -> hide_glob('refs/heads/notmaster');
+$walk -> hide_glob('refs/heads/notmain');
 isnt $walk -> next, undef;
 
 $walk -> reset;

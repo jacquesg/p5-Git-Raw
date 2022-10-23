@@ -8,8 +8,8 @@ use File::Spec::Functions qw(catfile rel2abs);
 my $path = rel2abs(catfile('t', 'test_repo'));
 my $repo = Git::Raw::Repository -> open($path);
 
-my $master = Git::Raw::Branch -> lookup($repo, 'master', 1);
-my $head = $master -> target;
+my $main = Git::Raw::Branch -> lookup($repo, 'main', 1);
+my $head = $main -> target;
 isa_ok $head, 'Git::Raw::Commit';
 
 my $branch_name = 'reflog_branch';
