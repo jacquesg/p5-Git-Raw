@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Update libgit2 to fbea439d4 (1.5.0)
+
 0.88      2021-08-08 13:33:48+01:00 Europe/London
 
  - Update libgit2 to e65229ee97
