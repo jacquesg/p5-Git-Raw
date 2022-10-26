@@ -13,6 +13,10 @@ my $native_path = rel2abs(catfile('t', 'test_repo'));
 my $path = File::Spec::Unix -> rel2abs(File::Spec::Unix -> catfile('t', 'test_repo'));
 make_path($path);
 
+my $config = Git::Raw::Config -> default();
+my $default = $config -> str('init.defaultBranch');
+$config -> str('init.defaultBranch', 'main');
+
 my $repo = Git::Raw::Repository -> init($native_path, 0);
 isa_ok $repo, 'Git::Raw::Repository';
 
@@ -28,7 +32,6 @@ is $disc -> workdir, "$path/";
 
 is $repo -> workdir($path), "$path/";
 is $disc -> workdir($path), "$path/";
-
 is $repo -> is_empty, 1;
 is $disc -> is_empty, 1;
 
@@ -153,7 +156,7 @@ is $repo -> path_is_ignored('ignore'), 1;
 is $repo -> path_is_ignored('test'), 0;
 is $repo -> path_is_ignored('untracked'), 0;
 
-my $config = $repo -> config;
+$config = $repo -> config;
 
 my $name  = 'Git::Raw author';
 my $email = 'git-xs@example.com';
@@ -166,8 +169,8 @@ my $error = $@;
 ok ($error);
 isa_ok($error, 'Git::Raw::Error');
 is $error -> file, 't/01-repo.t';
-is $error -> line, 163;
-is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 163";
+is $error -> line, 166;
+is "$error", "Invalid type for 'value', expected an integer at t/01-repo.t line 166";
 is $error -> code, Git::Raw::Error -> USAGE;
 like $error, qr/Invalid type/;
 is $error -> category, Git::Raw::Error::Category -> INTERNAL;
@@ -350,5 +353,13 @@ $clean = Git::Raw -> message_prettify($message, 1, '!');
 is $clean, q{Some message
 And more content
 };
+
+my $fileName = rel2abs(catfile('t', 'initBranch'));
+if ($default) {
+    open my $fh, '>', $fileName or
+        die "could not open '$fileName': $!";
+    print $fh $default;
+    close $fh;
+}
 
 done_testing;

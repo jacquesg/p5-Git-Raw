@@ -91,7 +91,7 @@ steps:
   displayName: 'Install perl (Unix)'
 
 - script: |
-    git config --global init.defaultBranch main
+    git config --global init.defaultBranch master
     git config --global user.name "p5-Git-Raw"
     git config --global user.email "jacquesg@cpan.org"
     cpanm --quiet --notest Dist::Zilla Dist::Zilla::PluginBundle::Author::JACQUESG App::Ack
