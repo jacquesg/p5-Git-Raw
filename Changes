@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+0.90      2022-10-27 09:49:06+01:00 Europe/London
+
  - Test fixes introduced by the move from 'master' to 'main'
 
 0.89      2022-10-23 17:28:46+01:00 Europe/London
