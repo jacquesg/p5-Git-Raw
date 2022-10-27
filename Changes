@@ -2,6 +2,8 @@ Revision history for Git-Raw
 
 {{$NEXT}}
 
+ - Test fixes introduced by the move from 'master' to 'main'
+
 0.89      2022-10-23 17:28:46+01:00 Europe/London
 
  - Update libgit2 to fbea439d4 (1.5.0)
