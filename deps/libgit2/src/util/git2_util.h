@@ -60,6 +60,10 @@ typedef struct git_str git_str;
 
 #ifdef GIT_WIN32
 
+# ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+# endif
+
 # include <io.h>
 # include <direct.h>
 # include <winsock2.h>
