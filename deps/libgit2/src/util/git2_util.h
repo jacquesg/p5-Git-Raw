@@ -79,6 +79,8 @@ typedef struct git_str git_str;
 #  include "win32/thread.h"
 # endif
 
+#  undef WIN32_LEAN_AND_MEAN
+
 #else
 
 # include <unistd.h>
