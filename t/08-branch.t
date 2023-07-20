@@ -51,7 +51,7 @@ is $look -> name, 'refs/heads/some_branch';
 
 my $reflog = $look -> reflog;
 my @entries = $reflog -> entries;
-is scalar(@entries), 1;
+is scalar(@entries), 2;
 
 ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_local', 1)));
 ok (!defined (Git::Raw::Branch -> lookup($repo, 'nonexistent_remote', 0)));

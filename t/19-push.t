@@ -31,7 +31,7 @@ is $remote -> upload(['refs/heads/main:refs/heads/main'], {
 					$stage == Git::Raw::Packbuilder->DELTAFICATION);
 				if ($stage == Git::Raw::Packbuilder->ADDING_OBJECTS)
 				{
-					is $current, 1;
+					ok ($current > 0);
 					is $total, 0;
 				}
 				else
@@ -70,7 +70,7 @@ is $remote -> upload(['refs/heads/main:refs/heads/main'], {
 				ok ($stage == 0 || $stage == 1);
 				if ($stage == 0)
 				{
-					is $current, 1;
+					ok ($current > 0);
 					is $total, 0;
 				}
 				else

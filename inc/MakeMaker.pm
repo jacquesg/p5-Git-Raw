@@ -192,6 +192,9 @@ if ($is_netbsd) {
 	$def .= ' -DGIT_USE_STAT_MTIM';
 }
 
+# Use select() for IO
+$def .= ' -DGIT_IO_SELECT';
+
 # Nanosecond resolution
 $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
@@ -260,10 +263,10 @@ if (!$is_sunpro) {
 	print "Thread support disabled (SunPro compiler detected)\n"
 }
 
-my @deps = glob 'deps/libgit2/deps/{http-parser,zlib,pcre}/*.c';
-my @srcs = glob 'deps/libgit2/src/libgit2/{*.c,transports/*.c,xdiff/*.c,streams/*.c}';
+my @deps = glob 'deps/libgit2/deps/{http-parser,zlib,pcre,xdiff}/*.c';
+my @srcs = glob 'deps/libgit2/src/libgit2/{*.c,transports/*.c,streams/*.c}';
 push @srcs, glob 'deps/libgit2/src/util/{*.c,allocators/*.c,hash/collision*.c,hash/hash*.c,hash/builtin*.c,hash/sha1dc/*.c,hash/rfc6234/*.c}';
-$inc .= ' -Ideps/libgit2/deps/pcre';
+$inc .= ' -Ideps/libgit2/deps/pcre -Ideps/libgit2/deps/xdiff';
 
 if ($is_windows) {
 	push @srcs, glob 'deps/libgit2/src/util/win32/*.c';
