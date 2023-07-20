@@ -192,9 +192,6 @@ if ($is_netbsd) {
 	$def .= ' -DGIT_USE_STAT_MTIM';
 }
 
-# Use select() for IO
-$def .= ' -DGIT_IO_SELECT';
-
 # Nanosecond resolution
 $def .= ' -DGIT_USE_STAT_MTIM_NSEC -DGIT_USE_NEC';
 
@@ -279,6 +276,7 @@ if ($is_windows) {
 	}
 
 	$def .= ' -DSTRSAFE_NO_DEPRECATE';
+	$def .= ' -DGIT_IO_WSAPOLL';
 
 	if ($is_msvc) {
 		# visual studio compiler
@@ -288,6 +286,8 @@ if ($is_windows) {
 		$def .= ' -D_WIN32_WINNT=0x0600 -D__USE_MINGW_ANSI_STDIO=1';
 	}
 } else {
+	# Use poll() for IO
+	$def .= ' -DGIT_IO_POLL';
 	push @srcs, glob 'deps/libgit2/src/util/unix/*.c'
 }
 
